@@ -13,7 +13,41 @@ Klikalna makieta w czystym HTML, bez zależności zewnętrznych. Otwórz **`inde
 | Numeracja klientów | per instytucja | ciągła w roku, trafia na fakturę |
 | Nazewnictwo | z dokumentacji | wymagane przez klienta (D-55) |
 | Dane | kilkanaście rekordów | realne wolumeny, 240 klientów, 174 projekty |
-| Silnik prowizji | brak | działający, 7 przypadków testowych |
+| Silnik prowizji | brak | działający, 16 przypadków zweryfikowanych |
+
+## Struktura nawigacji
+
+Menu ma **8 pozycji dla administratora i 6 dla pracownika**. Moduły mają sekcje w postaci
+zakładek pod nagłówkiem, zamiast osobnych pozycji w menu.
+
+```
+Dashboard              01 Przeglad | 14 Skutecznosc i lejki
+Dofinansowania         02 Projekty | 04 Oczekujace na nabor | 13 Terminy szkolen
+  +-- rozwija liste instytucji przypisanych do konta
+Nabory                 05
+Instytucje szkoleniowe 06 Przeglad | 07 Konfigurator warunkow (admin)
+Komunikacja            09 szablony, wysylka, automatyzacje i alerty
+Administracja (admin)  08 Prowizje i faktury | 15 Kalkulator prowizji
+Zgloszenia             10
+Ustawienia (admin)     11 Konta i role | 12 Rejestr aktywnosci
+
+Panele zewnetrzne:     16 Moja instytucja | 17 Moj wniosek
+```
+
+| Rola | Pozycji w menu |
+|---|---|
+| Administrator | 8 |
+| Pracownik LDIT | 6, bez Administracji i Ustawień |
+| Instytucja szkoleniowa | 4 |
+| Pracownik IS (handlowiec) | 1 |
+| Klient końcowy | 1 |
+
+**Statystyka jest sekcją Dashboardu, nie osobnym modułem.** Tak jest w dokumencie klienta,
+gdzie „Statystyka, liczenie skuteczności" figuruje pod nagłówkiem „Dashboard dla admina".
+
+**Baza klientów nie jest osobną pozycją w menu.** To zakładka „Oczekujące na nabór" wewnątrz
+Dofinansowań, co odwzorowuje układ Excela klienta: arkusze „Zestawienie 2026 złożone"
+i „Niezłożone" obok siebie.
 
 ## Struktura plików
 
@@ -23,24 +57,7 @@ makieta/
   assets/
     style.css                       system stylow, wszystkie komponenty
     data.js                         dane demonstracyjne + silnik prowizji
-  strony/
-    01-dashboard.html               statystyki, jedyny przekroj przez wszystkie IS
-    02-zestawienia.html             glowny widok roboczy, tabela projektow
-    03-wniosek.html                 karta projektu, model finansowy, uczestnicy
-    04-baza-klientow.html           baza klientow + kolejka zgloszen z formularza
-    05-nabory.html                  nabory aktualne i prognozowane
-    06-instytucje.html              karty instytucji, katalog szkolen
-    07-konfigurator-is.html         warunki prowizyjne, wzor certyfikatu (tylko admin)
-    08-administracja.html           prowizje, faktury, prowizje wewnetrzne (tylko admin)
-    09-wysylka-maili.html           szablony, wysylka, automatyzacje i alerty
-    10-zgloszenia.html              wewnetrzna baza incydentow
-    11-konta-uprawnienia.html       konfigurator rol, macierz uprawnien
-    12-rejestr-aktywnosci.html      rejestr zmian + log logowan
-    13-terminy.html                 kalendarz i lista terminow szkolen
-    14-statystyki.html              lejki, porownania, skutecznosc
-    15-konfigurator-prowizji.html   PROTOTYP OBLICZENIOWY, warunek wstepny D-20
-    16-panel-is.html                widok instytucji szkoleniowej
-    17-panel-klienta.html           panel klienta koncowego (status otwarty)
+  strony/                           17 stron modulow (numeracja jak w nawigacji powyzej)
 ```
 
 ## Co warto pokazać klientowi w pierwszej kolejności
@@ -55,7 +72,7 @@ nie zostanie to ustalone. Taki prosty konfigurator w HTML, będziesz wpisywał c
 to się dobrze liczy czy nie”*.
 
 Kalkulator obsługuje wszystkie cztery modele z realnych umów, pozwala wpisać własne progi i faktury,
-i ma wbudowane 7 przypadków testowych z dokumentacji. **Ta strona wymaga walidacji przez klienta
+i ma wbudowane 12 przypadków testowych: z warsztatu oraz z arkusza `Prowizja liczenie.xlsx`. **Ta strona wymaga walidacji przez klienta
 realnymi liczbami przed rozpoczęciem implementacji.**
 
 **3. Karta projektu** (`03-wniosek.html`).

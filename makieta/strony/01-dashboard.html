@@ -12,7 +12,7 @@
     <div class="ph-text">
       <h1 class="page-title">Dashboard</h1>
       <p class="page-desc">
-        Wyłącznie statystyki, bez rozpisek klientów <span class="ref">D-114</span>.
+        Wyłącznie wskaźniki, bez rozpisek klientów <span class="ref">D-114</span>. Statystyki szczegółowe w sekcji obok, zgodnie ze strukturą z dokumentu klienta, gdzie statystyka jest częścią dashboardu, nie osobnym modułem.
         To jedyne miejsce z przekrojem przez wszystkie instytucje <span class="ref">D-112</span>.
       </p>
     </div>
@@ -23,6 +23,12 @@
       <button class="btn">Eksport do Excela</button>
     </div>
   </div>
+
+  <nav class="mod-tabs">
+    <a href="01-dashboard.html" class="on">Przegląd</a>
+    <a href="14-statystyki.html">Skuteczność i lejki</a>
+  </nav>
+
 
   <div class="note">
     Widok administratora. <b>Pracownik LDIT nie widzi</b> kafelków oznaczonych żółtą ramką:
@@ -156,12 +162,22 @@
       (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
   }
 
+  /* "Ile jest Klientow do obdzwonienia" - wprost z dokumentu klienta.
+     Dzis w Excelu: data naboru wpisywana recznie przy kliencie w arkuszu "Niezlozone". */
+  var pupZNaborem = DB.NABORY.filter(function (n) { return n.status === "Nabór ogłoszony"; })
+                             .map(function (n) { return n.pup; });
+  var doObdzwonienia = DB.KLIENCI.filter(function (k) {
+    var pup = (DB.PUPY.filter(function (p) { return p.id === k.pup; })[0] || {}).nazwa;
+    return pupZNaborem.indexOf(pup) >= 0;
+  }).length;
+
   document.getElementById("kpi").innerHTML =
+    kpi("Klienci do obdzwonienia", DB.fmtNum(doObdzwonienia),
+        '<span class="tag neg dot">nabór trwa</span> ' + pupZNaborem.length + " urzędy") +
     kpi("Wnioski złożone", DB.fmtNum(zlozone.length), '<span class="delta up">&#9650; 18%</span> wobec 2025') +
     kpi("Decyzje pozytywne", DB.fmtNum(poz.length),
         '<span class="tag pos dot">' + Math.round(poz.length / (poz.length + neg.length) * 100) + '% skuteczności</span>') +
-    kpi("Oczekuje na rozpatrzenie", DB.fmtNum(oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek)) +
-    kpi("Rozliczone projekty", DB.fmtNum(rozl.length), "z " + poz.length + " pozytywnych");
+    kpi("Oczekuje na rozpatrzenie", DB.fmtNum(oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek));
 
   document.getElementById("kpiFin").innerHTML =
     kpi("Wartość wniosków", DB.fmtPLN(sumaWnioskowana), "suma wnioskowana 2026", true) +

@@ -95,36 +95,39 @@ var PRZYDZIAL = {
 
 var NAV = [
   { grupa: "Praca operacyjna" },
-  { id: "dash",     ikona: "&#9632;", label: "Dashboard",            plik: "01-dashboard.html",           role: ["admin","pracownik","is"] },
-  { id: "dofin",    ikona: "&#9673;", label: "Dofinansowania",       plik: "02-zestawienia.html",         role: ["admin","pracownik","is","pracownikIS"], deti: true },
-  { id: "zest",     ikona: "&#9636;", label: "Zestawienia",          plik: "02-zestawienia.html",         role: ["admin","pracownik"], lata: true },
-  { id: "baza",     ikona: "&#9744;", label: "Baza klientów",        plik: "04-baza-klientow.html",       role: ["admin","pracownik","is","pracownikIS"], badge: "5" },
-  { id: "nabory",   ikona: "&#9200;", label: "Nabory",               plik: "05-nabory.html",              role: ["admin","pracownik","is"] },
-  { id: "terminy",  ikona: "&#9635;", label: "Terminy i kalendarz",  plik: "13-terminy.html",             role: ["admin","pracownik","is","klient"] },
+  { id: "dash",   ikona: "&#9632;", label: "Dashboard",              plik: "01-dashboard.html",
+    role: ["admin","pracownik","is"] },
+  { id: "dofin",  ikona: "&#9673;", label: "Dofinansowania",         plik: "02-zestawienia.html",
+    role: ["admin","pracownik"], deti: true },
+  { id: "nabory", ikona: "&#9200;", label: "Nabory",                 plik: "05-nabory.html",
+    role: ["admin","pracownik","is"] },
 
   { grupa: "Konfiguracja" },
-  { id: "inst",     ikona: "&#9638;", label: "Instytucje szkoleniowe", plik: "06-instytucje.html",        role: ["admin","pracownik"] },
-  { id: "konfIS",   ikona: "&#9881;", label: "Konfigurator instytucji", plik: "07-konfigurator-is.html",  role: ["admin"], admin: true },
-  { id: "maile",    ikona: "&#9993;", label: "Wysyłka maili",        plik: "09-wysylka-maili.html",       role: ["admin","pracownik"] },
+  { id: "inst",   ikona: "&#9638;", label: "Instytucje szkoleniowe", plik: "06-instytucje.html",
+    role: ["admin","pracownik"] },
+  { id: "komun",  ikona: "&#9993;", label: "Komunikacja",            plik: "09-wysylka-maili.html",
+    role: ["admin","pracownik"] },
 
-  { grupa: "Finanse i nadzór" },
-  { id: "admin",    ikona: "&#9878;", label: "Administracja",        plik: "08-administracja.html",       role: ["admin"], admin: true },
-  { id: "prow",     ikona: "&#8721;", label: "Konfigurator prowizji", plik: "15-konfigurator-prowizji.html", role: ["admin"], admin: true, badge: "prototyp" },
-  { id: "stat",     ikona: "&#9650;", label: "Statystyki",           plik: "14-statystyki.html",          role: ["admin","pracownik","is"] },
-  { id: "zglo",     ikona: "&#9888;", label: "Zgłoszenia",           plik: "10-zgloszenia.html",          role: ["admin","pracownik"] },
-
-  { grupa: "Administracja systemu" },
-  { id: "konta",    ikona: "&#9787;", label: "Konta i uprawnienia",  plik: "11-konta-uprawnienia.html",   role: ["admin"], admin: true },
-  { id: "rejestr",  ikona: "&#9906;", label: "Rejestr aktywności",   plik: "12-rejestr-aktywnosci.html",  role: ["admin"], admin: true },
+  { grupa: "Zarządzanie" },
+  { id: "admin",  ikona: "&#9878;", label: "Administracja",          plik: "08-administracja.html",
+    role: ["admin"], admin: true },
+  { id: "zglo",   ikona: "&#9888;", label: "Zgłoszenia",             plik: "10-zgloszenia.html",
+    role: ["admin","pracownik"] },
+  { id: "ustaw",  ikona: "&#9787;", label: "Ustawienia",             plik: "11-konta-uprawnienia.html",
+    role: ["admin"], admin: true },
 
   { grupa: "Panel zewnętrzny" },
-  { id: "panelIS",  ikona: "&#9707;", label: "Widok instytucji",     plik: "16-panel-is.html",            role: ["is","pracownikIS"] },
-  { id: "panelKL",  ikona: "&#9708;", label: "Mój wniosek",          plik: "17-panel-klienta.html",       role: ["klient"] }
+  { id: "panelIS", ikona: "&#9707;", label: "Moja instytucja",       plik: "16-panel-is.html",
+    role: ["is","pracownikIS"] },
+  { id: "terminy", ikona: "&#9635;", label: "Terminy szkoleń",       plik: "13-terminy.html",
+    role: ["is"] },
+  { id: "panelKL", ikona: "&#9708;", label: "Mój wniosek",           plik: "17-panel-klienta.html",
+    role: ["klient"] }
 ];
 
 var HINTY = {
   admin: "<b>Administrator.</b> Widzi wszystkie instytucje, dane finansowe, konfigurator prowizji i rejestry. To jedyna rola z dostępem do stawek prowizyjnych <span class='ref'>D-07</span>",
-  pracownik: "<b>Pracownik LDIT.</b> Widzi tylko przypisane mu instytucje (tu: 3 z 8) <span class='ref'>D-113</span>. Bez zysków firmy, bez stawek prowizji, bez faktur <span class='ref'>D-34</span>",
+  pracownik: "<b>Pracownik LDIT.</b> Sześć pozycji w menu zamiast ośmiu. Widzi tylko przypisane mu instytucje, tu 3 z 8 <span class='ref'>D-113</span>. Bez Administracji i Ustawień, bez zysków firmy i stawek prowizji <span class='ref'>D-34</span>",
   is: "<b>Instytucja szkoleniowa.</b> Jedna zakładka opisana nazwą własnej spółki, wyłącznie własni klienci <span class='ref'>D-76</span>. Nie widzi swojej stawki prowizji.",
   pracownikIS: "<b>Pracownik IS (handlowiec).</b> Tylko dane klientów, przefiltrowane do najnowszego naboru <span class='ref'>D-72</span>. Rola kończy się na wypełnieniu formularza <span class='ref'>D-75</span>",
   klient: "<b>Klient końcowy.</b> Status OTWARTY, moduł nierozstrzygnięty <span class='ref p'>P-33</span>. Tylko odczyt własnego wniosku i szkoleń."
@@ -227,7 +230,7 @@ document.getElementById("role").addEventListener("change", function () {
   stan.rola = this.value;
 
   /* Domyslny ekran startowy dla roli */
-  var start = { admin: "dash", pracownik: "dash", is: "dash", pracownikIS: "baza", klient: "panelKL" }[stan.rola];
+  var start = { admin: "dash", pracownik: "dash", is: "dash", pracownikIS: "panelIS", klient: "panelKL" }[stan.rola];
   stan.aktywny = start;
   var poz = NAV.filter(function (n) { return n.id === start; })[0];
 
