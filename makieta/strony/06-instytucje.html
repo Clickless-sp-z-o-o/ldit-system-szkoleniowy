@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Instytucje szkoleniowe</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  .is-card { cursor: pointer; margin-bottom: 0; }
+  .is-card:hover { border-color: var(--accent); }
+  .is-card.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .is-card .miniset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .is-card .mini { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 9px; }
+  .is-card .mini .mv { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .is-card .mini .ml { font-size: 10.5px; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .03em; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Instytucje szkoleniowe</h1>
+      <p class="page-desc">
+        Karta instytucji, katalog szkoleń, osoby kontaktowe i korespondencja.
+        Instytucja sama wprowadza informacje o szkoleniach, administrator też może nimi zarządzać
+        <span class="ref">D-42</span>. Korespondencja widoczna zarówno tutaj, jak i na karcie klienta
+        <span class="ref">D-52</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn">Eksport listy</button>
+      <button class="btn primary">+ Nowa instytucja</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Karta instytucji nie pokazuje stawki prowizji.</b> Warunki prowizyjne są widoczne wyłącznie
+    dla administratora w module <a href="07-konfigurator-is.html">Konfigurator instytucji</a>
+    <span class="ref">D-07</span>. Instytucja nie widzi ani swojej, ani cudzej stawki.
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <input class="inp search" placeholder="Szukaj po nazwie, mieście lub NIP...">
+      <select class="inp">
+        <option>Opiekun LDIT: wszyscy</option>
+        <option>Łucja</option><option>Martyna</option><option>Łucjan</option>
+      </select>
+      <select class="inp">
+        <option>Miasto: wszystkie</option>
+        <option>Poznań</option><option>Katowice</option><option>Warszawa</option>
+      </select>
+      <span class="chip on">Aktywne <span class="n" id="chipAkt">8</span></span>
+      <span class="chip">W przygotowaniu <span class="n">12</span></span>
+      <span class="sp"></span>
+      <span class="small muted">Widok kafelkowy, dane operacyjne per instytucja</span>
+    </div>
+    <div class="card-body">
+      <div class="grid g3" id="listaIS"></div>
+      <div class="small muted" style="margin-top:14px">
+        Pokazano <b>8 instytucji pełnych</b> z 20 w bazie. Pozostałe 12 jest w trakcie uzupełniania
+        katalogu szkoleń i nie ma jeszcze przypisanych projektów.
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- SZCZEGÓŁ INSTYTUCJI -->
+  <div class="card">
+    <div class="card-head">
+      <h3 id="detNazwa">Instytucja</h3>
+      <span class="sub" id="detSub"></span>
+      <div class="ch-actions">
+        <a class="btn sm" href="07-konfigurator-is.html">Konfigurator instytucji</a>
+        <button class="btn sm">Edytuj kartę</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab on" data-p="p-dane">Dane firmy</div>
+      <div class="tab" data-p="p-katalog">Katalog szkoleń</div>
+      <div class="tab" data-p="p-osoby">Osoby i konta</div>
+      <div class="tab" data-p="p-mail">Korespondencja</div>
+    </div>
+
+    <!-- DANE FIRMY -->
+    <div class="tab-pane on" id="p-dane">
+      <div class="card-body">
+        <div class="grid g-2-1">
+          <div>
+            <dl class="dl" id="daneFirmy"></dl>
+          </div>
+          <div>
+            <div class="note mb0">
+              <b>Siedziba jest źródłem miejscowości na certyfikacie</b> <span class="ref">D-99</span>.
+              Na dokumencie drukuje się miasto siedziby instytucji, nigdy miejsce realizacji szkolenia.
+              Wzór certyfikatu wgrywa się w konfiguratorze <span class="ref">D-98</span>.
+            </div>
+            <div class="note warn mb0" style="margin-top:12px">
+              <b>Standard godzinowy</b> to powtarzalny wzorzec godzin i dni. Zmianę standardu zgłasza
+              instytucja, dzięki czemu LDIT nie musi dopytywać mailem o godziny szkolenia.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KATALOG SZKOLEŃ -->
+    <div class="tab-pane" id="p-katalog">
+      <div class="toolbar">
+        <span class="small muted" id="katSub"></span>
+        <span class="sp"></span>
+        <button class="btn sm">+ Dodaj plan szkolenia</button>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Nazwa szkolenia</th>
+              <th class="num">Godziny</th>
+              <th class="num">Dni</th>
+              <th>Tryb</th>
+              <th class="num">Cena aktualna</th>
+              <th class="num">Realizacje 2026</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="katalog"></tbody>
+        </table>
+      </div>
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Cena jest zmienna w czasie.</b> System przechowuje historię cen, a do projektu wchodzi
+          cena obowiązująca <b>w dacie wnioskowania</b>, nie cena bieżąca. Zmiana cennika nie przelicza
+          wniosków złożonych wcześniej.
+        </div>
+        <div class="note" style="margin-top:12px">
+          <b>Dodanie nowego planu szkolenia przez instytucję jest swobodne.</b>
+          Edycja istniejącego planu przechodzi przez administratora albo co najmniej go powiadamia
+          <span class="ref">D-43</span>. Powód: nazwa szkolenia trafia do formularza zgłoszeniowego jako
+          pozycja listy wyboru i musi zostać spójna z już złożonymi wnioskami.
+        </div>
+        <div class="note open mb0">
+          <span class="ref p">P-45</span> <b>Mechanizm nie został doprecyzowany.</b>
+          Na warsztacie padły dwa sformułowania w jednym zdaniu: „przechodzi przez administratora”
+          oraz „go powiadamia”. To dwa różne rozwiązania. Akceptacja blokuje zmianę do czasu decyzji
+          administratora, powiadomienie przepuszcza zmianę od razu. Do rozstrzygnięcia przed
+          implementacją katalogu.
+        </div>
+      </div>
+    </div>
+
+    <!-- OSOBY I KONTA -->
+    <div class="tab-pane" id="p-osoby">
+      <div class="card-body">
+        <div class="grid g3" id="role3"></div>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead>
+            <tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Ostatnie logowanie</th><th class="c">2FA</th><th></th></tr>
+          </thead>
+          <tbody id="konta"></tbody>
+        </table>
+      </div>
+      <div class="card-body">
+        <div class="note mb0">
+          Konta instytucji widzą <b>wyłącznie własnych klientów i własne projekty</b>. Separacja jest
+          egzekwowana na poziomie danych, nie na poziomie interfejsu. Instytucje są wobec siebie
+          konkurencyjne, więc wyciek do niewłaściwego katalogu jest scenariuszem krytycznym.
+        </div>
+      </div>
+    </div>
+
+    <!-- KORESPONDENCJA -->
+    <div class="tab-pane" id="p-mail">
+      <div class="toolbar">
+        <input class="inp search" placeholder="Szukaj w temacie i treści...">
+        <select class="inp">
+          <option>Kierunek: wszystkie</option><option>Przychodzące</option><option>Wychodzące</option>
+        </select>
+        <span class="sp"></span>
+        <button class="btn sm">+ Notatka z rozmowy</button>
+        <button class="btn sm primary">Nowa wiadomość</button>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead><tr><th style="width:38px"></th><th>Temat</th><th>Nadawca</th><th>Skrzynka</th><th>Data</th><th class="c">Zał.</th></tr></thead>
+          <tbody id="maile"></tbody>
+        </table>
+      </div>
+      <div class="card-body">
+        <div class="note mb0">
+          Ta sama korespondencja pojawia się na karcie klienta, którego dotyczy <span class="ref">D-52</span>.
+          Wątki są przypisywane po adresie nadawcy i po numerze klienta w temacie.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var PELNE = DB.INSTYTUCJE.slice(0, 8);
+  var wybrana = "IS-01";
+
+  function klienciIS(id) { return DB.KLIENCI.filter(function (k) { return k.is === id; }); }
+  function szkoleniaIS(id) { return DB.SZKOLENIA.filter(function (s) { return s.is === id; }); }
+  function wnioskiIS(id) { return DB.WNIOSKI.filter(function (w) { return w.is === id; }); }
+  function aktywneIS(id) {
+    return wnioskiIS(id).filter(function (w) {
+      if (w.statusSkl === "Złożony" && !w.statusDec) return true;
+      return w.statusDec === "Pozytywna" && w.rozliczenie !== "Rozliczone";
+    });
+  }
+
+  /* ---------- Lista kafelków ---------- */
+  function renderLista() {
+    document.getElementById("listaIS").innerHTML = PELNE.map(function (i) {
+      return '<div class="card is-card' + (i.id === wybrana ? " sel" : "") + '" data-id="' + i.id + '">' +
+        '<div class="card-body">' +
+          '<div style="display:flex;align-items:flex-start;gap:10px">' +
+            '<div>' +
+              '<div style="font-size:14.5px;font-weight:700">' + i.nazwa + '</div>' +
+              '<div class="small muted">' + i.miasto + ' &middot; NIP ' + i.nip + '</div>' +
+            '</div>' +
+            '<span class="pill" style="margin-left:auto">' + i.skrot + '</span>' +
+          '</div>' +
+          '<div class="small" style="margin-top:9px;color:var(--ink-2)">' +
+            '<b>Kontakt:</b> ' + i.kontakt + '<br>' +
+            '<b>Opiekun LDIT:</b> ' + i.opiekun +
+          '</div>' +
+          '<div class="miniset">' +
+            '<div class="mini"><div class="mv">' + DB.fmtNum(klienciIS(i.id).length) + '</div><div class="ml">klientów</div></div>' +
+            '<div class="mini"><div class="mv">' + szkoleniaIS(i.id).length + '</div><div class="ml">w katalogu</div></div>' +
+            '<div class="mini"><div class="mv">' + aktywneIS(i.id).length + '</div><div class="ml">projektów</div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    Array.prototype.forEach.call(document.querySelectorAll(".is-card"), function (el) {
+      el.addEventListener("click", function () {
+        wybrana = el.getAttribute("data-id");
+        renderLista();
+        renderSzczegol();
+        document.getElementById("detNazwa").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+  }
+
+  /* ---------- Szczegół ---------- */
+  function renderSzczegol() {
+    var i = DB.INSTYTUCJE.filter(function (x) { return x.id === wybrana; })[0];
+    var kl = klienciIS(i.id), szk = szkoleniaIS(i.id), wn = wnioskiIS(i.id);
+
+    document.getElementById("detNazwa").textContent = i.nazwa;
+    document.getElementById("detSub").innerHTML =
+      i.id + " &middot; " + i.miasto + " &middot; " + DB.fmtNum(kl.length) + " klientów &middot; " +
+      wn.length + " projektów w 2026";
+
+    /* Dane firmy */
+    document.getElementById("daneFirmy").innerHTML =
+      [["Nazwa", "<b>" + i.nazwa + "</b>"],
+       ["Identyfikator", '<span class="mono">' + i.id + '</span> <span class="pill">' + i.skrot + '</span>'],
+       ["NIP", '<span class="mono">' + i.nip + '</span>'],
+       ["Siedziba (miejscowość)", "<b>" + i.miasto + '</b> <span class="tag info dot">źródło miejscowości na certyfikacie</span> <span class="ref">D-99</span>'],
+       ["Adres do faktur", "ul. Przykładowa 12, " + i.miasto],
+       ["Opis działalności", i.opis],
+       ["Standard godzinowy", '<span class="pill w">' + i.standard + "</span>"],
+       ["Kontakt główny", i.kontakt + '<div class="small muted">' + i.mail + " &middot; " + i.tel + "</div>"],
+       ["Opiekun po stronie LDIT", i.opiekun],
+       ["Szkoleń w katalogu", szk.length],
+       ["Klientów przypisanych", DB.fmtNum(kl.length)],
+       ["Projekty aktywne", aktywneIS(i.id).length + " z " + wn.length + " w roku 2026"],
+       ["Formularz zgłoszeniowy", 'własna kopia formularza <span class="ref">D-70</span>, konfiguracja w <a href="07-konfigurator-is.html">konfiguratorze</a>'],
+       ["Warunki prowizyjne", '<span class="tag mute dot">niewidoczne w tym module</span> <span class="ref">D-07</span>']
+      ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
+
+    /* Katalog szkoleń */
+    document.getElementById("katSub").innerHTML =
+      "<b>" + szk.length + "</b> pozycji w katalogu instytucji " + i.nazwa +
+      ". Ceny obowiązują wg daty wnioskowania.";
+
+    document.getElementById("katalog").innerHTML = szk.length ? szk.map(function (s) {
+      var real = DB.WNIOSKI.filter(function (w) { return w.szkId === s.id; }).length;
+      return "<tr>" +
+        '<td class="strong">' + s.nazwa + '<div class="small muted mono">' + s.id + "</div></td>" +
+        '<td class="num">' + s.godz + "</td>" +
+        '<td class="num">' + s.dni + "</td>" +
+        "<td><span class='tag " + (s.tryb === "Online" ? "info" : s.tryb === "Stacjonarne" ? "mute" : "warn") + "'>" + s.tryb + "</span></td>" +
+        '<td class="num strong">' + DB.fmtPLN(s.cena) + '<div class="small muted">od 2026-01-01</div></td>' +
+        '<td class="num">' + real + "</td>" +
+        '<td class="right"><button class="btn xs">Historia cen</button></td>' +
+        "</tr>";
+    }).join("") : '<tr><td colspan="7"><div class="empty"><div class="ei">&#9723;</div>' +
+      '<div class="et">Katalog pusty</div>Instytucja nie wprowadziła jeszcze planów szkoleń.</div></td></tr>';
+
+    /* Osoby i konta */
+    var konta = DB.UZYTKOWNICY.filter(function (u) { return u.inst === i.nazwa; });
+    var glowny = konta.filter(function (u) { return u.rola === "Instytucja szkoleniowa"; })[0];
+    var pracownik = konta.filter(function (u) { return u.rola === "Pracownik IS"; })[0];
+
+    function osobaBox(tytul, osoba, mail, opis) {
+      return '<div class="card mb0"><div class="card-head"><h3>' + tytul + "</h3></div>" +
+        '<div class="card-body">' +
+        (osoba
+          ? '<div style="font-size:14px;font-weight:700">' + osoba + "</div>" +
+            '<div class="small muted" style="margin-top:3px">' + mail + "</div>"
+          : '<div class="muted small">Nie wskazano. Dopóki rola jest pusta, korespondencja trafia do kontaktu głównego.</div>') +
+        '<div class="small muted" style="margin-top:9px">' + opis + "</div></div></div>";
+    }
+
+    document.getElementById("role3").innerHTML =
+      osobaBox("Kontakt główny", i.kontakt, i.mail + " &middot; " + i.tel,
+               "Odbiorca wszystkich powiadomień systemowych i pism organizacyjnych.") +
+      osobaBox("Osoba od terminów", pracownik ? pracownik.imie : null,
+               pracownik ? pracownik.login : "",
+               "Wystawia wolne terminy z katalogu i potwierdza ustalenia terminowe.") +
+      osobaBox("Osoba od faktur", glowny ? glowny.imie : i.kontakt,
+               glowny ? glowny.login : i.mail,
+               "Odbiorca maila „dane do faktury” generowanego z karty projektu <span class='ref'>D-104</span>.");
+
+    document.getElementById("konta").innerHTML = konta.length ? konta.map(function (u) {
+      return "<tr>" +
+        '<td class="strong">' + u.imie + "</td>" +
+        '<td class="mono small">' + u.login + "</td>" +
+        "<td><span class='tag " + (u.rola === "Instytucja szkoleniowa" ? "info" : "mute") + "'>" + u.rola + "</span></td>" +
+        '<td class="small nowrap">' + u.ost + "</td>" +
+        '<td class="c">' + (u["2fa"] ? '<span class="tag pos">tak</span>' : '<span class="tag warn">nie</span>') + "</td>" +
+        '<td class="right"><button class="btn xs">Uprawnienia</button></td>' +
+        "</tr>";
+    }).join("") : '<tr><td colspan="6"><div class="empty"><div class="ei">&#9723;</div>' +
+      '<div class="et">Brak kont</div>Instytucja nie ma jeszcze założonych kont w systemie.</div></td></tr>';
+
+    /* Korespondencja */
+    document.getElementById("maile").innerHTML = DB.MAILE.map(function (m) {
+      return "<tr>" +
+        "<td>" + (m.kier === "in" ? '<span class="tag info">&#8600;</span>' : '<span class="tag mute">&#8599;</span>') + "</td>" +
+        '<td class="strong">' + m.temat + "</td>" +
+        '<td class="small mono muted">' + m.od + "</td>" +
+        '<td class="small muted">' + m.skrz + "</td>" +
+        '<td class="small nowrap">' + m.data + "</td>" +
+        '<td class="c">' + (m.zal ? '<span class="pill">' + m.zal + "</span>" : '<span class="muted">&ndash;</span>') + "</td>" +
+        "</tr>";
+    }).join("");
+  }
+
+  /* ---------- Zakładki ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (t) {
+    t.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (x) { x.classList.remove("on"); });
+      Array.prototype.forEach.call(document.querySelectorAll(".tab-pane"), function (x) { x.classList.remove("on"); });
+      t.classList.add("on");
+      document.getElementById(t.getAttribute("data-p")).classList.add("on");
+    });
+  });
+
+  renderLista();
+  renderSzczegol();
+})();
+</script>
+</body>
+</html>

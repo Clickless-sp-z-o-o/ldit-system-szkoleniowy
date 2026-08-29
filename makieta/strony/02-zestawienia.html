@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Zestawienia</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Zestawienie 2026 &middot; wszystkie instytucje</h1>
+      <p class="page-desc">
+        Główne miejsce pracy. Układ i kolory przeniesione z Excela <span class="ref">D-01</span>,
+        numeracja klientów ciągła w ramach roku, trafia na fakturę <span class="ref">D-112</span>.
+        Edycja bezpośrednio w komórce <span class="ref">D-115</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn">Eksport</button>
+      <button class="btn primary">+ Nowy projekt</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <input class="inp search" id="q" placeholder="Szukaj: NIP, nazwa klienta, urząd...">
+      <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
+      <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
+      <select class="inp" id="fStatus">
+        <option value="">Wszystkie statusy</option>
+        <option>Pozytywna</option><option>Negatywna</option>
+        <option>Oczekuje na decyzję</option><option>Niezłożony</option>
+        <option>NW</option><option>Rezygnacja</option>
+      </select>
+      <span class="sp"></span>
+      <span class="small muted" id="licz"></span>
+    </div>
+
+    <div class="toolbar" style="background:#fff;border-bottom:1px solid var(--line)">
+      <span class="small muted"><b>Zaznaczone:</b> <span id="zazn">0</span></span>
+      <button class="btn xs" onclick="masowo('Pozytywna')">Oznacz pozytywne</button>
+      <button class="btn xs" onclick="masowo('Negatywna')">Oznacz negatywne</button>
+      <span class="sp"></span>
+      <div class="legend">
+        <span><i style="background:var(--pos-bg);border-color:#86efac"></i>pozytywna</span>
+        <span><i style="background:var(--neg-bg);border-color:#fca5a5"></i>negatywna</span>
+        <span><i style="background:var(--set-bg);border-color:#d8b4fe"></i>rozliczone</span>
+      </div>
+    </div>
+
+    <div class="tbl-wrap" style="max-height:calc(100vh - 330px);overflow-y:auto">
+      <table class="tbl" id="tab">
+        <thead>
+          <tr>
+            <th style="width:32px"><input type="checkbox" id="all"></th>
+            <th style="width:44px">Nr</th>
+            <th>Klient</th>
+            <th>NIP</th>
+            <th>Instytucja</th>
+            <th>Szkolenie</th>
+            <th>Urząd</th>
+            <th class="c">Osób</th>
+            <th class="num">Wartość</th>
+            <th class="num">Przyznano</th>
+            <th class="num">Koszt całk.</th>
+            <th>Status</th>
+            <th>Rozliczenie</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note open">
+    <b>Do rozstrzygnięcia <span class="ref p">P-08</span>:</b> klient powiedział, że zbiorczy widok wszystkich
+    instytucji ma być tylko na dashboardzie, ale opisywał go też jako widok operacyjny do masowej zmiany
+    statusów po filtrze PUP. Te wymagania się wykluczają. Tutaj przyjęto, że zbiorcza tabela jest widokiem
+    operacyjnym, a dashboard pozostaje czysto statystyczny.
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+var W = DB.WNIOSKI.slice();
+
+/* Filtry */
+var selIS = document.getElementById("fIS");
+DB.INSTYTUCJE.slice(0, 8).forEach(function (i) {
+  selIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
+});
+var selPUP = document.getElementById("fPUP");
+DB.PUPY.forEach(function (p) {
+  selPUP.innerHTML += '<option value="' + p.id + '">' + p.nazwa + '</option>';
+});
+
+function klasaWiersza(w) {
+  if (w.rozliczenie === "Rozliczone") return "row-set";
+  if (w.statusDec === "Pozytywna") return "row-pos";
+  if (w.statusDec === "Negatywna") return "row-neg";
+  return "";
+}
+function tagStatus(w) {
+  if (w.statusDec === "Pozytywna") return '<span class="tag pos dot">Pozytywna</span>';
+  if (w.statusDec === "Negatywna") return '<span class="tag neg dot">Negatywna</span>';
+  if (w.statusSkl === "Złożony") return '<span class="tag info dot">Oczekuje</span>';
+  if (w.statusSkl === "NW") return '<span class="tag warn dot">NW</span>';
+  if (w.statusSkl === "Rezygnacja") return '<span class="tag mute dot">Rezygnacja</span>';
+  return '<span class="tag mute dot">Niezłożony</span>';
+}
+function tagRozl(w) {
+  if (w.rozliczenie === "Rozliczone") return '<span class="tag set">Rozliczone</span>';
+  if (w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
+  if (w.rozliczenie === "Oczekuje") return '<span class="tag mute">Oczekuje</span>';
+  return '<span class="muted small">&mdash;</span>';
+}
+
+function render() {
+  var q = document.getElementById("q").value.toLowerCase().trim();
+  var fis = selIS.value, fpup = selPUP.value, fst = document.getElementById("fStatus").value;
+
+  var lista = W.filter(function (w) {
+    if (fis && w.is !== fis) return false;
+    if (fpup && w.pup !== fpup) return false;
+    if (fst) {
+      if (fst === "Oczekuje na decyzję") { if (!(w.statusSkl === "Złożony" && !w.statusDec)) return false; }
+      else if (fst === "Pozytywna" || fst === "Negatywna") { if (w.statusDec !== fst) return false; }
+      else if (w.statusSkl !== fst) return false;
+    }
+    if (q) {
+      var h = (w.klNazwa + " " + w.nip + " " + w.pupNazwa + " " + w.szkolenie + " " + w.isNazwa).toLowerCase();
+      if (h.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("licz").innerHTML =
+    "<b>" + lista.length + "</b> z " + W.length + " projektów &middot; wartość " +
+    DB.fmtPLN(lista.reduce(function (s, w) { return s + w.wartosc; }, 0));
+
+  document.getElementById("body").innerHTML = lista.slice(0, 140).map(function (w) {
+    return '<tr class="' + klasaWiersza(w) + '" data-id="' + w.id + '">' +
+      '<td><input type="checkbox" class="ck"></td>' +
+      '<td class="strong">' + w.nr + '</td>' +
+      '<td class="strong nowrap">' + w.klNazwa + '<div class="small muted">' + w.id + '</div></td>' +
+      '<td class="mono muted">' + w.nip + '</td>' +
+      '<td class="nowrap">' + w.isNazwa + '</td>' +
+      '<td class="nowrap">' + w.szkolenie + '</td>' +
+      '<td class="nowrap muted">' + w.pupNazwa + '</td>' +
+      '<td class="c">' + w.osobZakw + (w.osob !== w.osobZakw ? '<span class="muted">/' + w.osob + '</span>' : "") + '</td>' +
+      '<td class="num">' + DB.fmtPLN(w.wartosc) + '</td>' +
+      '<td class="num strong">' + (w.przyznano != null ? DB.fmtPLN(w.przyznano) : '<span class="muted">&mdash;</span>') + '</td>' +
+      '<td class="num">' + (w.kosztCalkowity != null ? DB.fmtPLN(w.kosztCalkowity) : '<span class="muted">&mdash;</span>') + '</td>' +
+      '<td>' + tagStatus(w) + '</td>' +
+      '<td>' + tagRozl(w) + '</td>' +
+      '<td class="right"><button class="btn xs" onclick="otworz(\'' + w.id + '\')">Otwórz</button></td>' +
+      '</tr>';
+  }).join("");
+
+  if (lista.length > 140) {
+    document.getElementById("body").innerHTML +=
+      '<tr><td colspan="14" class="c muted small" style="padding:14px">' +
+      'Pokazano 140 z ' + lista.length + ' wierszy. W systemie docelowym: wirtualizacja listy lub stronicowanie.</td></tr>';
+  }
+
+  document.querySelectorAll(".ck").forEach(function (c) {
+    c.addEventListener("change", licz);
+  });
+  licz();
+}
+
+function licz() {
+  var n = document.querySelectorAll(".ck:checked").length;
+  document.getElementById("zazn").textContent = n;
+  document.querySelectorAll(".ck").forEach(function (c) {
+    c.closest("tr").classList.toggle("sel", c.checked);
+  });
+}
+
+function masowo(status) {
+  var n = document.querySelectorAll(".ck:checked").length;
+  if (!n) { alert("Zaznacz wiersze, którym chcesz nadać status."); return; }
+  alert("Masowa zmiana statusu na: " + status + "\nLiczba projektów: " + n +
+        "\n\nW systemie docelowym: zmiana zapisywana w rejestrze aktywności wraz z wartością przed i po (D-116).");
+}
+
+function otworz(id) {
+  location.href = "03-wniosek.html?id=" + id;
+}
+
+document.getElementById("all").addEventListener("change", function () {
+  var v = this.checked;
+  document.querySelectorAll(".ck").forEach(function (c) { c.checked = v; });
+  licz();
+});
+["q", "fIS", "fPUP", "fStatus"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", render);
+  document.getElementById(id).addEventListener("change", render);
+});
+
+/* Podpowiedz filtra z wyszukiwarki globalnej */
+var qp = new URLSearchParams(location.search).get("q");
+if (qp) document.getElementById("q").value = qp;
+
+render();
+</script>
+</body>
+</html>

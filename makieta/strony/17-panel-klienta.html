@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Panel klienta</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <div class="small muted" style="margin-bottom:4px">Zalogowano jako klient końcowy &rsaquo; dostęp wyłącznie do odczytu</div>
+      <h1 class="page-title" id="tytul">Panel klienta</h1>
+      <p class="page-desc">
+        Podgląd etapu wniosku, dokumentów, szkolenia i najbliższych naborów.
+        Klient <b>niczego nie edytuje</b>, wszystkie dane prowadzi LDIT.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn" onclick="alert('Otwiera formularz kontaktu z opiekunem sprawy w LDIT.')">Kontakt z opiekunem</button>
+    </div>
+  </div>
+
+  <div class="note open">
+    <b>Moduł nie jest zatwierdzony.</b> <span class="ref p">P-33</span>
+    Panel klienta końcowego pozostaje pytaniem otwartym: klient wątpi w jego użyteczność, wykonawca go chce.
+    Nic nie zostało zapisane jako decyzja.
+    <div style="margin-top:8px">
+      <b>Klient, Bartek (1:36):</b> „nie wiem czy w ogóle ktoś będzie z tego korzystał (...)
+      oni często nie mają czasu czegoś podpisać, albo im się nie chce, a co dopiero sobie wejść i sprawdzić
+      na jakim etapie jest ich wniosek, ale pojawiają się tacy klienci.”
+    </div>
+    <div style="margin-top:8px">
+      <b>Wykonawca, Paweł (3:02):</b> „jeżeli chodzi o ten moduł dostępu dla klienta, to tutaj możemy
+      podzielić się tym kosztem, bo ja chętnie będę z tego korzystał.”
+    </div>
+    <div style="margin-top:8px">
+      Blokery po stronie klienta: skokowy wzrost bazy użytkowników (z kilkunastu do kilkuset),
+      koszt utrzymania i ryzyko bezpieczeństwa. Ta strona jest propozycją zakresu, nie ustaleniem.
+      W kolejności etapów panel klienta leży w <b>etapie IV</b>.
+    </div>
+  </div>
+
+  <div class="grid g-2-1">
+    <div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Status Twojego wniosku</h3>
+          <span class="sub" id="subStatus"></span>
+          <div class="ch-actions"><span class="tag info dot" id="tagEtap">etap</span></div>
+        </div>
+        <div class="card-body">
+          <div class="timeline" id="przebieg"></div>
+          <div class="note mb0" style="margin-top:4px">
+            Etapy aktualizuje wyłącznie LDIT. Jeżeli coś się nie zgadza albo status stoi zbyt długo,
+            skontaktuj się z opiekunem sprawy, dane niżej w karcie szkolenia.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Moje szkolenie</h3>
+          <span class="sub">informacje przedszkoleniowe</span>
+        </div>
+        <div class="card-body">
+          <dl class="dl" id="szkolenieDl"></dl>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Moi uczestnicy</h3>
+          <span class="sub" id="subUcz"></span>
+        </div>
+        <div class="card-body tight">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Imię i nazwisko</th><th>Szkolenie</th><th>Kwalifikacja</th><th>Uwagi</th></tr></thead>
+              <tbody id="uczestnicy"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-body" style="border-top:1px solid var(--line)">
+          <div class="note mb0">
+            Dofinansowanie przysługuje osobom zatrudnionym na <b>umowę o pracę</b>.
+            Osoba bez umowy o pracę (na przykład prezes zarządu bez etatu albo większościowy udziałowiec)
+            nie kwalifikuje się do KFS i wymaga odrębnej faktury komercyjnej.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Dokumenty do pobrania</h3>
+          <span class="sub">wszystko, co wysłaliśmy w tej sprawie</span>
+        </div>
+        <div class="card-body tight">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Dokument</th><th>Rodzaj</th><th>Data</th><th class="c">Rozmiar</th><th class="right">Akcja</th></tr></thead>
+              <tbody id="dokumenty"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-body" style="border-top:1px solid var(--line)">
+          <div class="note mb0">
+            Ta sekcja adresuje realną, powtarzalną sytuację: klient gubi dokument i prosi o ponowne wysłanie mailem.
+            Samodzielne pobranie zdejmuje ten ruch z opiekuna sprawy.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div>
+
+      <div class="card">
+        <div class="card-head"><h3>Kwoty</h3></div>
+        <div class="card-body" id="kwoty"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Najbliższe nabory</h3>
+          <span class="sub">dla Twojego urzędu pracy</span>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th>Urząd</th><th>Status</th><th>Termin</th></tr></thead>
+            <tbody id="nabory"></tbody>
+          </table>
+        </div>
+        <div class="card-body" style="border-top:1px solid var(--line)">
+          <div class="note mb0">
+            Nabory ogłaszają urzędy pracy, terminy potrafią się zmienić z dnia na dzień.
+            Traktuj daty prognozowane jako orientacyjne, o starcie naboru poinformujemy Cię mailem.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Czego tu nie ma</h3></div>
+        <div class="card-body">
+          <p class="small muted" style="margin:0 0 10px">
+            Panel jest wyłącznie do odczytu i celowo pokazuje minimum. Poza jego zakresem zostają:
+          </p>
+          <div class="btn-row">
+            <span class="tag mute">edycja danych firmy</span>
+            <span class="tag mute">dane innych klientów</span>
+            <span class="tag mute">prowizje i rozliczenia LDIT</span>
+            <span class="tag mute">ceny innych instytucji</span>
+            <span class="tag mute">notatki wewnętrzne</span>
+            <span class="tag mute">korespondencja wewnętrzna</span>
+            <span class="tag mute">składanie wniosku</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="note warn">
+    <b>Warunek wdrożenia.</b> Panel klienta otwiera system na użytkowników <b>spoza obu organizacji</b>,
+    czyli spoza LDIT i spoza instytucji szkoleniowych. Baza kont rośnie skokowo z kilkunastu do kilkuset.
+    Zakres widoczności musi być zawężony do niezbędnego minimum, a <b>separacja przetestowana przed udostępnieniem</b>:
+    klient końcowy nie może zobaczyć żadnego rekordu innej firmy, żadnej kwoty prowizji ani żadnych danych instytucji
+    poza tymi, które dotyczą jego własnego szkolenia. Bez spełnienia tego warunku moduł nie powinien wchodzić do produkcji.
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  /* Panel dziala w kontekscie JEDNEGO klienta. Wszystko ponizej filtruje sie po jego id. */
+  var kandydaci = DB.KLIENCI.filter(function (k) { return k.nazwa.indexOf("Stalmet") === 0; });
+  var kl = null, w = null;
+  kandydaci.forEach(function (k) {
+    if (w) return;
+    var wn = DB.WNIOSKI.filter(function (x) { return x.klient === k.id && x.statusDec === "Pozytywna"; })[0];
+    if (wn) { kl = k; w = wn; }
+  });
+  if (!w) {
+    kl = kandydaci[0] || DB.KLIENCI[0];
+    w = DB.WNIOSKI.filter(function (x) { return x.klient === kl.id; })[0] || DB.WNIOSKI[0];
+  }
+  var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0];
+  var termin = DB.TERMINY.filter(function (t) { return t.szk === w.szkId; })[0];
+  var szk = DB.SZKOLENIA.filter(function (s) { return s.id === w.szkId; })[0];
+
+  document.getElementById("tytul").textContent = "Panel klienta, " + kl.nazwa;
+  document.getElementById("subStatus").textContent = "sprawa " + w.id + " w " + w.pupNazwa;
+
+  /* ---------- Etapy ---------- */
+  var odbyte = w.rozliczenie === "Rozliczone" || w.rozliczenie === "Zafakturowany";
+  var kroki = [
+    ["Formularz wpłynął", "Otrzymaliśmy Twoje zgłoszenie " + w.dataFormularza, true],
+    ["Wniosek w przygotowaniu", "Kompletujemy dokumenty i wyliczenia", true],
+    ["Złożony w " + w.pupNazwa, w.statusSkl === "Złożony" ? "Złożono " + w.dataWniosku : "Oczekuje na złożenie", w.statusSkl === "Złożony"],
+    ["Decyzja pozytywna", w.statusDec === "Pozytywna" ? "Urząd przyznał dofinansowanie" : (w.statusDec === "Negatywna" ? "Decyzja negatywna, skontaktujemy się z Tobą" : "Czekamy na decyzję urzędu"), w.statusDec === "Pozytywna"],
+    ["Termin ustalony", termin ? termin.od + " do " + termin.do : "Termin jeszcze nieustalony", !!termin && w.statusDec === "Pozytywna"],
+    ["Szkolenie odbyte", odbyte ? "Zrealizowane, certyfikaty w dokumentach" : "Przed nami", odbyte],
+    ["Rozliczone", w.rozliczenie === "Rozliczone" ? "Sprawa zamknięta" : "Po szkoleniu przygotujemy paczkę rozliczeniową", w.rozliczenie === "Rozliczone"]
+  ];
+  var teraz = -1;
+  for (var i = 0; i < kroki.length; i++) { if (!kroki[i][2]) { teraz = i; break; } }
+  document.getElementById("przebieg").innerHTML = kroki.map(function (k, i) {
+    var cls = k[2] ? "done" : (i === teraz ? "now" : "");
+    return '<div class="tl-item ' + cls + '"><div class="t">' + k[0] + '</div><div class="m">' + k[1] + '</div></div>';
+  }).join("");
+  document.getElementById("tagEtap").textContent =
+    teraz === -1 ? "sprawa zamknięta" : "aktualny etap: " + kroki[teraz][0].toLowerCase();
+
+  /* ---------- Moje szkolenie ---------- */
+  document.getElementById("szkolenieDl").innerHTML =
+    [["Szkolenie", "<b>" + w.szkolenie + "</b>"],
+     ["Prowadzi", inst ? inst.nazwa : "-"],
+     ["Termin", termin ? termin.od + " do " + termin.do : '<span class="muted">ustalimy po decyzji urzędu</span>'],
+     ["Miejsce", termin ? termin.miejsce : '<span class="muted">do ustalenia</span>'],
+     ["Tryb", szk ? szk.tryb : "-"],
+     ["Wymiar", szk ? szk.godz + " godzin w " + szk.dni + " dni" : "-"],
+     ["Godziny zajęć", inst ? inst.standard : "-"],
+     ["Materiały", '<a href="#" onclick="alert(\'Otwiera materiały udostępnione przez instytucję szkoleniową.\');return false">Otwórz materiały do szkolenia</a>'],
+     ["Kontakt organizacyjny", inst ? inst.kontakt + ", " + inst.tel : "-"],
+     ["Opiekun sprawy w LDIT", w.opiekun + ", tel. 61 22 11 004"]
+    ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
+
+  /* ---------- Kwoty, prosto i bez zargonu ---------- */
+  var koszt = w.kosztCalkowity != null ? w.kosztCalkowity : w.calkowita;
+  var przyznano = w.przyznano || 0;
+  var wklad = Math.max(0, koszt - przyznano);
+  var doplata = w.doplata || 0;
+
+  function box(label, val, foot, mocny) {
+    return '<div class="kpi" style="box-shadow:none;margin-bottom:10px' + (mocny ? ';border-color:#fcd34d' : '') + '">' +
+      '<div class="k-label">' + label + '</div>' +
+      '<div class="k-value">' + val + '</div>' +
+      (foot ? '<div class="k-foot">' + foot + '</div>' : '') + '</div>';
+  }
+  document.getElementById("kwoty").innerHTML =
+    box("Całkowita wartość szkolenia", DB.fmtPLN(koszt), w.osobZakw + " osób, " + DB.fmtPLN(szk ? szk.cena : 0) + " za osobę") +
+    box("Przyznane dofinansowanie", DB.fmtPLN(przyznano),
+        "urząd pokrywa " + Math.round(DB.wskaznik(w.wielkosc) * 100) + "% kosztu") +
+    box("Wkład własny do zapłaty", DB.fmtPLN(wklad + doplata),
+        doplata ? "w tym dopłata dodatkowa " + DB.fmtPLN(doplata) : "płatne po szkoleniu, na podstawie faktury", true) +
+    '<div class="small muted">Kwoty pochodzą z decyzji urzędu. Jeżeli urząd uzna niższy koszt niż wnioskowany, ' +
+    'różnica powiększa wkład własny, a my informujemy o tym przed szkoleniem.</div>';
+
+  /* ---------- Uczestnicy ---------- */
+  var zakw = w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; }).length;
+  document.getElementById("subUcz").textContent = zakw + " zakwalifikowanych z " + w.uczestnicy.length + " zgłoszonych";
+  document.getElementById("uczestnicy").innerHTML = w.uczestnicy.map(function (u) {
+    var ok = u.status === "zakwalifikowany";
+    return '<tr' + (ok ? '' : ' class="row-neg"') + '>' +
+      '<td class="strong">' + u.imie + '</td>' +
+      '<td>' + u.szkNazwa + '</td>' +
+      '<td>' + (ok ? '<span class="tag pos dot">zakwalifikowany</span>' : '<span class="tag neg dot">niezakwalifikowany</span>') + '</td>' +
+      '<td class="small muted">' + (ok ? "objęty dofinansowaniem" : u.powod) + '</td></tr>';
+  }).join("");
+
+  /* ---------- Dokumenty ---------- */
+  var dok = [
+    ["Formularz zgłoszeniowy", "zgłoszenie", w.dataFormularza, "184 KB"],
+    ["Umowa z instytucją szkoleniową", "umowa", w.dataWniosku, "412 KB"],
+    ["Wniosek złożony w urzędzie", "wniosek", w.dataWniosku, "1,2 MB"],
+    ["Decyzja urzędu pracy", "decyzja", w.dataFaktury, "296 KB"],
+    ["Instrukcja rozliczenia", "instrukcja", w.dataFaktury, "148 KB"]
+  ];
+  if (odbyte) dok.push(["Certyfikaty uczestników (ZIP)", "certyfikaty", w.dataFaktury, DB.fmtNum(zakw * 220) + " KB"]);
+  document.getElementById("dokumenty").innerHTML = dok.map(function (d, i) {
+    return '<tr><td class="strong">' + d[0] + '</td>' +
+      '<td><span class="pill">' + d[1] + '</span></td>' +
+      '<td class="small nowrap">' + d[2] + '</td>' +
+      '<td class="c small muted">' + d[3] + '</td>' +
+      '<td class="right"><button class="btn xs" data-d="' + i + '">Pobierz</button></td></tr>';
+  }).join("");
+  Array.prototype.forEach.call(document.querySelectorAll("button[data-d]"), function (b) {
+    b.addEventListener("click", function () {
+      alert("Pobiera plik: " + dok[parseInt(b.getAttribute("data-d"), 10)][0] + ".\nDostępne wyłącznie dokumenty tej sprawy.");
+    });
+  });
+
+  /* ---------- Nabory dla urzedu klienta ---------- */
+  var moj = DB.NABORY.filter(function (n) { return n.pup === w.pupNazwa; });
+  var wojewodztwo = DB.NABORY.filter(function (n) {
+    return n.pup !== w.pupNazwa && moj.length && n.woj === moj[0].woj;
+  });
+  function wiersz(n, obcy) {
+    var tag = n.status === "Nabór ogłoszony" ? '<span class="tag pos dot">nabór trwa</span>'
+            : n.status === "W trakcie kontaktu" ? '<span class="tag info dot">spodziewany</span>'
+            : n.status === "Po naborze" ? '<span class="tag mute dot">po naborze</span>'
+            : '<span class="tag warn dot">brak naboru</span>';
+    var term = n.od ? n.od + " do " + n.do : (n.prognoza ? "prognoza: " + n.prognoza : "&mdash;");
+    return '<tr' + (n.status === "Nabór ogłoszony" ? ' class="row-nabor"' : '') + '>' +
+      '<td class="' + (obcy ? "muted" : "strong") + '">' + n.pup + (obcy ? '<div class="small muted">inny urząd w województwie</div>' : '') + '</td>' +
+      '<td>' + tag + '</td>' +
+      '<td class="small nowrap">' + term + '</td></tr>';
+  }
+  var html = moj.map(function (n) { return wiersz(n, false); }).join("") +
+             wojewodztwo.map(function (n) { return wiersz(n, true); }).join("");
+  document.getElementById("nabory").innerHTML = html ||
+    '<tr><td colspan="3"><div class="empty"><div class="ei">&#128197;</div>' +
+    '<div class="et">Brak ogłoszonych naborów</div>Poinformujemy Cię mailem, gdy Twój urząd ogłosi nabór.</div></td></tr>';
+})();
+</script>
+</body>
+</html>

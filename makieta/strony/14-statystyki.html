@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Statystyki</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  .zablokowana { position: relative; }
+  .zablokowana .card-body { filter: grayscale(1); opacity: .45; pointer-events: none; }
+  .zablokowana .naklejka {
+    position: absolute; inset: 34px 0 0; display: grid; place-items: center;
+    background: rgba(248,250,252,.55); z-index: 2;
+  }
+  .zablokowana .naklejka span {
+    background: #7e22ce; color: #fff; font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px; box-shadow: var(--shadow);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Statystyki</h1>
+      <p class="page-desc">
+        Skuteczność, wolumeny i marżowość. Marżowość i prowizje widzi
+        <b>wyłącznie administrator</b> <span class="ref">D-34</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <select class="inp" style="width:auto" id="okres">
+        <option>Rok 2026</option><option>Rok 2025</option><option>Porównanie 2025 / 2026</option>
+      </select>
+      <button class="btn">Eksport do Excela</button>
+    </div>
+  </div>
+
+  <div class="toolbar" style="border:1px solid var(--line);border-radius:var(--radius-lg);margin-bottom:18px;background:var(--surface)">
+    <span class="small muted" style="font-weight:650">Instytucja:</span>
+    <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
+    <span class="sp"></span>
+    <span class="small muted" id="podsumowanie"></span>
+  </div>
+
+  <!-- ================= DLA LDIT ================= -->
+  <h2 style="font-size:15px;font-weight:700;margin:0 0 12px">Widok firmy pozyskującej dofinansowania</h2>
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="grid g-2-1">
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Wnioski w kolejnych miesiącach</h3>
+          <span class="sub">rozbicie na decyzje</span>
+          <div class="ch-actions">
+            <div class="legend">
+              <span><i style="background:var(--pos-ink)"></i>pozytywne</span>
+              <span><i style="background:#ef4444"></i>negatywne</span>
+              <span><i style="background:#93c5fd"></i>bez decyzji</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body"><div class="bars" id="barsMies"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Lejek dostarczonych osób</h3>
+          <span class="sub" id="lejekOpis"></span>
+        </div>
+        <div class="card-body"><div class="funnel" id="lejek"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Porównanie instytucji</h3>
+          <span class="sub">skuteczność i wolumen</span>
+        </div>
+        <div class="card-body tight">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Instytucja</th>
+                  <th class="num">Projekty</th>
+                  <th class="num">Pozytywne</th>
+                  <th class="num">Skuteczność</th>
+                  <th class="num">Wartość wniosków</th>
+                  <th class="num">Przyznano</th>
+                  <th class="num" style="background:#fffbeb">Prowizja</th>
+                  <th class="num" style="background:#fffbeb">Marżowość</th>
+                </tr>
+              </thead>
+              <tbody id="porownanie"></tbody>
+            </table>
+          </div>
+          <div class="note" style="margin:14px 16px 16px">
+            Kolumny na żółtym tle to dane finansowe LDIT. <b>Pracownik ich nie widzi</b>,
+            instytucja szkoleniowa tym bardziej <span class="ref">D-34</span> <span class="ref">D-07</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>Skuteczność wg wielkości firmy</h3></div>
+        <div class="card-body" id="wgWielkosci"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Najczęstsze urzędy</h3>
+          <span class="sub">wg liczby wniosków</span>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th>Urząd pracy</th><th class="num">Wnioski</th><th class="num">Skut.</th></tr></thead>
+            <tbody id="pupy"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Kontrola kompletności danych</h3></div>
+        <div class="card-body" id="kompletnosc"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Najpopularniejsze szkolenia</h3>
+      <span class="sub">liczba uczestników i wartość</span>
+    </div>
+    <div class="card-body tight">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Szkolenie</th><th>Instytucja</th><th class="num">Projekty</th>
+                <th class="num">Uczestnicy</th><th class="num">Wartość</th><th>Udział</th></tr>
+          </thead>
+          <tbody id="szkolenia"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ================= DLA INSTYTUCJI ================= -->
+  <h2 style="font-size:15px;font-weight:700;margin:0 0 6px">Widok instytucji szkoleniowej</h2>
+  <p class="page-desc" style="margin-bottom:14px">
+    To, co instytucja zobaczy po zalogowaniu. Zakres celowo wąski.
+  </p>
+
+  <div class="grid g3" style="margin-bottom:18px" id="kpiIS"></div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head">
+        <h3>Moje szkolenia</h3>
+        <span class="sub">Odczaruj Power BI</span>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead><tr><th>Szkolenie</th><th class="num">Zrealizowane</th><th class="num">Uczestnicy</th><th class="num">Wartość</th></tr></thead>
+          <tbody id="mojeSzkolenia"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card zablokowana">
+      <div class="card-head">
+        <h3>Statystyki handlowców</h3>
+        <span class="tag warn" style="margin-left:auto">zakres do rozstrzygnięcia</span>
+      </div>
+      <div class="naklejka"><span>Wymaga decyzji klienta &middot; P-12</span></div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead><tr><th>Handlowiec</th><th class="num">Formularze</th><th class="num">Śr. czas</th><th class="num">Skut.</th></tr></thead>
+          <tbody>
+            <tr><td>Mirosława Kot</td><td class="num">34</td><td class="num">1,2 dnia</td><td class="num">68%</td></tr>
+            <tr><td>Aldona Rybak</td><td class="num">21</td><td class="num">0,8 dnia</td><td class="num">74%</td></tr>
+            <tr><td>Marek Sowa</td><td class="num">12</td><td class="num">2,9 dnia</td><td class="num">51%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="note open">
+    <b>Pytanie otwarte <span class="ref p">P-12</span>, klient odroczył decyzję wprost.</b><br><br>
+    Sporne jest, ile danych statystycznych widzi instytucja szkoleniowa. Konkretnie: liczba i daty
+    wpłynięcia formularzy oraz rozbicie per handlowiec.<br><br>
+    <b>Klient (2:54:45):</b> <i>„Dobra, ja będę musiał się nad tym zastanowić, czy chcę takie szczegóły.
+    Z mojego punktu rozumowania to ja chcę wam, instytucjom szkoleniowym, przekazywać dosyć proste
+    informacje, a wszystkie dane statystyczne i z handlowcami zostawiam po waszej stronie (...)
+    ja miałem założenie, że ten system służy tylko tak naprawdę nam.”</i><br><br>
+    <b>Wykonawca jako instytucja (2:54:25):</b> <i>„Ale muszę mieć coś, żeby go rozliczyć.
+    Przynajmniej te daty są mi potrzebne.”</i><br><br>
+    To konflikt interesów opisany jako <span class="ref r">R-06</span>. Kierunek rozwiązania: wersja
+    premium dla instytucji jako osobny moduł poza etapem I <span class="ref">D-96</span>.
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  var selIS = document.getElementById("fIS");
+  DB.INSTYTUCJE.slice(0, 8).forEach(function (i) {
+    selIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
+  });
+
+  function render() {
+    var fis = selIS.value;
+    var W = DB.WNIOSKI.filter(function (w) { return !fis || w.is === fis; });
+
+    var zloz = W.filter(function (w) { return w.statusSkl === "Złożony"; });
+    var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
+    var neg = W.filter(function (w) { return w.statusDec === "Negatywna"; });
+    var rozstrzygniete = poz.length + neg.length;
+    var skut = rozstrzygniete ? Math.round(poz.length / rozstrzygniete * 100) : 0;
+    var wartosc = W.reduce(function (s, w) { return s + w.wartosc; }, 0);
+    var przyznano = poz.reduce(function (s, w) { return s + (w.przyznano || 0); }, 0);
+    var uczestnicy = W.reduce(function (s, w) { return s + w.osob; }, 0);
+
+    document.getElementById("podsumowanie").innerHTML =
+      "<b>" + W.length + "</b> projektów &middot; <b>" + uczestnicy + "</b> uczestników &middot; wartość <b>" +
+      DB.fmtPLN(wartosc) + "</b>";
+
+    function kpi(l, v, f, adm) {
+      return '<div class="kpi' + (adm ? " admin" : "") + '"><div class="k-label">' + l + '</div>' +
+        '<div class="k-value">' + v + '</div>' + (f ? '<div class="k-foot">' + f + '</div>' : "") + '</div>';
+    }
+
+    /* Prowizja liczona okresowo per instytucja (poprawnie dla modelu A) */
+    var prowizjaRazem = 0;
+    var wgIS = {};
+    DB.INSTYTUCJE.slice(0, 8).forEach(function (inst) {
+      var pw = poz.filter(function (w) { return w.is === inst.id; });
+      var faktury = pw.map(function (w) { return { kwota: w.kosztZDoplata || 0 }; });
+      var wynik = faktury.length ? liczOkres(inst.prowizja, faktury) : { suma: 0, obrot: 0, stawkaEfektywna: 0 };
+      var wszystkie = W.filter(function (w) { return w.is === inst.id; });
+      var pozIS = wszystkie.filter(function (w) { return w.statusDec === "Pozytywna"; });
+      var negIS = wszystkie.filter(function (w) { return w.statusDec === "Negatywna"; });
+      wgIS[inst.id] = {
+        nazwa: inst.nazwa, model: inst.prowizja.model,
+        projekty: wszystkie.length, poz: pozIS.length,
+        rozstrzyg: pozIS.length + negIS.length,
+        wartosc: wszystkie.reduce(function (s, w) { return s + w.wartosc; }, 0),
+        przyznano: pozIS.reduce(function (s, w) { return s + (w.przyznano || 0); }, 0),
+        prowizja: wynik.suma, obrot: wynik.obrot, stawka: wynik.stawkaEfektywna
+      };
+      if (!fis || fis === inst.id) prowizjaRazem += wynik.suma;
+    });
+
+    document.getElementById("kpi").innerHTML =
+      kpi("Projekty", DB.fmtNum(W.length), zloz.length + " złożonych w urzędach") +
+      kpi("Skuteczność", skut + "%",
+          '<span class="tag pos">' + poz.length + " poz.</span> <span class='tag neg'>" + neg.length + " neg.</span>") +
+      kpi("Przyznane dofinansowania", DB.fmtPLN(przyznano),
+          "z wnioskowanych " + DB.fmtPLN(wartosc)) +
+      kpi("Prowizja naliczona", DB.fmtPLN(prowizjaRazem),
+          "wg warunków per instytucja", true);
+
+    /* Wykres miesieczny z rozbiciem */
+    var mies = ["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"];
+    var dane = mies.map(function () { return { poz: 0, neg: 0, brak: 0 }; });
+    W.forEach(function (w) {
+      var m = parseInt(w.dataWniosku.slice(5, 7)) - 1;
+      if (w.statusDec === "Pozytywna") dane[m].poz++;
+      else if (w.statusDec === "Negatywna") dane[m].neg++;
+      else dane[m].brak++;
+    });
+    var maxM = Math.max.apply(null, dane.map(function (d) { return d.poz + d.neg + d.brak; })) || 1;
+    document.getElementById("barsMies").innerHTML = dane.map(function (d, i) {
+      var suma = d.poz + d.neg + d.brak;
+      var h = Math.round(suma / maxM * 100);
+      var seg = function (n, cls) {
+        return n ? '<div class="fill ' + cls + '" style="height:' + (n / suma * h) + '%;border-radius:0"></div>' : "";
+      };
+      return '<div class="b"><div class="val">' + (suma || "") + '</div>' +
+        seg(d.brak, "alt") + seg(d.neg, "neg") + seg(d.poz, "pos") +
+        '<div class="lab">' + mies[i] + '</div></div>';
+    }).join("");
+
+    /* Lejek */
+    var klienciIS = fis ? DB.KLIENCI.filter(function (k) { return k.is === fis; }).length : DB.KLIENCI.length;
+    document.getElementById("lejekOpis").textContent = fis ? wgIS[fis].nazwa : "wszystkie instytucje";
+    var lej = [
+      ["Formularze przyjęte", klienciIS],
+      ["Zarejestrowani w BUR", Math.round(klienciIS * 0.82)],
+      ["Wnioski złożone", zloz.length],
+      ["Decyzje pozytywne", poz.length],
+      ["Szkolenia odbyte", Math.round(poz.length * 0.79)],
+      ["Rozliczone", W.filter(function (w) { return w.rozliczenie === "Rozliczone"; }).length]
+    ];
+    var maxL = lej[0][1] || 1;
+    document.getElementById("lejek").innerHTML = lej.map(function (r, i) {
+      var konw = i ? Math.round(r[1] / lej[i - 1][1] * 100) : 100;
+      return '<div class="fn-row"><div class="fl">' + r[0] + '</div>' +
+        '<div class="ft"><i style="width:' + Math.round(r[1] / maxL * 100) + '%"></i></div>' +
+        '<div class="fv">' + DB.fmtNum(r[1]) +
+        (i ? ' <span class="small muted">' + konw + '%</span>' : "") + '</div></div>';
+    }).join("");
+
+    /* Porownanie instytucji */
+    var lista = Object.keys(wgIS).map(function (k) { return wgIS[k]; })
+      .filter(function (r) { return r.projekty > 0; })
+      .sort(function (a, b) { return b.projekty - a.projekty; });
+    document.getElementById("porownanie").innerHTML = lista.map(function (r) {
+      var s = r.rozstrzyg ? Math.round(r.poz / r.rozstrzyg * 100) : 0;
+      var marza = r.wartosc ? (r.prowizja / r.wartosc * 100) : 0;
+      return '<tr><td class="strong">' + r.nazwa + ' <span class="pill k">' + r.model + '</span></td>' +
+        '<td class="num">' + r.projekty + '</td>' +
+        '<td class="num">' + r.poz + '</td>' +
+        '<td class="num"><span class="tag ' + (s >= 60 ? "pos" : s >= 40 ? "warn" : "neg") + '">' + s + '%</span></td>' +
+        '<td class="num">' + DB.fmtPLN(r.wartosc) + '</td>' +
+        '<td class="num">' + DB.fmtPLN(r.przyznano) + '</td>' +
+        '<td class="num strong" style="background:#fffbeb">' + DB.fmtPLN(r.prowizja) + '</td>' +
+        '<td class="num" style="background:#fffbeb">' + DB.fmtPct(Math.round(marza * 10) / 10) + '</td></tr>';
+    }).join("");
+
+    /* Wg wielkosci firmy */
+    var wgW = {};
+    W.forEach(function (w) {
+      if (!wgW[w.wielkosc]) wgW[w.wielkosc] = { n: 0, poz: 0, rozstrzyg: 0 };
+      wgW[w.wielkosc].n++;
+      if (w.statusDec === "Pozytywna") { wgW[w.wielkosc].poz++; wgW[w.wielkosc].rozstrzyg++; }
+      if (w.statusDec === "Negatywna") wgW[w.wielkosc].rozstrzyg++;
+    });
+    document.getElementById("wgWielkosci").innerHTML =
+      ["mikro", "mały", "średni", "duży"].filter(function (k) { return wgW[k]; }).map(function (k) {
+        var d = wgW[k];
+        var s = d.rozstrzyg ? Math.round(d.poz / d.rozstrzyg * 100) : 0;
+        var wsk = k === "mikro" ? "90%" : "70%";
+        return '<div style="margin-bottom:12px">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">' +
+          '<span style="font-size:12.5px;font-weight:650;text-transform:capitalize">' + k + '</span>' +
+          '<span class="pill">dofin. ' + wsk + '</span>' +
+          '<span style="margin-left:auto;font-size:12.5px;font-weight:700">' + s + '%</span></div>' +
+          '<div class="progress"><i style="width:' + s + '%"></i></div>' +
+          '<div class="small muted" style="margin-top:3px">' + d.n + ' projektów</div></div>';
+      }).join("");
+
+    /* Urzedy */
+    var wgP = {};
+    W.forEach(function (w) {
+      if (!wgP[w.pupNazwa]) wgP[w.pupNazwa] = { n: 0, poz: 0, r: 0 };
+      wgP[w.pupNazwa].n++;
+      if (w.statusDec === "Pozytywna") { wgP[w.pupNazwa].poz++; wgP[w.pupNazwa].r++; }
+      if (w.statusDec === "Negatywna") wgP[w.pupNazwa].r++;
+    });
+    document.getElementById("pupy").innerHTML = Object.keys(wgP)
+      .sort(function (a, b) { return wgP[b].n - wgP[a].n; }).slice(0, 8)
+      .map(function (k) {
+        var d = wgP[k];
+        var s = d.r ? Math.round(d.poz / d.r * 100) : 0;
+        return '<tr><td>' + k + '</td><td class="num">' + d.n + '</td>' +
+          '<td class="num"><span class="tag ' + (s >= 60 ? "pos" : s >= 40 ? "warn" : "neg") + '">' + s + '%</span></td></tr>';
+      }).join("");
+
+    /* Kompletnosc danych */
+    var brakKosztu = W.filter(function (w) { return w.statusDec === "Pozytywna" && w.kosztCalkowity == null; }).length;
+    var brakUcz = W.filter(function (w) { return !w.uczestnicy.length; }).length;
+    var nieRozliczone = poz.filter(function (w) { return w.rozliczenie === "Oczekuje"; }).length;
+    var niezakw = W.reduce(function (s, w) { return s + (w.osob - w.osobZakw); }, 0);
+    document.getElementById("kompletnosc").innerHTML = [
+      ["Projekty bez kosztu całkowitego", brakKosztu, brakKosztu ? "neg" : "pos"],
+      ["Projekty bez uczestników", brakUcz, brakUcz ? "warn" : "pos"],
+      ["Pozytywne, nierozliczone", nieRozliczone, "info"],
+      ["Uczestnicy niezakwalifikowani", niezakw, "warn"]
+    ].map(function (r) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)">' +
+        '<span class="small">' + r[0] + '</span>' +
+        '<span class="tag ' + r[2] + '" style="margin-left:auto">' + r[1] + '</span></div>';
+    }).join("") +
+    '<div class="small muted" style="margin-top:10px">Niezakwalifikowani wymagają odrębnej faktury komercyjnej <span class="ref">D-84</span></div>';
+
+    /* Szkolenia */
+    var wgS = {};
+    W.forEach(function (w) {
+      if (!wgS[w.szkolenie]) wgS[w.szkolenie] = { n: 0, ucz: 0, wart: 0, is: w.isNazwa };
+      wgS[w.szkolenie].n++;
+      wgS[w.szkolenie].ucz += w.osob;
+      wgS[w.szkolenie].wart += w.wartosc;
+    });
+    var listaS = Object.keys(wgS).map(function (k) { return Object.assign({ nazwa: k }, wgS[k]); })
+      .sort(function (a, b) { return b.wart - a.wart; });
+    var maxW = listaS.length ? listaS[0].wart : 1;
+    document.getElementById("szkolenia").innerHTML = listaS.slice(0, 10).map(function (r) {
+      return '<tr><td class="strong">' + r.nazwa + '</td><td class="muted">' + r.is + '</td>' +
+        '<td class="num">' + r.n + '</td><td class="num">' + r.ucz + '</td>' +
+        '<td class="num">' + DB.fmtPLN(r.wart) + '</td>' +
+        '<td style="width:130px"><div class="progress"><i style="width:' + Math.round(r.wart / maxW * 100) + '%"></i></div></td></tr>';
+    }).join("");
+
+    /* ===== Widok instytucji ===== */
+    var wIS = DB.WNIOSKI.filter(function (w) { return w.is === "IS-01"; });
+    var pozIS = wIS.filter(function (w) { return w.statusDec === "Pozytywna"; });
+    var odbyte = Math.round(pozIS.length * 0.79);
+    document.getElementById("kpiIS").innerHTML =
+      kpi("Szkolenia zrealizowane", odbyte, "w roku 2026") +
+      kpi("Łączna wartość", DB.fmtPLN(pozIS.reduce(function (s, w) { return s + w.wartosc; }, 0)), "moich szkoleń") +
+      kpi("Skuteczność moich klientów", (wIS.length ? Math.round(pozIS.length / wIS.length * 100) : 0) + "%",
+          pozIS.length + " z " + wIS.length + " projektów");
+
+    var wgSIS = {};
+    wIS.forEach(function (w) {
+      if (!wgSIS[w.szkolenie]) wgSIS[w.szkolenie] = { n: 0, ucz: 0, wart: 0 };
+      wgSIS[w.szkolenie].n++;
+      wgSIS[w.szkolenie].ucz += w.osob;
+      wgSIS[w.szkolenie].wart += w.wartosc;
+    });
+    document.getElementById("mojeSzkolenia").innerHTML = Object.keys(wgSIS)
+      .sort(function (a, b) { return wgSIS[b].wart - wgSIS[a].wart; })
+      .map(function (k) {
+        var d = wgSIS[k];
+        return '<tr><td class="strong">' + k + '</td><td class="num">' + d.n + '</td>' +
+          '<td class="num">' + d.ucz + '</td><td class="num">' + DB.fmtPLN(d.wart) + '</td></tr>';
+      }).join("");
+  }
+
+  selIS.addEventListener("change", render);
+  render();
+})();
+</script>
+</body>
+</html>

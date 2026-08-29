@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Administracja</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Administracja</h1>
+      <p class="page-desc">
+        Moduł finansowy odróżniony od dashboardu. Tu są szczegóły prowizji stanowiące podstawę
+        do fakturowania <span class="ref">D-92</span>, lista faktur przypisanych do instytucji
+        <span class="ref">D-38</span> oraz jedyne miejsce ręcznego nadpisania prowizji per projekt
+        <span class="ref">D-93</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn">Eksport do Excela</button>
+      <button class="btn primary">Wystaw fakturę prowizyjną</button>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <b>Moduł wyłącznie dla administratora <span class="ref">D-34</span>.</b>
+    Zyski firmy, prowizje instytucji i faktury są niewidoczne dla pracownika LDIT, dla instytucji
+    szkoleniowej i dla klienta końcowego. Instytucja nie widzi ani swojej stawki, ani cudzej.
+    Przy roli innej niż administrator ta pozycja nie pojawia się w menu, a bezpośrednie wejście
+    pod adres kończy się odmową na poziomie danych, nie tylko interfejsu.
+    <span class="ref p">P-35</span> pozostaje otwarte: klient dopuścił, że docelowo pracownik
+    dostanie część danych finansowych, ale nie określił których.
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="tabs">
+      <div class="tab on" data-t="t-prowizje">Prowizje</div>
+      <div class="tab" data-t="t-faktury">Faktury</div>
+      <div class="tab" data-t="t-wewnetrzne">Prowizje wewnętrzne</div>
+    </div>
+  </div>
+
+  <!-- ============================= PROWIZJE ============================= -->
+  <div class="tab-pane on" id="t-prowizje">
+
+    <div class="grid g4" style="margin-bottom:18px" id="kpiProw"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Prowizja per instytucja szkoleniowa</h3>
+        <span class="sub">podstawa do fakturowania</span>
+        <div class="ch-actions">
+          <select class="inp" style="width:auto" id="okres">
+            <option value="">Cały rok 2026</option>
+          </select>
+          <button class="btn sm">Eksport</button>
+        </div>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Instytucja</th>
+              <th class="c">Model</th>
+              <th>Kumulacja</th>
+              <th class="num">Projekty</th>
+              <th class="num">Obrót narastająco</th>
+              <th class="num">Stawka efekt.</th>
+              <th class="num">Prowizja naliczona</th>
+              <th class="num">Prowizja rozliczona</th>
+              <th class="num">Do zafakturowania</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabProw"></tbody>
+          <tfoot id="stopkaProw"></tfoot>
+        </table>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="legend">
+          <span><span class="pill">A</span> próg przestawia stawkę dla całego okresu</span>
+          <span><span class="pill k">B</span> od nadwyżki, kumulacja roczna</span>
+          <span><span class="pill w">C</span> od nadwyżki, kumulacja miesięczna</span>
+          <span><span class="pill">D</span> stawka stała, bez progów</span>
+        </div>
+        <div class="small muted" style="margin-top:8px">
+          Obrót liczony z pola <b>koszt całkowity z dopłatą</b>, nie z kwoty przyznanej przez urząd.
+          Do obrotu wchodzą wyłącznie projekty z decyzją pozytywną. Kolejność faktur ma znaczenie,
+          bo określa, która faktura wyczerpała próg.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3 id="naglProjekty">Rozwinięcie instytucji</h3>
+        <span class="sub">projekty wchodzące do podstawy prowizji</span>
+        <div class="ch-actions"><span class="tag mute" id="tagOkresProj"></span></div>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap" style="max-height:430px;overflow-y:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:44px">Nr</th>
+                <th>Klient</th>
+                <th>Szkolenie</th>
+                <th>Data faktury</th>
+                <th class="num">Podstawa</th>
+                <th class="num">Obrót przed</th>
+                <th class="num">Stawka</th>
+                <th class="num">Prowizja</th>
+                <th>Rozliczenie</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabProjekty"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Przewidywana prowizja <span class="ref">D-26</span></h3>
+        <span class="sub">prognoza z zaplanowanych terminów szkoleń, zanim powstaną faktury</span>
+        <div class="ch-actions"><span class="tag info dot">okres prognozy: wrzesień 2026</span></div>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Instytucja</th>
+              <th class="c">Model</th>
+              <th class="num">Terminy</th>
+              <th class="num">Osoby</th>
+              <th class="num">Obrót planowany</th>
+              <th class="num">Stawka prognozowana</th>
+              <th class="num">Prowizja przewidywana</th>
+              <th>Margines do progu</th>
+            </tr>
+          </thead>
+          <tbody id="tabPrognoza"></tbody>
+        </table>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="note warn mb0" id="scenariusz"></div>
+        <div class="small muted" style="margin-top:10px">
+          Prognoza przelicza się przy każdej zmianie wolumenu. Zmiana pojedynczej pozycji przelicza
+          stawkę dla wszystkich pozycji w okresie, a nie tylko dla tego jednego szkolenia.
+          Domyślna data planowanego wystawienia faktury to ostatni dzień szkolenia.
+        </div>
+      </div>
+    </div>
+
+    <div class="note open">
+      <b>Blokada <span class="ref p">P-01</span>: konflikt reguły okresu rozliczeniowego.</b>
+      Klient ustalił, że okresem rozliczeniowym jest <b>data wystawienia faktury</b> (22:21),
+      a pięć minut później opisał prognozowanie progu z kalendarza szkoleń (25:55) i sam wskazał
+      sprzeczność: „chodzi mi o to, że na przykład ma szkolenie w październiku, a wystawiliśmy to
+      w sierpniu” (26:10). Ta strona przyjmuje propozycję rozstrzygnięcia: tabela główna liczy
+      <b>prowizję rzeczywistą</b> po dacie faktury, a sekcja prognozy liczy
+      <b>prowizję przewidywaną</b> po dacie planowanej. Ten sam silnik, inne źródło daty.
+      Wymaga potwierdzenia u klienta przed prototypem konfiguratora.
+    </div>
+
+    <div class="note open">
+      <b>Otwarte <span class="ref p">P-06</span>: kto może nadpisać prowizję.</b>
+      Ustalone jest wyłącznie miejsce, czyli moduł Administracja <span class="ref">D-93</span>.
+      Na pytanie „tylko ty możesz to zmienić czy pracownik twój też?” klient odpowiedział
+      „Administracja”, czyli tylko na drugą część pytania. W makiecie przycisk „Nadpisz”
+      pokazany jest przy każdym projekcie, ale uprawnienie do niego pozostaje nieokreślone.
+      Nadpisanie kasuje regułę i musi być odwracalne akcją „Przywróć regułę”
+      <span class="ref">D-16</span>.
+    </div>
+  </div>
+
+  <!-- ============================= FAKTURY ============================= -->
+  <div class="tab-pane" id="t-faktury">
+
+    <div class="grid g4" style="margin-bottom:18px" id="kpiFakt"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Import faktur z systemu księgowego <span class="ref">D-39</span></h3>
+        <span class="sub">import CSV zamiast integracji API</span>
+      </div>
+      <div class="card-body">
+        <div class="btn-row" style="align-items:center">
+          <button class="btn primary" id="btnCsv">Importuj z systemu księgowego (CSV)</button>
+          <button class="btn">Pobierz szablon CSV</button>
+          <span class="small muted">Ostatni import: 2026-08-28 17:12, 31 pozycji, 0 błędów mapowania.</span>
+        </div>
+        <dl class="dl mt16">
+          <dt>Wolumen</dt>
+          <dd>5 do 40 faktur miesięcznie, około 300 rocznie</dd>
+          <dt>Koszt rozwiązania</dt>
+          <dd>import CSV około 1 godziny pracy, integracja API 10 do 15 godzin plus przechowywanie klucza API</dd>
+          <dt>Główny przypadek użycia PDF</dt>
+          <dd>sprawdzenie terminu płatności bez logowania do systemu księgowego</dd>
+          <dt>Numer faktury w arkuszu</dt>
+          <dd>kolumna znika z arkusza operacyjnego, faktury żyją wyłącznie w tym module</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <b>Blokada <span class="ref p">P-09</span>: nie potwierdzono, czy system księgowy udostępnia eksport CSV.</b>
+      System klienta to <b>eSzokBR</b>. Klient miał zadzwonić do księgowej w przerwie warsztatu,
+      odpowiedź nie padła. <b>Cały moduł faktur opiera się na tym założeniu.</b>
+      Jeżeli eksport nie istnieje, decyzja „import zamiast integracji API” upada i wracamy do wyceny
+      integracji, czyli 10 do 15 godzin plus obsługa klucza API do systemu fakturowego, a to jest
+      dodatkowa powierzchnia ryzyka bezpieczeństwa. Do czasu potwierdzenia ta zakładka jest
+      projektowana warunkowo.
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input class="inp search" id="qF" placeholder="Szukaj: numer faktury, instytucja...">
+        <select class="inp" id="fFIS"><option value="">Wszystkie instytucje</option></select>
+        <select class="inp" id="fFSt">
+          <option value="">Wszystkie statusy</option>
+          <option>Opłacona</option><option>Oczekuje</option><option>Po terminie</option>
+        </select>
+        <span class="sp"></span>
+        <span class="small muted" id="liczF"></span>
+      </div>
+      <div class="tbl-wrap" style="max-height:560px;overflow-y:auto">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Numer</th>
+              <th>Instytucja</th>
+              <th class="num">Kwota</th>
+              <th class="c">VAT</th>
+              <th>Wystawiona</th>
+              <th>Termin płatności</th>
+              <th>Status</th>
+              <th class="num">Projekty</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabFakt"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= PROWIZJE WEWNĘTRZNE ======================= -->
+  <div class="tab-pane" id="t-wewnetrzne">
+
+    <div class="note warn">
+      <b>Blokada <span class="ref p">P-02</span>: progi prowizji wewnętrznej nie istnieją.</b>
+      Klient powiedział wprost: „No i właśnie to jest problem, bo na tym się jeszcze nie
+      zastanawiałem nawet” (57:13), a następnie „właściwie mogę to wymyśleć teraz, w najbliższych
+      dniach” (57:38). Struktura progów <b>nie została dostarczona w ramach warsztatu</b>.
+      Cała ta zakładka jest szkicem układu, którego nie da się dokończyć bez tych danych.
+      Kolumna „Prowizja” celowo pozostaje pusta, żeby nie sugerować wartości, których nikt nie ustalił.
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Model kaskadowy <span class="ref">D-22</span></h3>
+        <span class="sub">koszt szkolenia, prowizja LDIT, prowizja pracownika</span>
+      </div>
+      <div class="card-body">
+        <div class="funnel" id="kaskada"></div>
+        <div class="sep"></div>
+        <dl class="dl mb0">
+          <dt>Poziom 1, koszt szkolenia</dt>
+          <dd>Koszt całkowity z dopłatą, czyli podstawa naliczenia prowizji LDIT od instytucji</dd>
+          <dt>Poziom 2, prowizja LDIT</dt>
+          <dd>Prowizja od instytucji wyliczona silnikiem progowym, czyli przychód firmy</dd>
+          <dt>Poziom 3, prowizja pracownika</dt>
+          <dd>Procent od przychodu firmy. <span class="tag warn">brak progów, patrz P-02</span></dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Podstawa naliczenia prowizji pracowniczej</h3>
+        <span class="sub">system musi obsłużyć oba warianty</span>
+      </div>
+      <div class="card-body">
+        <div class="btn-row" style="margin-bottom:12px">
+          <span class="chip on" id="chWn">Wartość złożonych wniosków <span class="n">obecny</span></span>
+          <span class="chip" id="chPrz">Procent od przychodu firmy <span class="n">od 2027</span></span>
+        </div>
+        <div class="small muted" id="opisPodstawy"></div>
+      </div>
+      <div class="card-body tight" style="border-top:1px solid var(--line)">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Pracownik</th>
+              <th>Przypisane instytucje</th>
+              <th class="num">Wnioski złożone</th>
+              <th class="num">Wartość złożonych wniosków</th>
+              <th class="num">Podstawa naliczenia</th>
+              <th class="num">Prowizja</th>
+            </tr>
+          </thead>
+          <tbody id="tabPrac"></tbody>
+          <tfoot id="stopkaPrac"></tfoot>
+        </table>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="small muted">
+          <b>Do doprecyzowania przy dostarczeniu progów:</b> Cognity Center jest w tej makiecie
+          przypisane do dwóch osób, więc wartość wniosków tej instytucji liczy się dwa razy.
+          Reguła podziału podstawy przy współdzielonej instytucji nie została ustalona.
+          Możliwe warianty: podział po równo, przypisanie do opiekuna głównego albo naliczenie
+          osobie, która faktycznie złożyła wniosek.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Cele i premie <span class="ref">D-23</span></h3>
+        <span class="sub">administrator ustawia samodzielnie, cele widoczne dla pracowników</span>
+        <div class="ch-actions"><button class="btn sm">Dodaj cel</button></div>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead>
+            <tr><th>Cel</th><th class="num">Próg</th><th class="num">Obecnie</th><th>Postęp</th><th>Premia</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tabCele"></tbody>
+        </table>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="small muted">
+          Historia osiągnięć jest zapisywana. Cel raz osiągnięty zostaje w historii nawet wtedy,
+          gdy wartość bieżąca spadnie później poniżej progu.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var MIES = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec",
+              "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"];
+  var INST8 = DB.INSTYTUCJE.slice(0, 8);
+  var mapInst = {};
+  INST8.forEach(function (i) { mapInst[i.id] = i; });
+  var mapSzk = {};
+  DB.SZKOLENIA.forEach(function (s) { mapSzk[s.id] = s; });
+
+  /* ---------- Zakladki ---------- */
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+      document.querySelectorAll(".tab-pane").forEach(function (x) { x.classList.remove("on"); });
+      t.classList.add("on");
+      document.getElementById(t.dataset.t).classList.add("on");
+    });
+  });
+
+  function kpi(label, val, foot, admin) {
+    return '<div class="kpi' + (admin ? " admin" : "") + '">' +
+      '<div class="k-label">' + label + '</div><div class="k-value">' + val + '</div>' +
+      (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
+  }
+  function pillModel(m) {
+    var kl = m === "B" ? "pill k" : m === "C" ? "pill w" : "pill";
+    return '<span class="' + kl + '">' + m + '</span>';
+  }
+  function opisOkresu(kum) {
+    return kum === "miesieczny" ? "miesięczny" : kum === "roczny" ? "roczny" : "bez kumulacji";
+  }
+  function nazwaOkresu(okres) {
+    return okres ? MIES[parseInt(okres.slice(5, 7), 10) - 1] + " 2026" : "cały rok 2026";
+  }
+  function pct2(n) { return DB.fmtPct(Math.round(n * 100) / 100); }
+
+  /* ---------- Silnik: prowizja rzeczywista per projekt ---------- */
+  function okresKey(w, kum) {
+    var d = w.dataFaktury || w.dataWniosku;
+    if (kum === "miesieczny") return d.slice(0, 7);
+    if (kum === "roczny") return d.slice(0, 4);
+    return d;
+  }
+
+  var POZ = DB.WNIOSKI.filter(function (w) {
+    return w.statusDec === "Pozytywna" && w.kosztZDoplata && mapInst[w.is];
+  }).slice().sort(function (a, b) {
+    return a.dataFaktury < b.dataFaktury ? -1 : a.dataFaktury > b.dataFaktury ? 1 : 0;
+  });
+
+  /* Rozliczenie liczone na CALYM okresie, nie faktura po fakturze.
+     W modelu "od calosci" (np. Metal Maniak) przekroczenie progu podnosi stawke
+     takze dla pozycji juz wystawionych w tym miesiacu, wiec przyrostowe sumowanie
+     liczProwizje() zanizyloby wynik. Przyklad: 26 000 + 25 000 daje 6 120 zl,
+     a nie 2 600 + 3 000. Patrz docs/07-silnik-prowizji.md, "Pulapka implementacyjna". */
+  var WYNIK = {};
+  var grupyOkresu = {};
+  POZ.forEach(function (w) {
+    var inst = mapInst[w.is];
+    var key = w.is + "|" + okresKey(w, inst.prowizja.kumulacja);
+    if (!grupyOkresu[key]) grupyOkresu[key] = { inst: inst, pozycje: [] };
+    grupyOkresu[key].pozycje.push(w);
+  });
+  Object.keys(grupyOkresu).forEach(function (key) {
+    var g = grupyOkresu[key];
+    var wynik = liczOkres(g.inst.prowizja, g.pozycje.map(function (w) { return { kwota: w.kosztZDoplata }; }));
+    var narastajaco = 0;
+    g.pozycje.forEach(function (w, i) {
+      var p = wynik.pozycje[i];
+      WYNIK[w.id] = { kwota: p.prowizja, stawka: p.stawka, przed: narastajaco, rozbicie: p.rozbicie };
+      narastajaco += w.kosztZDoplata;
+    });
+  });
+
+  var selOkres = document.getElementById("okres");
+  var mcSet = {};
+  POZ.forEach(function (w) { mcSet[w.dataFaktury.slice(0, 7)] = true; });
+  Object.keys(mcSet).sort().forEach(function (m) {
+    selOkres.innerHTML += '<option value="' + m + '">' + nazwaOkresu(m) + '</option>';
+  });
+
+  var wybranaIS = "IS-02";
+
+  function projektyIS(isId, okres) {
+    return POZ.filter(function (w) {
+      if (w.is !== isId) return false;
+      if (okres && w.dataFaktury.slice(0, 7) !== okres) return false;
+      return true;
+    });
+  }
+
+  function renderProwizje() {
+    var okres = selOkres.value;
+    var wiersze = INST8.map(function (inst) {
+      var lista = projektyIS(inst.id, okres);
+      var obrot = 0, prow = 0, rozl = 0;
+      lista.forEach(function (w) {
+        obrot += w.kosztZDoplata;
+        prow += WYNIK[w.id].kwota;
+        if (w.rozliczenie === "Rozliczone") rozl += WYNIK[w.id].kwota;
+      });
+      return { inst: inst, n: lista.length, obrot: obrot, prow: prow, rozl: rozl };
+    }).filter(function (r) { return r.n > 0; })
+      .sort(function (a, b) { return b.prow - a.prow; });
+
+    document.getElementById("tabProw").innerHTML = wiersze.map(function (r) {
+      var st = r.obrot ? r.prow / r.obrot * 100 : 0;
+      var doFakt = r.prow - r.rozl;
+      return '<tr class="' + (r.inst.id === wybranaIS ? "sel" : "") + '">' +
+        '<td class="strong nowrap">' + r.inst.nazwa +
+          '<div class="small muted">' + r.inst.miasto + ' &middot; opiekun ' + r.inst.opiekun + '</div></td>' +
+        '<td class="c">' + pillModel(r.inst.prowizja.model) + '</td>' +
+        '<td class="muted nowrap">' + opisOkresu(r.inst.prowizja.kumulacja) + '</td>' +
+        '<td class="num">' + r.n + '</td>' +
+        '<td class="num">' + DB.fmtPLN(r.obrot) + '</td>' +
+        '<td class="num"><span class="tag mute">' + pct2(st) + '</span></td>' +
+        '<td class="num strong">' + DB.fmtPLN(r.prow) + '</td>' +
+        '<td class="num"><span class="tag set">' + DB.fmtPLN(r.rozl) + '</span></td>' +
+        '<td class="num">' + (doFakt > 0.5
+          ? '<span class="tag warn">' + DB.fmtPLN(doFakt) + '</span>'
+          : '<span class="muted">0 zł</span>') + '</td>' +
+        '<td class="right"><button class="btn xs" data-is="' + r.inst.id + '">Pokaż projekty</button></td></tr>';
+    }).join("");
+
+    var sObrot = 0, sProw = 0, sRozl = 0, sN = 0;
+    wiersze.forEach(function (r) { sObrot += r.obrot; sProw += r.prow; sRozl += r.rozl; sN += r.n; });
+
+    document.getElementById("stopkaProw").innerHTML =
+      '<tr><td class="strong">Razem, ' + wiersze.length + ' instytucji</td><td></td><td></td>' +
+      '<td class="num strong">' + sN + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(sObrot) + '</td><td></td>' +
+      '<td class="num strong">' + DB.fmtPLN(sProw) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(sRozl) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(sProw - sRozl) + '</td><td></td></tr>';
+
+    document.querySelectorAll("#tabProw button[data-is]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        wybranaIS = b.dataset.is;
+        renderProwizje();
+        renderProjekty();
+      });
+    });
+
+    document.getElementById("kpiProw").innerHTML =
+      kpi("Obrót objęty prowizją", DB.fmtPLN(sObrot), "koszt całkowity z dopłatą, " + nazwaOkresu(okres), true) +
+      kpi("Prowizja naliczona", DB.fmtPLN(sProw), sN + " projektów w " + wiersze.length + " instytucjach", true) +
+      kpi("Prowizja rozliczona", DB.fmtPLN(sRozl),
+          '<div class="progress" style="flex:1"><i style="width:' +
+          (sProw ? Math.round(sRozl / sProw * 100) : 0) + '%"></i></div>', true) +
+      kpi("Do zafakturowania", DB.fmtPLN(sProw - sRozl), "pozycje bez faktury prowizyjnej", true);
+  }
+
+  function tagRozl(w) {
+    if (w.rozliczenie === "Rozliczone") return '<span class="tag set">Rozliczone</span>';
+    if (w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
+    return '<span class="tag mute">Oczekuje</span>';
+  }
+
+  function renderProjekty() {
+    var inst = mapInst[wybranaIS];
+    var okres = selOkres.value;
+    var lista = projektyIS(wybranaIS, okres);
+
+    document.getElementById("naglProjekty").innerHTML =
+      "Rozwinięcie: " + inst.nazwa + " " + pillModel(inst.prowizja.model);
+    document.getElementById("tagOkresProj").innerHTML =
+      nazwaOkresu(okres) + " &middot; kumulacja " + opisOkresu(inst.prowizja.kumulacja);
+
+    if (!lista.length) {
+      document.getElementById("tabProjekty").innerHTML =
+        '<tr><td colspan="10"><div class="empty"><div class="ei">&#9744;</div>' +
+        '<div class="et">Brak projektów w wybranym okresie</div>' +
+        'Zmień okres rozliczeniowy albo wybierz inną instytucję w tabeli powyżej.</div></td></tr>';
+      return;
+    }
+
+    document.getElementById("tabProjekty").innerHTML = lista.map(function (w, i) {
+      var r = WYNIK[w.id];
+      var nadpisany = i === 1;
+      var rozb = r.rozbicie.length > 1
+        ? '<div class="small muted">' + r.rozbicie.map(function (p) {
+            return DB.fmtPLN(p.kwota) + " po " + p.st + "%";
+          }).join(" + ") + '</div>'
+        : "";
+      return '<tr class="' + (w.rozliczenie === "Rozliczone" ? "row-set" : "") + '">' +
+        '<td class="strong">' + w.nr + '</td>' +
+        '<td class="strong nowrap">' + w.klNazwa + '<div class="small muted">' + w.id + '</div></td>' +
+        '<td class="nowrap muted">' + w.szkolenie + '</td>' +
+        '<td class="mono">' + w.dataFaktury + '</td>' +
+        '<td class="num">' + DB.fmtPLN(w.kosztZDoplata) +
+          (w.doplata ? '<div class="small muted">w tym dopłata ' + DB.fmtPLN(w.doplata) + '</div>' : "") + '</td>' +
+        '<td class="num muted">' + DB.fmtPLN(r.przed) + '</td>' +
+        '<td class="num">' + pct2(r.stawka) + rozb + '</td>' +
+        '<td class="num strong">' + DB.fmtPLN(r.kwota) +
+          (nadpisany ? '<div class="small" style="color:var(--warn-ink)">reguła nadpisana</div>' : "") + '</td>' +
+        '<td>' + tagRozl(w) + '</td>' +
+        '<td class="right nowrap"><button class="btn xs" data-act="' +
+          (nadpisany ? "przywroc" : "nadpisz") + '">' +
+          (nadpisany ? "Przywróć regułę" : "Nadpisz") + '</button></td></tr>';
+    }).join("");
+
+    document.querySelectorAll("#tabProjekty button[data-act]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (b.dataset.act === "przywroc") {
+          alert("Przywrócenie reguły.\n\nProwizja wraca do wartości wyliczonej przez silnik. " +
+                "Zmiana trafia do rejestru aktywności z wartością przed i po (D-16).");
+        } else {
+          alert("Ręczne nadpisanie prowizji dla tego projektu.\n\n" +
+                "Jedyne miejsce nadpisania w systemie (D-93). Warunki negocjuje się przed złożeniem " +
+                "wniosku, nigdy w trakcie (D-25).\nNadpisanie kasuje regułę i jest odwracalne.\n\n" +
+                "Uprawnienie do tej akcji pozostaje nieokreślone, patrz P-06.");
+        }
+      });
+    });
+  }
+
+  /* ---------- Przewidywana prowizja ---------- */
+  function prognozaWg() {
+    var wg = {};
+    DB.TERMINY.forEach(function (t) {
+      if (t.od.slice(0, 7) !== "2026-09" || t.status === "Odbyty") return;
+      var s = mapSzk[t.szk];
+      if (!s || !mapInst[t.is]) return;
+      if (!wg[t.is]) wg[t.is] = { inst: mapInst[t.is], terminy: 0, osoby: 0, obrot: 0, poz: [] };
+      wg[t.is].terminy++;
+      wg[t.is].osoby += t.zapisani;
+      wg[t.is].obrot += t.zapisani * s.cena;
+      wg[t.is].poz.push({ nazwa: t.nazwa, osoby: t.zapisani, cena: s.cena });
+    });
+    return wg;
+  }
+
+  function marginesDoProgu(inst, obrot) {
+    var p = inst.prowizja;
+    if (!p.progi || !p.progi.length) return '<span class="muted small">stawka stała, brak progów</span>';
+    var akt = p.progi[0], nast = null;
+    p.progi.forEach(function (x) { if (obrot >= x.od) akt = x; });
+    p.progi.forEach(function (x) { if (x.od > obrot && !nast) nast = x; });
+    var out;
+    if (akt.od > 0) {
+      var zapas = obrot - akt.od;
+      out = '<span class="tag ' + (zapas < obrot * 0.2 ? "neg" : "warn") + ' dot">zapas ' +
+            DB.fmtPLN(zapas) + " nad progiem " + DB.fmtPLN(akt.od) + '</span>';
+    } else {
+      out = '<span class="tag mute">w progu bazowym</span>';
+    }
+    if (nast) {
+      out += '<div class="small muted">do progu ' + DB.fmtPLN(nast.od) +
+             " brakuje " + DB.fmtPLN(nast.od - obrot) + '</div>';
+    }
+    return out;
+  }
+
+  function renderPrognoza() {
+    var wg = prognozaWg();
+    var klucze = Object.keys(wg).sort(function (a, b) { return wg[b].obrot - wg[a].obrot; });
+
+    document.getElementById("tabPrognoza").innerHTML = klucze.map(function (k) {
+      var g = wg[k];
+      var r = liczProwizje(g.inst.prowizja, 0, g.obrot);
+      return '<tr>' +
+        '<td class="strong nowrap">' + g.inst.nazwa + '</td>' +
+        '<td class="c">' + pillModel(g.inst.prowizja.model) + '</td>' +
+        '<td class="num">' + g.terminy + '</td>' +
+        '<td class="num">' + g.osoby + '</td>' +
+        '<td class="num">' + DB.fmtPLN(g.obrot) + '<div class="small muted">' +
+          g.poz.map(function (p) { return p.nazwa + " " + p.osoby + " os."; }).join(", ") + '</div></td>' +
+        '<td class="num"><span class="tag info">' + pct2(r.stawka) + '</span></td>' +
+        '<td class="num strong">' + DB.fmtPLN(r.kwota) + '</td>' +
+        '<td>' + marginesDoProgu(g.inst, g.obrot) + '</td></tr>';
+    }).join("");
+
+    var g = wg["IS-02"];
+    if (!g) return;
+    var inst = mapInst["IS-02"];
+    var prog = inst.prowizja.progi[1].od;
+    var bazowa = liczProwizje(inst.prowizja, 0, g.obrot);
+    var cenaMag = mapSzk["SZ-201"].cena;
+    var ilu = Math.ceil((g.obrot - prog) / cenaMag);
+    var poObrot = g.obrot - cenaMag * ilu;
+    var po = liczProwizje(inst.prowizja, 0, poObrot);
+
+    document.getElementById("scenariusz").innerHTML =
+      "<b>Ostrzeżenie: rezygnacja uczestnika zbija stawkę do niższego progu.</b><br>" +
+      "Metal Maniak pracuje na modelu A, w którym próg " + DB.fmtPLN(prog) +
+      " przestawia stawkę z 10% na 12% <b>dla całego miesiąca</b>, a nie tylko dla nadwyżki. " +
+      "Obrót planowany na wrzesień to <b>" + DB.fmtPLN(g.obrot) + "</b>, czyli stawka <b>" +
+      bazowa.stawka + "%</b> i prowizja przewidywana <b>" + DB.fmtPLN(bazowa.kwota) + "</b>. " +
+      "Jeżeli ze szkolenia Spawanie MAG 135 zrezygnuje " + ilu + " uczestników po " +
+      DB.fmtPLN(cenaMag) + ", obrót spadnie do <b>" + DB.fmtPLN(poObrot) +
+      "</b>, czyli poniżej progu. Stawka spada z " + bazowa.stawka + "% na <b>" + po.stawka +
+      "%</b>, a prowizja z " + DB.fmtPLN(bazowa.kwota) + " na <b>" + DB.fmtPLN(po.kwota) +
+      "</b>, czyli o " + DB.fmtPLN(bazowa.kwota - po.kwota) + " mniej. " +
+      "Klient opisał ten sam mechanizm na warsztacie na własnych liczbach: „czy to będzie 10 czy 12, " +
+      "no bo tutaj było 54000, a ten się odpadł, zrobiło się 48. No to ja nie mogę mieć 12% tylko 10” (26:58).";
+  }
+
+  /* ---------- Faktury ---------- */
+  var selFIS = document.getElementById("fFIS");
+  INST8.forEach(function (i) {
+    selFIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
+  });
+
+  function tagFakt(s) {
+    if (s === "Opłacona") return '<span class="tag pos dot">Opłacona</span>';
+    if (s === "Po terminie") return '<span class="tag neg dot">Po terminie</span>';
+    return '<span class="tag info dot">Oczekuje</span>';
+  }
+
+  function renderFaktury() {
+    var q = document.getElementById("qF").value.toLowerCase().trim();
+    var fis = selFIS.value;
+    var fst = document.getElementById("fFSt").value;
+
+    var lista = DB.FAKTURY.filter(function (f) {
+      if (fis && f.isId !== fis) return false;
+      if (fst && f.status !== fst) return false;
+      if (q && (f.nr + " " + f.is).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    document.getElementById("liczF").innerHTML =
+      "<b>" + lista.length + "</b> z " + DB.FAKTURY.length + " faktur &middot; " +
+      DB.fmtPLN(lista.reduce(function (s, f) { return s + f.kwota; }, 0));
+
+    document.getElementById("tabFakt").innerHTML = lista.map(function (f) {
+      return '<tr class="' + (f.status === "Po terminie" ? "row-neg" : "") + '">' +
+        '<td class="strong mono">' + f.nr + '</td>' +
+        '<td class="nowrap">' + f.is + '</td>' +
+        '<td class="num strong">' + DB.fmtPLN2(f.kwota) + '</td>' +
+        '<td class="c muted">' + f.vat + '</td>' +
+        '<td class="mono">' + f.wystawiona + '</td>' +
+        '<td class="mono">' + f.termin + '</td>' +
+        '<td>' + tagFakt(f.status) + '</td>' +
+        '<td class="num">' + f.projekty + '</td>' +
+        '<td class="right"><button class="btn xs" data-pdf="' + f.nr + '">Podgląd PDF</button></td></tr>';
+    }).join("");
+
+    document.querySelectorAll("#tabFakt button[data-pdf]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        alert("Podgląd PDF faktury " + b.dataset.pdf + ".\n\n" +
+              "Plik pobierany z systemu księgowego przy imporcie CSV.\n" +
+              "Główny przypadek użycia: sprawdzenie terminu płatności bez logowania do księgowości.");
+      });
+    });
+
+    var wg = function (st) {
+      return DB.FAKTURY.filter(function (f) { return !st || f.status === st; });
+    };
+    var kw = function (a) { return a.reduce(function (s, f) { return s + f.kwota; }, 0); };
+    var wsz = wg(null), opl = wg("Opłacona"), ocz = wg("Oczekuje"), pt = wg("Po terminie");
+
+    document.getElementById("kpiFakt").innerHTML =
+      kpi("Wystawione w 2026", DB.fmtNum(wsz.length), "na kwotę " + DB.fmtPLN(kw(wsz)), true) +
+      kpi("Opłacone", DB.fmtNum(opl.length),
+          DB.fmtPLN(kw(opl)) + " &middot; " + Math.round(opl.length / wsz.length * 100) + "% wolumenu", true) +
+      kpi("Oczekujące", DB.fmtNum(ocz.length), "na kwotę " + DB.fmtPLN(kw(ocz)), true) +
+      kpi("Po terminie", DB.fmtNum(pt.length), '<span class="tag neg dot">' + DB.fmtPLN(kw(pt)) + '</span>', true);
+  }
+
+  document.getElementById("btnCsv").addEventListener("click", function () {
+    alert("Import CSV z systemu księgowego.\n\n" +
+          "Mapowanie kolumn: numer, kontrahent, kwota, stawka VAT, data wystawienia, " +
+          "termin płatności, status płatności.\nDopasowanie kontrahenta do instytucji po NIP.\n\n" +
+          "Uwaga: dostępność eksportu CSV w systemie eSzokBR nie została potwierdzona (P-09).");
+  });
+
+  ["qF", "fFIS", "fFSt"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", renderFaktury);
+    document.getElementById(id).addEventListener("change", renderFaktury);
+  });
+
+  /* ---------- Prowizje wewnetrzne ---------- */
+  function fnRow(label, pct, val) {
+    return '<div class="fn-row"><div class="fl">' + label + '</div>' +
+      '<div class="ft"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="fv">' + val + '</div></div>';
+  }
+
+  function renderWewnetrzne() {
+    var obrot = 0, prow = 0;
+    POZ.forEach(function (w) { obrot += w.kosztZDoplata; prow += WYNIK[w.id].kwota; });
+
+    document.getElementById("kaskada").innerHTML =
+      fnRow("Koszt szkoleń z dopłatą", 100, DB.fmtPLN(obrot)) +
+      fnRow("Prowizja LDIT, przychód firmy", Math.max(6, Math.round(prow / obrot * 100)), DB.fmtPLN(prow)) +
+      fnRow("Prowizja pracowników", 0, '<span class="tag warn">brak progów</span>');
+
+    var prac = DB.UZYTKOWNICY.filter(function (u) { return u.rola === "Pracownik LDIT"; });
+    var zlozone = DB.WNIOSKI.filter(function (w) { return w.statusSkl === "Złożony"; });
+    var razem = 0, razemN = 0;
+
+    document.getElementById("tabPrac").innerHTML = prac.map(function (u) {
+      var lista = u.inst.split(",").map(function (s) { return s.trim(); });
+      var moje = zlozone.filter(function (w) { return lista.indexOf(w.isNazwa) >= 0; });
+      var wart = moje.reduce(function (s, w) { return s + w.wartosc; }, 0);
+      razem += wart;
+      razemN += moje.length;
+      return '<tr>' +
+        '<td class="strong nowrap">' + u.imie + '<div class="small muted">' + u.login + '</div></td>' +
+        '<td class="small">' + lista.map(function (n) {
+          return '<span class="tag mute">' + n + '</span>';
+        }).join(" ") + '</td>' +
+        '<td class="num">' + moje.length + '</td>' +
+        '<td class="num strong">' + DB.fmtPLN(wart) + '</td>' +
+        '<td class="num">' + DB.fmtPLN(wart) +
+          '<div class="small muted">wartość złożonych wniosków</div></td>' +
+        '<td class="num"><span class="tag warn">nie do policzenia</span></td></tr>';
+    }).join("");
+
+    document.getElementById("stopkaPrac").innerHTML =
+      '<tr><td class="strong">Razem, ' + prac.length + ' pracowników</td><td></td>' +
+      '<td class="num strong">' + razemN + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(razem) + '</td>' +
+      '<td class="num muted small">z podwójnym liczeniem Cognity Center</td>' +
+      '<td class="num"><span class="tag warn">P-02</span></td></tr>';
+
+    document.getElementById("tabCele").innerHTML = DB.CELE.map(function (c) {
+      var pct = Math.min(100, Math.round(c.obecnie / c.cel * 100));
+      var ok = c.status === "osiągnięty";
+      var kwotowy = c.cel > 1000;
+      return '<tr>' +
+        '<td class="strong">' + c.nazwa + '</td>' +
+        '<td class="num">' + (kwotowy ? DB.fmtPLN(c.cel) : c.cel + "%") + '</td>' +
+        '<td class="num">' + (kwotowy ? DB.fmtPLN(c.obecnie) : c.obecnie + "%") + '</td>' +
+        '<td style="min-width:150px"><div class="progress' + (ok ? " pos" : "") +
+          '"><i style="width:' + pct + '%"></i></div></td>' +
+        '<td>' + c.premia + '</td>' +
+        '<td><span class="tag ' + (ok ? "pos" : "info") + ' dot">' + c.status + '</span></td></tr>';
+    }).join("");
+  }
+
+  var OPIS = {
+    wn: "Wariant obecny. Podstawą jest wartość wniosków złożonych, bo statystycznie zakłada się " +
+        "stały współczynnik akceptacji. Prowizja należy się za pracę włożoną w napisanie wniosku, " +
+        "niezależnie od późniejszej decyzji urzędu.",
+    prz: "Wariant docelowy od 2027. Podstawą jest procent od faktycznego przychodu firmy, czyli od " +
+         "prowizji rozliczonej z instytucjami. System musi obsłużyć oba warianty, bo przełączenie " +
+         "nastąpi w trakcie życia systemu, a dane historyczne zostają policzone starą regułą."
+  };
+  document.getElementById("opisPodstawy").textContent = OPIS.wn;
+  document.getElementById("chWn").addEventListener("click", function () {
+    this.classList.add("on");
+    document.getElementById("chPrz").classList.remove("on");
+    document.getElementById("opisPodstawy").textContent = OPIS.wn;
+  });
+  document.getElementById("chPrz").addEventListener("click", function () {
+    this.classList.add("on");
+    document.getElementById("chWn").classList.remove("on");
+    document.getElementById("opisPodstawy").textContent = OPIS.prz;
+  });
+
+  selOkres.addEventListener("change", function () { renderProwizje(); renderProjekty(); });
+
+  renderProwizje();
+  renderProjekty();
+  renderPrognoza();
+  renderFaktury();
+  renderWewnetrzne();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System KFS - LDIT - makieta v2</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .role-hint {
+    position: fixed; right: 18px; bottom: 18px; z-index: 50;
+    background: var(--brand-900); color: #cbd5e1;
+    border-radius: var(--radius); padding: 10px 13px;
+    font-size: 12px; max-width: 320px; box-shadow: var(--shadow-lg);
+    line-height: 1.5; display: none;
+  }
+  .role-hint.show { display: block; }
+  .role-hint b { color: #fff; }
+  .role-hint .x { float: right; cursor: pointer; color: #64748b; margin-left: 10px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">LD</div>
+      <div>
+        <div class="name">System KFS</div>
+        <div class="sub">LDIT &middot; makieta v2</div>
+      </div>
+    </div>
+
+    <div class="sidebar-scroll" id="nav"></div>
+
+    <div class="sidebar-foot">
+      Makieta poglądowa &middot; dane demonstracyjne<br>
+      Warsztat 25.08.2026
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb"><b>Dashboard</b></div>
+
+      <div class="global-search">
+        <span class="si">&#128269;</span>
+        <input type="text" placeholder="Szukaj: NIP, nazwa klienta, urząd pracy..." id="gsearch">
+      </div>
+
+      <div class="topbar-right">
+        <div class="role-switch">
+          <label for="role">Rola</label>
+          <select id="role">
+            <option value="admin">Administrator (Bartek)</option>
+            <option value="pracownik">Pracownik LDIT (Martyna)</option>
+            <option value="is">Instytucja szkoleniowa (Odczaruj)</option>
+            <option value="pracownikIS">Pracownik IS (Mirka)</option>
+            <option value="klient">Klient końcowy</option>
+          </select>
+        </div>
+        <div class="avatar" id="avatar">BO</div>
+      </div>
+    </div>
+
+    <div class="frame-wrap">
+      <iframe id="view" src="strony/01-dashboard.html"></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="role-hint" id="hint">
+  <span class="x" onclick="document.getElementById('hint').classList.remove('show')">&times;</span>
+  <span id="hintText"></span>
+</div>
+
+<script>
+/* ================================================================
+   Powloka makiety: nawigacja zalezna od roli (D-36, D-112, D-113)
+   ================================================================ */
+
+var INSTYTUCJE_MENU = [
+  "Odczaruj Power BI", "Metal Maniak", "Dron Fortech", "Fit Akademia",
+  "Cognity Center", "Termex Serwis", "Bergo Logistyka", "Prima Med"
+];
+
+/* Przypisanie pracownikow do instytucji (D-113) */
+var PRZYDZIAL = {
+  admin: INSTYTUCJE_MENU,
+  pracownik: ["Odczaruj Power BI", "Dron Fortech", "Termex Serwis"],
+  is: ["Odczaruj Power BI"],
+  pracownikIS: ["Odczaruj Power BI"],
+  klient: []
+};
+
+var NAV = [
+  { grupa: "Praca operacyjna" },
+  { id: "dash",     ikona: "&#9632;", label: "Dashboard",            plik: "01-dashboard.html",           role: ["admin","pracownik","is"] },
+  { id: "dofin",    ikona: "&#9673;", label: "Dofinansowania",       plik: "02-zestawienia.html",         role: ["admin","pracownik","is","pracownikIS"], deti: true },
+  { id: "zest",     ikona: "&#9636;", label: "Zestawienia",          plik: "02-zestawienia.html",         role: ["admin","pracownik"], lata: true },
+  { id: "baza",     ikona: "&#9744;", label: "Baza klientów",        plik: "04-baza-klientow.html",       role: ["admin","pracownik","is","pracownikIS"], badge: "5" },
+  { id: "nabory",   ikona: "&#9200;", label: "Nabory",               plik: "05-nabory.html",              role: ["admin","pracownik","is"] },
+  { id: "terminy",  ikona: "&#9635;", label: "Terminy i kalendarz",  plik: "13-terminy.html",             role: ["admin","pracownik","is","klient"] },
+
+  { grupa: "Konfiguracja" },
+  { id: "inst",     ikona: "&#9638;", label: "Instytucje szkoleniowe", plik: "06-instytucje.html",        role: ["admin","pracownik"] },
+  { id: "konfIS",   ikona: "&#9881;", label: "Konfigurator instytucji", plik: "07-konfigurator-is.html",  role: ["admin"], admin: true },
+  { id: "maile",    ikona: "&#9993;", label: "Wysyłka maili",        plik: "09-wysylka-maili.html",       role: ["admin","pracownik"] },
+
+  { grupa: "Finanse i nadzór" },
+  { id: "admin",    ikona: "&#9878;", label: "Administracja",        plik: "08-administracja.html",       role: ["admin"], admin: true },
+  { id: "prow",     ikona: "&#8721;", label: "Konfigurator prowizji", plik: "15-konfigurator-prowizji.html", role: ["admin"], admin: true, badge: "prototyp" },
+  { id: "stat",     ikona: "&#9650;", label: "Statystyki",           plik: "14-statystyki.html",          role: ["admin","pracownik","is"] },
+  { id: "zglo",     ikona: "&#9888;", label: "Zgłoszenia",           plik: "10-zgloszenia.html",          role: ["admin","pracownik"] },
+
+  { grupa: "Administracja systemu" },
+  { id: "konta",    ikona: "&#9787;", label: "Konta i uprawnienia",  plik: "11-konta-uprawnienia.html",   role: ["admin"], admin: true },
+  { id: "rejestr",  ikona: "&#9906;", label: "Rejestr aktywności",   plik: "12-rejestr-aktywnosci.html",  role: ["admin"], admin: true },
+
+  { grupa: "Panel zewnętrzny" },
+  { id: "panelIS",  ikona: "&#9707;", label: "Widok instytucji",     plik: "16-panel-is.html",            role: ["is","pracownikIS"] },
+  { id: "panelKL",  ikona: "&#9708;", label: "Mój wniosek",          plik: "17-panel-klienta.html",       role: ["klient"] }
+];
+
+var HINTY = {
+  admin: "<b>Administrator.</b> Widzi wszystkie instytucje, dane finansowe, konfigurator prowizji i rejestry. To jedyna rola z dostępem do stawek prowizyjnych <span class='ref'>D-07</span>",
+  pracownik: "<b>Pracownik LDIT.</b> Widzi tylko przypisane mu instytucje (tu: 3 z 8) <span class='ref'>D-113</span>. Bez zysków firmy, bez stawek prowizji, bez faktur <span class='ref'>D-34</span>",
+  is: "<b>Instytucja szkoleniowa.</b> Jedna zakładka opisana nazwą własnej spółki, wyłącznie własni klienci <span class='ref'>D-76</span>. Nie widzi swojej stawki prowizji.",
+  pracownikIS: "<b>Pracownik IS (handlowiec).</b> Tylko dane klientów, przefiltrowane do najnowszego naboru <span class='ref'>D-72</span>. Rola kończy się na wypełnieniu formularza <span class='ref'>D-75</span>",
+  klient: "<b>Klient końcowy.</b> Status OTWARTY, moduł nierozstrzygnięty <span class='ref p'>P-33</span>. Tylko odczyt własnego wniosku i szkoleń."
+};
+
+var AVATARY = { admin: "BO", pracownik: "MK", is: "PC", pracownikIS: "MK", klient: "KL" };
+
+var stan = { rola: "admin", aktywny: "dash" };
+
+function render() {
+  var nav = document.getElementById("nav");
+  var html = "";
+  var widoczneGrupy = 0;
+
+  for (var i = 0; i < NAV.length; i++) {
+    var it = NAV[i];
+
+    if (it.grupa) {
+      /* Sprawdz czy grupa ma jakikolwiek widoczny element */
+      var ma = false;
+      for (var j = i + 1; j < NAV.length && !NAV[j].grupa; j++) {
+        if (NAV[j].role.indexOf(stan.rola) >= 0) { ma = true; break; }
+      }
+      if (ma) html += '<div class="nav-group-label">' + it.grupa + '</div>';
+      continue;
+    }
+
+    if (it.role.indexOf(stan.rola) < 0) continue;
+
+    var cls = "nav-item" + (stan.aktywny === it.id ? " active" : "") + (it.admin ? " admin-only" : "");
+    var label = it.label;
+
+    /* Instytucja widzi zakladke opisana nazwa wlasnej spolki (D-76) */
+    if (it.id === "dofin" && (stan.rola === "is" || stan.rola === "pracownikIS")) {
+      label = PRZYDZIAL[stan.rola][0];
+    }
+
+    var badge = it.badge ? '<span class="badge">' + it.badge + '</span>' : "";
+    var chev = "";
+    if ((it.deti && stan.rola !== "is" && stan.rola !== "pracownikIS") || it.lata) {
+      chev = '<span class="chev">&#9654;</span>';
+    }
+
+    html += '<div class="' + cls + '" data-id="' + it.id + '" data-plik="' + it.plik + '" data-label="' + label + '">' +
+            '<span class="ico">' + it.ikona + '</span><span>' + label + '</span>' + badge + chev + '</div>';
+
+    /* Rozwijana lista instytucji pod "Dofinansowania" (D-112) */
+    if (it.deti && stan.rola !== "is" && stan.rola !== "pracownikIS") {
+      html += '<div class="nav-sub" id="sub-dofin">';
+      PRZYDZIAL[stan.rola].forEach(function (nazwa) {
+        html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html" data-label="' + nazwa + '">' +
+                '<span>' + nazwa + '</span></div>';
+      });
+      html += '</div>';
+    }
+
+    /* Drzewo lat pod "Zestawienia" (D-55) */
+    if (it.lata) {
+      html += '<div class="nav-sub" id="sub-zest">' +
+              ['2026','2025','2024'].map(function (r) {
+                return '<div class="nav-item sub-rok" data-plik="02-zestawienia.html" data-label="Zestawienie ' + r + '">' +
+                       '<span>' + r + '</span></div>';
+              }).join("") + '</div>';
+    }
+  }
+
+  nav.innerHTML = html;
+
+  /* Obsluga klikniec */
+  nav.querySelectorAll(".nav-item").forEach(function (el) {
+    el.addEventListener("click", function (e) {
+      e.stopPropagation();
+
+      /* Rozwijanie podmenu */
+      var id = el.getAttribute("data-id");
+      if (id === "dofin" || id === "zest") {
+        var sub = document.getElementById("sub-" + (id === "dofin" ? "dofin" : "zest"));
+        if (sub) {
+          var otwarte = sub.classList.toggle("open");
+          el.classList.toggle("open", otwarte);
+          if (otwarte) return;
+        }
+      }
+
+      var plik = el.getAttribute("data-plik");
+      if (!plik) return;
+
+      nav.querySelectorAll(".nav-item").forEach(function (x) { x.classList.remove("active"); });
+      el.classList.add("active");
+      if (id) stan.aktywny = id;
+
+      var label = el.getAttribute("data-label") || el.textContent.trim();
+      document.getElementById("crumb").innerHTML = "<b>" + label + "</b>";
+      document.getElementById("view").src = "strony/" + plik + "?rola=" + stan.rola;
+    });
+  });
+}
+
+document.getElementById("role").addEventListener("change", function () {
+  stan.rola = this.value;
+
+  /* Domyslny ekran startowy dla roli */
+  var start = { admin: "dash", pracownik: "dash", is: "dash", pracownikIS: "baza", klient: "panelKL" }[stan.rola];
+  stan.aktywny = start;
+  var poz = NAV.filter(function (n) { return n.id === start; })[0];
+
+  render();
+  document.getElementById("avatar").textContent = AVATARY[stan.rola];
+  if (poz) {
+    document.getElementById("crumb").innerHTML = "<b>" + poz.label + "</b>";
+    document.getElementById("view").src = "strony/" + poz.plik + "?rola=" + stan.rola;
+  }
+
+  var h = document.getElementById("hint");
+  document.getElementById("hintText").innerHTML = HINTY[stan.rola];
+  h.classList.add("show");
+});
+
+document.getElementById("gsearch").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && this.value.trim()) {
+    document.getElementById("view").src = "strony/04-baza-klientow.html?q=" + encodeURIComponent(this.value.trim());
+    document.getElementById("crumb").innerHTML = "<b>Wyniki wyszukiwania</b>";
+  }
+});
+
+render();
+</script>
+
+</body>
+</html>

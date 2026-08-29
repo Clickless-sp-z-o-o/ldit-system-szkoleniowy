@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Konfigurator prowizji</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  .prog-row { display: flex; gap: 8px; align-items: center; margin-bottom: 7px; }
+  .prog-row .inp { width: 150px; }
+  .prog-row .lab { font-size: 12px; color: var(--ink-3); width: 74px; flex: 0 0 74px; }
+  .faktura-row td input { width: 128px; }
+  .wynik-box { background: var(--brand-900); color: #e2e8f0; border-radius: var(--radius-lg); padding: 18px 20px; }
+  .wynik-box .wl { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: #64748b; font-weight: 700; }
+  .wynik-box .wv { font-size: 29px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .wynik-box .ws { font-size: 12.5px; color: #94a3b8; margin-top: 5px; }
+  .rozb { font-size: 12px; color: #cbd5e1; margin-top: 12px; border-top: 1px solid rgba(255,255,255,.12); padding-top: 11px; }
+  .rozb div { padding: 2px 0; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Konfigurator prowizji &middot; prototyp obliczeniowy</h1>
+      <p class="page-desc">
+        To jest realizacja warunku wstępnego z warsztatu <span class="ref">D-20</span>:
+        <i>„żebyśmy nie kodowali aplikacji, zanim nie zostanie to ustalone. Taki prosty konfigurator w HTML,
+        będziesz wpisywał cyferki i mi powiesz czy to się dobrze liczy czy nie”.</i>
+        Wpisz realne liczby i sprawdź, czy wyniki się zgadzają.
+      </p>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <b>Zanim to zatwierdzisz, trzeba domknąć <span class="ref p">P-01</span>:</b>
+    czy okresem rozliczeniowym jest data wystawienia faktury, czy prognoza z kalendarza szkoleń.
+    Na warsztacie padły obie wersje. Ten kalkulator liczy po <b>dacie faktury</b>.
+  </div>
+
+  <div class="grid g-1-2">
+
+    <!-- KONFIGURACJA WARUNKÓW -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Warunki instytucji</h3>
+          <div class="ch-actions">
+            <select class="inp" id="preset" style="height:28px;font-size:12.5px;width:auto">
+              <option value="A">Model A &middot; Metal Maniak</option>
+              <option value="B">Model B &middot; Dron Fortech</option>
+              <option value="C">Model C &middot; Fit Akademia</option>
+              <option value="D">Model D &middot; stała 20%</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div class="field">
+            <label>Rodzaj kumulacji</label>
+            <select class="inp" id="kumulacja">
+              <option value="miesieczny">Miesięczny</option>
+              <option value="roczny">Roczny (YTD)</option>
+              <option value="brak">Brak, stała stawka</option>
+            </select>
+            <div class="hint">Okres, w którym sumuje się obrót do progów</div>
+          </div>
+
+          <div class="field" id="wrapSposob">
+            <label>Sposób liczenia</label>
+            <select class="inp" id="sposob">
+              <option value="od_calosci">Od całości &middot; nowa stawka obejmuje cały obrót okresu</option>
+              <option value="od_nadwyzki">Od nadwyżki &middot; stawka progowa tylko powyżej progu</option>
+            </select>
+            <div class="hint">To rozróżnienie klient wskazał jako kluczowe <span class="ref">D-16</span></div>
+          </div>
+
+          <div class="field" id="wrapStala" style="display:none">
+            <label>Stała stawka</label>
+            <input class="inp num" id="stala" value="20">
+            <div class="hint">Standard w firmie to 20%</div>
+          </div>
+
+          <div class="field" id="wrapProgi">
+            <label>Progi przychodu</label>
+            <div id="progi"></div>
+            <button class="btn xs" onclick="dodajProg()" style="margin-top:6px">+ Dodaj próg</button>
+            <div class="hint">Pierwszy próg zawsze od 0. Prowizja zwykle maleje wraz ze wzrostem obrotu.</div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="field">
+            <label>Obowiązuje od</label>
+            <input class="inp" id="odKiedy" value="2027-01-01">
+            <div class="hint">
+              Warunki wersjonowane w czasie, zmiany od kolejnego roku <span class="ref">D-22</span>.
+              Historia nie jest przeliczana wstecz <span class="ref">D-23</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Nadpisanie indywidualne</h3></div>
+        <div class="card-body">
+          <div class="field">
+            <label>Stawka dla pojedynczego projektu</label>
+            <input class="inp num" id="nadpisz" placeholder="np. 15">
+            <div class="hint">
+              Nadpisanie działa <b>per wniosek</b>, nie per klient <span class="ref">D-17</span>.
+              Zastosuj poniżej w wierszu faktury.
+            </div>
+          </div>
+          <div class="note open" style="margin:0;font-size:12px">
+            <b>Nierozstrzygnięte <span class="ref p">P-03</span>:</b> czy projekt z nadpisaną stawką
+            wlicza się do sumy narastającej wypełniającej progi pozostałych projektów tej instytucji.
+            Kalkulator obecnie <b>wlicza</b> go do obrotu.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYMULACJA -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Symulacja okresu</h3>
+          <span class="sub">wpisz faktury tak, jak idą chronologicznie</span>
+          <div class="ch-actions">
+            <button class="btn sm" onclick="dodajFakture()">+ Faktura</button>
+            <button class="btn sm" onclick="wczytajPrzyklad()">Wczytaj przykład z warsztatu</button>
+          </div>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead>
+              <tr><th style="width:36px">#</th><th>Opis</th><th class="num">Kwota netto</th>
+                  <th class="num">Obrót narastająco</th><th class="num">Stawka</th>
+                  <th class="num">Prowizja</th><th></th></tr>
+            </thead>
+            <tbody id="faktury"></tbody>
+            <tfoot>
+              <tr style="background:var(--surface-2);font-weight:700">
+                <td colspan="2">Razem w okresie</td>
+                <td class="num" id="sumObrot"></td>
+                <td></td>
+                <td class="num" id="sumStawka"></td>
+                <td class="num" id="sumProwizja"></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <div class="wynik-box">
+          <div class="wl">Prowizja za okres</div>
+          <div class="wv" id="bigKwota">0 zł</div>
+          <div class="ws" id="bigOpis"></div>
+          <div class="rozb" id="bigRozb"></div>
+        </div>
+
+        <div class="card mb0">
+          <div class="card-head"><h3>Kontrola poprawności</h3></div>
+          <div class="card-body" id="kontrola"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Przypadki testowe z dokumentacji</h3>
+          <span class="sub">kliknij, żeby załadować i sprawdzić wynik</span>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Scenariusz</th><th class="num">Oczekiwany wynik</th><th></th></tr></thead>
+            <tbody id="testy"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+var PRESETY = {
+  A: { kumulacja: "miesieczny", sposob: "od_calosci", stala: null, progi: [{ od: 0, st: 10 }, { od: 50000, st: 12 }] },
+  B: { kumulacja: "roczny", sposob: "od_nadwyzki", stala: null, progi: [{ od: 0, st: 20 }, { od: 500000, st: 17.5 }, { od: 1000000, st: 15 }] },
+  C: { kumulacja: "miesieczny", sposob: "od_nadwyzki", stala: null, progi: [{ od: 0, st: 18 }, { od: 100000, st: 14 }, { od: 200000, st: 10 }] },
+  D: { kumulacja: "brak", sposob: "stala", stala: 20, progi: [] }
+};
+
+var progi = [];
+var faktury = [];
+
+function warunki() {
+  var kum = document.getElementById("kumulacja").value;
+  return {
+    kumulacja: kum,
+    sposob: kum === "brak" ? "stala" : document.getElementById("sposob").value,
+    stala: parseFloat(document.getElementById("stala").value) || 20,
+    progi: progi.slice().sort(function (a, b) { return a.od - b.od; })
+  };
+}
+
+function renderProgi() {
+  document.getElementById("progi").innerHTML = progi.map(function (p, i) {
+    return '<div class="prog-row">' +
+      '<span class="lab">' + (i === 0 ? "od 0 zł" : "powyżej") + '</span>' +
+      (i === 0 ? '<input class="inp num" value="0" disabled>'
+               : '<input class="inp num" value="' + p.od + '" onchange="progi[' + i + '].od=parseFloat(this.value)||0;przelicz()">') +
+      '<span class="lab" style="width:auto;flex:0 0 auto">stawka</span>' +
+      '<input class="inp num" style="width:78px" value="' + p.st + '" onchange="progi[' + i + '].st=parseFloat(this.value)||0;przelicz()">' +
+      '<span class="lab" style="width:auto;flex:0 0 auto">%</span>' +
+      (i > 0 ? '<button class="btn xs danger" onclick="progi.splice(' + i + ',1);renderProgi();przelicz()">&times;</button>' : "") +
+      '</div>';
+  }).join("");
+}
+function dodajProg() {
+  var ost = progi[progi.length - 1];
+  progi.push({ od: (ost ? ost.od + 100000 : 100000), st: (ost ? Math.max(0, ost.st - 2) : 15) });
+  renderProgi(); przelicz();
+}
+
+function renderFaktury() {
+  document.getElementById("faktury").innerHTML = faktury.map(function (f, i) {
+    return '<tr class="faktura-row"><td class="muted">' + (i + 1) + '</td>' +
+      '<td><input class="inp" style="width:190px" value="' + f.opis + '" onchange="faktury[' + i + '].opis=this.value"></td>' +
+      '<td class="num"><input class="inp num" value="' + f.kwota + '" onchange="faktury[' + i + '].kwota=parseFloat(this.value)||0;przelicz()"></td>' +
+      '<td class="num" id="nar' + i + '"></td>' +
+      '<td class="num" id="st' + i + '"></td>' +
+      '<td class="num strong" id="pr' + i + '"></td>' +
+      '<td class="right"><button class="btn xs danger" onclick="faktury.splice(' + i + ',1);renderFaktury();przelicz()">&times;</button></td>' +
+      '</tr>';
+  }).join("");
+}
+function dodajFakture() {
+  faktury.push({ opis: "Faktura " + (faktury.length + 1), kwota: 10000 });
+  renderFaktury(); przelicz();
+}
+
+function przelicz() {
+  var w = warunki();
+  var nadpTxt = document.getElementById("nadpisz").value;
+  var nadp = parseFloat(nadpTxt);
+  var maNadpisanie = nadpTxt !== "" && !isNaN(nadp);
+
+  /* Liczymy CALY okres naraz. W modelu "od calosci" przekroczenie progu
+     podnosi stawke takze dla faktur juz wystawionych, wiec nie wolno
+     sumowac wynikow liczonych fakturami po kolei. */
+  var wynik = liczOkres(w, faktury);
+
+  /* Nadpisanie indywidualne dotyczy ostatniej pozycji (D-17, per wniosek) */
+  if (maNadpisanie && wynik.pozycje.length) {
+    var ost = wynik.pozycje[wynik.pozycje.length - 1];
+    ost.stawka = nadp;
+    ost.prowizja = ost.kwota * nadp / 100;
+    ost.rozbicie = [{ kwota: ost.kwota, st: nadp }];
+    wynik.suma = wynik.pozycje.reduce(function (s, p) { return s + p.prowizja; }, 0);
+    wynik.stawkaEfektywna = wynik.obrot ? wynik.suma / wynik.obrot * 100 : 0;
+  }
+
+  var obrot = wynik.obrot, suma = wynik.suma, rozbRazem = [];
+  var narast = 0;
+
+  wynik.pozycje.forEach(function (p, i) {
+    narast += p.kwota;
+    rozbRazem = rozbRazem.concat(p.rozbicie);
+    var nEl = document.getElementById("nar" + i);
+    if (nEl) {
+      nEl.textContent = DB.fmtPLN(narast);
+      var nadpisana = maNadpisanie && i === wynik.pozycje.length - 1;
+      document.getElementById("st" + i).innerHTML =
+        '<span class="tag ' + (nadpisana ? "set" : p.rozbicie.length > 1 ? "warn" : "mute") + '">' +
+        DB.fmtPct(Math.round(p.stawka * 100) / 100) + (nadpisana ? " ręcznie" : "") + '</span>';
+      document.getElementById("pr" + i).textContent = DB.fmtPLN2(p.prowizja);
+    }
+  });
+
+  document.getElementById("sumObrot").textContent = DB.fmtPLN(obrot);
+  document.getElementById("sumProwizja").textContent = DB.fmtPLN2(suma);
+  document.getElementById("sumStawka").innerHTML =
+    obrot ? '<span class="tag info">' + DB.fmtPct(Math.round(suma / obrot * 10000) / 100) + '</span>' : "";
+
+  document.getElementById("bigKwota").textContent = DB.fmtPLN2(suma);
+  document.getElementById("bigOpis").textContent =
+    "Obrót " + DB.fmtPLN(obrot) + " · stawka efektywna " +
+    (obrot ? DB.fmtPct(Math.round(suma / obrot * 10000) / 100) : "0%") +
+    " · kumulacja " + w.kumulacja;
+
+  /* Rozbicie zbiorcze wg stawek */
+  var wg = {};
+  rozbRazem.forEach(function (x) { wg[x.st] = (wg[x.st] || 0) + x.kwota; });
+  document.getElementById("bigRozb").innerHTML = Object.keys(wg).sort(function (a, b) { return b - a; })
+    .map(function (st) {
+      return "<div>" + DB.fmtPLN(wg[st]) + " &times; " + st + "% = <b>" +
+             DB.fmtPLN2(wg[st] * st / 100) + "</b></div>";
+    }).join("");
+
+  /* Kontrola */
+  var uwagi = [];
+  if (w.sposob === "od_calosci" && w.progi.length > 1) {
+    var granica = w.progi[1].od;
+    var przed = liczProwizje(w, 0, granica - 1).kwota;
+    var po = liczProwizje(w, 0, granica).kwota;
+    uwagi.push(['Efekt progu <b>' + DB.fmtPLN(granica) + '</b>',
+      DB.fmtPLN(granica - 1) + " &rarr; " + DB.fmtPLN2(przed) + "<br>" +
+      DB.fmtPLN(granica) + " &rarr; " + DB.fmtPLN2(po) +
+      '<br><span class="tag warn">skok o ' + DB.fmtPLN2(po - przed) + '</span>', "warn"]);
+  }
+  if (w.sposob === "od_nadwyzki" && rozbRazem.some(function (x, i, a) { return i && a[i - 1].st !== x.st; })) {
+    uwagi.push(["Podział faktury między progi",
+      "Co najmniej jedna faktura została podzielona. Stawka efektywna jest średnią ważoną.", "info"]);
+  }
+  if (!uwagi.length) uwagi.push(["Brak progów granicznych w tym okresie", "Stawka jednolita dla całego obrotu.", "mute"]);
+
+  document.getElementById("kontrola").innerHTML = uwagi.map(function (u) {
+    return '<div style="margin-bottom:11px"><div style="font-size:12.5px;font-weight:650;margin-bottom:4px">' +
+      u[0] + '</div><div class="small muted" style="line-height:1.6">' + u[1] + "</div></div>";
+  }).join("");
+}
+
+/* Presety */
+document.getElementById("preset").addEventListener("change", function () {
+  var p = PRESETY[this.value];
+  document.getElementById("kumulacja").value = p.kumulacja;
+  document.getElementById("sposob").value = p.sposob === "stala" ? "od_calosci" : p.sposob;
+  document.getElementById("stala").value = p.stala || 20;
+  progi = JSON.parse(JSON.stringify(p.progi));
+  przelaczWidoki(); renderProgi(); przelicz();
+});
+
+function przelaczWidoki() {
+  var brak = document.getElementById("kumulacja").value === "brak";
+  document.getElementById("wrapStala").style.display = brak ? "" : "none";
+  document.getElementById("wrapProgi").style.display = brak ? "none" : "";
+  document.getElementById("wrapSposob").style.display = brak ? "none" : "";
+}
+document.getElementById("kumulacja").addEventListener("change", function () { przelaczWidoki(); przelicz(); });
+document.getElementById("sposob").addEventListener("change", przelicz);
+document.getElementById("stala").addEventListener("input", przelicz);
+document.getElementById("nadpisz").addEventListener("input", przelicz);
+
+/* Przypadki testowe z docs/07-silnik-prowizji.md */
+var TESTY = [
+  { n: 1, opis: "Model A, obrót 49 000 zł", ocz: "4 900,00 zł", preset: "A", f: [["Faktura", 49000]] },
+  { n: 2, opis: "Model A, obrót 50 000 zł (12% od całości)", ocz: "6 000,00 zł", preset: "A", f: [["Faktura", 50000]] },
+  { n: 3, opis: "Model A, 51 000 zł w dwóch fakturach", ocz: "6 120,00 zł", preset: "A", f: [["Szkolenie 1", 26000], ["Szkolenie 2", 25000]] },
+  { n: 4, opis: "Model A, rezygnacja: 54 000 spada do 48 000", ocz: "4 800,00 zł", preset: "A", f: [["Po rezygnacji", 48000]] },
+  { n: 5, opis: "Model B, faktura przez próg 500k (rzeczywiste stawki)", ocz: "2 875,00 zł", preset: "B", f: [["Narastająco", 490000], ["Faktura przez próg", 15000]] },
+  { n: 6, opis: "Model C, obrót 102 000 zł", ocz: "18 280,00 zł", preset: "C", f: [["Faktura", 102000]] },
+  { n: 7, opis: "Model D, stała 20%", ocz: "20% liniowo", preset: "D", f: [["Faktura", 80000]] }
+];
+
+document.getElementById("testy").innerHTML = TESTY.map(function (t, i) {
+  return '<tr><td class="strong">' + t.n + '</td><td>' + t.opis + '</td>' +
+    '<td class="num mono">' + t.ocz + '</td>' +
+    '<td class="right"><button class="btn xs" onclick="uruchomTest(' + i + ')">Załaduj</button></td></tr>';
+}).join("");
+
+function uruchomTest(i) {
+  var t = TESTY[i];
+  document.getElementById("preset").value = t.preset;
+  document.getElementById("preset").dispatchEvent(new Event("change"));
+  document.getElementById("nadpisz").value = "";
+  faktury = t.f.map(function (x) { return { opis: x[0], kwota: x[1] }; });
+  renderFaktury(); przelicz();
+  /* Test 5 liczy prowizje tylko z drugiej faktury, pierwsza buduje obrot */
+  if (t.n === 5) {
+    var r = liczProwizje(warunki(), 490000, 15000);
+    document.getElementById("bigOpis").innerHTML =
+      "Prowizja z faktury przekraczającej próg: <b>" + DB.fmtPLN2(r.kwota) +
+      "</b> · efektywnie " + DB.fmtPct(Math.round(r.stawka * 100) / 100);
+  }
+}
+
+function wczytajPrzyklad() {
+  document.getElementById("preset").value = "A";
+  document.getElementById("preset").dispatchEvent(new Event("change"));
+  faktury = [
+    { opis: "Styczeń, szkolenie A", kwota: 26000 },
+    { opis: "Styczeń, szkolenie B", kwota: 25000 }
+  ];
+  renderFaktury(); przelicz();
+}
+
+/* Start */
+progi = JSON.parse(JSON.stringify(PRESETY.A.progi));
+faktury = [{ opis: "Szkolenie 1", kwota: 26000 }, { opis: "Szkolenie 2", kwota: 25000 }];
+przelaczWidoki(); renderProgi(); renderFaktury(); przelicz();
+</script>
+</body>
+</html>

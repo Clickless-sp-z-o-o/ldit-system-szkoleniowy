@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Dashboard</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-desc">
+        Wyłącznie statystyki, bez rozpisek klientów <span class="ref">D-114</span>.
+        To jedyne miejsce z przekrojem przez wszystkie instytucje <span class="ref">D-112</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <select class="inp" style="width:auto" id="okres">
+        <option>Rok 2026</option><option>III kwartał 2026</option><option>Sierpień 2026</option>
+      </select>
+      <button class="btn">Eksport do Excela</button>
+    </div>
+  </div>
+
+  <div class="note">
+    Widok administratora. <b>Pracownik LDIT nie widzi</b> kafelków oznaczonych żółtą ramką:
+    zysków firmy, marżowości i prowizji <span class="ref">D-34</span>.
+  </div>
+
+  <!-- KPI operacyjne -->
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <!-- KPI finansowe, tylko admin -->
+  <div class="grid g4" style="margin-bottom:18px" id="kpiFin"></div>
+
+  <div class="grid g-2-1">
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Wnioskowane kwoty według miesiąca złożenia</h3>
+          <span class="sub">rok 2026</span>
+          <div class="ch-actions"><span class="tag mute">wszystkie instytucje</span></div>
+        </div>
+        <div class="card-body">
+          <div class="bars" id="barsMies"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Lejek: od formularza do rozliczenia</h3>
+          <span class="sub">wszystkie instytucje, 2026</span>
+        </div>
+        <div class="card-body">
+          <div class="funnel" id="lejek"></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>Statusy wniosków</h3></div>
+        <div class="card-body">
+          <div id="statusy"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Cele zespołu</h3>
+          <span class="sub">ustawia administrator</span>
+        </div>
+        <div class="card-body" id="cele"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g-2-1">
+    <div class="card">
+      <div class="card-head">
+        <h3>Wymaga działania</h3>
+        <span class="sub">najbliższe terminy i kolejki</span>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead><tr><th>Co</th><th>Kontekst</th><th class="num">Ile</th><th>Termin</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="strong">Zgłoszenia z formularza do akceptacji</td><td class="muted">bramka anty-spam</td><td class="num">5</td><td><span class="tag warn dot">dziś</span></td><td class="right"><button class="btn xs">Otwórz</button></td></tr>
+            <tr><td class="strong">Nabory kończące się w tym tygodniu</td><td class="muted">PUP Poznań, Gdańsk, Kartuzy</td><td class="num">27</td><td><span class="tag neg dot">do 04.09</span></td><td class="right"><button class="btn xs">Otwórz</button></td></tr>
+            <tr><td class="strong">Szkolenia za 8 dni, sprawdź dokumenty</td><td class="muted">alert automatyczny</td><td class="num">3</td><td><span class="tag warn dot">06.09</span></td><td class="right"><button class="btn xs">Otwórz</button></td></tr>
+            <tr><td class="strong">Faktury po terminie płatności</td><td class="muted">moduł Administracja</td><td class="num">4</td><td><span class="tag neg dot">zaległe</span></td><td class="right"><button class="btn xs">Otwórz</button></td></tr>
+            <tr><td class="strong">Projekty gotowe do rozliczenia</td><td class="muted">szkolenie odbyte, brak paczki</td><td class="num">11</td><td><span class="tag info dot">bieżące</span></td><td class="right"><button class="btn xs">Otwórz</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Skuteczność per instytucja</h3></div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead><tr><th>Instytucja</th><th class="num">Wnioski</th><th class="num">Skuteczność</th></tr></thead>
+          <tbody id="skutecznosc"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  var W = DB.WNIOSKI;
+  var zlozone = W.filter(function (w) { return w.statusSkl === "Złożony"; });
+  var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
+  var neg = W.filter(function (w) { return w.statusDec === "Negatywna"; });
+  var oczek = W.filter(function (w) { return w.statusSkl === "Złożony" && !w.statusDec; });
+  var rozl = W.filter(function (w) { return w.rozliczenie === "Rozliczone"; });
+
+  var sumaWnioskowana = W.reduce(function (s, w) { return s + w.wartosc; }, 0);
+  var sumaPrzyznana = poz.reduce(function (s, w) { return s + (w.przyznano || 0); }, 0);
+  var sumaOczek = oczek.reduce(function (s, w) { return s + w.wartosc; }, 0);
+
+  /* Prowizja liczona silnikiem, per instytucja.
+     UWAGA: liczymy CALY okres naraz przez liczOkres(), nie faktura po fakturze.
+     W modelu "od calosci" przekroczenie progu podnosi stawke takze dla pozycji
+     juz wystawionych, wiec sumowanie liczProwizje() po kolei zanizyloby wynik.
+     Szczegoly w docs/07-silnik-prowizji.md, sekcja "Pulapka implementacyjna". */
+  var prowizjaRazem = 0, prowizjaRozliczona = 0;
+  var perIS = {};
+  DB.INSTYTUCJE.slice(0, 8).forEach(function (inst) {
+    var pozIS = poz.filter(function (w) { return w.is === inst.id; });
+    if (!pozIS.length) return;
+    var wynik = liczOkres(inst.prowizja, pozIS.map(function (w) { return { kwota: w.kosztZDoplata || 0 }; }));
+    perIS[inst.id] = {
+      nazwa: inst.nazwa, obrot: wynik.obrot, prowizja: wynik.suma, wnioski: 0, poz: 0
+    };
+    prowizjaRazem += wynik.suma;
+    pozIS.forEach(function (w, i) {
+      if (w.rozliczenie === "Rozliczone") prowizjaRozliczona += wynik.pozycje[i].prowizja;
+    });
+  });
+  W.forEach(function (w) {
+    if (!perIS[w.is]) return;
+    perIS[w.is].wnioski++;
+    if (w.statusDec === "Pozytywna") perIS[w.is].poz++;
+  });
+
+  function kpi(label, val, foot, admin) {
+    return '<div class="kpi' + (admin ? " admin" : "") + '">' +
+      '<div class="k-label">' + label + '</div>' +
+      '<div class="k-value">' + val + '</div>' +
+      (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
+  }
+
+  document.getElementById("kpi").innerHTML =
+    kpi("Wnioski złożone", DB.fmtNum(zlozone.length), '<span class="delta up">&#9650; 18%</span> wobec 2025') +
+    kpi("Decyzje pozytywne", DB.fmtNum(poz.length),
+        '<span class="tag pos dot">' + Math.round(poz.length / (poz.length + neg.length) * 100) + '% skuteczności</span>') +
+    kpi("Oczekuje na rozpatrzenie", DB.fmtNum(oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek)) +
+    kpi("Rozliczone projekty", DB.fmtNum(rozl.length), "z " + poz.length + " pozytywnych");
+
+  document.getElementById("kpiFin").innerHTML =
+    kpi("Wartość wniosków", DB.fmtPLN(sumaWnioskowana), "suma wnioskowana 2026", true) +
+    kpi("Przyznane dofinansowania", DB.fmtPLN(sumaPrzyznana), "faktycznie przyznane", true) +
+    kpi("Prowizja naliczona", DB.fmtPLN(prowizjaRazem), "wg warunków per instytucja", true) +
+    kpi("Prowizja rozliczona", DB.fmtPLN(prowizjaRozliczona),
+        '<div class="progress" style="flex:1"><i style="width:' + Math.round(prowizjaRozliczona / prowizjaRazem * 100) + '%"></i></div>', true);
+
+  /* Wykres miesieczny */
+  var mies = ["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"];
+  var sumy = new Array(12).fill(0);
+  W.forEach(function (w) { sumy[parseInt(w.dataWniosku.slice(5, 7)) - 1] += w.wartosc; });
+  var maxS = Math.max.apply(null, sumy);
+  document.getElementById("barsMies").innerHTML = sumy.map(function (s, i) {
+    var h = maxS ? Math.round(s / maxS * 100) : 0;
+    return '<div class="b"><div class="val">' + (s ? Math.round(s / 1000) + "k" : "") + '</div>' +
+           '<div class="fill' + (i > 7 ? " alt" : "") + '" style="height:' + h + '%"></div>' +
+           '<div class="lab">' + mies[i] + '</div></div>';
+  }).join("");
+
+  /* Lejek */
+  var lej = [
+    ["Formularze przyjęte", DB.KLIENCI.length],
+    ["Zarejestrowani w BUR", Math.round(DB.KLIENCI.length * 0.82)],
+    ["Wnioski złożone", zlozone.length],
+    ["Decyzje pozytywne", poz.length],
+    ["Szkolenia odbyte", Math.round(poz.length * 0.79)],
+    ["Rozliczone", rozl.length]
+  ];
+  var maxL = lej[0][1];
+  document.getElementById("lejek").innerHTML = lej.map(function (r) {
+    return '<div class="fn-row"><div class="fl">' + r[0] + '</div>' +
+      '<div class="ft"><i style="width:' + Math.round(r[1] / maxL * 100) + '%"></i></div>' +
+      '<div class="fv">' + DB.fmtNum(r[1]) + '</div></div>';
+  }).join("");
+
+  /* Statusy */
+  var st = [
+    ["Decyzja pozytywna", poz.length, "pos"],
+    ["Decyzja negatywna", neg.length, "neg"],
+    ["Oczekuje na decyzję", oczek.length, "info"],
+    ["Niezłożone", W.filter(function (w) { return w.statusSkl === "Niezłożony"; }).length, "mute"],
+    ["NW (do zmiany nazwy)", W.filter(function (w) { return w.statusSkl === "NW"; }).length, "warn"],
+    ["Rezygnacja", W.filter(function (w) { return w.statusSkl === "Rezygnacja"; }).length, "mute"]
+  ];
+  document.getElementById("statusy").innerHTML = st.map(function (s) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)">' +
+      '<span class="tag ' + s[2] + ' dot">' + s[0] + '</span>' +
+      '<b style="margin-left:auto;font-variant-numeric:tabular-nums">' + s[1] + '</b></div>';
+  }).join("");
+
+  /* Cele */
+  document.getElementById("cele").innerHTML = DB.CELE.map(function (c) {
+    var pct = Math.min(100, Math.round(c.obecnie / c.cel * 100));
+    var ok = c.status === "osiągnięty";
+    return '<div style="margin-bottom:13px">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">' +
+      '<span style="font-size:12.5px;font-weight:650">' + c.nazwa + '</span>' +
+      '<span class="tag ' + (ok ? "pos" : "info") + '" style="margin-left:auto">' + (ok ? "osiągnięty" : pct + "%") + '</span></div>' +
+      '<div class="progress' + (ok ? " pos" : "") + '"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="small muted" style="margin-top:4px">' + c.premia + '</div></div>';
+  }).join("");
+
+  /* Skutecznosc per IS */
+  var lista = Object.keys(perIS).map(function (k) { return perIS[k]; })
+    .sort(function (a, b) { return b.wnioski - a.wnioski; });
+  document.getElementById("skutecznosc").innerHTML = lista.map(function (r) {
+    var pct = r.wnioski ? Math.round(r.poz / r.wnioski * 100) : 0;
+    return '<tr><td class="strong">' + r.nazwa + '</td><td class="num">' + r.wnioski + '</td>' +
+      '<td class="num"><span class="tag ' + (pct >= 60 ? "pos" : pct >= 40 ? "warn" : "neg") + '">' + pct + '%</span></td></tr>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

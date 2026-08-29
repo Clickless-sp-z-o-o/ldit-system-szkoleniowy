@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Terminy</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  /* Drobny wyjatek: wiersz rozwijany z lista osob zapisanych */
+  tr.osoby td { background: var(--surface-2); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Terminy szkoleń</h1>
+      <p class="page-desc">
+        Instytucja wystawia wolne terminy, każdy powiązany z pozycją z katalogu szkoleń. Do terminu
+        przypisuje się uczestników. Widok w dwóch formach, kalendarz i tabela, żeby przy pierwszej rozmowie
+        z klientem od razu było widać wolne terminy. Moduł musi obsłużyć oba modele operacyjne ustalania
+        terminu, opisane niżej.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn">Pismo do PUP o zmianie terminu</button>
+      <button class="btn primary">+ Nowy termin</button>
+    </div>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="card" style="padding:0">
+    <div class="tabs">
+      <button class="tab on" data-t="t1">Kalendarz</button>
+      <button class="tab" data-t="t2">Lista terminów</button>
+    </div>
+
+    <!-- ============ ZAKLADKA 1: KALENDARZ ============ -->
+    <div class="tab-pane on" id="t1">
+      <div class="toolbar">
+        <button class="btn sm" id="prev">&#8592; Poprzedni</button>
+        <b id="mLabel" style="min-width:170px;text-align:center"></b>
+        <button class="btn sm" id="next">Następny &#8594;</button>
+        <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
+        <span class="sp"></span>
+        <div class="legend">
+          <span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>zaplanowany, są zapisani</span>
+          <span><i style="background:var(--info-bg);border-color:#7dd3fc"></i>wolny, można dopisywać</span>
+          <span><i style="background:var(--set-bg);border-color:#d8b4fe"></i>odbyty</span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="cal" id="cal"></div>
+        <div class="small muted mt16">
+          Termin wielodniowy pokazywany jest w każdym dniu swojego trwania, dlatego kursy długie
+          (na przykład spawanie MAG, 15 dni) zajmują ciągły blok w kalendarzu.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 2: LISTA ============ -->
+    <div class="tab-pane" id="t2">
+      <div class="toolbar">
+        <input class="inp search" id="q" placeholder="Szukaj: szkolenie, miejsce, identyfikator...">
+        <select class="inp" id="fIS2"><option value="">Wszystkie instytucje</option></select>
+        <select class="inp" id="fSt">
+          <option value="">Wszystkie statusy</option>
+          <option>Zaplanowany</option>
+          <option>Wolny</option>
+          <option>Odbyty</option>
+        </select>
+        <span class="sp"></span>
+        <span class="small muted" id="licz"></span>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Szkolenie</th>
+              <th>Instytucja</th>
+              <th class="nowrap">Od</th>
+              <th class="nowrap">Do</th>
+              <th>Miejsce</th>
+              <th>Status</th>
+              <th style="width:170px">Zapisani</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="note">
+          <b>Lista osób zapisanych</b> rozwija się w wierszu terminu. To główny widok operacyjny instytucji
+          szkoleniowej: zestawienie terminów wraz z osobami przypisanymi do każdego z nich. Uczestnik trafia
+          na listę z konkretnego projektu, więc zmiana terminu pociąga za sobą pismo do urzędu pracy.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-size:15px;margin:24px 0 12px">Dwa modele operacyjne ustalania terminu</h3>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head">
+        <h3>Model A: termin ustala LDIT</h3>
+        <span class="sub">przykład: Metal Maniak</span>
+        <div class="ch-actions"><span class="tag info">większość instytucji</span></div>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="tl-item done"><div class="t">Instytucja wystawia wolne terminy</div>
+            <div class="m">Każdy termin powiązany z pozycją katalogu, z limitem miejsc i miejscem realizacji.</div></div>
+          <div class="tl-item done"><div class="t">LDIT widzi kalendarz instytucji</div>
+            <div class="m">Przy pierwszej rozmowie z klientem od razu wiadomo, co jest wolne.</div></div>
+          <div class="tl-item now"><div class="t">LDIT ustala termin z klientem i zapisuje uczestników</div>
+            <div class="m">Wpis idzie prosto do tabeli terminów, bez maila do instytucji.</div></div>
+          <div class="tl-item"><div class="t">Instytucja tylko podgląda</div>
+            <div class="m">Nie musi nic potwierdzać, widzi gotową listę osób na swój termin.</div></div>
+        </div>
+        <div class="sep"></div>
+        <div class="small muted">
+          Rola instytucji: <b>odbiorca</b>. Powiadomienie mailowe idzie do instytucji, nie do LDIT.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Model B: termin ustala instytucja</h3>
+        <span class="sub">przykład: Dron Fortech</span>
+        <div class="ch-actions"><span class="tag warn">wymaga pisma do PUP</span></div>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="tl-item done"><div class="t">Instytucja ustala termin telefonicznie z klientem</div>
+            <div class="m">Poza systemem, w swoim własnym narzędziu lub kalendarzu.</div></div>
+          <div class="tl-item done"><div class="t">Instytucja wpisuje termin do systemu</div>
+            <div class="m">Dziś: mail do LDIT. Docelowo: wpis w module terminów, który jest źródłem prawdy.</div></div>
+          <div class="tl-item now"><div class="t">LDIT dostaje powiadomienie o zmianie</div>
+            <div class="m">Zdarzenie widoczne w rejestrze aktywności z wartością przed i po <span class="ref">D-116</span>.</div></div>
+          <div class="tl-item"><div class="t">LDIT składa w urzędzie pismo o zmianie terminu</div>
+            <div class="m">Krok procesu, który musi być widoczny w systemie, bo bez niego zmiana nie jest skuteczna wobec PUP.</div></div>
+        </div>
+        <div class="sep"></div>
+        <div class="small muted">
+          Rola instytucji: <b>autor terminu</b>. System musi przyjąć oba warianty, bo klient wprost powiedział,
+          że jednego standardu nie ma.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <b>Konsekwencja procesowa.</b> Zmiana już ustalonego terminu nie jest prostą edycją daty. Uruchamia
+    pismo do urzędu pracy i wymaga powiadomienia uczestników. Dlatego edycja terminu, do którego są już
+    przypisani uczestnicy, jest w makiecie oddzielona od zwykłego dopisywania nowych terminów.
+  </div>
+
+  <div class="note open">
+    <b>Do rozstrzygnięcia <span class="ref p">P-10</span>:</b> warsztat wykluczył moduł zadań i integrację
+    z kalendarzem Outlook <span class="ref">D-118</span>, ale <b>nie potwierdził wprost</b>, czy w systemie
+    zostaje jakikolwiek własny kalendarz terminów szkoleń. Z dokumentacji przedwarsztatowej i wcześniejszej
+    części warsztatu wynika, że powinien zostać, i tak przyjęto w tej makiecie. Wykluczony jest wyłącznie
+    kalendarz spotkań i zadań, nie kalendarz terminów szkoleń, który jest częścią procesu KFS.
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  var DZIS = "2026-08-29";
+  var MIES_NAZWY = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec", "lipiec",
+                    "sierpień", "wrzesień", "październik", "listopad", "grudzień"];
+  var DOW = ["pon", "wt", "śr", "czw", "pt", "sob", "ndz"];
+  var IMIONA_POOL = ["Marta Zielińska", "Piotr Kaczmarek", "Agnieszka Nowak", "Tomasz Wrona",
+    "Monika Sikora", "Jakub Adamczyk", "Iwona Pawlak", "Rafał Górski", "Natalia Baran",
+    "Marek Kubiak", "Sylwia Mazur", "Damian Król", "Barbara Nowicka", "Michał Witkowski",
+    "Paulina Dąbrowska", "Grzegorz Lewandowski", "Ewa Zawadzka", "Adam Wójcik"];
+
+  function nazwaIS(id) {
+    var i = DB.INSTYTUCJE.filter(function (x) { return x.id === id; })[0];
+    return i ? i.nazwa : "-";
+  }
+  function iso(y, m, d) {
+    return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+  }
+  function klasaEv(status) {
+    if (status === "Zaplanowany") return "plan";
+    if (status === "Wolny") return "free";
+    return "done";
+  }
+
+  /* KPI */
+  var T = DB.TERMINY;
+  var wWrzesniu = T.filter(function (t) { return t.od.slice(0, 7) === "2026-09" || (t.od < "2026-09-01" && t.do >= "2026-09-01"); });
+  var zapisaniRazem = T.reduce(function (s, t) { return s + t.zapisani; }, 0);
+  var limitRazem = T.reduce(function (s, t) { return s + t.limit; }, 0);
+  var wolne = T.filter(function (t) { return t.status === "Wolny"; });
+
+  function kpi(label, val, foot) {
+    return '<div class="kpi"><div class="k-label">' + label + '</div>' +
+      '<div class="k-value">' + val + '</div><div class="k-foot">' + foot + '</div></div>';
+  }
+  document.getElementById("kpi").innerHTML =
+    kpi("Terminy we wrześniu 2026", wWrzesniu.length, "wraz z kursami wchodzącymi z sierpnia") +
+    kpi("Terminy z wolnymi miejscami", wolne.length, "można dopisywać uczestników bez pytania instytucji") +
+    kpi("Uczestnicy zapisani", zapisaniRazem, "na " + limitRazem + " miejsc, obłożenie " +
+        Math.round(zapisaniRazem / limitRazem * 100) + "%") +
+    kpi("Terminy w bazie", T.length, "8 instytucji, katalog 18 szkoleń");
+
+  /* Filtry instytucji */
+  var instId = {};
+  T.forEach(function (t) { instId[t.is] = nazwaIS(t.is); });
+  ["fIS", "fIS2"].forEach(function (id) {
+    var sel = document.getElementById(id);
+    Object.keys(instId).forEach(function (k) {
+      sel.innerHTML += '<option value="' + k + '">' + instId[k] + '</option>';
+    });
+  });
+
+  /* ---------- Kalendarz ---------- */
+  var rok = 2026, mies = 8; /* wrzesien 2026, 1 wrzesnia to wtorek */
+
+  function render() {
+    var fis = document.getElementById("fIS").value;
+    document.getElementById("mLabel").textContent = MIES_NAZWY[mies] + " " + rok;
+
+    var pierwszy = new Date(Date.UTC(rok, mies, 1));
+    var przesun = (pierwszy.getUTCDay() + 6) % 7;          /* poniedzialek = 0 */
+    var dniMies = new Date(Date.UTC(rok, mies + 1, 0)).getUTCDate();
+    var dniPoprz = new Date(Date.UTC(rok, mies, 0)).getUTCDate();
+
+    var html = DOW.map(function (d) { return '<div class="dow">' + d + '</div>'; }).join("");
+    var komorek = Math.ceil((przesun + dniMies) / 7) * 7;
+
+    for (var i = 0; i < komorek; i++) {
+      var poza = i < przesun || i >= przesun + dniMies;
+      var dzien, data;
+      if (i < przesun) {
+        dzien = dniPoprz - przesun + i + 1;
+        data = iso(mies === 0 ? rok - 1 : rok, mies === 0 ? 11 : mies - 1, dzien);
+      } else if (i >= przesun + dniMies) {
+        dzien = i - przesun - dniMies + 1;
+        data = iso(mies === 11 ? rok + 1 : rok, mies === 11 ? 0 : mies + 1, dzien);
+      } else {
+        dzien = i - przesun + 1;
+        data = iso(rok, mies, dzien);
+      }
+
+      var ev = T.filter(function (t) {
+        if (fis && t.is !== fis) return false;
+        return data >= t.od && data <= t.do;
+      });
+
+      html += '<div class="day' + (poza ? " out" : "") + (data === DZIS ? " today" : "") + '">' +
+        '<div class="dn">' + dzien + '</div>' +
+        ev.slice(0, 3).map(function (t) {
+          return '<div class="ev ' + klasaEv(t.status) + '" title="' + t.nazwa + ', ' +
+            nazwaIS(t.is) + ', ' + t.zapisani + ' z ' + t.limit + ' miejsc">' + t.nazwa + '</div>';
+        }).join("") +
+        (ev.length > 3 ? '<div class="ev">+ ' + (ev.length - 3) + ' więcej</div>' : "") +
+        '</div>';
+    }
+    document.getElementById("cal").innerHTML = html;
+  }
+
+  document.getElementById("prev").addEventListener("click", function () {
+    mies--; if (mies < 0) { mies = 11; rok--; } render();
+  });
+  document.getElementById("next").addEventListener("click", function () {
+    mies++; if (mies > 11) { mies = 0; rok++; } render();
+  });
+  document.getElementById("fIS").addEventListener("change", render);
+  render();
+
+  /* ---------- Lista terminow ---------- */
+  function osobyTerminu(t, idx) {
+    var out = [];
+    for (var i = 0; i < Math.min(t.zapisani, 8); i++) {
+      out.push(IMIONA_POOL[(idx * 5 + i * 3) % IMIONA_POOL.length]);
+    }
+    return out;
+  }
+  function tagSt(s) {
+    if (s === "Zaplanowany") return '<span class="tag info dot">Zaplanowany</span>';
+    if (s === "Wolny") return '<span class="tag pos dot">Wolny</span>';
+    return '<span class="tag set dot">Odbyty</span>';
+  }
+
+  function renderLista() {
+    var q = document.getElementById("q").value.toLowerCase().trim();
+    var fis = document.getElementById("fIS2").value;
+    var fst = document.getElementById("fSt").value;
+
+    var lista = T.filter(function (t) {
+      if (fis && t.is !== fis) return false;
+      if (fst && t.status !== fst) return false;
+      if (q && (t.nazwa + " " + t.miejsce + " " + t.id).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }).sort(function (a, b) { return a.od < b.od ? -1 : 1; });
+
+    document.getElementById("licz").innerHTML =
+      "<b>" + lista.length + "</b> z " + T.length + " terminów &middot; zapisanych: <b>" +
+      lista.reduce(function (s, t) { return s + t.zapisani; }, 0) + "</b>";
+
+    document.getElementById("body").innerHTML = lista.map(function (t) {
+      var idx = T.indexOf(t);
+      var pct = Math.round(t.zapisani / t.limit * 100);
+      var pelny = t.zapisani >= t.limit;
+      return '<tr>' +
+          '<td class="mono strong">' + t.id + '</td>' +
+          '<td class="strong nowrap">' + t.nazwa + '<div class="small muted">' + t.szk + '</div></td>' +
+          '<td class="nowrap">' + nazwaIS(t.is) + '</td>' +
+          '<td class="mono nowrap">' + t.od + '</td>' +
+          '<td class="mono nowrap">' + t.do + '</td>' +
+          '<td class="nowrap muted">' + t.miejsce + '</td>' +
+          '<td class="nowrap">' + tagSt(t.status) + '</td>' +
+          '<td><div class="progress' + (pelny ? " pos" : "") + '"><i style="width:' + pct + '%"></i></div>' +
+            '<div class="small muted" style="margin-top:4px">' + t.zapisani + ' z ' + t.limit +
+            ' miejsc' + (pelny ? ", komplet" : "") + '</div></td>' +
+          '<td class="right nowrap"><button class="btn xs" onclick="rozwin(' + idx + ')">Zapisani</button></td>' +
+        '</tr>' +
+        '<tr class="osoby" id="os' + idx + '" style="display:none"><td colspan="9">' +
+          '<div class="small strong" style="margin-bottom:6px">Uczestnicy zapisani na ' + t.id + '</div>' +
+          (t.zapisani
+            ? '<div class="btn-row">' + osobyTerminu(t, idx).map(function (o) {
+                return '<span class="pill">' + o + '</span>';
+              }).join("") +
+              (t.zapisani > 8 ? '<span class="pill w">i ' + (t.zapisani - 8) + ' więcej</span>' : "") + '</div>'
+            : '<div class="muted small">Nikt jeszcze nie jest zapisany na ten termin.</div>') +
+          '<div class="small muted mt16">Każdy uczestnik pochodzi z konkretnego projektu. ' +
+          'Zmiana terminu wymaga pisma do urzędu pracy i powiadomienia uczestników.</div>' +
+        '</td></tr>';
+    }).join("");
+  }
+
+  window.rozwin = function (idx) {
+    var tr = document.getElementById("os" + idx);
+    tr.style.display = tr.style.display === "none" ? "table-row" : "none";
+  };
+
+  ["q", "fIS2", "fSt"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", renderLista);
+    document.getElementById(id).addEventListener("change", renderLista);
+  });
+  renderLista();
+
+  /* Zakladki */
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+      document.querySelectorAll(".tab-pane").forEach(function (x) { x.classList.remove("on"); });
+      t.classList.add("on");
+      document.getElementById(t.dataset.t).classList.add("on");
+    });
+  });
+})();
+</script>
+</body>
+</html>

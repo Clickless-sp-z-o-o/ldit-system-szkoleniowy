@@ -263,6 +263,33 @@ System musi wiedzieć, która faktura wyczerpała próg.
 
 > **Paweł (33:45):** "patrzymy na kolejność wystawiania faktur, licząc prowizję w tym przypadku."
 
+### Pułapka implementacyjna: Model A liczy się na całym okresie
+
+> **Uwaga wykryta przy budowie prototypu.** Naiwna implementacja daje w Modelu A **błędny wynik zaniżony o 9%**.
+
+W modelu "od całości" nie wolno liczyć prowizji fakturami po kolei i sumować wyników. Przekroczenie progu podnosi stawkę dla **całego obrotu okresu**, także dla faktur już wystawionych.
+
+Przykład z warsztatu (styczeń: 26 000 zł + 25 000 zł):
+
+```
+BLEDNIE, przyrostowo faktura po fakturze:
+  faktura 1: obrot 26 000  -> ponizej progu -> 10%  ->  2 600 zl
+  faktura 2: obrot 51 000  -> powyzej progu -> 12%  ->  3 000 zl
+                                                 razem   5 600 zl   <- ZLE
+
+POPRAWNIE, na sumie okresu:
+  obrot okresu 51 000 -> powyzej progu 50 000 -> 12% dla calosci
+  26 000 x 12% = 3 120 zl
+  25 000 x 12% = 3 000 zl
+                 razem  6 120 zl   <- DOBRZE
+```
+
+**Konsekwencja architektoniczna:** rozliczenie musi być operacją **na okresie**, nie na pojedynczej fakturze. Wystawienie nowej faktury przelicza prowizję wszystkich pozycji w tym okresie. To potwierdza wymaganie klienta z 28:11: *"zmieniasz wtedy wszędzie w całym miesiącu, nie w pojedynczym szkoleniu, wartość prowizji"*.
+
+Modele B i C (od nadwyżki) liczą się przyrostowo i tam kolejność faktur faktycznie ma znaczenie. Model A jest niewrażliwy na kolejność, ale wrażliwy na sumę.
+
+Działająca implementacja obu wariantów znajduje się w `makieta/assets/data.js`, funkcje `liczProwizje()` (pojedyncza faktura, modele B i C) oraz `liczOkres()` (cały okres, wszystkie modele). Prototyp konfiguratora `makieta/strony/15-konfigurator-prowizji.html` przechodzi komplet 7 przypadków testowych z tabeli poniżej.
+
 **Pytanie otwarte [P-04]:** zachowanie przy fakturach wystawianych niechronologicznie oraz przy korektach faktur.
 
 ---

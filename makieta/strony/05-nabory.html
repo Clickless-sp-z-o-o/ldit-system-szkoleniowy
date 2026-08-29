@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Nabory</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  /* Drobny wyjatek: nabory zakonczone wygaszone, brak gotowej klasy */
+  tr.past td { color: var(--ink-4); }
+  tr.past td .tag { opacity: .8; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Nabory</h1>
+      <p class="page-desc">
+        Nabory aktualne, prognozowane i zakończone w jednym miejscu, bez osobnego linku
+        <span class="ref">D-109</span>. Nabór jest przypisany do urzędu pracy, rodzaj naboru jest osobnym
+        wymiarem, dziś wyłącznie KFS, ale model dopuszcza programy powiatowe i inne.
+        Sortowanie po dacie zakończenia rosnąco, najpilniejsze na górze <span class="ref">D-90</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn">Odśwież prognozy</button>
+      <button class="btn primary">Eksport listy urzędów</button>
+    </div>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Nabory według pilności</h3>
+      <span class="sub">stan na 29.08.2026</span>
+      <div class="ch-actions">
+        <div class="legend">
+          <span><i style="background:var(--pos-bg);border-color:#86efac"></i>nabór ogłoszony</span>
+          <span><i style="background:var(--info-bg);border-color:#7dd3fc"></i>w trakcie kontaktu</span>
+          <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>brak naboru, jest prognoza</span>
+          <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>po naborze</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input class="inp search" id="q" placeholder="Szukaj: urząd, województwo...">
+      <select class="inp" id="fStat">
+        <option value="">Wszystkie stany</option>
+        <option>Nabór ogłoszony</option>
+        <option>W trakcie kontaktu</option>
+        <option>Brak naboru</option>
+        <option>Po naborze</option>
+      </select>
+      <select class="inp" id="fRodz">
+        <option value="">Wszystkie rodzaje</option>
+        <option>KFS</option>
+        <option>Powiatowy</option>
+      </select>
+      <span class="sp"></span>
+      <span class="small muted" id="licz"></span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Urząd pracy</th>
+            <th>Województwo</th>
+            <th>Rodzaj</th>
+            <th>Status</th>
+            <th class="nowrap">Termin od</th>
+            <th class="nowrap">Termin do</th>
+            <th class="c">Zostało</th>
+            <th>Prognoza</th>
+            <th class="num">Klientów czeka</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="10" class="muted small" style="padding:12px">
+              W bazie systemu jest <b>340 urzędów pracy</b>. Tutaj pokazano <b>12 najaktywniejszych</b>,
+              czyli te, w których LDIT ma klientów lub prowadzi kontakt. Pozostałe pojawiają się
+              w widoku dopiero, gdy aplikacja prognozująca zwróci dla nich datę.
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head">
+        <h3>Prognozy na kolejne miesiące</h3>
+        <span class="sub">liczba urzędów z przewidywanym naborem</span>
+      </div>
+      <div class="card-body">
+        <div class="bars" id="barsProg"></div>
+        <div class="small muted mt16">
+          Prognoza pochodzi z zewnętrznej aplikacji przewidującej terminy naborów. System jej nie liczy,
+          tylko wyświetla i wiąże z klientami.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Klienci czekający według miesiąca prognozy</h3>
+        <span class="sub">na ilu klientów przełoży się otwarcie naboru</span>
+      </div>
+      <div class="card-body">
+        <div class="bars" id="barsKl"></div>
+        <div class="small muted mt16">
+          Największa kumulacja przypada na urzędy o dużej liczbie klientów, w praktyce PUP Warszawa
+          i PUP Katowice. To one wyznaczają szczyt obciążenia pracą.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Nabory kończące się w najbliższych 14 dniach</h3>
+      <span class="sub">lista do działania, nie alert mailowy</span>
+    </div>
+    <div class="card-body">
+      <div class="timeline" id="os"></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Skąd biorą się te dane.</b> Nabory nie są wprowadzane ręcznie. LDIT ma już własną aplikację do
+    przewidywania naborów i została ona wciągnięta do systemu jako moduł, żeby nabory były w jednym miejscu,
+    a nie pod osobnym linkiem <span class="ref">D-109</span>. System jest <b>odbiorcą prognoz</b>, sam ich
+    nie wylicza. Baza obejmuje <b>340 urzędów pracy</b>, tutaj pokazano 12 najaktywniejszych.
+  </div>
+
+  <div class="note open">
+    <b>Do rozstrzygnięcia <span class="ref p">P-34</span>:</b> wykonawca uznał, że instytucja szkoleniowa
+    też powinna widzieć nadchodzące nabory. Klient nie potwierdził i przekierował rozmowę. Wiadomo natomiast,
+    że <b>handlowiec instytucji tej informacji nie dostaje</b> <span class="ref">D-91</span>, bo po wpłynięciu
+    formularza cały kontakt z klientem prowadzi LDIT. W makiecie moduł przypisano wyłącznie rolom LDIT.
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  var DZIS = new Date("2026-08-29");
+  function dniDo(iso) { return Math.round((new Date(iso) - DZIS) / 86400000); }
+
+  /* Klucz sortowania: ogloszone wg daty konca rosnaco, potem kontakt, prognoza, na koncu zakonczone */
+  var MIES_KOLEJNOSC = ["wrzesień 2026", "połowa października 2026", "październik 2026",
+                        "listopad 2026", "grudzień 2026", "styczeń 2027"];
+  function klucz(n) {
+    if (n.status === "Nabór ogłoszony") return 1000 + dniDo(n.do);
+    if (n.status === "W trakcie kontaktu") return 20000 + MIES_KOLEJNOSC.indexOf(n.prognoza);
+    if (n.status === "Brak naboru") return 30000 + MIES_KOLEJNOSC.indexOf(n.prognoza);
+    return 40000 - dniDo(n.do);
+  }
+  var N = DB.NABORY.slice().sort(function (a, b) { return klucz(a) - klucz(b); });
+
+  var ogl = N.filter(function (n) { return n.status === "Nabór ogłoszony"; });
+  var kont = N.filter(function (n) { return n.status === "W trakcie kontaktu"; });
+  var prog = N.filter(function (n) { return n.status === "Brak naboru"; });
+  var po = N.filter(function (n) { return n.status === "Po naborze"; });
+  var czekaLacznie = N.reduce(function (s, n) { return s + n.klientow; }, 0);
+  var czekaOtwarte = ogl.reduce(function (s, n) { return s + n.klientow; }, 0);
+
+  function kpi(label, val, foot) {
+    return '<div class="kpi"><div class="k-label">' + label + '</div>' +
+      '<div class="k-value">' + val + '</div>' +
+      '<div class="k-foot">' + foot + '</div></div>';
+  }
+  document.getElementById("kpi").innerHTML =
+    kpi("Nabory ogłoszone teraz", ogl.length,
+        '<span class="tag pos dot">' + czekaOtwarte + ' klientów do obsłużenia</span>') +
+    kpi("Urzędy w trakcie kontaktu", kont.length, "data jeszcze niepotwierdzona przez urząd") +
+    kpi("Nabory prognozowane", (kont.length + prog.length),
+        "najbliższe: wrzesień 2026, najdalsze: styczeń 2027") +
+    kpi("Klientów oczekujących łącznie", DB.fmtNum(czekaLacznie),
+        "z " + N.length + " urzędów, w bazie jest ich 340");
+
+  function tagStat(n) {
+    if (n.status === "Nabór ogłoszony") return '<span class="tag pos dot">Nabór ogłoszony</span>';
+    if (n.status === "W trakcie kontaktu") return '<span class="tag info dot">W trakcie kontaktu</span>';
+    if (n.status === "Brak naboru") return '<span class="tag warn dot">Brak naboru</span>';
+    return '<span class="tag mute dot">Po naborze</span>';
+  }
+  function tagDni(n) {
+    if (n.status === "Nabór ogłoszony") {
+      var d = dniDo(n.do);
+      if (d <= 3) return '<span class="tag neg">' + d + ' dni</span>';
+      if (d <= 10) return '<span class="tag warn">' + d + ' dni</span>';
+      return '<span class="tag info">' + d + ' dni</span>';
+    }
+    if (n.status === "Po naborze") return '<span class="small muted">zakończony</span>';
+    return '<span class="muted">&mdash;</span>';
+  }
+
+  function render() {
+    var q = document.getElementById("q").value.toLowerCase().trim();
+    var fs = document.getElementById("fStat").value;
+    var fr = document.getElementById("fRodz").value;
+
+    var lista = N.filter(function (n) {
+      if (fs && n.status !== fs) return false;
+      if (fr && n.rodzaj !== fr) return false;
+      if (q && (n.pup + " " + n.woj).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    document.getElementById("licz").innerHTML =
+      "<b>" + lista.length + "</b> z " + N.length + " urzędów &middot; klientów czeka: <b>" +
+      DB.fmtNum(lista.reduce(function (s, n) { return s + n.klientow; }, 0)) + "</b>";
+
+    document.getElementById("body").innerHTML = lista.map(function (n) {
+      var cls = n.status === "Nabór ogłoszony" ? "row-pos row-nabor"
+              : n.status === "Po naborze" ? "past" : "";
+      return '<tr class="' + cls + '">' +
+        '<td class="strong nowrap">' + n.pup + '</td>' +
+        '<td class="muted nowrap">' + n.woj + '</td>' +
+        '<td><span class="pill' + (n.rodzaj === "KFS" ? " k" : " w") + '">' + n.rodzaj + '</span></td>' +
+        '<td class="nowrap">' + tagStat(n) + '</td>' +
+        '<td class="mono nowrap">' + (n.od || '<span class="muted">&mdash;</span>') + '</td>' +
+        '<td class="mono nowrap">' + (n.do || '<span class="muted">&mdash;</span>') + '</td>' +
+        '<td class="c">' + tagDni(n) + '</td>' +
+        '<td class="nowrap">' + (n.prognoza ? '<span class="small">' + n.prognoza + '</span>'
+                                            : '<span class="muted">&mdash;</span>') + '</td>' +
+        '<td class="num strong">' + n.klientow + '</td>' +
+        '<td class="right nowrap">' +
+          '<button class="btn xs" onclick="pokazKlientow(\'' + n.pup + '\')">Pokaż klientów</button></td>' +
+        '</tr>';
+    }).join("");
+  }
+
+  window.pokazKlientow = function (pup) {
+    location.href = "04-baza-klientow.html?pup=" + encodeURIComponent(pup);
+  };
+
+  ["q", "fStat", "fRodz"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", render);
+    document.getElementById(id).addEventListener("change", render);
+  });
+  render();
+
+  /* Prognozy na kolejne miesiace */
+  var MIES = [
+    { lab: "wrz 26", klucze: ["wrzesień 2026"] },
+    { lab: "paź 26", klucze: ["połowa października 2026", "październik 2026"] },
+    { lab: "lis 26", klucze: ["listopad 2026"] },
+    { lab: "gru 26", klucze: ["grudzień 2026"] },
+    { lab: "sty 27", klucze: ["styczeń 2027"] },
+    { lab: "lut 27", klucze: [] },
+    { lab: "mar 27", klucze: [] }
+  ];
+  var dane = MIES.map(function (m) {
+    var wyb = N.filter(function (n) { return m.klucze.indexOf(n.prognoza) >= 0; });
+    return { lab: m.lab, ile: wyb.length, klientow: wyb.reduce(function (s, n) { return s + n.klientow; }, 0) };
+  });
+
+  function bars(el, pole, sufiks, klasaAlt) {
+    var max = Math.max.apply(null, dane.map(function (d) { return d[pole]; })) || 1;
+    document.getElementById(el).innerHTML = dane.map(function (d, i) {
+      var h = Math.round(d[pole] / max * 100);
+      return '<div class="b"><div class="val">' + (d[pole] ? d[pole] + sufiks : "") + '</div>' +
+        '<div class="fill' + (i > 1 ? " " + klasaAlt : "") + '" style="height:' + h + '%"></div>' +
+        '<div class="lab">' + d.lab + '</div></div>';
+    }).join("");
+  }
+  bars("barsProg", "ile", "", "alt");
+  bars("barsKl", "klientow", "", "alt");
+
+  /* Os czasu najblizszych koncow naborow */
+  var bliskie = ogl.filter(function (n) { return dniDo(n.do) <= 14; });
+  document.getElementById("os").innerHTML = bliskie.map(function (n, i) {
+    var d = dniDo(n.do);
+    return '<div class="tl-item' + (i === 0 ? " now" : "") + '">' +
+      '<div class="t">' + n.pup + ', koniec naboru ' + n.do + ', za ' + d + ' dni</div>' +
+      '<div class="m">' + n.klientow + ' klientów w tym urzędzie, nabór trwa od ' + n.od +
+      '. Rodzaj: ' + n.rodzaj + ', województwo ' + n.woj + '.</div></div>';
+  }).join("") +
+  '<div class="tl-item"><div class="t">Dalej: urzędy z prognozą na wrzesień</div>' +
+  '<div class="m">PUP Katowice (22 klientów) i PUP Poddębice (3 klientów), data niepotwierdzona.</div></div>';
+})();
+</script>
+</body>
+</html>

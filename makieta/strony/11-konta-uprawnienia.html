@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Konta i uprawnienia</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  /* Drobne uzupelnienia lokalne, reszta z assets/style.css */
+  tr.no2fa td { background: #fffbeb; }
+  tr.no2fa:hover td { background: #fef3c7; }
+  .role-item {
+    padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+    margin-bottom: 6px; cursor: pointer; font-size: 13px; background: #fff;
+  }
+  .role-item:hover { border-color: var(--line-strong); }
+  .role-item.on { border-color: var(--accent); background: var(--accent-soft); font-weight: 650; }
+  .role-item .rd { font-size: 11.5px; color: var(--ink-3); font-weight: 400; margin-top: 2px; }
+  .menu-prev { background: var(--brand-900); border-radius: var(--radius); padding: 9px 0; max-width: 300px; }
+  .menu-prev .mi { display: flex; align-items: center; gap: 8px; padding: 6px 16px; color: #cbd5e1; font-size: 13px; }
+  .menu-prev .mi b { margin-left: auto; font-size: 9.5px; color: #93c5fd; letter-spacing: .05em; text-transform: uppercase; }
+  .menu-prev .nic { color: #64748b; font-style: italic; padding: 10px 16px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Konta i uprawnienia</h1>
+      <p class="page-desc">
+        Moduł wyłącznie dla administratora. Uprawnienia nadawane <b>per rola, nie per pracownik</b>
+        <span class="ref">D-35</span>, konfigurator ról obsługiwany samodzielnie przez klienta
+        <span class="ref">D-36</span>. Drugi, niezależny wymiar to przypisanie pracownika do konkretnych
+        instytucji szkoleniowych <span class="ref">D-113</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn" onclick="alert('Eksport listy kont do Excela.')">Eksport kont</button>
+      <button class="btn primary" onclick="alert('Formularz nowego konta: imię i nazwisko, login (adres e-mail), rola, przypisane instytucje, wymuszenie 2FA przy pierwszym logowaniu.')">+ Dodaj użytkownika</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab on" data-t="t1">Użytkownicy</div>
+      <div class="tab" data-t="t2">Konfigurator ról</div>
+      <div class="tab" data-t="t3">Macierz uprawnień</div>
+      <div class="tab" data-t="t4">Przypisanie do instytucji</div>
+    </div>
+
+    <!-- ============ ZAKLADKA 1: UZYTKOWNICY ============ -->
+    <div class="tab-pane on" id="t1">
+      <div class="toolbar">
+        <input class="inp search" id="qU" placeholder="Szukaj: imię, login, instytucja...">
+        <select class="inp" id="fRola"><option value="">Wszystkie role</option></select>
+        <button class="chip" id="chip2fa">Tylko konta bez 2FA</button>
+        <span class="sp"></span>
+        <span class="small muted" id="liczU"></span>
+      </div>
+
+      <div class="card-body" style="padding:0 16px 4px">
+        <div class="note warn mb0" style="margin:14px 0" id="alert2fa"></div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Użytkownik</th>
+              <th>Rola</th>
+              <th>Przypisane instytucje</th>
+              <th class="c">2FA</th>
+              <th>Ostatnie logowanie</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="bodyU"></tbody>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Cykl życia konta.</b> Administrator dodaje i usuwa konta samodzielnie, blokada konta byłego
+          pracownika działa natychmiast i unieważnia otwartą sesję. Wymagane: 2FA, reset hasła,
+          automatyczne wylogowanie po bezczynności. Każda operacja na koncie trafia do
+          <a href="12-rejestr-aktywnosci.html">rejestru aktywności</a> <span class="ref">D-116</span>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 2: KONFIGURATOR ROL ============ -->
+    <div class="tab-pane" id="t2">
+      <div class="card-body">
+        <div class="note">
+          <b>Model uprawnień jest płaski, bez hierarchii.</b> Menedżer nie musi widzieć więcej niż
+          szeregowy pracownik, dopuszczalna jest dowolna kombinacja. Jednostką uprawnienia jest
+          zakładka (moduł) z lewej nawigacji, poziomy są dwa: podgląd i edycja. Menu boczne renderuje
+          się dynamicznie na podstawie roli zalogowanego użytkownika <span class="ref">D-36</span>.<br><br>
+          <b>Bartek (59:04):</b> „chciałbym mieć możliwość samodzielnej decyzji, co widzi ten menedżer,
+          a co widzi to nie. Nawet absurdalny przykład: jeżeli będę chciał, żeby pracownik zwykły widział
+          więcej niż menedżer, to żebym mógł sobie to ustawić.”
+        </div>
+
+        <div class="grid g-1-2">
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Role</h3>
+                <span class="sub" id="liczR"></span>
+              </div>
+              <div class="card-body">
+                <div id="listaRol"></div>
+                <button class="btn sm" style="width:100%;justify-content:center;margin-top:6px" onclick="nowaRola()">+ Nowa rola</button>
+                <div class="small muted" style="margin-top:10px;line-height:1.5">
+                  Pięć ról bazowych dostarczanych z systemem. Role własne administrator tworzy sam,
+                  bez udziału wykonawcy.
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt16 mb0">
+              <div class="card-head"><h3>Podgląd menu bocznego</h3></div>
+              <div class="card-body">
+                <div class="menu-prev" id="podgladMenu"></div>
+                <div class="small muted" style="margin-top:9px;line-height:1.5">
+                  Tak zobaczy nawigację użytkownik z tą rolą po zalogowaniu.
+                  Moduł bez uprawnienia podglądu nie pojawia się w menu i nie jest dostępny
+                  z poziomu adresu URL.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Uprawnienia roli: <span id="nazwaRoli"></span></h3>
+                <div class="ch-actions">
+                  <button class="btn xs" onclick="zaznaczWszystko(true)">Zaznacz wszystko</button>
+                  <button class="btn xs" onclick="zaznaczWszystko(false)">Wyczyść</button>
+                  <button class="btn xs primary" onclick="alert('Zmiany uprawnień zapisane. Wpis w rejestrze aktywności zawiera rolę, moduł oraz wartość przed i po (D-116).')">Zapisz</button>
+                </div>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Moduł</th>
+                      <th class="c" style="width:110px">Podgląd</th>
+                      <th class="c" style="width:110px">Edycja</th>
+                      <th style="width:150px">Efekt</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bodyPerm"></tbody>
+                </table>
+              </div>
+              <div class="card-body">
+                <div class="small muted mb0">
+                  Zaznaczenie edycji włącza podgląd automatycznie, bo nie da się edytować modułu,
+                  którego się nie widzi. Odznaczenie podglądu wyłącza edycję.
+                </div>
+              </div>
+            </div>
+
+            <div class="note open mt16 mb0">
+              <b>Trzeci wymiar, poza modułem i instytucją <span class="ref p">P-08</span>:</b>
+              filtrowanie wierszy. Uprawnienie ma działać także wewnątrz modułu, po instytucji,
+              po etapie procesu i po naborze <span class="ref">D-73</span>. Przykład z warsztatu:
+              handlowiec instytucji widzi wyłącznie klientów z najnowszego naboru. W tym prototypie
+              filtry wierszy nie są jeszcze odwzorowane, sam mechanizm wymaga zaprojektowania razem
+              z modelem danych <span class="ref p">P-25</span>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 3: MACIERZ ============ -->
+    <div class="tab-pane" id="t3">
+      <div class="card-body">
+        <div class="note">
+          Wersja robocza macierzy widoczności do potwierdzenia przez klienta. Szare pola oznaczone
+          znakiem zapytania to miejsca, w których warsztat nie dał rozstrzygnięcia. Najedź kursorem,
+          żeby zobaczyć czego dotyczy wątpliwość.
+        </div>
+
+        <div class="legend" style="margin-bottom:12px">
+          <span><i style="background:var(--pos-bg);border-color:#86efac"></i>pełny dostęp</span>
+          <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>ograniczony</span>
+          <span><i style="background:var(--info-bg);border-color:#7dd3fc"></i>tylko odczyt</span>
+          <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>brak lub nierozstrzygnięte</span>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl matrix">
+          <thead>
+            <tr>
+              <th>Moduł</th>
+              <th class="c">Administrator</th>
+              <th class="c">Pracownik LDIT</th>
+              <th class="c">Instytucja szkoleniowa</th>
+              <th class="c">Pracownik IS</th>
+              <th class="c">Klient końcowy</th>
+            </tr>
+          </thead>
+          <tbody id="bodyMx"></tbody>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="note warn mb0">
+          <b>Trzy warstwy separacji, których macierz nie może naruszyć.</b>
+          Instytucja nie widzi cudzych klientów, instytucja nie widzi żadnej stawki prowizji
+          (ani swojej, ani cudzej) <span class="ref">D-07</span>, pracownik nie widzi zysków firmy
+          <span class="ref">D-19</span>. Separacja egzekwowana na poziomie danych, nie interfejsu,
+          identycznie w widokach, wyszukiwarce, eksportach i formularzach.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 4: PRZYPISANIE DO INSTYTUCJI ============ -->
+    <div class="tab-pane" id="t4">
+      <div class="card-body">
+        <div class="note">
+          <b>To jest drugi, niezależny wymiar uprawnień <span class="ref">D-113</span>.</b>
+          Macierz rola x moduł mówi <i>jakie zakładki</i> użytkownik widzi. Przypisanie do instytucji
+          mówi <i>czyje dane</i> w tych zakładkach zobaczy. Pracownik LDIT widzi wyłącznie klientów,
+          wnioski i zestawienia instytucji ze swojego przydziału, a rozwijana lista w zakładce
+          Dofinansowania jest do tego przydziału ograniczona. Dwie osoby z identyczną rolą mogą więc
+          widzieć zupełnie różne zbiory danych.<br><br>
+          <b>Bartek (3:12:21):</b> „pracownik Łucjan ma dostęp tylko do Metal Maniak, pracownik Martyna
+          ma dostęp do Odczaruj Power BI [i] Dron Fortech.”
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr id="hdrPrzyp"></tr></thead>
+          <tbody id="bodyPrzyp"></tbody>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="btn-row" style="margin-bottom:14px">
+          <button class="btn primary" onclick="alert('Przydział zapisany. Zmiana zakresu widoczności pracownika trafia do rejestru aktywności (D-116).')">Zapisz przydział</button>
+          <button class="btn">Historia zmian przydziału</button>
+        </div>
+        <div class="note mb0">
+          Konta instytucji szkoleniowych i ich handlowców nie występują w tej tabeli, bo ich zakres
+          jest z definicji zamknięty do własnej instytucji i nie podlega konfiguracji. Konto
+          administratora ma dostęp do wszystkich instytucji i nie da się tego odznaczyć.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note open">
+    <b>Nierozstrzygnięte <span class="ref p">P-35</span>: czy pracownik LDIT ma dostęp do danych
+    finansowych.</b> Na warsztacie klient nie dokończył zdania.
+    <b>Bartek (58:02):</b> „na razie tylko zostaje [dla] admina, no ale docelowo...”.
+    W makiecie przyjęto wariant zachowawczy: moduł Administracja, prowizje i faktury są niedostępne
+    dla roli Pracownik LDIT, a kafelki finansowe na dashboardzie są dla niego ukryte
+    <span class="ref">D-34</span>. Jeśli klient zdecyduje inaczej, zmiana sprowadza się do
+    przestawienia checkboxów w konfiguratorze ról, bez pracy programistycznej. Rozstrzygnięcia
+    wymaga natomiast to, czy „dane finansowe” oznaczają całą Administrację, czy tylko stawki prowizji.
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+/* ================= ZAKLADKI ================= */
+document.querySelectorAll(".tab").forEach(function (t) {
+  t.addEventListener("click", function () {
+    document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+    document.querySelectorAll(".tab-pane").forEach(function (x) { x.classList.remove("on"); });
+    t.classList.add("on");
+    document.getElementById(t.dataset.t).classList.add("on");
+  });
+});
+
+/* ================= 1. UZYTKOWNICY ================= */
+var U = DB.UZYTKOWNICY;
+var tylkoBez2fa = false;
+
+var role = [];
+U.forEach(function (u) { if (role.indexOf(u.rola) < 0) role.push(u.rola); });
+var selRola = document.getElementById("fRola");
+role.forEach(function (r) { selRola.innerHTML += '<option>' + r + '</option>'; });
+
+function tagRoli(r) {
+  var k = r === "Administrator" ? "set"
+        : r === "Pracownik LDIT" ? "info"
+        : r === "Instytucja szkoleniowa" ? "pos" : "mute";
+  return '<span class="tag ' + k + '">' + r + '</span>';
+}
+
+function renderU() {
+  var q = document.getElementById("qU").value.toLowerCase().trim();
+  var fr = selRola.value;
+  var lista = U.filter(function (u) {
+    if (fr && u.rola !== fr) return false;
+    if (tylkoBez2fa && u["2fa"]) return false;
+    if (q && (u.imie + " " + u.login + " " + u.inst).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+
+  document.getElementById("liczU").innerHTML =
+    "<b>" + lista.length + "</b> z " + U.length + " kont aktywnych";
+
+  document.getElementById("bodyU").innerHTML = lista.map(function (u) {
+    return '<tr class="' + (u["2fa"] ? "" : "no2fa") + '">' +
+      '<td class="strong">' + u.imie + '<div class="small muted mono">' + u.login + '</div></td>' +
+      '<td>' + tagRoli(u.rola) + '</td>' +
+      '<td class="small">' + (u.inst === "wszystkie"
+          ? '<span class="tag set">wszystkie instytucje</span>'
+          : u.inst) + '</td>' +
+      '<td class="c">' + (u["2fa"]
+          ? '<span class="tag pos dot">włączone</span>'
+          : '<span class="tag neg dot">wyłączone</span>') + '</td>' +
+      '<td class="mono muted nowrap">' + u.ost + '</td>' +
+      '<td class="right nowrap">' +
+        '<button class="btn xs" onclick="alert(\'Edycja konta: ' + u.imie + '\')">Edytuj</button> ' +
+        '<button class="btn xs danger" onclick="blokuj(\'' + u.imie + '\')">Zablokuj</button>' +
+      '</td></tr>';
+  }).join("");
+
+  if (!lista.length) {
+    document.getElementById("bodyU").innerHTML =
+      '<tr><td colspan="6"><div class="empty"><div class="ei">&#9679;</div>' +
+      '<div class="et">Brak kont spełniających filtr</div>Zmień kryteria wyszukiwania.</div></td></tr>';
+  }
+}
+
+var bez = U.filter(function (u) { return !u["2fa"]; });
+document.getElementById("alert2fa").innerHTML =
+  '<b>' + bez.length + ' konta bez dwuskładnikowego uwierzytelnienia:</b> ' +
+  bez.map(function (u) { return u.imie + " (" + u.login + ")"; }).join(", ") + '. ' +
+  'Wymaganie MUST z warsztatu mówi o 2FA wymuszonym, nie opcjonalnym. Konta wyróżnione żółtym tłem ' +
+  'nie spełniają tego warunku i przy wdrożeniu produkcyjnym powinny zostać objęte wymuszeniem ' +
+  'przy pierwszym logowaniu.';
+
+function blokuj(imie) {
+  alert("Blokada konta: " + imie + "\n\nW systemie docelowym: sesja unieważniona natychmiast, " +
+        "konto pozostaje w bazie na potrzeby historii zmian, wpis trafia do rejestru aktywności.");
+}
+
+document.getElementById("chip2fa").addEventListener("click", function () {
+  tylkoBez2fa = !tylkoBez2fa;
+  this.classList.toggle("on", tylkoBez2fa);
+  renderU();
+});
+["qU", "fRola"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", renderU);
+  document.getElementById(id).addEventListener("change", renderU);
+});
+renderU();
+
+/* ================= 2. KONFIGURATOR ROL ================= */
+var M = DB.MODULY;
+
+var ROLE = [
+  { key: "admin", nazwa: "Administrator", opis: "Bartek. Pełny dostęp, w tym finanse i prowizje.", sys: true },
+  { key: "ldit",  nazwa: "Pracownik LDIT", opis: "Łucja, Martyna, Asia. Bez zysków firmy i stawek.", sys: true },
+  { key: "is",    nazwa: "Instytucja szkoleniowa", opis: "Administrator instytucji, własna zakładka.", sys: true },
+  { key: "pis",   nazwa: "Pracownik IS", opis: "Handlowiec instytucji, rola dodana na warsztacie (D-72).", sys: true },
+  { key: "klient", nazwa: "Klient końcowy", opis: "Panel uczestnika, zakres nierozstrzygnięty.", sys: true }
+];
+
+/* v = podglad, e = edycja. Wartosci startowe wynikaja z macierzy widocznosci. */
+var STARTOWE = {
+  admin:  { "*": "ve" },
+  ldit:   { "Dashboard": "v", "Dofinansowania": "ve", "Zestawienia": "ve", "Baza klientów": "ve",
+            "Nabory": "v", "Instytucje szkoleniowe": "v", "Wysyłka maili": "ve",
+            "Zgłoszenia": "ve", "Terminy": "ve", "Statystyki": "v" },
+  is:     { "Dashboard": "v", "Dofinansowania": "v", "Zestawienia": "v", "Baza klientów": "ve",
+            "Nabory": "v", "Instytucje szkoleniowe": "ve", "Wysyłka maili": "v",
+            "Konta i uprawnienia": "ve", "Terminy": "ve", "Statystyki": "v" },
+  pis:    { "Baza klientów": "ve" },
+  klient: {}
+};
+
+var PERM = {};
+ROLE.forEach(function (r) {
+  PERM[r.key] = {};
+  M.forEach(function (m) {
+    var s = STARTOWE[r.key]["*"] || STARTOWE[r.key][m] || "";
+    PERM[r.key][m] = { v: s.indexOf("v") >= 0, e: s.indexOf("e") >= 0 };
+  });
+});
+
+var aktywna = "ldit";
+
+function renderRole() {
+  document.getElementById("liczR").textContent = ROLE.length + " ról";
+  document.getElementById("listaRol").innerHTML = ROLE.map(function (r) {
+    var n = M.filter(function (m) { return PERM[r.key][m].v; }).length;
+    return '<div class="role-item' + (r.key === aktywna ? " on" : "") + '" data-r="' + r.key + '">' +
+      r.nazwa + ' <span class="tag mute" style="float:right">' + n + '/' + M.length + '</span>' +
+      '<div class="rd">' + r.opis + '</div></div>';
+  }).join("");
+  document.querySelectorAll(".role-item").forEach(function (el) {
+    el.addEventListener("click", function () { aktywna = el.dataset.r; renderKonfig(); });
+  });
+}
+
+function efekt(p) {
+  if (p.e) return '<span class="tag pos">podgląd i edycja</span>';
+  if (p.v) return '<span class="tag info">tylko odczyt</span>';
+  return '<span class="tag mute">moduł ukryty</span>';
+}
+
+function renderPerm() {
+  var r = ROLE.filter(function (x) { return x.key === aktywna; })[0];
+  document.getElementById("nazwaRoli").textContent = r.nazwa;
+  document.getElementById("bodyPerm").innerHTML = M.map(function (m, i) {
+    var p = PERM[aktywna][m];
+    return '<tr>' +
+      '<td class="strong">' + m + '</td>' +
+      '<td class="c"><label class="chk"><input type="checkbox" data-m="' + i + '" data-k="v"' + (p.v ? " checked" : "") + '></label></td>' +
+      '<td class="c"><label class="chk"><input type="checkbox" data-m="' + i + '" data-k="e"' + (p.e ? " checked" : "") + '></label></td>' +
+      '<td>' + efekt(p) + '</td>' +
+      '</tr>';
+  }).join("");
+
+  document.querySelectorAll('#bodyPerm input[type=checkbox]').forEach(function (c) {
+    c.addEventListener("change", function () {
+      var m = M[parseInt(c.dataset.m, 10)];
+      var p = PERM[aktywna][m];
+      if (c.dataset.k === "e") {
+        p.e = c.checked;
+        if (p.e) p.v = true;
+      } else {
+        p.v = c.checked;
+        if (!p.v) p.e = false;
+      }
+      renderKonfig();
+    });
+  });
+}
+
+function renderMenu() {
+  var widoczne = M.filter(function (m) { return PERM[aktywna][m].v; });
+  var el = document.getElementById("podgladMenu");
+  if (!widoczne.length) {
+    el.innerHTML = '<div class="nic">Rola nie widzi żadnego modułu. Po zalogowaniu użytkownik ' +
+      'zobaczy wyłącznie ekran profilu i przycisk wylogowania.</div>';
+    return;
+  }
+  el.innerHTML = widoczne.map(function (m) {
+    return '<div class="mi">' + m + (PERM[aktywna][m].e ? '<b>edycja</b>' : '<b style="color:#64748b">odczyt</b>') + '</div>';
+  }).join("");
+}
+
+function renderKonfig() { renderRole(); renderPerm(); renderMenu(); }
+
+function zaznaczWszystko(v) {
+  M.forEach(function (m) { PERM[aktywna][m] = { v: v, e: v }; });
+  renderKonfig();
+}
+
+function nowaRola() {
+  var n = prompt("Nazwa nowej roli:", "Menedżer zespołu");
+  if (!n) return;
+  var key = "r" + Date.now();
+  ROLE.push({ key: key, nazwa: n, opis: "Rola własna, utworzona przez administratora.", sys: false });
+  PERM[key] = {};
+  M.forEach(function (m) { PERM[key][m] = { v: false, e: false }; });
+  aktywna = key;
+  renderKonfig();
+}
+
+renderKonfig();
+
+/* ================= 3. MACIERZ WIDOCZNOSCI ================= */
+/* Zrodlo: docs/02-aktorzy-i-uprawnienia.md, sekcja "Macierz widocznosci". */
+var Q = "Warsztat nie dał rozstrzygnięcia, pytanie otwarte do potwierdzenia z klientem: ";
+var MX = [
+  ["Dashboard (statystyki)",
+    ["full", "Pełny, wszystkie IS"], ["part", "Bez marżowości i zysków"],
+    ["none", "Własne wskaźniki (?)", Q + "jaki zakres wskaźników widzi instytucja na swoim dashboardzie"],
+    ["none", "Brak"], ["none", "Brak"]],
+  ["Dofinansowania / Zestawienia",
+    ["full", "Wszystkie IS"], ["part", "Przypisane IS"], ["part", "Własna zakładka"],
+    ["none", "Brak"], ["none", "Brak"]],
+  ["Baza klientów (Niezłożone)",
+    ["full", "Pełna"], ["part", "Przypisane IS"], ["part", "Własni klienci"],
+    ["part", "Własni, przefiltrowani"], ["none", "Brak"]],
+  ["Karta klienta i wniosku",
+    ["full", "Pełna edycja"], ["part", "Edycja w kontekście"], ["read", "Odczyt statusu"],
+    ["read", "Odczyt ograniczony"],
+    ["none", "Własny status (?)", Q + "czy klient końcowy widzi status swojego wniosku, zależy od decyzji o panelu klienta"]],
+  ["Katalog szkoleń",
+    ["full", "Pełny"], ["read", "Odczyt"], ["full", "Własny, pełna edycja"],
+    ["none", "Brak"], ["none", "Brak"]],
+  ["Terminy i kalendarz",
+    ["full", "Pełny"], ["part", "W kontekście"], ["part", "Własne terminy"], ["none", "Brak"],
+    ["none", "Własne (?)", Q + "czy klient końcowy widzi terminy swoich szkoleń"]],
+  ["Konfigurator IS (prowizje)",
+    ["full", "Wyłącznie admin"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
+  ["Administracja (prowizje szczegółowe)",
+    ["full", "Wyłącznie admin"],
+    ["none", "Brak (?)", Q + "P-35, czy pracownik LDIT ma docelowo dostęp do danych finansowych. Klient nie dokończył zdania."],
+    ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
+  ["Faktury",
+    ["full", "Pełny"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
+  ["Powiadomienia i szablony",
+    ["full", "Pełny"], ["part", "Wysyłka"], ["part", "Szablony do Outlooka"],
+    ["none", "Brak"], ["none", "Brak"]],
+  ["Zgłoszenia (incydenty)",
+    ["full", "Pełny"], ["full", "Pełny"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
+  ["Nabory",
+    ["full", "Pełny"], ["read", "Odczyt"],
+    ["none", "Odczyt (?)", Q + "czy instytucja widzi nabory, handlowiec IS świadomie ich nie dostaje (D-91)"],
+    ["none", "Brak"],
+    ["none", "Odczyt (?)", Q + "czy klient końcowy widzi listę naborów"]],
+  ["Konta i uprawnienia",
+    ["full", "Pełny"], ["none", "Brak"], ["part", "Użytkownicy własnej IS"],
+    ["none", "Brak"], ["none", "Brak"]],
+  ["Rejestr aktywności",
+    ["full", "Pełny"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]]
+];
+
+document.getElementById("bodyMx").innerHTML = MX.map(function (r) {
+  var kom = r.slice(1).map(function (c) {
+    var t = c[2] ? ' title="' + c[2].replace(/"/g, "&quot;") + '"' : "";
+    return '<td><span class="lv ' + c[0] + '"' + t + '>' + c[1] + '</span></td>';
+  }).join("");
+  return '<tr><td class="strong">' + r[0] + '</td>' + kom + '</tr>';
+}).join("");
+
+/* ================= 4. PRZYPISANIE DO INSTYTUCJI ================= */
+var IS8 = DB.INSTYTUCJE.slice(0, 8);
+var pracownicy = U.filter(function (u) {
+  return u.rola === "Administrator" || u.rola === "Pracownik LDIT";
+});
+
+document.getElementById("hdrPrzyp").innerHTML =
+  '<th>Pracownik LDIT</th>' +
+  IS8.map(function (i) { return '<th class="c" title="' + i.nazwa + '">' + i.skrot + '</th>'; }).join("") +
+  '<th class="c">Razem</th>';
+
+document.getElementById("bodyPrzyp").innerHTML = pracownicy.map(function (u) {
+  var wsz = u.inst === "wszystkie";
+  var n = 0;
+  var kom = IS8.map(function (i) {
+    var on = wsz || u.inst.indexOf(i.nazwa) >= 0;
+    if (on) n++;
+    return '<td class="c"><label class="chk"><input type="checkbox" class="pchk"' +
+      (on ? " checked" : "") + (wsz ? " disabled" : "") + '></label></td>';
+  }).join("");
+  return '<tr><td class="strong">' + u.imie +
+    '<div class="small muted">' + u.rola + (wsz ? ", przydział niekonfigurowalny" : "") + '</div></td>' +
+    kom + '<td class="c"><span class="tag ' + (n === IS8.length ? "set" : n ? "info" : "mute") + '">' +
+    n + " z " + IS8.length + '</span></td></tr>';
+}).join("");
+</script>
+</body>
+</html>

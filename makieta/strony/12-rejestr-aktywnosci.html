@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Rejestr aktywności</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  /* Drobne uzupelnienia lokalne, reszta z assets/style.css */
+  .przed { color: var(--ink-4); text-decoration: line-through; }
+  .po { font-weight: 700; color: var(--ink); }
+  .arrow { color: var(--ink-4); padding: 0 6px; }
+  tr.row-fin td { background: #fffbeb; }
+  tr.row-fin:hover td { background: #fef3c7; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Rejestr aktywności</h1>
+      <p class="page-desc">
+        Moduł wyłącznie dla administratora. Dwa <b>niezależne</b> rejestry
+        <span class="ref">D-116</span> <span class="ref">D-55</span>: rejestr zmian danych
+        (kto, kiedy, co, wartość przed i po) oraz log logowań. Nie łączymy ich w jedną listę,
+        bo służą do zupełnie różnych rzeczy: pierwszy do wyjaśniania kto zmienił kwotę,
+        drugi do wyjaśniania incydentów bezpieczeństwa.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn" onclick="alert('Eksport widocznego zakresu rejestru do pliku CSV. Eksport rejestru sam trafia do rejestru.')">Eksport</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab on" data-t="t1">Rejestr zmian danych</div>
+      <div class="tab" data-t="t2">Log logowań</div>
+    </div>
+
+    <!-- ============ ZAKLADKA 1: ZMIANY DANYCH ============ -->
+    <div class="tab-pane on" id="t1">
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Co jest logowane:</b> zmiana statusu wniosku, zmiana kwoty (przyznanej, kosztu całkowitego,
+          dopłaty), usunięcie dokumentu, dodanie i edycja notatki, nadpisanie reguły wyliczeniowej,
+          zmiana warunków prowizyjnych instytucji, operacje na kontach. Zawsze razem z
+          <b>wartością przed zmianą i po zmianie</b>.<br><br>
+          <b>Paweł (3:14:02):</b> „No szczególnie przy tych wartościach z ręki wpisywanych.”
+          Wpisy dotyczące kwot i prowizji są dlatego oznaczone znacznikiem
+          <span class="tag warn">wartość finansowa</span> i dają się odfiltrować jednym kliknięciem.
+          Przy wielu pracownikach to jest podstawowe narzędzie do ustalenia, kto obniżył kwotę
+          i na jakiej podstawie.
+        </div>
+      </div>
+
+      <div class="card-body" style="padding-top:0">
+        <div class="grid g4" id="kpi"></div>
+      </div>
+
+      <div class="toolbar">
+        <input class="inp search" id="qA" placeholder="Szukaj po obiekcie: PR-26-0141, KL-0238, IS-02...">
+        <select class="inp" id="fKto"><option value="">Wszyscy użytkownicy</option></select>
+        <select class="inp" id="fTyp"><option value="">Wszystkie typy operacji</option></select>
+        <input class="inp" type="date" id="dOd" value="2026-08-01" title="Data od">
+        <input class="inp" type="date" id="dDo" value="2026-08-29" title="Data do">
+        <button class="chip" id="chipFin">Tylko wartości finansowe</button>
+        <span class="sp"></span>
+        <span class="small muted" id="liczA"></span>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:135px">Czas</th>
+              <th>Kto</th>
+              <th>Typ operacji</th>
+              <th>Obiekt</th>
+              <th>Pole</th>
+              <th>Wartość przed</th>
+              <th>Wartość po</th>
+              <th class="c">Charakter</th>
+            </tr>
+          </thead>
+          <tbody id="bodyA"></tbody>
+          <tfoot>
+            <tr><td colspan="8" class="c muted small" style="padding:14px" id="stopkaA"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="note warn mb0">
+          <b>Rejestr jest tylko do odczytu, także dla administratora.</b> Wpisu nie da się edytować
+          ani usunąć z poziomu aplikacji, bo inaczej traci wartość dowodową. Korekta błędnej zmiany
+          polega na wprowadzeniu kolejnej zmiany, która również zostanie zalogowana. Wpisy typu
+          <span class="tag set">Przywrócenie reguły</span> pokazują dokładnie ten scenariusz:
+          pole wyliczane zostało nadpisane ręcznie, a potem przywrócone do wartości z reguły
+          <span class="ref">D-81</span>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 2: LOG LOGOWAN ============ -->
+    <div class="tab-pane" id="t2">
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Po co ten log.</b> To materiał dowodowy przy wyjaśnianiu wycieku danych, a nie narzędzie
+          do kontrolowania godzin pracy zespołu. Rejestrujemy konto, czas, adres IP, urządzenie
+          i wynik próby logowania.<br><br>
+          <b>Bartek (3:14:25):</b> „twoje konto się zalogowało o czternastej 30. Żeby w razie jakby był
+          jakiś wyciek czegokolwiek, żeby było też wiadomo z jakiego powodu mogło to wyniknąć.”
+        </div>
+      </div>
+
+      <div class="card-body" style="padding-top:0">
+        <div class="grid g4" id="kpiL"></div>
+      </div>
+
+      <div class="toolbar">
+        <input class="inp search" id="qL" placeholder="Szukaj: konto, adres IP, urządzenie...">
+        <select class="inp" id="fWynik">
+          <option value="">Wszystkie próby</option>
+          <option>OK</option>
+          <option>Błędne hasło</option>
+        </select>
+        <span class="sp"></span>
+        <span class="small muted" id="liczL"></span>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:135px">Czas</th>
+              <th>Konto</th>
+              <th>Adres IP</th>
+              <th>Urządzenie</th>
+              <th>Wynik</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="bodyL"></tbody>
+          <tfoot>
+            <tr><td colspan="6" class="c muted small" style="padding:14px" id="stopkaL"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="grid g2">
+          <div>
+            <div class="card mb0">
+              <div class="card-head"><h3>Sygnały do sprawdzenia</h3><span class="sub">wyliczane z logu</span></div>
+              <div class="card-body">
+                <div class="timeline" id="sygnaly"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card mb0">
+              <div class="card-head"><h3>Powiązanie z modułem kont</h3></div>
+              <div class="card-body">
+                <dl class="dl">
+                  <dt>Blokada konta</dt>
+                  <dd>Unieważnia otwartą sesję natychmiast, wpis trafia do rejestru zmian danych.</dd>
+                  <dt>Konto bez 2FA</dt>
+                  <dd>Logowanie jednoskładnikowe oznaczane w logu, żeby dało się je odsiać przy analizie incydentu.</dd>
+                  <dt>Wylogowanie po bezczynności</dt>
+                  <dd>Zamyka sesję, nie generuje wpisu o nieudanym logowaniu.</dd>
+                  <dt>Reset hasła</dt>
+                  <dd>Operacja na koncie, więc trafia do rejestru zmian danych, nie do logu logowań.</dd>
+                </dl>
+                <div class="btn-row mt16">
+                  <a class="btn sm" href="11-konta-uprawnienia.html">Przejdź do Kont i uprawnień</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RETENCJA ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>Retencja danych</h3>
+      <span class="sub">jak długo trzymamy wpisy i dane osobowe</span>
+      <div class="ch-actions"><span class="tag warn dot">nieustalone</span></div>
+    </div>
+    <div class="card-body">
+      <div class="note open mb0">
+        <b>Polityka retencji NIE ZOSTAŁA ustalona <span class="ref p">P-26</span>.</b>
+        Pytanie postawione jeszcze w dokumentacji przedwarsztatowej wróciło na warsztat i nie
+        doczekało się odpowiedzi. Bez rozstrzygnięcia pozostają trzy rzeczy:
+        <br><br>
+        1. <b>Jak długo przechowywana jest zaimportowana korespondencja</b> z klientami i instytucjami.
+        Treści maili to dane osobowe, a przy 400 mailach na jednym rekordzie w szczycie zbiór rośnie szybko.
+        <br>
+        2. <b>Co dzieje się z danymi uczestników po zakończeniu i rozliczeniu szkolenia.</b>
+        System przechowuje numery PESEL, bo wymaga tego wniosek KFS. Po rozliczeniu podstawa
+        do ich trzymania przestaje być oczywista.
+        <br>
+        3. <b>Czy starsze roczniki są archiwizowane z ograniczeniem dostępu</b>, czy pozostają
+        w pełni dostępne na równi z bieżącym rokiem.
+        <br><br>
+        <b>To musi zostać domknięte przed wdrożeniem produkcyjnym</b>, bo wpływa bezpośrednio na
+        model danych: usuwanie miękkie kontra twarde, osobne tabele archiwum, anonimizacja
+        uczestników po rozliczeniu. Cofanie takiej decyzji po starcie jest kosztowne, dlatego
+        pytanie powinno zostać zadane razem z <span class="ref p">P-25</span> (architektura danych),
+        a nie po nim.
+      </div>
+
+      <div class="grid g3 mt16">
+        <div class="card mb0">
+          <div class="card-body">
+            <div class="k-label" style="font-size:11.5px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px">Wpisy rejestru zmian</div>
+            <div class="field mb0">
+              <label>Okres przechowywania</label>
+              <select class="inp"><option>do ustalenia z klientem</option><option>12 miesięcy</option><option>36 miesięcy</option><option>bezterminowo</option></select>
+              <div class="hint">Rekomendacja wykonawcy: bezterminowo, bo objętość jest niewielka, a wartość dowodowa rośnie z czasem.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card mb0">
+          <div class="card-body">
+            <div class="k-label" style="font-size:11.5px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px">Log logowań</div>
+            <div class="field mb0">
+              <label>Okres przechowywania</label>
+              <select class="inp"><option>do ustalenia z klientem</option><option>6 miesięcy</option><option>12 miesięcy</option><option>24 miesiące</option></select>
+              <div class="hint">Rekomendacja wykonawcy: 12 miesięcy, tyle wystarcza do wyjaśnienia incydentu zgłoszonego z opóźnieniem.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card mb0">
+          <div class="card-body">
+            <div class="k-label" style="font-size:11.5px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px">Dane uczestników i PESEL</div>
+            <div class="field mb0">
+              <label>Po rozliczeniu szkolenia</label>
+              <select class="inp"><option>do ustalenia z klientem</option><option>pozostają bez zmian</option><option>archiwizacja rocznika</option><option>anonimizacja</option></select>
+              <div class="hint">Decyzja klienta, prawdopodobnie po konsultacji prawnej. Wpływa na model danych, nie tylko na interfejs.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+/* ================= ZAKLADKI ================= */
+document.querySelectorAll(".tab").forEach(function (t) {
+  t.addEventListener("click", function () {
+    document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+    document.querySelectorAll(".tab-pane").forEach(function (x) { x.classList.remove("on"); });
+    t.classList.add("on");
+    document.getElementById(t.dataset.t).classList.add("on");
+  });
+});
+
+/* ================= 1. REJESTR ZMIAN DANYCH ================= */
+var A = DB.AKTYWNOSC;
+var DZIS = "2026-08-29";
+var TYPY_FIN = ["Zmiana kwoty", "Nadpisanie prowizji", "Przywrócenie reguły", "Zmiana warunków IS"];
+var tylkoFin = false;
+
+function jestFin(w) { return TYPY_FIN.indexOf(w.typ) >= 0; }
+
+/* Slowniki filtrow */
+var ktos = [], typy = [];
+A.forEach(function (w) {
+  if (ktos.indexOf(w.kto) < 0) ktos.push(w.kto);
+  if (typy.indexOf(w.typ) < 0) typy.push(w.typ);
+});
+ktos.sort();
+typy.sort();
+ktos.forEach(function (k) { document.getElementById("fKto").innerHTML += '<option>' + k + '</option>'; });
+typy.forEach(function (t) { document.getElementById("fTyp").innerHTML += '<option>' + t + '</option>'; });
+
+/* KPI */
+function kpi(label, val, foot, admin) {
+  return '<div class="kpi' + (admin ? " admin" : "") + '">' +
+    '<div class="k-label">' + label + '</div>' +
+    '<div class="k-value">' + val + '</div>' +
+    (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
+}
+
+var dzisiaj = A.filter(function (w) { return w.czas.slice(0, 10) === DZIS; });
+var finTydzien = A.filter(jestFin);
+var nadpisania = A.filter(function (w) {
+  return w.typ === "Nadpisanie prowizji" || w.typ === "Przywrócenie reguły";
+});
+var adminOps = A.filter(function (w) { return w.kto === "Bartłomiej Olejnik"; });
+
+document.getElementById("kpi").innerHTML =
+  kpi("Zmiany dzisiaj", dzisiaj.length, "stan na " + DZIS + ", godz. 11:00") +
+  kpi("Zmiany kwot w tym tygodniu", finTydzien.length,
+      '<span class="tag warn dot">wartości finansowe</span>', true) +
+  kpi("Nadpisania i przywrócenia reguł", nadpisania.length, "pola wyliczane edytowane ręcznie", true) +
+  kpi("Operacje administratora", adminOps.length, "z " + A.length + " wpisów w widocznym zakresie");
+
+function tagTypu(t) {
+  var k = t === "Zmiana kwoty" ? "warn"
+        : t === "Nadpisanie prowizji" ? "neg"
+        : t === "Przywrócenie reguły" ? "set"
+        : t === "Zmiana statusu" ? "info"
+        : t === "Blokada konta" ? "neg" : "mute";
+  return '<span class="tag ' + k + '">' + t + '</span>';
+}
+
+function renderA() {
+  var q = document.getElementById("qA").value.toLowerCase().trim();
+  var fk = document.getElementById("fKto").value;
+  var ft = document.getElementById("fTyp").value;
+  var od = document.getElementById("dOd").value;
+  var doo = document.getElementById("dDo").value;
+
+  var lista = A.filter(function (w) {
+    var d = w.czas.slice(0, 10);
+    if (fk && w.kto !== fk) return false;
+    if (ft && w.typ !== ft) return false;
+    if (od && d < od) return false;
+    if (doo && d > doo) return false;
+    if (tylkoFin && !jestFin(w)) return false;
+    if (q && (w.obiekt + " " + w.pole + " " + w.kto).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+
+  document.getElementById("liczA").innerHTML =
+    "<b>" + lista.length + "</b> z " + A.length + " wpisów &middot; w tym " +
+    lista.filter(jestFin).length + " o charakterze finansowym";
+
+  document.getElementById("bodyA").innerHTML = lista.map(function (w) {
+    var fin = jestFin(w);
+    return '<tr class="' + (fin ? "row-fin" : "") + '">' +
+      '<td class="mono muted nowrap">' + w.czas + '</td>' +
+      '<td class="strong nowrap">' + w.kto + '</td>' +
+      '<td>' + tagTypu(w.typ) + '</td>' +
+      '<td class="mono nowrap">' + w.obiekt + '</td>' +
+      '<td class="small">' + w.pole + '</td>' +
+      '<td class="small">' + (w.przed
+          ? '<span class="przed">' + w.przed + '</span>'
+          : '<span class="muted">wartość pusta</span>') + '</td>' +
+      '<td class="small"><span class="arrow">&rarr;</span><span class="po">' + w.po + '</span></td>' +
+      '<td class="c">' + (fin
+          ? '<span class="tag warn dot">wartość finansowa</span>'
+          : '<span class="tag mute">operacyjna</span>') + '</td>' +
+      '</tr>';
+  }).join("");
+
+  if (!lista.length) {
+    document.getElementById("bodyA").innerHTML =
+      '<tr><td colspan="8"><div class="empty"><div class="ei">&#9679;</div>' +
+      '<div class="et">Brak wpisów w wybranym zakresie</div>' +
+      'Rozszerz zakres dat albo wyczyść filtry.</div></td></tr>';
+  }
+
+  document.getElementById("stopkaA").innerHTML =
+    "Widoczne " + lista.length + " wpisów z ostatnich dwóch dni roboczych. " +
+    "W systemie docelowym rejestr liczy setki tysięcy pozycji rocznie, dlatego lista jest " +
+    "stronicowana, a domyślny zakres dat ograniczony do bieżącego miesiąca.";
+}
+
+document.getElementById("chipFin").addEventListener("click", function () {
+  tylkoFin = !tylkoFin;
+  this.classList.toggle("on", tylkoFin);
+  renderA();
+});
+["qA", "fKto", "fTyp", "dOd", "dDo"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", renderA);
+  document.getElementById(id).addEventListener("change", renderA);
+});
+renderA();
+
+/* ================= 2. LOG LOGOWAN ================= */
+var L = DB.LOGOWANIA;
+var UMAP = {};
+DB.UZYTKOWNICY.forEach(function (u) { UMAP[u.login] = u; });
+
+var nieudane = L.filter(function (r) { return r.wynik !== "OK"; });
+var ipy = [];
+L.forEach(function (r) { if (ipy.indexOf(r.ip) < 0) ipy.push(r.ip); });
+var poza = L.filter(function (r) {
+  var g = parseInt(r.czas.slice(11, 13), 10);
+  return g >= 20 || g < 6;
+});
+
+document.getElementById("kpiL").innerHTML =
+  kpi("Logowania w rejestrze", L.length, "zakres: 28 i 29 sierpnia 2026") +
+  kpi("Próby nieudane", nieudane.length,
+      nieudane.length ? '<span class="tag neg dot">wymaga sprawdzenia</span>' : "brak") +
+  kpi("Unikalne adresy IP", ipy.length, "195.12.44.8 to biuro LDIT") +
+  kpi("Logowania poza godzinami", poza.length, "przed 6:00 i po 20:00");
+
+function renderL() {
+  var q = document.getElementById("qL").value.toLowerCase().trim();
+  var fw = document.getElementById("fWynik").value;
+
+  var lista = L.filter(function (r) {
+    if (fw && r.wynik !== fw) return false;
+    if (q && (r.kto + " " + r.ip + " " + r.urzadzenie).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+
+  document.getElementById("liczL").innerHTML =
+    "<b>" + lista.length + "</b> z " + L.length + " prób logowania";
+
+  document.getElementById("bodyL").innerHTML = lista.map(function (r) {
+    var u = UMAP[r.kto];
+    var ok = r.wynik === "OK";
+    return '<tr class="' + (ok ? "" : "row-neg") + '">' +
+      '<td class="mono muted nowrap">' + r.czas + '</td>' +
+      '<td class="strong mono">' + r.kto +
+        (u ? '<div class="small muted" style="font-family:inherit">' + u.imie + ", " + u.rola +
+             (u["2fa"] ? "" : ", <b>bez 2FA</b>") + '</div>' : "") + '</td>' +
+      '<td class="mono">' + r.ip + '</td>' +
+      '<td class="muted">' + r.urzadzenie + '</td>' +
+      '<td>' + (ok
+          ? '<span class="tag pos dot">udane</span>'
+          : '<span class="tag neg dot">' + r.wynik + '</span>') + '</td>' +
+      '<td class="right"><button class="btn xs" onclick="alert(\'Szczegóły sesji: ' + r.kto +
+        '\\nCzas: ' + r.czas + '\\nIP: ' + r.ip +
+        '\\n\\nW systemie docelowym: lista operacji wykonanych w tej sesji, pobrana z rejestru zmian danych.\')">Sesja</button></td>' +
+      '</tr>';
+  }).join("");
+
+  if (!lista.length) {
+    document.getElementById("bodyL").innerHTML =
+      '<tr><td colspan="6"><div class="empty"><div class="ei">&#9679;</div>' +
+      '<div class="et">Brak prób logowania spełniających filtr</div>Zmień kryteria.</div></td></tr>';
+  }
+
+  document.getElementById("stopkaL").innerHTML =
+    "Widoczne " + lista.length + " pozycji z dwóch dni. Log logowań jest niezależny od rejestru zmian " +
+    "danych i podlega osobnej polityce retencji, patrz sekcja niżej.";
+}
+
+["qL", "fWynik"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", renderL);
+  document.getElementById(id).addEventListener("change", renderL);
+});
+renderL();
+
+/* Sygnaly do sprawdzenia, wyliczane z logu */
+var sygnaly = [];
+nieudane.forEach(function (r) {
+  sygnaly.push(["now", "Nieudane logowanie na konto " + r.kto,
+    r.czas + ", IP " + r.ip + ". Kolejna udana próba nastąpiła 2 minuty później, " +
+    "czyli najprawdopodobniej literówka w haśle, a nie atak."]);
+});
+poza.forEach(function (r) {
+  sygnaly.push(["done", "Logowanie poza godzinami pracy",
+    r.czas + ", konto " + r.kto + ", " + r.urzadzenie + ". Konto instytucji szkoleniowej, " +
+    "praca wieczorna jest tu normą, ale bez 2FA to jest sygnał do domknięcia."]);
+});
+sygnaly.push(["done", "Konta bez 2FA nadal aktywne",
+  DB.UZYTKOWNICY.filter(function (u) { return !u["2fa"]; }).length +
+  " kont loguje się jednoskładnikowo. Przy analizie ewentualnego wycieku to pierwsza rzecz, " +
+  "o którą zapyta audytor."]);
+
+document.getElementById("sygnaly").innerHTML = sygnaly.map(function (s) {
+  return '<div class="tl-item ' + s[0] + '"><div class="t">' + s[1] + '</div>' +
+    '<div class="m">' + s[2] + '</div></div>';
+}).join("");
+</script>
+</body>
+</html>

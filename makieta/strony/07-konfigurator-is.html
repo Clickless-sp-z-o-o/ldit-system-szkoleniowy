@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Konfigurator instytucji</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  .cert {
+    border: 1px solid var(--line-strong); border-radius: var(--radius);
+    background: #fff; padding: 30px 34px; text-align: center;
+    background-image: linear-gradient(0deg, var(--surface-2) 0%, #fff 30%);
+  }
+  .cert .c-top { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+  .cert .c-tyt { font-size: 22px; font-weight: 700; margin: 12px 0 4px; letter-spacing: -.01em; }
+  .cert .c-os { font-size: 19px; font-weight: 700; margin: 16px 0 6px; }
+  .cert .c-txt { font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+  .cert .ph { background: var(--accent-soft); border: 1px dashed var(--accent-border); border-radius: 4px; padding: 0 5px; font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent-dark); }
+  .cert .c-stopka { display: flex; justify-content: space-between; margin-top: 26px; font-size: 12px; color: var(--ink-3); }
+  .drop { border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface-2); padding: 18px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Konfigurator instytucji</h1>
+      <p class="page-desc">
+        Warunki prowizyjne, wzór certyfikatu, szablon danych do faktury i formularz zgłoszeniowy.
+        Konfigurator jest self-service, administrator ustawia wszystko sam, bez zlecania zmian wykonawcy
+        <span class="ref">D-14</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn">Historia zmian</button>
+      <button class="btn primary">Zapisz konfigurację</button>
+    </div>
+  </div>
+
+  <div class="note warn">
+    <b>Moduł wyłącznie dla administratora</b> <span class="ref">D-07</span>.
+    Instytucja szkoleniowa nie widzi tej zakładki i nie widzi ani swojej, ani cudzej stawki prowizji.
+    Pracownik LDIT również nie ma tu dostępu, dopóki administrator mu go nie nada.
+    Każde wejście i każda zmiana są zapisywane w rejestrze aktywności.
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <label class="small muted" for="selIS" style="font-weight:650">Instytucja</label>
+      <select class="inp" id="selIS" style="min-width:240px"></select>
+      <span class="tag warn dot" id="tagModel"></span>
+      <span class="sp"></span>
+      <span class="small muted" id="podsumowanie"></span>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab on" data-p="p-prow">Warunki prowizyjne</div>
+      <div class="tab" data-p="p-cert">Wzór certyfikatu</div>
+      <div class="tab" data-p="p-fakt">Dane do faktury</div>
+      <div class="tab" data-p="p-form">Formularz zgłoszeniowy</div>
+    </div>
+
+    <!-- WARUNKI PROWIZYJNE -->
+    <div class="tab-pane on" id="p-prow">
+      <div class="card-body">
+        <div class="grid g-2-1">
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Warunki obowiązujące dziś</h3>
+                <span class="sub" id="obowOd"></span>
+                <div class="ch-actions">
+                  <a href="15-konfigurator-prowizji.html" class="btn primary">Otwórz kalkulator</a>
+                </div>
+              </div>
+              <div class="card-body" id="warunkiAkt"></div>
+            </div>
+
+            <div class="note" style="margin-top:16px">
+              <b>Prowizja zawsze wyrażana procentowo</b>, nigdy kwotowo <span class="ref">D-21</span>.
+              Podstawą naliczenia jest <b>koszt całkowity z dopłatą</b>, nie kwota przyznana przez urząd
+              <span class="ref">D-18</span>. Nadpisanie stawki dla pojedynczego projektu jest możliwe
+              wyłącznie z modułu Administracja <span class="ref">D-93</span>.
+            </div>
+
+            <div class="note open mb0">
+              <span class="ref p">P-01</span> <b>Okres rozliczeniowy nie jest rozstrzygnięty.</b>
+              Na warsztacie padły dwie wersje: okresem jest data wystawienia faktury albo prognoza
+              z kalendarza szkoleń. Kalkulator liczy dziś po dacie faktury. Do potwierdzenia u klienta
+              przed uruchomieniem silnika.
+            </div>
+          </div>
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Historia wersji warunków</h3>
+                <span class="sub">wersjonowanie <span class="ref">D-22</span></span>
+              </div>
+              <div class="card-body">
+                <div class="timeline" id="historia"></div>
+              </div>
+            </div>
+
+            <div class="note warn" style="margin-top:16px">
+              <b>Historia rozliczeń nie jest przeliczana wstecz</b> <span class="ref">D-23</span>.
+              Zmiana warunków tworzy nową wersję z datą obowiązywania, typowo od 1 stycznia kolejnego
+              roku. Projekty rozliczone na starych warunkach zostają na nich na zawsze, nawet jeśli
+              nowa stawka jest korzystniejsza.
+            </div>
+
+            <div class="note mb0">
+              <b>Zmiana wchodzi od kolejnego roku</b> <span class="ref">D-22</span>.
+              Wersja oznaczona jako planowana jest edytowalna do dnia wejścia w życie. Po tej dacie
+              staje się aktualna, a poprzednia trafia do archiwum bez możliwości edycji.
+            </div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="card mb0">
+          <div class="card-head">
+            <h3>Rozliczenia wg wersji warunków</h3>
+            <span class="sub">ile projektów zostało policzonych na której wersji</span>
+          </div>
+          <div class="card-body tight">
+            <table class="tbl">
+              <thead>
+                <tr><th>Wersja</th><th>Okres obowiązywania</th><th>Sposób liczenia</th>
+                    <th class="num">Projektów</th><th class="num">Podstawa</th><th class="num">Prowizja</th><th></th></tr>
+              </thead>
+              <tbody id="rozlWersje"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WZÓR CERTYFIKATU -->
+    <div class="tab-pane" id="p-cert">
+      <div class="card-body">
+        <div class="grid g-1-2">
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head"><h3>Wzór certyfikatu</h3><span class="sub" id="certSub"></span></div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Plik wzoru</label>
+                  <div class="drop">
+                    <div class="small muted" style="margin-bottom:9px">
+                      Przeciągnij plik albo wybierz z dysku. Wzór jest przypisany do jednej instytucji
+                      <span class="ref">D-98</span>.
+                    </div>
+                    <input type="file" class="inp" style="height:auto;padding:6px 8px">
+                  </div>
+                  <div class="hint">Aktualnie wgrany: <span class="mono" id="certPlik"></span></div>
+                </div>
+
+                <div class="field">
+                  <label>Numeracja certyfikatów</label>
+                  <select class="inp">
+                    <option>Bez numeru</option>
+                    <option>Numer kolejny w roku</option>
+                    <option>Skrót instytucji / rok / numer</option>
+                  </select>
+                  <div class="hint">Pole opcjonalne. Reguła nie została ustalona.</div>
+                </div>
+
+                <div class="btn-row">
+                  <button class="btn">Pobierz aktualny wzór</button>
+                  <button class="btn primary">Podgląd na przykładzie</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="note" style="margin-top:16px">
+              <b>Generowanie jest wsadowe.</b> Jedno kliknięcie „Generuj certyfikaty” przy projekcie
+              tworzy po jednym PDF na uczestnika zakwalifikowanego, pakuje je w ZIP i pobiera
+              w przeglądarce. Konwencja nazwy pliku: <code>certyfikat_imie_nazwisko</code>.
+              System nie wysyła certyfikatów mailem <span class="ref">D-49</span>, trafiają one do paczki
+              rozliczeniowej przygotowywanej ręcznie.
+            </div>
+
+            <div class="note open">
+              <span class="ref p">P-19</span> <b>Kto wgrywa wzór i w jakim formacie.</b>
+              Nie ustalono, czy plik wgrywa administrator, czy sama instytucja, ani czy formatem jest
+              Word, PDF czy HTML. Od tej decyzji zależy sposób podstawiania placeholderów.
+            </div>
+
+            <div class="note open mb0">
+              <span class="ref p">P-40</span> <b>Brak reguły numeracji certyfikatów.</b>
+              Klient powiedział tylko „ewentualny numer certyfikatu, jeżeli będzie wymagany”.
+              Nie wiadomo, czy numeracja jest ciągła w skali systemu, per instytucja, czy per rok.
+            </div>
+          </div>
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Dostępne placeholdery</h3>
+                <span class="sub">podstawiane automatycznie przy generowaniu</span>
+              </div>
+              <div class="card-body tight">
+                <table class="tbl">
+                  <thead><tr><th>Placeholder</th><th>Źródło danych</th><th>Przykład</th></tr></thead>
+                  <tbody id="placeholdery"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="note warn" style="margin-top:16px">
+              <b>Miejscowość to zawsze siedziba instytucji</b> <span class="ref">D-99</span>,
+              nigdy miejsce realizacji szkolenia. Szkolenie stacjonarne w Gdańsku prowadzone przez
+              instytucję z siedzibą w Katowicach ma na certyfikacie <b>Katowice</b>.
+              Wartość pochodzi z karty instytucji, pola „siedziba”.
+            </div>
+
+            <div class="card mb0">
+              <div class="card-head"><h3>Podgląd</h3><span class="sub">dane przykładowe z projektu</span></div>
+              <div class="card-body">
+                <div class="cert" id="podgladCert"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- DANE DO FAKTURY -->
+    <div class="tab-pane" id="p-fakt">
+      <div class="card-body">
+        <div class="grid g-2-1">
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Szablon maila „dane do faktury”</h3>
+                <span class="sub">akcja na żądanie z karty projektu <span class="ref">D-104</span></span>
+                <div class="ch-actions"><button class="btn sm">Edytuj szablon</button></div>
+              </div>
+              <div class="card-body">
+                <div class="mail-preview" id="mailFakt"></div>
+                <div id="uwagaProc"></div>
+              </div>
+            </div>
+
+            <div class="note warn" style="margin-top:16px">
+              <b>Klauzula mówi o finansowaniu w 90%, co odpowiada mikroprzedsiębiorcy.</b>
+              Przy firmach powyżej mikro dofinansowanie wynosi 70% i wkład własny 30%, więc treść
+              wymaga parametryzacji: procent musi być podstawiany z wielkości przedsiębiorstwa klienta,
+              a nie wpisany na sztywno w szablonie. Do potwierdzenia u klienta przed pierwszą wysyłką.
+            </div>
+
+            <div class="note mb0">
+              <b>Wymagane zatwierdzenie przed wysyłką.</b> Mail nie wychodzi automatycznie, użytkownik
+              widzi gotową treść i klika „Wyślij”. Zasada obowiązuje w całym module wysyłki, żeby
+              uniknąć przypadkowego kliknięcia.
+            </div>
+          </div>
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head"><h3>Pola uzupełniane automatycznie</h3></div>
+              <div class="card-body tight">
+                <table class="tbl">
+                  <thead><tr><th>Pole</th><th>Źródło</th></tr></thead>
+                  <tbody>
+                    <tr><td class="strong">Nazwa klienta</td><td class="muted">Klient</td></tr>
+                    <tr><td class="strong">Adres siedziby</td><td class="muted">Klient</td></tr>
+                    <tr><td class="strong">NIP</td><td class="muted">Klient</td></tr>
+                    <tr><td class="strong">Imię i nazwisko odbiorcy FV</td><td class="muted">Projekt</td></tr>
+                    <tr><td class="strong">Szkolenie, ilość osób</td><td class="muted">Uczestnicy zakwalifikowani</td></tr>
+                    <tr><td class="strong">Cena jednostkowa i całkowita</td><td class="muted">Projekt</td></tr>
+                    <tr><td class="strong">Lista uczestników</td><td class="muted">Uczestnicy zakwalifikowani</td></tr>
+                    <tr><td class="strong">Termin realizacji</td><td class="muted">Termin szkolenia</td></tr>
+                    <tr><td class="strong">Termin płatności</td><td class="muted">Ustawienie instytucji</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="field mt16">
+              <label>Domyślny odbiorca maila</label>
+              <select class="inp" id="odbiorcaFakt"></select>
+              <div class="hint">Osoba od faktur z karty instytucji. Zmiana nie wpływa na już wysłane maile.</div>
+            </div>
+
+            <div class="field">
+              <label>Domyślny termin płatności</label>
+              <select class="inp">
+                <option>14 dni od wystawienia</option>
+                <option>21 dni od wystawienia</option>
+                <option>30 dni od wystawienia</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORMULARZ ZGŁOSZENIOWY -->
+    <div class="tab-pane" id="p-form">
+      <div class="card-body">
+        <div class="grid g-2-1">
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Formularz zgłoszeniowy instytucji</h3>
+                <span class="sub">własna kopia per instytucja <span class="ref">D-70</span></span>
+                <div class="ch-actions">
+                  <button class="btn sm">Kopiuj link</button>
+                  <button class="btn sm primary" onclick="alert('Wysyła zgłoszenie oznaczone jako testowe.\nTrafia do kolejki akceptacji z etykietą TEST i nie tworzy klienta w bazie.')">Zgłoszenie testowe</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Link do formularza</label>
+                  <input class="inp mono" id="linkForm" readonly>
+                  <div class="hint">
+                    Każda instytucja ma własną kopię formularza, około 20 kopii na start. Link osadza się
+                    na stronie instytucji albo wysyła handlowiec. Wypełnia go klient końcowy, nie handlowiec.
+                  </div>
+                </div>
+
+                <div class="grid g3">
+                  <div class="kpi"><div class="k-label">Wypełnień w 2026</div><div class="k-value" id="kfWyp"></div><div class="k-foot">od 1 stycznia</div></div>
+                  <div class="kpi"><div class="k-label">Oczekuje akceptacji</div><div class="k-value" id="kfKol"></div><div class="k-foot">bramka anty-spam</div></div>
+                  <div class="kpi"><div class="k-label">W tym testowe</div><div class="k-value">3</div><div class="k-foot">nie tworzą klienta</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="note" style="margin-top:16px">
+              <b>Instytucja widzi tylko licznik i przycisk zgłoszenia testowego.</b>
+              Nie ma dostępu do treści zgłoszeń innych instytucji ani do wspólnej kolejki akceptacji.
+              Zgłoszenie staje się klientem dopiero po akceptacji administratora.
+            </div>
+
+            <div class="note open mb0">
+              <span class="ref p">P-24</span> <b>Technologia formularza nie została ustalona.</b>
+              Rekomendacja wykonawcy to formularz natywny w systemie, nie Google Forms: PESEL nie może
+              trafiać poza infrastrukturę systemu, 20 kopii w Google to ryzyko rozjazdu wersji, a lista
+              szkoleń musi pochodzić z katalogu w systemie <span class="ref p">P-23</span>.
+            </div>
+          </div>
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head"><h3>Pola formularza</h3><span class="sub">wzorowane na obecnym pliku Excel</span></div>
+              <div class="card-body tight">
+                <table class="tbl">
+                  <thead><tr><th>Pole</th><th>Typ</th><th class="c">Wymagane</th></tr></thead>
+                  <tbody id="polaForm"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="note warn" style="margin-top:16px">
+              <b>Liczba zatrudnionych na umowę o pracę</b> wyznacza wielkość przedsiębiorstwa i wskaźnik
+              dofinansowania: do 9 osób to mikroprzedsiębiorca i 90% dofinansowania, powyżej 70%.
+              Błąd w tym polu przekłada się bezpośrednio na kwoty w projekcie.
+            </div>
+
+            <div class="note mb0">
+              <b>Szkolenie wybierane z listy, nie wpisywane ręcznie</b> <span class="ref">D-82</span>.
+              Lista pochodzi z katalogu instytucji wraz z ceną widoczną dla wypełniającego, dzięki czemu
+              nazwy pozostają spójne z katalogiem i z certyfikatami.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var PELNE = DB.INSTYTUCJE.slice(0, 8);
+  var wybrana = "IS-02"; /* Metal Maniak, model progowy A */
+
+  var OPIS_MODELU = {
+    A: "próg miesięczny, stawka od całości obrotu",
+    B: "skala roczna narastająco, stawka od nadwyżki",
+    C: "próg miesięczny, stawka od nadwyżki",
+    D: "stała stawka, bez kumulacji"
+  };
+  var OPIS_KUMULACJI = { miesieczny: "miesięczna", roczny: "roczna", brak: "brak" };
+  var OPIS_SPOSOBU = { od_calosci: "od całości", od_nadwyzki: "od nadwyżki", stala: "stała stawka" };
+
+  /* Poprzednia wersja warunków, wg modelu. Odpowiada wpisowi w rejestrze
+     aktywności: próg miesięczny Metal Maniak zmieniony z 45 000 na 50 000. */
+  function poprzednia(p) {
+    if (p.model === "A") return { model: "A", kumulacja: "miesieczny", sposob: "od_calosci", stala: null,
+      progi: p.progi.map(function (x, i) { return { od: i === 1 ? 45000 : x.od, st: x.st }; }) };
+    if (p.model === "B") return { model: "B", kumulacja: "roczny", sposob: "od_nadwyzki", stala: null,
+      progi: [{ od: 0, st: 20 }, { od: 600000, st: 18 }] };
+    if (p.model === "C") return { model: "C", kumulacja: "miesieczny", sposob: "od_nadwyzki", stala: null,
+      progi: [{ od: 0, st: 18 }, { od: 120000, st: 15 }] };
+    return { model: "D", kumulacja: "brak", sposob: "stala", stala: 20, progi: [] };
+  }
+
+  /* Wersja planowana od 2027: kolejny próg albo korekta stawki stałej */
+  function planowana(p) {
+    if (p.sposob === "stala") {
+      return { model: "D", kumulacja: "brak", sposob: "stala", stala: (p.stala || 20) - 0.5, progi: [] };
+    }
+    var ost = p.progi[p.progi.length - 1];
+    var nowe = p.progi.slice();
+    nowe.push({ od: ost.od * 2, st: p.sposob === "od_calosci" ? ost.st + 2 : Math.max(8, ost.st - 2) });
+    return { model: p.model, kumulacja: p.kumulacja, sposob: p.sposob, stala: null, progi: nowe };
+  }
+
+  function warunkiHtml(p) {
+    var progi = p.progi && p.progi.length
+      ? '<div class="tbl-wrap" style="margin-top:12px"><table class="tbl">' +
+        "<thead><tr><th>Od kwoty obrotu</th><th class='num'>Stawka</th><th>Zastosowanie</th></tr></thead><tbody>" +
+        p.progi.map(function (x, i) {
+          var nast = p.progi[i + 1];
+          return "<tr><td class='strong'>" + DB.fmtPLN(x.od) + "</td>" +
+            "<td class='num strong'>" + DB.fmtPct(x.st) + "</td>" +
+            "<td class='muted small'>" + (nast ? "do " + DB.fmtPLN(nast.od) : "powyżej, bez górnej granicy") + "</td></tr>";
+        }).join("") + "</tbody></table></div>"
+      : '<div class="note mb0" style="margin-top:12px">Brak progów. Stawka jest stała niezależnie od obrotu.</div>';
+
+    return '<dl class="dl">' +
+      "<dt>Model</dt><dd><span class='pill k'>" + p.model + "</span> " + OPIS_MODELU[p.model] + "</dd>" +
+      "<dt>Rodzaj kumulacji</dt><dd>" + OPIS_KUMULACJI[p.kumulacja] + "</dd>" +
+      "<dt>Sposób liczenia</dt><dd>" + OPIS_SPOSOBU[p.sposob] + "</dd>" +
+      "<dt>Stawka stała</dt><dd>" + (p.stala != null ? "<b>" + DB.fmtPct(p.stala) + "</b>" : "<span class='muted'>nie dotyczy, warunki progowe</span>") + "</dd>" +
+      "<dt>Liczba progów</dt><dd>" + (p.progi ? p.progi.length : 0) + "</dd>" +
+      "</dl>" + progi;
+  }
+
+  function wersje(i) {
+    var akt = i.prowizja;
+    return [
+      { od: "2027-01-01", do: null, stan: "planowana", w: planowana(akt),
+        opis: "Wersja robocza, edytowalna do dnia wejścia w życie." },
+      { od: "2026-01-01", do: null, stan: "aktualna", w: akt,
+        opis: "Obowiązuje wszystkie projekty z datą faktury w 2026." },
+      { od: "2025-01-01", do: "2025-12-31", stan: "archiwalna", w: poprzednia(akt),
+        opis: "Zamknięta. Projekty rozliczone na tej wersji zostają na niej." }
+    ];
+  }
+
+  /* ---------- Render ---------- */
+  function render() {
+    var i = DB.INSTYTUCJE.filter(function (x) { return x.id === wybrana; })[0];
+    var p = i.prowizja;
+    var W = wersje(i);
+
+    document.getElementById("tagModel").textContent = "Model " + p.model + ": " + OPIS_MODELU[p.model];
+
+    var wn26 = DB.WNIOSKI.filter(function (w) { return w.is === i.id; });
+    var wn25 = DB.WNIOSKI_2025.filter(function (w) { return w.is === i.id; });
+    document.getElementById("podsumowanie").innerHTML =
+      i.miasto + " &middot; " + wn26.length + " projektów w 2026, " + wn25.length + " w 2025 &middot; opiekun " + i.opiekun;
+
+    /* Warunki aktualne */
+    document.getElementById("obowOd").innerHTML = "obowiązuje od <b>2026-01-01</b>";
+    document.getElementById("warunkiAkt").innerHTML = warunkiHtml(p);
+
+    /* Historia wersji */
+    document.getElementById("historia").innerHTML = W.map(function (v) {
+      var cls = v.stan === "aktualna" ? "now" : v.stan === "archiwalna" ? "done" : "";
+      var tag = v.stan === "aktualna" ? '<span class="tag pos">aktualne</span>'
+              : v.stan === "planowana" ? '<span class="tag info">planowane</span>'
+              : '<span class="tag mute">archiwalne</span>';
+      var okres = v.do ? "obowiązywało " + v.od + " do " + v.do : "obowiązuje od " + v.od;
+      var tresc = v.w.sposob === "stala"
+        ? "stawka stała " + DB.fmtPct(v.w.stala)
+        : v.w.progi.map(function (x) { return DB.fmtPLN(x.od) + " &rarr; " + DB.fmtPct(x.st); }).join(", ");
+      return '<div class="tl-item ' + cls + '">' +
+        '<div class="t">' + okres + " " + tag + "</div>" +
+        '<div class="m">' + OPIS_KUMULACJI[v.w.kumulacja] + " kumulacja, " + OPIS_SPOSOBU[v.w.sposob] + "<br>" + tresc + "</div>" +
+        '<div class="m" style="margin-top:4px">' + v.opis + "</div>" +
+        (v.stan === "planowana" ? '<div class="btn-row" style="margin-top:7px"><button class="btn xs">Edytuj wersję</button><button class="btn xs danger">Usuń</button></div>' : "") +
+        "</div>";
+    }).join("");
+
+    /* Rozliczenia wg wersji */
+    var poz26 = wn26.filter(function (w) { return w.statusDec === "Pozytywna"; });
+    var poz25 = wn25.filter(function (w) { return w.statusDec === "Pozytywna"; });
+
+    /* Liczymy caly okres naraz. W modelu "od calosci" przekroczenie progu
+       podnosi stawke takze dla pozycji juz wystawionych, wiec przyrostowe
+       sumowanie zanizyloby wynik. Patrz docs/07-silnik-prowizji.md. */
+    function policz(lista, war) {
+      var wynik = liczOkres(war, lista.map(function (w) { return { kwota: w.kosztZDoplata || 0 }; }));
+      return { obrot: wynik.obrot, prow: wynik.suma, n: lista.length };
+    }
+    var r26 = policz(poz26, p);
+    var r25 = policz(poz25, poprzednia(p));
+
+    document.getElementById("rozlWersje").innerHTML =
+      "<tr class='row-set'><td class='strong'>od 2027-01-01</td><td class='muted'>planowana</td>" +
+      "<td class='muted'>" + OPIS_SPOSOBU[planowana(p).sposob] + "</td>" +
+      "<td class='num muted'>0</td><td class='num muted'>&ndash;</td><td class='num muted'>&ndash;</td>" +
+      "<td class='right'><button class='btn xs'>Podgląd</button></td></tr>" +
+      "<tr><td class='strong'>od 2026-01-01</td><td>2026-01-01 do dziś <span class='tag pos'>aktualna</span></td>" +
+      "<td class='muted'>" + OPIS_SPOSOBU[p.sposob] + "</td>" +
+      "<td class='num'>" + r26.n + "</td><td class='num'>" + DB.fmtPLN(r26.obrot) + "</td>" +
+      "<td class='num strong'>" + DB.fmtPLN(r26.prow) + "</td>" +
+      "<td class='right'><button class='btn xs'>Podgląd</button></td></tr>" +
+      "<tr><td class='strong'>2025-01-01</td><td>2025-01-01 do 2025-12-31 <span class='tag mute'>zamknięta</span></td>" +
+      "<td class='muted'>" + OPIS_SPOSOBU[poprzednia(p).sposob] + "</td>" +
+      "<td class='num'>" + r25.n + "</td><td class='num'>" + DB.fmtPLN(r25.obrot) + "</td>" +
+      "<td class='num strong'>" + DB.fmtPLN(r25.prow) + "</td>" +
+      "<td class='right'><button class='btn xs' disabled>Zablokowana</button></td></tr>";
+
+    /* ---------- Certyfikat ---------- */
+    var szk = DB.SZKOLENIA.filter(function (s) { return s.is === i.id; })[0] || DB.SZKOLENIA[0];
+    var termin = DB.TERMINY.filter(function (t) { return t.is === i.id; })[0];
+    var przykladOsoba = (wn26[0] && wn26[0].uczestnicy[0]) ? wn26[0].uczestnicy[0].imie : "Katarzyna Nowak";
+    var terminTxt = termin ? termin.od + " do " + termin.do : "2026-09-08 do 2026-09-09";
+
+    document.getElementById("certSub").textContent = i.nazwa;
+    document.getElementById("certPlik").textContent =
+      "wzor_certyfikatu_" + i.skrot.toLowerCase() + "_2026.docx";
+
+    var PH = [
+      ["{{uczestnik_imie_nazwisko}}", "Uczestnik projektu", przykladOsoba],
+      ["{{szkolenie_nazwa}}", "Katalog szkoleń", szk.nazwa],
+      ["{{termin_realizacji}}", "Termin szkolenia", terminTxt],
+      ["{{data_wystawienia}}", "Data systemowa", "2026-08-29"],
+      ["{{miejscowosc}}", "<b>Siedziba instytucji</b> <span class='ref'>D-99</span>", "<b>" + i.miasto + "</b>"],
+      ["{{numer_certyfikatu}}", "Opcjonalny, reguła nieustalona <span class='ref p'>P-40</span>",
+        "<span class='muted'>brak</span>"]
+    ];
+    document.getElementById("placeholdery").innerHTML = PH.map(function (r) {
+      return "<tr><td class='mono strong'>" + r[0] + "</td><td class='small'>" + r[1] + "</td><td class='small'>" + r[2] + "</td></tr>";
+    }).join("");
+
+    document.getElementById("podgladCert").innerHTML =
+      '<div class="c-top">' + i.nazwa + "</div>" +
+      '<div class="c-tyt">Certyfikat ukończenia szkolenia</div>' +
+      '<div class="c-txt">zaświadcza się, że</div>' +
+      '<div class="c-os"><span class="ph">{{uczestnik_imie_nazwisko}}</span></div>' +
+      '<div class="c-txt">ukończył(a) szkolenie<br><b><span class="ph">{{szkolenie_nazwa}}</span></b><br>' +
+      'zrealizowane w terminie <span class="ph">{{termin_realizacji}}</span><br>' +
+      "w wymiarze " + szk.godz + " godzin dydaktycznych</div>" +
+      '<div class="c-stopka">' +
+        '<div><span class="ph">{{miejscowosc}}</span>, <span class="ph">{{data_wystawienia}}</span></div>' +
+        '<div>nr <span class="ph">{{numer_certyfikatu}}</span></div>' +
+      "</div>";
+
+    /* ---------- Dane do faktury ---------- */
+    var wzor = wn26.filter(function (w) { return w.statusDec === "Pozytywna"; })[0] || wn26[0];
+    var kl = wzor ? DB.KLIENCI.filter(function (k) { return k.id === wzor.klient; })[0] : null;
+    var osob = wzor ? wzor.osobZakw : 0;
+    var cenaJedn = wzor && wzor.uczestnicy.length ? wzor.uczestnicy[0].kwota : szk.cena;
+    var proc = wzor ? Math.round(DB.wskaznik(wzor.wielkosc) * 100) : 90;
+    var uczLista = wzor
+      ? wzor.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; })
+          .map(function (u) { return u.imie; }).join(", ")
+      : "";
+
+    document.getElementById("mailFakt").innerHTML =
+      '<div class="mh">' +
+        '<div class="r"><b>Do</b><span>' + i.mail + "</span></div>" +
+        '<div class="r"><b>Od</b><span>powiadomienia@ldit.pl</span></div>' +
+        '<div class="r"><b>Temat</b><span>Dane do faktury, klient nr ' + (wzor ? wzor.nr : "-") + ", " + (kl ? kl.nazwa : "-") + "</span></div>" +
+      "</div>" +
+      '<div class="mb">' +
+"Dzień dobry, proszę o wystawienie faktur dla Klientów:\n\n" +
+"Nazwa Klienta: " + (kl ? kl.nazwa : "") + "\n" +
+"Adres siedziby: ul. Przykładowa 12, " + (kl ? kl.miasto : "") + "\n" +
+"NIP: " + (kl ? kl.nip : "") + "\n\n" +
+"Imię i nazwisko odbiorcy FV: " + (kl ? kl.osoba : "") + "\n\n" +
+"Szkolenie: " + (wzor ? wzor.szkolenie : szk.nazwa) + "\n" +
+"Ilość osób: " + osob + "\n" +
+"Cena jedn.: " + DB.fmtPLN2(cenaJedn) + "\n" +
+"Cena całk.: " + DB.fmtPLN2(cenaJedn * osob) + "\n" +
+"VAT: ZW\n" +
+"Termin płatności: 14 dni od wystawienia\n\n" +
+"Uwagi:\n" +
+"- Usługa zwolniona z podatku VAT na podstawie § 3 ust. 1 pkt 14 Rozporządzenia Ministra Finansów " +
+"z dnia 20 grudnia 2013 r. w sprawie zwolnień od podatku od towarów i usług oraz warunków stosowania " +
+"tych zwolnień (Dz. U. z 2020 r. poz. 1983). Szkolenie finansowane w 90% z Krajowego Funduszu Szkoleniowego.\n" +
+"- Uczestnicy: " + uczLista + "\n" +
+"- Termin: " + terminTxt +
+      "</div>";
+
+    document.getElementById("uwagaProc").innerHTML = proc !== 90
+      ? '<div class="note warn" style="margin-top:14px;margin-bottom:0">Ten klient to <b>' + (wzor ? wzor.wielkosc : "") +
+        "</b>, dofinansowanie wynosi <b>" + proc + "%</b>, a szablon wpisuje na sztywno 90%. " +
+        "Bez parametryzacji treść maila będzie niezgodna ze stanem faktycznym.</div>"
+      : '<div class="note" style="margin-top:14px;margin-bottom:0">Ten klient to <b>mikro</b>, ' +
+        "więc 90% z klauzuli zgadza się przypadkowo. Przy pierwszym kliencie powyżej mikro treść trzeba parametryzować.</div>";
+
+    var konta = DB.UZYTKOWNICY.filter(function (u) { return u.inst === i.nazwa; });
+    document.getElementById("odbiorcaFakt").innerHTML =
+      ['<option>' + i.kontakt + " (" + i.mail + ")</option>"]
+        .concat(konta.map(function (u) { return "<option>" + u.imie + " (" + u.login + ")</option>"; })).join("");
+
+    /* ---------- Formularz zgłoszeniowy ---------- */
+    document.getElementById("linkForm").value =
+      "https://system.ldit.pl/zgloszenie/" + i.skrot.toLowerCase() + "-" + i.id.toLowerCase();
+    document.getElementById("kfWyp").textContent = DB.fmtNum(DB.KLIENCI.filter(function (k) { return k.is === i.id; }).length);
+    document.getElementById("kfKol").textContent =
+      DB.KOLEJKA.filter(function (k) { return k.is === i.nazwa; }).length;
+
+    var POLA = [
+      ["Nazwa firmy", "tekst", true],
+      ["NIP", "tekst, walidacja sumy kontrolnej", true],
+      ["Adres siedziby", "tekst", true],
+      ["Osoba kontaktowa", "tekst", true],
+      ["Telefon", "tekst", true],
+      ["Adres e-mail", "e-mail", true],
+      ["Liczba zatrudnionych na umowę o pracę", "liczba", true],
+      ["Rodzaj rozliczania", "lista wyboru", true],
+      ["Szkolenie", "lista z katalogu instytucji, z ceną", true],
+      ["Uczestnicy: imię i nazwisko", "lista powtarzalna", true],
+      ["Uczestnicy: PESEL", "tekst, dana wrażliwa", true],
+      ["Przypisanie uczestnika do szkolenia", "lista wyboru per uczestnik", false],
+      ["Uwagi", "tekst wielolinijkowy", false],
+      ["Zgoda na przetwarzanie danych", "pole wyboru", true]
+    ];
+    document.getElementById("polaForm").innerHTML = POLA.map(function (r) {
+      return "<tr><td class='strong'>" + r[0] + "</td><td class='muted small'>" + r[1] + "</td>" +
+        "<td class='c'>" + (r[2] ? '<span class="tag pos">tak</span>' : '<span class="tag mute">nie</span>') + "</td></tr>";
+    }).join("");
+  }
+
+  /* ---------- Selektor i zakładki ---------- */
+  var sel = document.getElementById("selIS");
+  sel.innerHTML = PELNE.map(function (i) {
+    return '<option value="' + i.id + '"' + (i.id === wybrana ? " selected" : "") + ">" + i.nazwa + " (" + i.miasto + ")</option>";
+  }).join("");
+  sel.addEventListener("change", function () {
+    wybrana = sel.value;
+    render();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (t) {
+    t.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (x) { x.classList.remove("on"); });
+      Array.prototype.forEach.call(document.querySelectorAll(".tab-pane"), function (x) { x.classList.remove("on"); });
+      t.classList.add("on");
+      document.getElementById(t.getAttribute("data-p")).classList.add("on");
+    });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

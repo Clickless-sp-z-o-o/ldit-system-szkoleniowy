@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Karta projektu</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <div class="small muted" style="margin-bottom:4px">
+        <a href="02-zestawienia.html">Zestawienia 2026</a> &rsaquo; Projekt
+      </div>
+      <h1 class="page-title" id="tytul">Projekt</h1>
+      <p class="page-desc">
+        Jeden projekt = jeden wniosek <span class="ref">D-53</span>.
+        Dane klienta i korespondencja są wspólne dla wszystkich jego projektów <span class="ref">D-54</span>.
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn" onclick="alert('Generuje maila do instytucji szkoleniowej z uzupełnionymi danymi klienta.\\nWymaga zatwierdzenia przed wysyłką (D-104).')">Dane do faktury</button>
+      <button class="btn" onclick="alert('Generuje po jednym PDF na uczestnika zakwalifikowanego,\\npakuje w ZIP: certyfikat_imie_nazwisko (D-100).')">Generuj certyfikaty</button>
+      <button class="btn primary">Zapisz</button>
+    </div>
+  </div>
+
+  <div class="grid g-2-1">
+    <div>
+
+      <!-- MODEL FINANSOWY -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Model finansowy</h3>
+          <span class="sub">wskaźnik dofinansowania zależny od wielkości przedsiębiorstwa</span>
+          <div class="ch-actions"><span class="tag mute" id="tagWielkosc"></span></div>
+        </div>
+        <div class="card-body">
+
+          <div class="grid g3">
+            <div class="field calc-field">
+              <label>Całkowita wartość szkolenia <span class="calc-badge">wyliczane</span></label>
+              <input class="inp num" id="fWartosc" readonly>
+              <div class="hint">Suma kwot uczestników <b>zakwalifikowanych</b> <span class="ref">D-79</span></div>
+            </div>
+
+            <div class="field">
+              <label>Koszt całkowity <span class="calc-badge manual">ręczne</span></label>
+              <input class="inp num" id="fKoszt">
+              <div class="hint">Wartość uznana przez urząd. Nazwa sporna <span class="ref p">P-13</span></div>
+            </div>
+
+            <div class="field calc-field" id="wrapPrzyznano">
+              <label>Przyznano <span class="calc-badge">wyliczane</span></label>
+              <input class="inp num" id="fPrzyznano">
+              <div class="hint" id="hintPrzyznano"></div>
+              <div class="restore-rule">
+                <span>&#9888; reguła wyłączona</span>
+                <button onclick="przywrocRegule()">Przywróć regułę</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid g3">
+            <div class="field calc-field">
+              <label>Wkład własny <span class="calc-badge">wyliczane</span></label>
+              <input class="inp num" id="fWklad" readonly>
+              <div class="hint">Liczony jako reszta, żeby równanie się domykało <span class="ref p">P-51</span></div>
+            </div>
+
+            <div class="field">
+              <label>Kwota dopłaty dodatkowej <span class="calc-badge manual">ręczne</span></label>
+              <input class="inp num" id="fDoplata">
+              <div class="hint">Domyślnie 0. Nie wchodzi do podstawy „Przyznano” <span class="ref">D-63</span></div>
+            </div>
+
+            <div class="field calc-field">
+              <label>Koszt całkowity z dopłatą <span class="calc-badge">wyliczane</span></label>
+              <input class="inp num" id="fKosztDop" readonly>
+              <div class="hint"><b>Podstawa naliczania prowizji</b> <span class="ref">D-64</span></div>
+            </div>
+          </div>
+
+          <div id="kontrola"></div>
+        </div>
+      </div>
+
+      <!-- UCZESTNICY -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Uczestnicy</h3>
+          <span class="sub" id="subUcz"></span>
+          <div class="ch-actions"><button class="btn sm">+ Dodaj uczestnika</button></div>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead>
+              <tr><th>Imię i nazwisko</th><th>PESEL</th><th>Szkolenie</th>
+                  <th class="num">Kwota</th><th>Kwalifikacja</th><th></th></tr>
+            </thead>
+            <tbody id="uczestnicy"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- KORESPONDENCJA -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Korespondencja i notatki</h3>
+          <span class="sub">wspólna dla wszystkich projektów klienta</span>
+          <div class="ch-actions">
+            <input class="inp" style="height:28px;font-size:12.5px;width:180px" placeholder="Szukaj w treści...">
+            <button class="btn sm">+ Notatka z rozmowy</button>
+          </div>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th style="width:38px"></th><th>Temat</th><th>Skrzynka</th><th>Data</th><th class="c">Zał.</th></tr></thead>
+            <tbody id="maile"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PRAWA KOLUMNA -->
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>Dane projektu</h3></div>
+        <div class="card-body">
+          <dl class="dl" id="dane"></dl>
+        </div>
+      </div>
+
+      <div class="card" id="cardProwizja">
+        <div class="card-head">
+          <h3>Prowizja LDIT</h3>
+          <span class="tag warn" style="margin-left:auto">tylko administrator</span>
+        </div>
+        <div class="card-body" id="prowizja"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Przebieg</h3></div>
+        <div class="card-body">
+          <div class="timeline" id="przebieg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/data.js"></script>
+<script>
+var id = new URLSearchParams(location.search).get("id");
+var w = DB.WNIOSKI.filter(function (x) { return x.id === id; })[0] || DB.WNIOSKI[0];
+var kl = DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0];
+var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0];
+var wsk = DB.wskaznik(w.wielkosc);
+var regulaAktywna = true;
+
+document.getElementById("tytul").textContent = w.id + " · " + w.klNazwa;
+document.getElementById("tagWielkosc").textContent =
+  w.wielkosc + " · " + Math.round(wsk * 100) + "% dofinansowania / " + Math.round((1 - wsk) * 100) + "% wkładu";
+document.getElementById("hintPrzyznano").innerHTML =
+  "koszt całkowity &times; " + wsk + " (" + w.wielkosc + ")";
+
+/* ---------- Model finansowy ---------- */
+function num(el) { return parseFloat(String(el.value).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0; }
+function set(el, v) { el.value = v.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+function przelicz() {
+  var wartosc = w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; })
+                            .reduce(function (s, u) { return s + u.kwota; }, 0);
+  set(document.getElementById("fWartosc"), wartosc);
+
+  var koszt = num(document.getElementById("fKoszt"));
+  var doplata = num(document.getElementById("fDoplata"));
+
+  if (regulaAktywna) {
+    set(document.getElementById("fPrzyznano"), Math.round(koszt * wsk * 100) / 100);
+  }
+  var przyznano = num(document.getElementById("fPrzyznano"));
+
+  /* Wklad wlasny jako reszta, zeby rownanie sie domykalo (P-51) */
+  set(document.getElementById("fWklad"), Math.round((koszt - przyznano) * 100) / 100);
+  set(document.getElementById("fKosztDop"), Math.round((koszt + doplata) * 100) / 100);
+
+  /* Rownanie kontrolne */
+  var wklad = koszt - przyznano;
+  var ok = Math.abs((przyznano + wklad) - koszt) < 0.005;
+  document.getElementById("kontrola").innerHTML =
+    '<div class="note ' + (ok ? "" : "warn") + '" style="margin:6px 0 0">' +
+    '<b>Równanie kontrolne:</b> ' + DB.fmtPLN2(przyznano) + ' + ' + DB.fmtPLN2(wklad) +
+    ' = ' + DB.fmtPLN2(koszt) + ' &nbsp; ' +
+    (ok ? '<span class="tag pos">domyka się</span>' : '<span class="tag neg">rozjazd</span>') +
+    ' <span class="ref">D-58</span></div>';
+
+  liczProwizjeWidok(koszt + doplata);
+}
+
+function przywrocRegule() {
+  regulaAktywna = true;
+  document.getElementById("wrapPrzyznano").classList.remove("overridden");
+  przelicz();
+}
+
+document.getElementById("fPrzyznano").addEventListener("input", function () {
+  regulaAktywna = false;
+  document.getElementById("wrapPrzyznano").classList.add("overridden");
+  przelicz();
+});
+["fKoszt", "fDoplata"].forEach(function (idf) {
+  document.getElementById(idf).addEventListener("input", przelicz);
+});
+
+set(document.getElementById("fKoszt"), w.kosztCalkowity != null ? w.kosztCalkowity : w.calkowita);
+set(document.getElementById("fDoplata"), w.doplata || 0);
+
+/* ---------- Uczestnicy ---------- */
+function renderUcz() {
+  var zakw = w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; }).length;
+  document.getElementById("subUcz").innerHTML =
+    zakw + " zakwalifikowanych z " + w.uczestnicy.length +
+    (zakw < w.uczestnicy.length ? ' &middot; niezakwalifikowani wymagają odrębnej faktury komercyjnej <span class="ref">D-84</span>' : "");
+
+  document.getElementById("uczestnicy").innerHTML = w.uczestnicy.map(function (u, i) {
+    var zak = u.status === "zakwalifikowany";
+    return '<tr' + (zak ? "" : ' class="row-neg"') + '>' +
+      '<td class="strong">' + u.imie + '</td>' +
+      '<td class="mono muted">' + u.pesel.slice(0, 6) + "*****" + '</td>' +
+      '<td>' + u.szkNazwa + '</td>' +
+      '<td class="num">' + (zak ? DB.fmtPLN(u.kwota) : '<span class="muted">0 zł</span>') + '</td>' +
+      '<td>' + (zak
+        ? '<span class="tag pos dot">zakwalifikowany</span>'
+        : '<span class="tag neg dot" title="' + u.powod + '">niezakwalifikowany</span>' +
+          '<div class="small muted">' + u.powod + '</div>') + '</td>' +
+      '<td class="right"><button class="btn xs" onclick="przelacz(' + i + ')">Zmień</button></td>' +
+      '</tr>';
+  }).join("");
+}
+function przelacz(i) {
+  var u = w.uczestnicy[i];
+  u.status = u.status === "zakwalifikowany" ? "niezakwalifikowany" : "zakwalifikowany";
+  if (u.status === "niezakwalifikowany" && !u.powod) u.powod = "brak umowy o pracę";
+  renderUcz(); przelicz();
+}
+
+/* ---------- Dane projektu ---------- */
+document.getElementById("dane").innerHTML =
+  [["Numer klienta", "<b>" + w.nr + "</b> <span class='small muted'>(trafia na fakturę)</span>"],
+   ["Klient", w.klNazwa],
+   ["NIP", '<span class="mono">' + w.nip + '</span>'],
+   ["Wielkość", w.wielkosc + " (" + (kl ? kl.zatrudnienie : "-") + " os. na UoP)"],
+   ["Instytucja", w.isNazwa],
+   ["Urząd pracy", w.pupNazwa],
+   ["Opiekun", w.opiekun],
+   ["Data formularza", w.dataFormularza + ' <span class="tag mute">auto</span>'],
+   ["Data wniosku", w.dataWniosku],
+   ["Data faktury", w.dataFaktury + ' <span class="small muted">wyznacza okres prowizji</span>'],
+   ["Status składania", w.statusSkl],
+   ["Status decyzji", w.statusDec || "brak"]
+  ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
+
+/* ---------- Prowizja ---------- */
+function liczProwizjeWidok(podstawa) {
+  if (!inst) return;
+  var r = liczProwizje(inst.prowizja, 0, podstawa);
+  var opisModelu = {
+    A: "próg miesięczny, stawka od całości",
+    B: "skala roczna YTD, stawka od nadwyżki",
+    C: "próg miesięczny, stawka od nadwyżki",
+    D: "stała stawka"
+  }[inst.prowizja.model];
+
+  document.getElementById("prowizja").innerHTML =
+    '<div class="kpi" style="border:0;padding:0;box-shadow:none;margin-bottom:12px">' +
+    '<div class="k-label">Prowizja od tego projektu</div>' +
+    '<div class="k-value">' + DB.fmtPLN2(r.kwota) + '</div>' +
+    '<div class="k-foot">stawka efektywna <b>' + DB.fmtPct(Math.round(r.stawka * 100) / 100) + '</b></div></div>' +
+    '<dl class="dl">' +
+    '<dt>Podstawa</dt><dd>' + DB.fmtPLN2(podstawa) + '<div class="small muted">koszt całkowity z dopłatą</div></dd>' +
+    '<dt>Model</dt><dd><span class="pill k">' + inst.prowizja.model + '</span> ' + opisModelu + '</dd>' +
+    (r.rozbicie.length > 1
+      ? '<dt>Rozbicie</dt><dd>' + r.rozbicie.map(function (x) {
+          return DB.fmtPLN(x.kwota) + " &times; " + x.st + "%";
+        }).join("<br>") + "</dd>"
+      : '<dt>Stawka</dt><dd>' + DB.fmtPct(inst.prowizja.stala || r.stawka) + "</dd>") +
+    '</dl>' +
+    '<div class="note" style="margin:12px 0 0;font-size:12px">' +
+    'Nadpisanie stawki dla tego projektu jest możliwe wyłącznie z modułu ' +
+    '<b>Administracja</b> <span class="ref">D-93</span>. Kto dokładnie ma takie prawo, ' +
+    'pozostaje nieustalone <span class="ref p">P-06</span>.</div>';
+}
+
+/* ---------- Korespondencja ---------- */
+document.getElementById("maile").innerHTML = DB.MAILE.map(function (m) {
+  return '<tr><td>' + (m.kier === "in" ? '<span class="tag info">&#8600;</span>' : '<span class="tag mute">&#8599;</span>') + '</td>' +
+    '<td class="strong">' + m.temat + '</td>' +
+    '<td class="small muted">' + m.skrz + '</td>' +
+    '<td class="small nowrap">' + m.data + '</td>' +
+    '<td class="c">' + (m.zal ? '<span class="pill">' + m.zal + '</span>' : '<span class="muted">&mdash;</span>') + '</td></tr>';
+}).join("");
+
+/* ---------- Przebieg ---------- */
+var kroki = [
+  ["Formularz wpłynął", w.dataFormularza, true],
+  ["Zaakceptowany do bazy", w.dataFormularza, true],
+  ["Rejestracja w BUR", w.dataWniosku, w.statusSkl === "Złożony"],
+  ["Wniosek złożony w " + w.pupNazwa, w.dataWniosku, w.statusSkl === "Złożony"],
+  ["Decyzja urzędu", w.statusDec ? w.dataFaktury : "oczekuje", !!w.statusDec],
+  ["Termin ustalony", w.statusDec === "Pozytywna" ? "08-09.09.2026" : "&mdash;", w.statusDec === "Pozytywna"],
+  ["Szkolenie odbyte", w.rozliczenie !== "Brak" && w.rozliczenie !== "Oczekuje" ? "zrealizowane" : "&mdash;",
+    w.rozliczenie === "Rozliczone" || w.rozliczenie === "Zafakturowany"],
+  ["Rozliczone", w.rozliczenie === "Rozliczone" ? "zamknięte" : "&mdash;", w.rozliczenie === "Rozliczone"]
+];
+var pierwszyNiegotowy = kroki.findIndex(function (k) { return !k[2]; });
+document.getElementById("przebieg").innerHTML = kroki.map(function (k, i) {
+  var cls = k[2] ? "done" : (i === pierwszyNiegotowy ? "now" : "");
+  return '<div class="tl-item ' + cls + '"><div class="t">' + k[0] + '</div><div class="m">' + k[1] + '</div></div>';
+}).join("");
+
+renderUcz();
+przelicz();
+</script>
+</body>
+</html>

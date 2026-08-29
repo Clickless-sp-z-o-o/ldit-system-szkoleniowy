@@ -52,6 +52,23 @@ progi: [(0, 18%), (100 000, 14%)]
 7. **Kolejność faktur ma znaczenie** przy wypełnianiu progów
 8. Zmiana pojedynczej pozycji **przelicza cały okres**
 
+## Pulapka Modelu A, o ktorej musisz pamietac
+
+W modelu "od calosci" **nie wolno** liczyc prowizji fakturami po kolei i sumowac wynikow.
+Przekroczenie progu podnosi stawke dla **calego obrotu okresu**, takze dla faktur juz wystawionych.
+
+```
+BLEDNIE: 26 000 x 10% + 25 000 x 12% = 5 600 zl
+POPRAWNIE: obrot 51 000 -> 12% dla calosci -> 6 120 zl
+```
+
+Rozliczenie musi byc operacja **na okresie**, nie na pojedynczej fakturze. Wystawienie nowej
+faktury przelicza prowizje wszystkich pozycji w tym okresie.
+
+Dzialajaca implementacja: `makieta/assets/data.js`, funkcje `liczProwizje()` (pojedyncza faktura,
+modele B i C) i `liczOkres()` (caly okres, wszystkie modele). Prototyp konfiguratora
+`makieta/strony/15-konfigurator-prowizji.html` przechodzi komplet 7 przypadkow testowych.
+
 ## Wzorzec pola wyliczanego
 
 Każde pole wyliczane potrzebuje trzech rzeczy:
