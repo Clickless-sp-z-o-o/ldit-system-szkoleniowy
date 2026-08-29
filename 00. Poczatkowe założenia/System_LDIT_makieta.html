@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Makieta systemu, dofinansowania i szkolenia</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.45;color:#000;background:#fff}
+  a{color:#000}
+  .mono{font-family:'Courier New',monospace}
+
+  .topbar{border-bottom:2px solid #000;padding:8px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .topbar .brand{font-weight:700;font-size:14px;border:1px solid #000;padding:3px 8px}
+  .topbar .warn{font-size:11px;border:1px dashed #000;padding:2px 6px}
+  .ctl{display:flex;align-items:center;gap:5px;font-size:12px}
+  select,input,textarea,button{font-family:inherit;font-size:12px;border:1px solid #000;background:#fff;padding:3px 5px;border-radius:0}
+  button{cursor:pointer}
+  button:hover{background:#000;color:#fff}
+  .spacer{flex:1}
+
+  .shell{display:flex;min-height:calc(100vh - 42px);align-items:stretch}
+  .side{width:232px;border-right:1px solid #000;flex:0 0 232px}
+  .side .grp{font-size:10px;letter-spacing:.1em;padding:8px 10px 4px;border-bottom:1px solid #ccc;background:#eee}
+  .side a.item{display:block;padding:7px 10px;border-bottom:1px solid #ddd;text-decoration:none}
+  .side a.item:hover{background:#eee}
+  .side a.item.on{background:#000;color:#fff}
+  .side .nm{font-weight:600;font-size:12.5px}
+  .side .ds{font-size:10.5px;color:#555;line-height:1.3}
+  .side a.item.on .ds{color:#ccc}
+  .main{flex:1;padding:14px 18px 60px;min-width:0}
+
+  h1{font-size:19px;margin-bottom:2px}
+  h2{font-size:14px;margin:18px 0 6px;border-bottom:1px solid #000;padding-bottom:3px}
+  h3{font-size:12.5px;margin:12px 0 4px;text-transform:uppercase;letter-spacing:.05em}
+  .lead{font-size:12px;color:#444;margin-bottom:10px}
+  p{margin-bottom:8px;max-width:80ch}
+
+  table{border-collapse:collapse;width:100%;margin:6px 0 12px;font-size:12px}
+  th,td{border:1px solid #000;padding:4px 6px;text-align:left;vertical-align:top}
+  th{background:#eee;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}
+  tr.click{cursor:pointer}
+  tr.click:hover td{background:#eee}
+  td.num,th.num{text-align:right}
+  tr.sum td,tr.sum th{background:#eee;font-weight:700}
+
+  .cards{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 14px}
+  .card{border:1px solid #000;padding:8px 10px;min-width:145px;flex:1 1 145px}
+  .card.clk{cursor:pointer}
+  .card.clk:hover{background:#eee}
+  .card .k{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#444}
+  .card .v{font-size:20px;font-weight:700;line-height:1.2}
+  .card .n{font-size:10.5px;color:#555}
+
+  .bar{height:9px;border:1px solid #000;background:#fff}
+  .bar span{display:block;height:100%;background:#000}
+
+  .panel{border:1px solid #000;padding:10px 12px;margin:10px 0}
+  .panel .ttl{font-weight:700;font-size:12px;border-bottom:1px solid #000;padding-bottom:3px;margin-bottom:6px}
+  .two{display:flex;gap:12px;flex-wrap:wrap}
+  .two>*{flex:1 1 320px;min-width:0}
+
+  .tag{display:inline-block;border:1px solid #000;padding:0 4px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+  .tag.b{background:#000;color:#fff}
+  .tag.g{background:#eee}
+
+  .crumb{font-size:11px;margin-bottom:6px}
+  .crumb button{border:none;background:none;text-decoration:underline;padding:0;font-size:11px}
+  .crumb button:hover{background:none;color:#000;font-weight:700}
+
+  dl.kv{display:grid;grid-template-columns:170px 1fr;gap:2px 10px;font-size:12px}
+  dl.kv dt{color:#555}
+  dl.kv dd{border-bottom:1px dotted #bbb}
+
+  ul.plain{list-style:none;font-size:12px}
+  ul.plain li{padding:3px 0;border-bottom:1px dotted #bbb}
+
+  .note{border:1px dashed #000;padding:7px 9px;font-size:11.5px;margin:10px 0;background:#f7f7f7}
+  .note b{text-transform:uppercase;font-size:10px;letter-spacing:.08em}
+
+  .tabs{display:flex;gap:0;margin:10px 0 0;flex-wrap:wrap}
+  .tabs button{border:1px solid #000;border-bottom:none;padding:4px 10px}
+  .tabs button.on{background:#000;color:#fff}
+  .tabbody{border:1px solid #000;padding:10px 12px}
+
+  /* kalendarz */
+  .kal{border:1px solid #000;border-bottom:none}
+  .kalhd{display:flex;border-bottom:1px solid #000;background:#eee}
+  .kalhd div{flex:1;padding:3px 5px;font-size:10.5px;text-transform:uppercase;border-right:1px solid #ccc}
+  .kalhd div:last-child{border-right:none}
+  .kalrow{display:flex;border-bottom:1px solid #000}
+  .kalcell{flex:1;min-height:70px;border-right:1px solid #ccc;padding:2px 3px;min-width:0}
+  .kalcell:last-child{border-right:none}
+  .kalcell.out{background:#f4f4f4;color:#aaa}
+  .kalcell .dnum{font-size:10px;color:#666}
+  .kalev{border:1px solid #000;font-size:9.5px;padding:1px 3px;margin-bottom:2px;cursor:pointer;line-height:1.25;word-break:break-word}
+  .kalev:hover{background:#000;color:#fff}
+  .kalnav{display:flex;align-items:center;gap:8px;margin:6px 0}
+
+  .right{text-align:right}
+  .muted{color:#666}
+  .hint{font-size:10.5px;color:#666;margin:-2px 0 8px}
+  .inline{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">MAKIETA SYSTEMU</div>
+  <div class="warn">wireframe, dane przykładowe, bez logiki zapisu</div>
+  <div class="spacer"></div>
+  <div class="ctl">
+    <label for="rola">Rola:</label>
+    <select id="rola">
+      <option value="admin">Administrator</option>
+      <option value="prac">Pracownik firmy</option>
+      <option value="inst">Instytucja szkoleniowa</option>
+      <option value="ucz">Uczestnik szkolenia</option>
+    </select>
+  </div>
+  <div class="ctl" id="ctxInstWrap">
+    <label for="ctxInst">Kontekst instytucji:</label>
+    <select id="ctxInst"></select>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="side" id="menu"></nav>
+  <main class="main" id="view"></main>
+</div>
+
+<script>
+/* ================= DANE PRZYKŁADOWE ================= */
+
+const INST = [
+  {id:'INS-01', nazwa:'Clickless sp. z o.o.', miasto:'Poznań', prowizja:15, kontakt:'Paweł Czapiewski', mail:'biuro@clickless.pl', opis:'Szkolenia z Power BI, DAX i automatyzacji.'},
+  {id:'INS-02', nazwa:'Drone Fortech', miasto:'Warszawa', prowizja:12, kontakt:'Marta Sowa', mail:'kontakt@dronefortech.pl', opis:'Szkolenia techniczne i zarządcze.'},
+  {id:'INS-03', nazwa:'Akademia Fit', miasto:'Gdańsk', prowizja:18, kontakt:'Robert Kwiatkowski', mail:'biuro@akademiafit.pl', opis:'Kursy zawodowe branży fitness.'},
+  {id:'INS-04', nazwa:'Cognity Center', miasto:'Kraków', prowizja:14, kontakt:'Anna Duda', mail:'szkolenia@cognity.pl', opis:'Szkolenia biurowe i IT.'}
+];
+
+const OSOBY_INST = [
+  {inst:'INS-01', imie:'Paweł Czapiewski', rola:'Kontakt główny', mail:'biuro@clickless.pl', tel:'601 002 118'},
+  {inst:'INS-01', imie:'Aldona Rybak', rola:'Terminy i harmonogram', mail:'terminy@clickless.pl', tel:'601 002 119'},
+  {inst:'INS-01', imie:'Joanna Lis', rola:'Faktury', mail:'faktury@clickless.pl', tel:'601 002 120'},
+  {inst:'INS-02', imie:'Marta Sowa', rola:'Kontakt główny', mail:'kontakt@dronefortech.pl', tel:'602 771 004'},
+  {inst:'INS-03', imie:'Robert Kwiatkowski', rola:'Kontakt główny', mail:'biuro@akademiafit.pl', tel:'603 118 220'},
+  {inst:'INS-04', imie:'Anna Duda', rola:'Kontakt główny', mail:'szkolenia@cognity.pl', tel:'604 220 447'}
+];
+
+const SZK = [
+  {id:'SZK-101', inst:'INS-01', nazwa:'Power BI podstawowy', godz:16, dni:2, tryb:'Online, MS Teams'},
+  {id:'SZK-102', inst:'INS-01', nazwa:'DAX w praktyce', godz:16, dni:2, tryb:'Online, MS Teams'},
+  {id:'SZK-103', inst:'INS-01', nazwa:'Power Query', godz:8, dni:1, tryb:'Online, MS Teams'},
+  {id:'SZK-104', inst:'INS-01', nazwa:'Power BI i AI', godz:16, dni:2, tryb:'Online, MS Teams'},
+  {id:'SZK-201', inst:'INS-02', nazwa:'Zarządzanie projektami', godz:16, dni:2, tryb:'Stacjonarne'},
+  {id:'SZK-202', inst:'INS-02', nazwa:'Excel zaawansowany', godz:8, dni:1, tryb:'Stacjonarne'},
+  {id:'SZK-301', inst:'INS-03', nazwa:'Trener personalny', godz:40, dni:5, tryb:'Stacjonarne'},
+  {id:'SZK-302', inst:'INS-03', nazwa:'Dietetyka sportowa', godz:24, dni:3, tryb:'Mieszane'},
+  {id:'SZK-401', inst:'INS-04', nazwa:'Excel podstawowy', godz:8, dni:1, tryb:'Online'},
+  {id:'SZK-402', inst:'INS-04', nazwa:'SQL dla analityków', godz:16, dni:2, tryb:'Online'}
+];
+
+/* cennik zmienny w czasie, obowiązuje wg daty wnioskowania */
+const CENY = [
+  {szk:'SZK-101', od:'2026-01-01', cena:2900}, {szk:'SZK-101', od:'2026-07-01', cena:3200}, {szk:'SZK-101', od:'2027-01-01', cena:3400},
+  {szk:'SZK-102', od:'2026-01-01', cena:3400}, {szk:'SZK-102', od:'2026-07-01', cena:3600},
+  {szk:'SZK-103', od:'2026-01-01', cena:1900},
+  {szk:'SZK-104', od:'2026-06-01', cena:3800},
+  {szk:'SZK-201', od:'2026-01-01', cena:2400},
+  {szk:'SZK-202', od:'2026-01-01', cena:2100},
+  {szk:'SZK-301', od:'2026-01-01', cena:4000}, {szk:'SZK-301', od:'2026-09-01', cena:4200},
+  {szk:'SZK-302', od:'2026-01-01', cena:3100},
+  {szk:'SZK-401', od:'2026-01-01', cena:1700},
+  {szk:'SZK-402', od:'2026-01-01', cena:2900}
+];
+
+const ZALACZNIKI = {
+  'SZK-101':[{nazwa:'plan_szkolenia_pbi_podstawowy.pdf', data:'2026-06-02'},{nazwa:'wymagania_techniczne.pdf', data:'2026-06-02'}],
+  'SZK-102':[{nazwa:'program_dax.pdf', data:'2026-07-11'}],
+  'SZK-301':[{nazwa:'sylabus_trener.pdf', data:'2026-05-20'}]
+};
+
+const TERM = [
+  {id:'TRM-0012', szk:'SZK-101', od:'2026-09-08', do:'2026-09-09', miejsce:'Online, MS Teams', status:'Zaplanowany', ucz:['UCZ-1001','UCZ-1004','UCZ-1009']},
+  {id:'TRM-0013', szk:'SZK-102', od:'2026-09-22', do:'2026-09-23', miejsce:'Online, MS Teams', status:'Zaplanowany', ucz:['UCZ-1001','UCZ-1002']},
+  {id:'TRM-0014', szk:'SZK-103', od:'2026-10-06', do:'2026-10-06', miejsce:'Online, MS Teams', status:'Zaplanowany', ucz:['UCZ-1001']},
+  {id:'TRM-0015', szk:'SZK-104', od:'2026-10-20', do:'2026-10-21', miejsce:'Online, MS Teams', status:'Wolny', ucz:[]},
+  {id:'TRM-0016', szk:'SZK-101', od:'2026-08-04', do:'2026-08-05', miejsce:'Online, MS Teams', status:'Odbyty', ucz:['UCZ-1002','UCZ-1005']},
+  {id:'TRM-0017', szk:'SZK-102', od:'2026-11-17', do:'2026-11-18', miejsce:'Online, MS Teams', status:'Wolny', ucz:[]},
+  {id:'TRM-0021', szk:'SZK-201', od:'2026-09-15', do:'2026-09-16', miejsce:'Warszawa, ul. Prosta 12', status:'Zaplanowany', ucz:['UCZ-2001','UCZ-2003']},
+  {id:'TRM-0022', szk:'SZK-202', od:'2026-09-29', do:'2026-09-29', miejsce:'Warszawa, ul. Prosta 12', status:'Wolny', ucz:['UCZ-2005']},
+  {id:'TRM-0023', szk:'SZK-201', od:'2026-08-11', do:'2026-08-12', miejsce:'Warszawa, ul. Prosta 12', status:'Odbyty', ucz:['UCZ-2002']},
+  {id:'TRM-0031', szk:'SZK-301', od:'2026-10-05', do:'2026-10-09', miejsce:'Gdańsk, al. Grunwaldzka 3', status:'Zaplanowany', ucz:['UCZ-3001','UCZ-3002','UCZ-3004']},
+  {id:'TRM-0032', szk:'SZK-302', od:'2026-11-03', do:'2026-11-05', miejsce:'Gdańsk, al. Grunwaldzka 3', status:'Wolny', ucz:[]},
+  {id:'TRM-0041', szk:'SZK-401', od:'2026-09-11', do:'2026-09-11', miejsce:'Online', status:'Zaplanowany', ucz:['UCZ-4001','UCZ-4003']},
+  {id:'TRM-0042', szk:'SZK-402', od:'2026-10-13', do:'2026-10-14', miejsce:'Online', status:'Wolny', ucz:[]}
+];
+
+const UCZ = [
+  {id:'UCZ-1001', imie:'Mariusz Zieliński', inst:'INS-01', firma:'Stalmet sp. z o.o.', tel:'601 220 118', mail:'m.zielinski@stalmet.pl', typ:'Dofinansowanie', status:'Termin ustalony', bur:'Tak', kanal:'Mail i SMS', dodal:'Firma'},
+  {id:'UCZ-1002', imie:'Katarzyna Wrona', inst:'INS-01', firma:'Nordika SA', tel:'604 771 902', mail:'k.wrona@nordika.pl', typ:'Dofinansowanie', status:'Rozliczone', bur:'Tak', kanal:'Mail', dodal:'Firma'},
+  {id:'UCZ-1003', imie:'Piotr Lewandowski', inst:'INS-01', firma:'Vento Logistics', tel:'512 004 330', mail:'p.lewandowski@vento.pl', typ:'Lead', status:'Lead', bur:'Nie', kanal:'Mail', dodal:'Instytucja'},
+  {id:'UCZ-1004', imie:'Agnieszka Bąk', inst:'INS-01', firma:'Stalmet sp. z o.o.', tel:'790 118 447', mail:'a.bak@stalmet.pl', typ:'Dofinansowanie', status:'Pozytywna decyzja', bur:'Tak', kanal:'Mail i SMS', dodal:'Firma'},
+  {id:'UCZ-1005', imie:'Tomasz Nowak', inst:'INS-01', firma:'Nordika SA', tel:'668 903 221', mail:'t.nowak@nordika.pl', typ:'Komercyjny', status:'Szkolenie odbyte', bur:'Nie dotyczy', kanal:'Mail', dodal:'Instytucja'},
+  {id:'UCZ-1006', imie:'Marta Kaczmarek', inst:'INS-01', firma:'Vento Logistics', tel:'505 118 004', mail:'m.kaczmarek@vento.pl', typ:'Lead', status:'Zarejestrowany do BUR', bur:'Tak', kanal:'Mail', dodal:'Instytucja'},
+  {id:'UCZ-1009', imie:'Ewa Michalska', inst:'INS-01', firma:'Prima Druk', tel:'510 887 002', mail:'e.michalska@primadruk.pl', typ:'Dofinansowanie', status:'Złożony', bur:'Tak', kanal:'Mail', dodal:'Firma'},
+  {id:'UCZ-2001', imie:'Jakub Grabowski', inst:'INS-02', firma:'Termex', tel:'603 118 774', mail:'j.grabowski@termex.pl', typ:'Dofinansowanie', status:'Termin ustalony', bur:'Tak', kanal:'Mail', dodal:'Firma'},
+  {id:'UCZ-2002', imie:'Monika Sikora', inst:'INS-02', firma:'Termex', tel:'602 447 019', mail:'m.sikora@termex.pl', typ:'Dofinansowanie', status:'Rozliczone', bur:'Tak', kanal:'SMS', dodal:'Firma'},
+  {id:'UCZ-2003', imie:'Rafał Adamczyk', inst:'INS-02', firma:'Bergo Serwis', tel:'781 220 664', mail:'r.adamczyk@bergo.pl', typ:'Dofinansowanie', status:'Pozytywna decyzja', bur:'Tak', kanal:'Mail i SMS', dodal:'Firma'},
+  {id:'UCZ-2004', imie:'Łukasz Dąbrowski', inst:'INS-02', firma:'Bergo Serwis', tel:'664 990 118', mail:'l.dabrowski@bergo.pl', typ:'Lead', status:'Lead', bur:'Nie', kanal:'Mail', dodal:'Instytucja'},
+  {id:'UCZ-2005', imie:'Iwona Zawadzka', inst:'INS-02', firma:'Poza programem', tel:'698 004 771', mail:'i.zawadzka@wp.pl', typ:'Komercyjny', status:'Zapisany', bur:'Nie dotyczy', kanal:'Mail', dodal:'Instytucja'},
+  {id:'UCZ-3001', imie:'Natalia Wójcik', inst:'INS-03', firma:'Fit Studio Sopot', tel:'535 771 004', mail:'n.wojcik@fitsopot.pl', typ:'Dofinansowanie', status:'Termin ustalony', bur:'Tak', kanal:'Mail i SMS', dodal:'Firma'},
+  {id:'UCZ-3002', imie:'Marek Sowiński', inst:'INS-03', firma:'Fit Studio Sopot', tel:'603 004 118', mail:'m.sowinski@fitsopot.pl', typ:'Dofinansowanie', status:'Złożony', bur:'Tak', kanal:'Mail', dodal:'Firma'},
+  {id:'UCZ-3003', imie:'Aleksandra Pawlak', inst:'INS-03', firma:'Body Line', tel:'570 118 903', mail:'a.pawlak@bodyline.pl', typ:'Lead', status:'W trakcie składania', bur:'Tak', kanal:'Mail', dodal:'Firma'},
+  {id:'UCZ-3004', imie:'Damian Król', inst:'INS-03', firma:'Body Line', tel:'693 220 447', mail:'d.krol@bodyline.pl', typ:'Komercyjny', status:'Zapisany', bur:'Nie dotyczy', kanal:'SMS', dodal:'Instytucja'},
+  {id:'UCZ-4001', imie:'Barbara Nowicka', inst:'INS-04', firma:'Elmax', tel:'512 990 118', mail:'b.nowicka@elmax.pl', typ:'Dofinansowanie', status:'Termin ustalony', bur:'Tak', kanal:'Mail', dodal:'Firma'},
+  {id:'UCZ-4002', imie:'Krzysztof Mazur', inst:'INS-04', firma:'Elmax', tel:'606 118 220', mail:'k.mazur@elmax.pl', typ:'Lead', status:'Zarejestrowany do BUR', bur:'Tak', kanal:'Mail', dodal:'Instytucja'},
+  {id:'UCZ-4003', imie:'Sylwia Górska', inst:'INS-04', firma:'Kompas Biuro', tel:'578 447 002', mail:'s.gorska@kompas.pl', typ:'Dofinansowanie', status:'Pozytywna decyzja', bur:'Tak', kanal:'Mail', dodal:'Firma'}
+];
+
+const DOF = [
+  {id:'DOF-0301', ucz:'UCZ-1001', kwota:8700, od:'2026-08-01', do:'2026-12-31', wniosek:'2026-07-20', urzad:'PUP Poznań', terminy:['TRM-0012','TRM-0013','TRM-0014'], rozliczenie:'Oczekuje na ostatni termin'},
+  {id:'DOF-0288', ucz:'UCZ-1002', kwota:6800, od:'2026-06-01', do:'2026-09-30', wniosek:'2026-05-18', urzad:'PUP Poznań', terminy:['TRM-0016','TRM-0013'], rozliczenie:'Rozliczone'},
+  {id:'DOF-0305', ucz:'UCZ-1004', kwota:3200, od:'2026-08-01', do:'2026-12-31', wniosek:'2026-07-22', urzad:'PUP Poznań', terminy:['TRM-0012'], rozliczenie:'Oczekuje na ostatni termin'},
+  {id:'DOF-0310', ucz:'UCZ-1009', kwota:3600, od:'2026-09-01', do:'2026-12-31', wniosek:'2026-08-11', urzad:'PUP Poddębice', terminy:[], rozliczenie:'Brak terminów'},
+  {id:'DOF-0402', ucz:'UCZ-2001', kwota:2400, od:'2026-08-01', do:'2026-12-31', wniosek:'2026-07-15', urzad:'PUP Warszawa', terminy:['TRM-0021'], rozliczenie:'Oczekuje na ostatni termin'},
+  {id:'DOF-0398', ucz:'UCZ-2002', kwota:2400, od:'2026-06-01', do:'2026-09-30', wniosek:'2026-05-30', urzad:'PUP Warszawa', terminy:['TRM-0023'], rozliczenie:'Rozliczone'},
+  {id:'DOF-0405', ucz:'UCZ-2003', kwota:2400, od:'2026-08-01', do:'2026-12-31', wniosek:'2026-07-15', urzad:'PUP Warszawa', terminy:['TRM-0021'], rozliczenie:'Oczekuje na ostatni termin'},
+  {id:'DOF-0501', ucz:'UCZ-3001', kwota:7300, od:'2026-09-01', do:'2027-01-31', wniosek:'2026-08-05', urzad:'PUP Gdańsk', terminy:['TRM-0031','TRM-0032'], rozliczenie:'Oczekuje na ostatni termin'},
+  {id:'DOF-0503', ucz:'UCZ-3002', kwota:4200, od:'2026-09-01', do:'2027-01-31', wniosek:'2026-08-05', urzad:'PUP Gdańsk', terminy:['TRM-0031'], rozliczenie:'Oczekuje na ostatni termin'},
+  {id:'DOF-0601', ucz:'UCZ-4001', kwota:1700, od:'2026-08-15', do:'2026-12-31', wniosek:'2026-07-28', urzad:'PUP Kraków', terminy:['TRM-0041'], rozliczenie:'Oczekuje na ostatni termin'},
+  {id:'DOF-0604', ucz:'UCZ-4003', kwota:1700, od:'2026-08-15', do:'2026-12-31', wniosek:'2026-07-28', urzad:'PUP Kraków', terminy:['TRM-0041'], rozliczenie:'Oczekuje na ostatni termin'}
+];
+
+const NABORY = [
+  {urzad:'PUP Poznań', woj:'wielkopolskie', powiat:'poznański', rodzaj:'KFS', prognoza:'połowa października 2026', data:'2026-10-15', status:'W trakcie kontaktu', faktyczny:''},
+  {urzad:'PUP Poddębice', woj:'łódzkie', powiat:'poddębicki', rodzaj:'KFS', prognoza:'wrzesień 2026', data:'2026-09-20', status:'W trakcie kontaktu', faktyczny:''},
+  {urzad:'PUP Kartuzy', woj:'pomorskie', powiat:'kartuski', rodzaj:'KFS', prognoza:'', data:'', status:'Nabór ogłoszony', faktyczny:'2026-09-01 do 2026-09-04'},
+  {urzad:'PUP Warszawa', woj:'mazowieckie', powiat:'m. st. Warszawa', rodzaj:'KFS', prognoza:'listopad 2026', data:'2026-11-10', status:'Po naborze', faktyczny:''},
+  {urzad:'PUP Gdańsk', woj:'pomorskie', powiat:'gdański', rodzaj:'KFS', prognoza:'', data:'', status:'Nabór ogłoszony', faktyczny:'2026-09-14 do 2026-09-25'},
+  {urzad:'PUP Kraków', woj:'małopolskie', powiat:'krakowski', rodzaj:'Powiatowy', prognoza:'styczeń 2027', data:'2027-01-12', status:'Brak naboru', faktyczny:''},
+  {urzad:'PUP Brzesko', woj:'małopolskie', powiat:'brzeski', rodzaj:'KFS', prognoza:'grudzień 2026', data:'2026-12-01', status:'W trakcie kontaktu', faktyczny:''}
+];
+
+const SZABLONY = [
+  {id:'SZB-01', nazwa:'Wniosek w trakcie przygotowania', autor:'Firma', kanal:'Mail', odbiorca:'Uczestnik'},
+  {id:'SZB-02', nazwa:'Prośba o ustalenie terminu', autor:'Firma', kanal:'Mail', odbiorca:'Instytucja'},
+  {id:'SZB-03', nazwa:'Termin ustalony, zgłoś do urzędu', autor:'Firma', kanal:'Mail', odbiorca:'Firma'},
+  {id:'SZB-04', nazwa:'Szczegóły organizacyjne szkolenia', autor:'Instytucja', kanal:'Mail i SMS', odbiorca:'Uczestnicy terminu'},
+  {id:'SZB-05', nazwa:'Przypomnienie na dzień przed', autor:'Instytucja', kanal:'SMS', odbiorca:'Uczestnicy terminu'},
+  {id:'SZB-06', nazwa:'Powiadomienie o fakturze', autor:'Firma', kanal:'Mail', odbiorca:'Instytucja'},
+  {id:'SZB-07', nazwa:'Dane do faktury dla klienta', autor:'Firma', kanal:'Mail', odbiorca:'Uczestnik'},
+  {id:'SZB-08', nazwa:'Ankieta po szkoleniu', autor:'Instytucja', kanal:'Mail', odbiorca:'Uczestnicy terminu'}
+];
+
+const AUTOM = [
+  {id:'AUT-01', wyzw:'Status uczestnika', war:'Pozytywna decyzja', kiedy:'natychmiast', szablon:'Prośba o ustalenie terminu', odb:'Instytucja', kanal:'Mail', stan:'Włączone', wl:'Domyślna'},
+  {id:'AUT-02', wyzw:'Wpisany termin', war:'—', kiedy:'natychmiast', szablon:'Termin ustalony, zgłoś do urzędu', odb:'Firma', kanal:'Mail', stan:'Włączone', wl:'Domyślna'},
+  {id:'AUT-03', wyzw:'Data terminu', war:'—', kiedy:'2 dni przed', szablon:'Szczegóły organizacyjne szkolenia', odb:'Uczestnicy terminu', kanal:'Mail', stan:'Włączone', wl:'Domyślna'},
+  {id:'AUT-04', wyzw:'Data terminu', war:'—', kiedy:'1 dzień przed', szablon:'Przypomnienie na dzień przed', odb:'Uczestnicy terminu', kanal:'SMS', stan:'Wyłączone', wl:'Domyślna'},
+  {id:'AUT-05', wyzw:'Data terminu', war:'—', kiedy:'1 dzień po', szablon:'Ankieta po szkoleniu', odb:'Uczestnicy terminu', kanal:'Mail', stan:'Włączone', wl:'Instytucja'}
+];
+
+const KORESP = {
+  'UCZ-1001':[
+    {data:'2026-07-14 09:12', kier:'Wysłane', temat:'Potwierdzenie rejestracji w BUR', kanal:'Mail'},
+    {data:'2026-07-14 15:40', kier:'Odebrane', temat:'Re: Potwierdzenie rejestracji w BUR', kanal:'Mail'},
+    {data:'2026-08-02 11:05', kier:'Wysłane', temat:'Wniosek złożony, dalsze kroki', kanal:'Mail'},
+    {data:'2026-08-19 08:30', kier:'Wysłane', temat:'Decyzja pozytywna, wybór terminów', kanal:'Mail'},
+    {data:'2026-08-19 10:02', kier:'Odebrane', temat:'Re: Decyzja pozytywna, wybór terminów', kanal:'Mail'},
+    {data:'2026-08-20 07:00', kier:'Wysłane', temat:'Terminy potwierdzone', kanal:'SMS'}
+  ],
+  'UCZ-3001':[
+    {data:'2026-08-05 12:00', kier:'Wysłane', temat:'Wniosek przyjęty', kanal:'Mail'},
+    {data:'2026-08-18 09:44', kier:'Odebrane', temat:'Pytanie o materiały', kanal:'Mail'}
+  ]
+};
+
+const NOTATKI = {
+  'UCZ-1001':[
+    {data:'2026-07-10', autor:'Firma', tresc:'Klient zainteresowany pełną ścieżką Power BI, trzy szkolenia.'},
+    {data:'2026-08-19', autor:'Instytucja', tresc:'Potwierdził terminy wrześniowe i październikowy. Prosi o materiały z wyprzedzeniem.'}
+  ],
+  'UCZ-3001':[{data:'2026-08-18', autor:'Instytucja', tresc:'Prosi o materiały w wersji papierowej.'}]
+};
+
+const PLIKI = {
+  'UCZ-1001':[
+    {nazwa:'formularz_zgloszeniowy.pdf', kto:'Instytucja', data:'2026-07-09'},
+    {nazwa:'zaswiadczenie_bur.pdf', kto:'Firma', data:'2026-07-14'},
+    {nazwa:'umowa_szkoleniowa.pdf', kto:'Instytucja', data:'2026-08-20'}
+  ]
+};
+
+const UZYTK = [
+  {login:'bartek@ldit.pl', rola:'Administrator', inst:'—', ost:'2026-08-20 08:41'},
+  {login:'lucja@ldit.pl', rola:'Pracownik firmy', inst:'—', ost:'2026-08-20 09:15'},
+  {login:'anna@ldit.pl', rola:'Pracownik firmy', inst:'—', ost:'2026-08-19 16:02'},
+  {login:'biuro@clickless.pl', rola:'Instytucja', inst:'INS-01', ost:'2026-08-20 07:55'},
+  {login:'terminy@clickless.pl', rola:'Instytucja', inst:'INS-01', ost:'2026-08-18 12:30'},
+  {login:'kontakt@dronefortech.pl', rola:'Instytucja', inst:'INS-02', ost:'2026-08-19 10:11'},
+  {login:'biuro@akademiafit.pl', rola:'Instytucja', inst:'INS-03', ost:'2026-08-20 08:02'},
+  {login:'m.zielinski@stalmet.pl', rola:'Uczestnik', inst:'INS-01', ost:'2026-08-20 09:30'}
+];
+
+const UPRAWNIENIA = [
+  ['Instytucje i katalog szkoleń','Pełne','Odczyt','Własna instytucja','Brak'],
+  ['Uczestnicy i leady','Pełne','Pełne w kontekście','Własny katalog','Brak'],
+  ['Zmiana statusu wniosku','Pełne','Pełne','Tylko osoby komercyjne','Brak'],
+  ['Dofinansowania','Pełne','Pełne w kontekście','Odczyt','Własne'],
+  ['Terminy i przypisania','Pełne','Pełne w kontekście','Własne terminy','Odczyt'],
+  ['Powiadomienia','Pełne','Wysyłka','Szablony, automatyzacje, wysyłka','Brak'],
+  ['Statystyki','Pełne, wszystkie instytucje','Bez marżowości','Własne wskaźniki','Brak'],
+  ['Rozliczenia i prowizje','Pełne','Brak','Własne rozliczenia','Brak'],
+  ['Nabory','Pełne','Odczyt','Odczyt','Odczyt'],
+  ['Konta i uprawnienia','Pełne','Brak','Użytkownicy instytucji','Brak'],
+  ['Dostęp MCP','Token pełny','Token ograniczony','Token instytucji','Brak']
+];
+
+/* ================= MENU ================= */
+
+const OPIS = {
+  pulpit:'Podsumowanie stanu, najbliższe terminy',
+  instytucje:'Karty instytucji, oferta szkoleń, stawki prowizji',
+  katalog:'Oferta szkoleń, plany, załączniki, cennik',
+  uczestnicy:'Baza osób, statusy, mini CRM, korespondencja',
+  dofinansowania:'Kwoty, okresy realizacji, rozkład na terminy',
+  terminy:'Wolne terminy, zapisy, kalendarz',
+  powiadomienia:'Szablony, automatyzacje, wysyłka zbiorcza',
+  statystyki:'Lejek, skuteczność, porównanie instytucji, marżowość',
+  statystykiI:'Lejek, skuteczność, wolumeny',
+  rozliczenia:'Rozliczenie per dofinansowanie, prowizje, faktury',
+  nabory:'Aktualne i prognozowane, rodzaje, urzędy pracy',
+  konta:'Użytkownicy, rangi, macierz dostępu, MCP',
+  panelucz:'Podgląd widoku, który dostaje uczestnik',
+  panelucz2:'Mój status, moje szkolenia, nabory',
+  ustawienia:'Dane instytucji, osoby kontaktowe, prowizja'
+};
+
+function menuDef(){
+  if(S.rola==='ucz') return [
+    {id:'panelucz', nm:'Panel uczestnika', ds:OPIS.panelucz2},
+    {id:'nabory', nm:'Nabory', ds:'Nadchodzące i przewidywane terminy'}
+  ];
+  if(S.rola==='inst') return [
+    {grp:'Moja instytucja'},
+    {id:'pulpit', nm:'Pulpit', ds:OPIS.pulpit},
+    {id:'katalog', nm:'Katalog szkoleń', ds:OPIS.katalog},
+    {id:'terminy', nm:'Terminy i kalendarz', ds:OPIS.terminy},
+    {grp:'Ludzie'},
+    {id:'uczestnicy', nm:'Uczestnicy i leady', ds:OPIS.uczestnicy},
+    {id:'powiadomienia', nm:'Powiadomienia', ds:OPIS.powiadomienia},
+    {grp:'Zarządcze'},
+    {id:'statystyki', nm:'Statystyki', ds:OPIS.statystykiI},
+    {id:'rozliczenia', nm:'Rozliczenia', ds:'Prowizje, grupowanie, faktury'},
+    {grp:'Pozostałe'},
+    {id:'nabory', nm:'Nabory', ds:OPIS.nabory},
+    {id:'ustawienia', nm:'Ustawienia instytucji', ds:OPIS.ustawienia}
+  ];
+  const m = [
+    {grp:'Operacyjne'},
+    {id:'pulpit', nm:'Pulpit', ds:OPIS.pulpit},
+    {id:'instytucje', nm:'Instytucje i katalog', ds:OPIS.instytucje},
+    {id:'uczestnicy', nm:'Uczestnicy i leady', ds:OPIS.uczestnicy},
+    {id:'dofinansowania', nm:'Dofinansowania', ds:OPIS.dofinansowania},
+    {id:'terminy', nm:'Terminy i kalendarz', ds:OPIS.terminy},
+    {grp:'Komunikacja'},
+    {id:'powiadomienia', nm:'Powiadomienia', ds:OPIS.powiadomienia},
+    {grp:'Zarządcze'},
+    {id:'statystyki', nm:'Statystyki', ds:OPIS.statystyki}
+  ];
+  if(S.rola==='admin') m.push({id:'rozliczenia', nm:'Rozliczenia i prowizje', ds:OPIS.rozliczenia});
+  m.push({grp:'Pozostałe'}, {id:'nabory', nm:'Nabory', ds:OPIS.nabory});
+  if(S.rola==='admin') m.push({id:'konta', nm:'Konta i uprawnienia', ds:OPIS.konta}, {id:'panelucz', nm:'Panel uczestnika', ds:OPIS.panelucz});
+  return m;
+}
+
+/* ================= STAN I POMOCNICZE ================= */
+
+let S = {rola:'admin', inst:'INS-01', view:'pulpit', ucz:null, dof:null, term:null, szk:null,
+         tab:'dane', statTab:'przeglad', rozlGrup:'szkolenia', kalM:'2026-09', panelUcz:'UCZ-1001', filtrTyp:'', filtrStatus:''};
+
+const el = id => document.getElementById(id);
+const inst = id => INST.find(i=>i.id===id) || {};
+const szkol = id => SZK.find(s=>s.id===id) || {};
+const uczest = id => UCZ.find(u=>u.id===id) || {};
+const termin = id => TERM.find(t=>t.id===id) || {};
+const zl = n => Math.round(n).toLocaleString('pl-PL') + ' zł';
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PRZYZNANE = ['Pozytywna decyzja','Termin ustalony','Szkolenie odbyte','Rozliczone'];
+
+function cena(szkId, naDzien){
+  const l = CENY.filter(c=>c.szk===szkId && c.od<=(naDzien||'2026-08-20')).sort((a,b)=>a.od<b.od?1:-1);
+  if(l.length) return l[0].cena;
+  const w = CENY.filter(c=>c.szk===szkId).sort((a,b)=>a.od<b.od?1:-1);
+  return w.length? w[w.length-1].cena : 0;
+}
+function cenaDof(szkId, dofId){
+  const d = DOF.find(x=>x.id===dofId);
+  return cena(szkId, d? d.wniosek : null);
+}
+
+function go(view, opts){ S.view = view; Object.assign(S, opts||{}); render(); window.scrollTo(0,0); }
+window.go = go;
+function setTab(k,v){ S[k]=v; render(); }
+window.setTab = setTab;
+
+function ctxUcz(id){ return UCZ.filter(u=>u.inst===(id||S.inst)); }
+function ctxTerm(id){ return TERM.filter(t=>szkol(t.szk).inst===(id||S.inst)); }
+function ctxDof(id){ return DOF.filter(d=>uczest(d.ucz).inst===(id||S.inst)); }
+function ctxSzk(id){ return SZK.filter(s=>s.inst===(id||S.inst)); }
+
+function statyInst(id){
+  const u = ctxUcz(id), d = ctxDof(id), t = ctxTerm(id);
+  const przyz = d.filter(x=>PRZYZNANE.includes(uczest(x.ucz).status));
+  const odbyte = t.filter(x=>x.status==='Odbyty');
+  const kwotaW = d.reduce((a,b)=>a+b.kwota,0);
+  const kwotaP = przyz.reduce((a,b)=>a+b.kwota,0);
+  const i = inst(id||S.inst);
+  return {
+    osoby:u.length,
+    leady:u.filter(x=>x.typ==='Lead').length,
+    komerc:u.filter(x=>x.typ==='Komercyjny').length,
+    bur:u.filter(x=>x.bur==='Tak').length,
+    zakwal:u.filter(x=>PRZYZNANE.includes(x.status)).length,
+    wnioski:d.length, przyzn:przyz.length,
+    kwotaW, kwotaP,
+    prowizja: Math.round(kwotaP * i.prowizja/100),
+    szkolen:ctxSzk(id).length,
+    terminy:t.length,
+    zaplan:t.filter(x=>x.status==='Zaplanowany').length,
+    wolne:t.filter(x=>x.status==='Wolny').length,
+    odbyte:odbyte.length,
+    minObsada:t.filter(x=>x.status!=='Odbyty' && x.ucz.length>0 && x.ucz.length<3).length
+  };
+}
+function pct(a,b){ return b? Math.round(a/b*100) : 0; }
+function bar(p){ return `<div class="bar"><span style="width:${Math.max(0,Math.min(100,p))}%"></span></div>`; }
+function roleName(){ return {admin:'Administrator', prac:'Pracownik firmy', inst:'Instytucja szkoleniowa', ucz:'Uczestnik szkolenia'}[S.rola]; }
+
+/* ================= WIDOKI ================= */
+
+function vPulpit(){
+  const s = statyInst();
+  const i = inst(S.inst);
+  const t = ctxTerm().filter(x=>x.status!=='Odbyty').sort((a,b)=>a.od<b.od?-1:1).slice(0,6);
+
+  if(S.rola==='inst'){
+    return `
+    <h1>Pulpit</h1>
+    <div class="lead">${esc(i.nazwa)}. Podsumowanie od ogółu do szczegółu.</div>
+
+    <h3>Ludzie</h3>
+    <div class="cards">
+      <div class="card clk" onclick="go('uczestnicy',{ucz:null,filtrTyp:''})"><div class="k">Osoby w systemie</div><div class="v">${s.osoby}</div><div class="n">${s.leady} leadów, ${s.komerc} komercyjnych</div></div>
+      <div class="card clk" onclick="go('uczestnicy',{ucz:null,filtrTyp:''})"><div class="k">Zarejestrowani</div><div class="v">${s.bur}</div><div class="n">${pct(s.bur,s.osoby)}% osób w systemie</div></div>
+      <div class="card clk" onclick="go('uczestnicy',{ucz:null,filtrStatus:''})"><div class="k">Zakwalifikowani</div><div class="v">${s.zakwal}</div><div class="n">${pct(s.zakwal,s.bur)}% zarejestrowanych</div></div>
+    </div>
+
+    <h3>Pieniądze</h3>
+    <div class="cards">
+      <div class="card"><div class="k">Wnioskowane</div><div class="v">${s.kwotaW.toLocaleString('pl-PL')}</div><div class="n">zł, ${s.wnioski} wniosków</div></div>
+      <div class="card"><div class="k">Przyznane</div><div class="v">${s.kwotaP.toLocaleString('pl-PL')}</div><div class="n">zł, ${s.przyzn} osób</div></div>
+      <div class="card"><div class="k">Skuteczność kwotowa</div><div class="v">${pct(s.kwotaP,s.kwotaW)}%</div><div class="n">przyznane do wnioskowanych</div></div>
+    </div>
+
+    <h3>Szkolenia i terminy</h3>
+    <div class="cards">
+      <div class="card clk" onclick="go('katalog',{szk:null})"><div class="k">Szkolenia w katalogu</div><div class="v">${s.szkolen}</div><div class="n">pozycje oferty</div></div>
+      <div class="card clk" onclick="go('terminy',{term:null})"><div class="k">Terminy zaplanowane</div><div class="v">${s.zaplan}</div><div class="n">${s.wolne} wolnych, ${s.odbyte} odbytych</div></div>
+      <div class="card clk" onclick="go('terminy',{term:null})"><div class="k">Poniżej minimum</div><div class="v">${s.minObsada}</div><div class="n">terminy z mniej niż 3 osobami</div></div>
+    </div>
+
+    <h2>Najbliższe terminy</h2>
+    ${tabelaTerminy(t)}
+    `;
+  }
+
+  return `
+  <h1>Pulpit</h1>
+  <div class="lead">Kontekst: ${esc(i.nazwa)} &nbsp;|&nbsp; rola: ${roleName()}</div>
+  <div class="cards">
+    <div class="card"><div class="k">Leady</div><div class="v">${s.leady}</div><div class="n">przed procesem wnioskowym</div></div>
+    <div class="card"><div class="k">Dofinansowania</div><div class="v">${s.wnioski}</div><div class="n">${zl(s.kwotaW)} wnioskowane</div></div>
+    <div class="card"><div class="k">Terminy zaplanowane</div><div class="v">${s.zaplan}</div><div class="n">${s.wolne} wolnych do obsadzenia</div></div>
+    <div class="card"><div class="k">Uczestnicy</div><div class="v">${s.osoby}</div><div class="n">w tym ${s.komerc} komercyjnych</div></div>
+  </div>
+
+  <h2>Wymaga działania</h2>
+  <table>
+    <tr><th>Co</th><th>Kogo dotyczy</th><th>Od kiedy</th><th></th></tr>
+    <tr class="click" onclick="go('uczestnicy',{ucz:'UCZ-1004'})"><td>Pozytywna decyzja, brak ustalonego terminu</td><td>Agnieszka Bąk</td><td>2026-08-14</td><td class="right"><span class="tag b">Otwórz</span></td></tr>
+    <tr class="click" onclick="go('dofinansowania',{dof:'DOF-0310'})"><td>Dofinansowanie bez przypisanych terminów</td><td>Ewa Michalska</td><td>2026-08-11</td><td class="right"><span class="tag b">Otwórz</span></td></tr>
+    <tr class="click" onclick="go('terminy',{term:'TRM-0015'})"><td>Termin wolny, zero zapisanych osób</td><td>Power BI i AI, 20.10</td><td>2026-08-01</td><td class="right"><span class="tag b">Otwórz</span></td></tr>
+    <tr class="click" onclick="go('nabory')"><td>Urząd nie odpowiada, flaga czerwona</td><td>PUP Brzesko</td><td>2026-08-05</td><td class="right"><span class="tag b">Otwórz</span></td></tr>
+  </table>
+
+  <h2>Najbliższe terminy</h2>
+  ${tabelaTerminy(t)}
+  `;
+}
+
+/* --- katalog szkoleń --- */
+function vKatalog(){
+  if(S.szk) return kartaSzkolenia(S.szk);
+  const i = inst(S.inst);
+  return `
+  <h1>Katalog szkoleń</h1>
+  <div class="lead">${esc(i.nazwa)}. Oferta redagowana przez instytucję.</div>
+  <table>
+    <tr><th>ID</th><th>Nazwa</th><th class="num">Dni</th><th class="num">Godzin</th><th>Tryb</th><th class="num">Cena obowiązująca</th><th class="num">Terminy</th><th class="num">Załączniki</th></tr>
+    ${ctxSzk().map(s=>`<tr class="click" onclick="go('katalog',{szk:'${s.id}'})">
+      <td class="mono">${s.id}</td><td>${esc(s.nazwa)}</td><td class="num">${s.dni}</td><td class="num">${s.godz}</td>
+      <td>${esc(s.tryb)}</td><td class="num">${zl(cena(s.id))}</td>
+      <td class="num">${TERM.filter(t=>t.szk===s.id).length}</td>
+      <td class="num">${(ZALACZNIKI[s.id]||[]).length}</td></tr>`).join('')}
+  </table>
+  <button onclick="alert('Makieta: formularz nowej pozycji katalogu')">Dodaj szkolenie</button>
+  `;
+}
+
+function kartaSzkolenia(id){
+  const s = szkol(id);
+  const t = TERM.filter(x=>x.szk===s.id);
+  const cn = CENY.filter(c=>c.szk===s.id).sort((a,b)=>a.od<b.od?-1:1);
+  const zal = ZALACZNIKI[s.id]||[];
+  const back = S.rola==='inst' ? 'katalog' : 'instytucje';
+  return `
+  <div class="crumb"><button onclick="go('${back}',{szk:null})">${back==='katalog'?'Katalog szkoleń':'Instytucje i katalog'}</button> / ${esc(s.nazwa)}</div>
+  <h1>${esc(s.nazwa)}</h1>
+  <div class="lead">${s.id} &nbsp;|&nbsp; ${esc(inst(s.inst).nazwa)}</div>
+
+  <div class="two">
+    <div class="panel"><div class="ttl">Formularz szkolenia</div>
+      <dl class="kv">
+        <dt>Nazwa</dt><dd>${esc(s.nazwa)}</dd>
+        <dt>Liczba dni</dt><dd>${s.dni}</dd>
+        <dt>Liczba godzin</dt><dd>${s.godz}</dd>
+        <dt>Tryb</dt><dd>${esc(s.tryb)}</dd>
+        <dt>Cena na dziś</dt><dd>${zl(cena(s.id))}</dd>
+      </dl>
+      <div class="inline"><button onclick="alert('Makieta: edycja pól szkolenia')">Edytuj dane</button></div>
+    </div>
+    <div class="panel"><div class="ttl">Plan szkolenia</div>
+      <ul class="plain">
+        <li>Blok 1, wprowadzenie i cele</li>
+        <li>Blok 2, ćwiczenia praktyczne</li>
+        <li>Blok 3, przypadki z danych uczestników</li>
+        <li>Blok 4, podsumowanie i materiały</li>
+      </ul>
+      <div class="inline"><button onclick="alert('Makieta: edycja planu')">Edytuj plan</button>
+      <button onclick="alert('Makieta: dodanie bloku tekstowego')">Dodaj blok tekstowy</button></div>
+    </div>
+  </div>
+
+  <h2>Cennik, ceny zmienne w czasie</h2>
+  <div class="hint">Obowiązuje cena z dnia złożenia wniosku o dofinansowanie, nie z dnia szkolenia.</div>
+  <table>
+    <tr><th>Obowiązuje od</th><th class="num">Cena</th><th>Stan</th></tr>
+    ${cn.map((c,idx)=>{
+      const nast = cn[idx+1];
+      const akt = c.od<='2026-08-20' && (!nast || nast.od>'2026-08-20');
+      const przyszla = c.od>'2026-08-20';
+      return `<tr><td class="mono">${c.od}</td><td class="num">${zl(c.cena)}</td>
+        <td>${akt?'<span class="tag b">Obowiązuje</span>':(przyszla?'<span class="tag">Zaplanowana</span>':'<span class="tag g">Archiwalna</span>')}</td></tr>`;
+    }).join('')}
+  </table>
+  <button onclick="alert('Makieta: dodanie ceny z datą obowiązywania')">Dodaj cenę od daty</button>
+
+  <h2>Załączniki</h2>
+  <table>
+    <tr><th>Nazwa pliku</th><th>Dodano</th><th></th></tr>
+    ${zal.map(z=>`<tr><td>${esc(z.nazwa)}</td><td class="mono">${z.data}</td><td class="right"><span class="tag">Pobierz</span></td></tr>`).join('')||'<tr><td colspan="3" class="muted">Brak załączników</td></tr>'}
+  </table>
+  <button onclick="alert('Makieta: wgranie załącznika do szkolenia')">Dodaj załącznik</button>
+
+  <h2>Terminy tego szkolenia</h2>
+  ${tabelaTerminy(t)}
+  `;
+}
+
+/* --- instytucje, widok firmy --- */
+function vInstytucje(){
+  if(S.szk) return kartaSzkolenia(S.szk);
+  let h = `<h1>Instytucje i katalog szkoleń</h1>
+  <div class="lead">Kliknij wiersz, aby przełączyć kontekst pracy.</div>
+  <table>
+    <tr><th>ID</th><th>Nazwa</th><th>Miasto</th><th>Osoba kontaktowa</th><th class="num">Prowizja</th><th class="num">Szkoleń</th><th class="num">Uczestników</th><th></th></tr>`;
+  INST.forEach(i=>{
+    h += `<tr class="click" onclick="setInst('${i.id}')">
+      <td class="mono">${i.id}</td><td>${esc(i.nazwa)}</td><td>${esc(i.miasto)}</td><td>${esc(i.kontakt)}</td>
+      <td class="num">${S.rola==='admin'? i.prowizja+'%' : '<span class="muted">ukryte</span>'}</td>
+      <td class="num">${ctxSzk(i.id).length}</td><td class="num">${ctxUcz(i.id).length}</td>
+      <td class="right">${S.inst===i.id?'<span class="tag b">Aktywna</span>':'<span class="tag">Wybierz</span>'}</td></tr>`;
+  });
+  h += `</table>`;
+  const i = inst(S.inst);
+  h += `<h2>Karta instytucji: ${esc(i.nazwa)}</h2>
+  <div class="two">
+    <div class="panel"><div class="ttl">Dane</div>
+      <dl class="kv">
+        <dt>Identyfikator</dt><dd class="mono">${i.id}</dd>
+        <dt>Miasto</dt><dd>${esc(i.miasto)}</dd>
+        <dt>Osoba kontaktowa</dt><dd>${esc(i.kontakt)}</dd>
+        <dt>Mail</dt><dd>${esc(i.mail)}</dd>
+        <dt>Stawka prowizji</dt><dd>${S.rola==='admin'? i.prowizja+'%' : '<span class="muted">niedostępne dla tej rangi</span>'}</dd>
+        <dt>Opis</dt><dd>${esc(i.opis)}</dd>
+      </dl>
+    </div>
+    <div class="panel"><div class="ttl">Osoby kontaktowe</div>
+      <table style="margin:0"><tr><th>Osoba</th><th>Rola</th><th>Mail</th><th>Telefon</th></tr>
+      ${OSOBY_INST.filter(o=>o.inst===i.id).map(o=>`<tr><td>${esc(o.imie)}</td><td>${esc(o.rola)}</td><td class="mono">${esc(o.mail)}</td><td class="mono">${o.tel}</td></tr>`).join('')}
+      </table>
+    </div>
+  </div>
+  <h2>Katalog szkoleń</h2>
+  <table>
+    <tr><th>ID</th><th>Nazwa</th><th class="num">Dni</th><th class="num">Godzin</th><th>Tryb</th><th class="num">Cena obowiązująca</th><th class="num">Terminy</th></tr>
+    ${ctxSzk().map(s=>`<tr class="click" onclick="go('instytucje',{szk:'${s.id}'})">
+      <td class="mono">${s.id}</td><td>${esc(s.nazwa)}</td><td class="num">${s.dni}</td><td class="num">${s.godz}</td>
+      <td>${esc(s.tryb)}</td><td class="num">${zl(cena(s.id))}</td><td class="num">${TERM.filter(t=>t.szk===s.id).length}</td></tr>`).join('')}
+  </table>`;
+  return h;
+}
+
+/* --- ustawienia instytucji --- */
+function vUstawienia(){
+  const i = inst(S.inst);
+  const s = statyInst();
+  return `
+  <h1>Ustawienia instytucji</h1>
+  <div class="lead">Dane widoczne dla firmy pozyskującej dofinansowania oraz konfiguracja kont.</div>
+  <div class="two">
+    <div class="panel"><div class="ttl">Dane instytucji</div>
+      <dl class="kv">
+        <dt>Identyfikator</dt><dd class="mono">${i.id}</dd>
+        <dt>Nazwa</dt><dd><input value="${esc(i.nazwa)}" style="width:100%"></dd>
+        <dt>Miasto</dt><dd><input value="${esc(i.miasto)}" style="width:100%"></dd>
+        <dt>Mail główny</dt><dd><input value="${esc(i.mail)}" style="width:100%"></dd>
+        <dt>Opis działalności</dt><dd><input value="${esc(i.opis)}" style="width:100%"></dd>
+        <dt>Stawka prowizji</dt><dd>${i.prowizja}% <span class="tag g">tylko odczyt</span></dd>
+        <dt>Szkolenia w katalogu</dt><dd>${s.szkolen}</dd>
+        <dt>Terminy łącznie</dt><dd>${s.terminy}</dd>
+      </dl>
+      <div class="inline"><button onclick="alert('Makieta: zapis danych instytucji')">Zapisz</button></div>
+    </div>
+    <div class="panel"><div class="ttl">Dane do faktur</div>
+      <dl class="kv">
+        <dt>Nazwa na fakturze</dt><dd><input value="${esc(i.nazwa)}" style="width:100%"></dd>
+        <dt>NIP</dt><dd><input value="000-000-00-00" style="width:100%"></dd>
+        <dt>Adres</dt><dd><input value="ul. Przykładowa 1, ${esc(i.miasto)}" style="width:100%"></dd>
+        <dt>Podstawa zwolnienia</dt><dd>usługa finansowana ze środków publicznych</dd>
+      </dl>
+      <div class="inline"><button onclick="alert('Makieta: zapis danych do faktur')">Zapisz</button></div>
+    </div>
+  </div>
+
+  <h2>Osoby i konta w instytucji</h2>
+  <table>
+    <tr><th>Osoba</th><th>Rola w instytucji</th><th>Mail</th><th>Telefon</th><th>Dostęp do portalu</th><th></th></tr>
+    ${OSOBY_INST.filter(o=>o.inst===i.id).map(o=>`<tr>
+      <td>${esc(o.imie)}</td><td>${esc(o.rola)}</td><td class="mono">${esc(o.mail)}</td><td class="mono">${o.tel}</td>
+      <td>${UZYTK.some(u=>u.login===o.mail)?'<span class="tag b">Tak</span>':'<span class="tag g">Nie</span>'}</td>
+      <td class="right"><button onclick="alert('Makieta: edycja osoby')">Edytuj</button></td></tr>`).join('')}
+  </table>
+  <div class="inline">
+    <button onclick="alert('Makieta: dodanie osoby kontaktowej')">Dodaj osobę</button>
+    <button onclick="alert('Makieta: nadanie dostępu do portalu')">Nadaj dostęp do portalu</button>
+  </div>
+  <div class="note"><b>Zasada.</b> Numery telefonów są przypisane do konkretnych osób, nie do instytucji. Powiadomienia kierowane są do osoby odpowiedzialnej za dany etap.</div>
+  `;
+}
+
+/* --- uczestnicy --- */
+function vUczestnicy(){
+  if(S.ucz) return kartaUczestnika(S.ucz);
+  let u = ctxUcz();
+  if(S.filtrTyp) u = u.filter(x=>x.typ===S.filtrTyp);
+  if(S.filtrStatus) u = u.filter(x=>x.status===S.filtrStatus);
+  const all = ctxUcz();
+  const statusy = [...new Set(all.map(x=>x.status))];
+  const d = ctxDof();
+  const kwotaW = d.reduce((a,b)=>a+b.kwota,0);
+  const kwotaP = d.filter(x=>PRZYZNANE.includes(uczest(x.ucz).status)).reduce((a,b)=>a+b.kwota,0);
+
+  const wgStatus = statusy.map(st=>{
+    const grupa = all.filter(x=>x.status===st);
+    const dof = d.filter(x=>grupa.some(g=>g.id===x.ucz));
+    return {st, n:grupa.length, kwota:dof.reduce((a,b)=>a+b.kwota,0)};
+  }).sort((a,b)=>b.n-a.n);
+
+  return `
+  <h1>Uczestnicy i leady</h1>
+  <div class="lead">${esc(inst(S.inst).nazwa)}. Lista obejmuje wyłącznie osoby tej instytucji.</div>
+
+  <div class="cards">
+    <div class="card"><div class="k">Osób łącznie</div><div class="v">${all.length}</div><div class="n">${all.filter(x=>x.typ==='Lead').length} leadów</div></div>
+    <div class="card"><div class="k">Kwota wnioskowana</div><div class="v">${kwotaW.toLocaleString('pl-PL')}</div><div class="n">zł, ${d.length} wniosków</div></div>
+    <div class="card"><div class="k">Kwota przyznana</div><div class="v">${kwotaP.toLocaleString('pl-PL')}</div><div class="n">zł, ${pct(kwotaP,kwotaW)}% wnioskowanej</div></div>
+    <div class="card"><div class="k">Zakwalifikowani</div><div class="v">${all.filter(x=>PRZYZNANE.includes(x.status)).length}</div><div class="n">z ${all.filter(x=>x.bur==='Tak').length} zarejestrowanych</div></div>
+  </div>
+
+  <h2>Leady według statusu</h2>
+  <table>
+    <tr><th>Status</th><th class="num">Osób</th><th class="num">Kwota wniosków</th><th style="width:30%">Udział</th><th></th></tr>
+    ${wgStatus.map(r=>`<tr class="click" onclick="go('uczestnicy',{filtrStatus:'${r.st}',filtrTyp:''})">
+      <td>${esc(r.st)}</td><td class="num">${r.n}</td><td class="num">${r.kwota?zl(r.kwota):'<span class="muted">—</span>'}</td>
+      <td>${bar(pct(r.n,all.length))}</td><td class="right"><span class="tag">Filtruj</span></td></tr>`).join('')}
+  </table>
+
+  <h2>Lista osób</h2>
+  <div class="inline">
+    <input placeholder="Szukaj po nazwisku lub firmie" style="width:220px">
+    <select onchange="go('uczestnicy',{filtrTyp:this.value})">
+      <option value="">Wszystkie typy</option>
+      ${['Lead','Dofinansowanie','Komercyjny'].map(t=>`<option value="${t}" ${S.filtrTyp===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <select onchange="go('uczestnicy',{filtrStatus:this.value})">
+      <option value="">Wszystkie statusy</option>
+      ${statusy.map(t=>`<option value="${t}" ${S.filtrStatus===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+    ${(S.filtrTyp||S.filtrStatus)?`<button onclick="go('uczestnicy',{filtrTyp:'',filtrStatus:''})">Wyczyść filtry</button>`:''}
+    <button onclick="alert('Makieta: formularz dodania osoby')">Dodaj osobę</button>
+    <button onclick="alert('Makieta: wgranie listy z pliku Excel')">Wgraj listę</button>
+  </div>
+  <table>
+    <tr><th>ID</th><th>Imię i nazwisko</th><th>Firma</th><th>Typ</th><th>Status</th><th>BUR</th><th>Kontakt</th><th></th></tr>
+    ${u.map(x=>`<tr class="click" onclick="go('uczestnicy',{ucz:'${x.id}',tab:'dane'})">
+      <td class="mono">${x.id}</td><td>${esc(x.imie)}</td><td>${esc(x.firma)}</td>
+      <td><span class="tag ${x.typ==='Komercyjny'?'g':''}">${x.typ}</span></td>
+      <td>${esc(x.status)}</td><td>${x.bur}</td><td class="mono">${x.kanal}</td>
+      <td class="right"><span class="tag">Otwórz</span></td></tr>`).join('')||'<tr><td colspan="8" class="muted">Brak osób spełniających filtr</td></tr>'}
+  </table>
+  <div class="note"><b>Uwaga do makiety.</b> Edycja pól odbywa się bezpośrednio w komórce tabeli, bez trybu edycji i przeładowania strony.</div>
+  `;
+}
+
+function kartaUczestnika(id){
+  const u = uczest(id);
+  const d = DOF.filter(x=>x.ucz===id);
+  const t = TERM.filter(x=>x.ucz.includes(id));
+  const mojaOsoba = (u.dodal==='Instytucja' && u.typ==='Komercyjny');
+  const mogeStatus = (S.rola!=='inst') || mojaOsoba;
+  const tabs = [['dane','Dane i status'],['crm','Notatki i pliki'],['mail','Korespondencja'],['dof','Dofinansowania i terminy']];
+  let body = '';
+
+  if(S.tab==='dane'){
+    body = `
+    <div class="inline">
+      <button onclick="alert('Makieta: wybór szablonu i wysyłka maila do ${esc(u.mail)}')">Mail: ${esc(u.mail)}</button>
+      <button onclick="alert('Makieta: połączenie lub SMS na numer ${u.tel}')">Telefon: ${u.tel}</button>
+      <span class="tag g">Kanał: ${u.kanal}</span>
+    </div>
+    <dl class="kv">
+      <dt>Identyfikator</dt><dd class="mono">${u.id}</dd>
+      <dt>Imię i nazwisko</dt><dd>${esc(u.imie)}</dd>
+      <dt>Firma</dt><dd>${esc(u.firma)}</dd>
+      <dt>Instytucja</dt><dd>${esc(inst(u.inst).nazwa)}</dd>
+      <dt>Typ</dt><dd>${u.typ}</dd>
+      <dt>Dodany przez</dt><dd>${u.dodal}</dd>
+      <dt>Status w procesie</dt><dd>${esc(u.status)}</dd>
+      <dt>Rejestracja w BUR</dt><dd>${u.bur}</dd>
+      <dt>Dofinansowanie przyznane</dt><dd>${d.length && PRZYZNANE.includes(u.status)?'Tak, '+d.map(x=>x.id).join(', '):(d.length?'W toku, '+d.map(x=>x.id).join(', '):'Nie')}</dd>
+    </dl>
+    <div class="inline">
+      ${mogeStatus? `<select><option>Zmień status</option>${['Lead','Zarejestrowany do BUR','W trakcie składania','Złożony','Pozytywna decyzja','Termin ustalony','Szkolenie odbyte','Rozliczone','Zapisany'].map(s=>`<option>${s}</option>`).join('')}</select>
+      <button onclick="alert('Makieta: zmiana statusu wyzwala powiadomienie wg konfiguracji')">Zapisz</button>`
+      : `<span class="tag g">Status ustawia firma pozyskująca dofinansowanie</span>`}
+    </div>
+    ${!mogeStatus?'<div class="hint">Instytucja może zmieniać status wyłącznie osobom komercyjnym, dodanym samodzielnie.</div>':''}
+    <h3>Szablony wiadomości dostępne dla tej osoby</h3>
+    <table>
+      <tr><th>Szablon</th><th>Kanał</th><th></th></tr>
+      ${SZABLONY.filter(s=>s.odbiorca==='Uczestnik'||s.odbiorca==='Uczestnicy terminu').map(s=>`<tr>
+        <td>${esc(s.nazwa)}</td><td>${s.kanal}</td>
+        <td class="right"><button onclick="alert('Makieta: podgląd i wysyłka szablonu ${s.id}')">Wyślij</button></td></tr>`).join('')}
+    </table>`;
+  } else if(S.tab==='crm'){
+    const n = NOTATKI[id]||[]; const p = PLIKI[id]||[];
+    body = `<h3>Notatki, widoczne dla obu stron</h3>
+      <table><tr><th>Data</th><th>Autor</th><th>Treść</th></tr>
+      ${n.map(x=>`<tr><td class="mono">${x.data}</td><td>${x.autor}</td><td>${esc(x.tresc)}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Brak notatek</td></tr>'}</table>
+      <textarea rows="2" style="width:100%" placeholder="Dopisz notatkę"></textarea>
+      <div class="inline"><button onclick="alert('Makieta: zapis notatki')">Dodaj notatkę</button></div>
+      <h3 style="margin-top:14px">Pliki</h3>
+      <table><tr><th>Nazwa</th><th>Dodał</th><th>Data</th></tr>
+      ${p.map(x=>`<tr><td>${esc(x.nazwa)}</td><td>${x.kto}</td><td class="mono">${x.data}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Brak plików</td></tr>'}</table>
+      <div class="inline"><button onclick="alert('Makieta: wgranie pliku')">Dodaj załącznik</button></div>`;
+  } else if(S.tab==='mail'){
+    const k = KORESP[id]||[];
+    body = `<div class="hint">Zaciągane ze skrzynki firmy oraz z paczek wgranych przez instytucję.</div>
+      <table><tr><th>Data</th><th>Kierunek</th><th>Kanał</th><th>Temat</th><th></th></tr>
+      ${k.map(x=>`<tr><td class="mono">${x.data}</td><td>${x.kier}</td><td>${x.kanal}</td><td>${esc(x.temat)}</td><td class="right"><span class="tag">Podgląd</span></td></tr>`).join('')||'<tr><td colspan="5" class="muted">Brak zarejestrowanej korespondencji</td></tr>'}</table>
+      <div class="inline">
+        <button onclick="alert('Makieta: wgranie paczki maili z Outlooka')">Wgraj paczkę korespondencji</button>
+        <button onclick="alert('Makieta: wybór szablonu i wysyłka')">Wyślij wiadomość</button>
+      </div>`;
+  } else {
+    body = `<h3>Dofinansowania</h3>
+      <table><tr><th>ID</th><th class="num">Kwota</th><th>Okres realizacji</th><th>Data wniosku</th><th>Urząd</th><th class="num">Terminy</th><th>Rozliczenie</th></tr>
+      ${d.map(x=>`<tr ${S.rola!=='inst'?`class="click" onclick="go('dofinansowania',{dof:'${x.id}',ucz:null})"`:''}>
+        <td class="mono">${x.id}</td><td class="num">${zl(x.kwota)}</td><td>${x.od} do ${x.do}</td><td class="mono">${x.wniosek}</td>
+        <td>${x.urzad}</td><td class="num">${x.terminy.length}</td><td>${x.rozliczenie}</td></tr>`).join('')||'<tr><td colspan="7" class="muted">Brak</td></tr>'}</table>
+      ${d.length?`<div class="hint">Osoba wnioskuje o ${d.reduce((a,b)=>a+b.terminy.length,0)} terminów w ramach ${d.length} dofinansowań.</div>`:''}
+      <h3 style="margin-top:14px">Terminy, na które zapisana</h3>
+      ${tabelaTerminy(t)}
+      <div class="inline">
+        <select>${ctxTerm().filter(x=>!x.ucz.includes(id)).map(x=>`<option>${x.id}, ${esc(szkol(x.szk).nazwa)}, ${x.od}</option>`).join('')}</select>
+        <button onclick="alert('Makieta: przypisanie osoby do terminu. Może to zrobić instytucja albo pracownik firmy.')">Przypisz do terminu</button>
+      </div>`;
+  }
+
+  return `
+  <div class="crumb"><button onclick="go('uczestnicy',{ucz:null})">Uczestnicy i leady</button> / ${esc(u.imie)}</div>
+  <h1>${esc(u.imie)}</h1>
+  <div class="lead">${u.id} &nbsp;|&nbsp; ${esc(u.firma)} &nbsp;|&nbsp; ${esc(inst(u.inst).nazwa)} &nbsp;|&nbsp; ${u.typ}</div>
+  <div class="tabs">${tabs.map(([k,l])=>`<button class="${S.tab===k?'on':''}" onclick="go('uczestnicy',{ucz:'${id}',tab:'${k}'})">${l}</button>`).join('')}</div>
+  <div class="tabbody">${body}</div>
+  `;
+}
+
+/* --- dofinansowania --- */
+function vDofinansowania(){
+  if(S.dof){
+    const d = DOF.find(x=>x.id===S.dof);
+    const u = uczest(d.ucz);
+    const terminy = d.terminy.map(termin);
+    const sumaCen = terminy.reduce((a,t)=>a+cenaDof(t.szk, d.id),0);
+    const rows = terminy.map(t=>{
+      const s = szkol(t.szk); const c = cenaDof(t.szk, d.id);
+      const udzial = sumaCen? c/sumaCen : 0;
+      return `<tr><td class="mono">${t.id}</td><td>${esc(s.nazwa)}</td><td class="mono">${t.od}</td>
+        <td class="num">${zl(c)}</td><td class="num">${(udzial*100).toFixed(1)}%</td>
+        <td class="num">${zl(d.kwota*udzial)}</td><td>${t.status}</td></tr>`;
+    }).join('') || '<tr><td colspan="7" class="muted">Brak przypisanych terminów</td></tr>';
+    const ostatni = terminy.length? terminy.map(t=>t.do).sort().slice(-1)[0] : '—';
+    return `
+    <div class="crumb"><button onclick="go('dofinansowania',{dof:null})">Dofinansowania</button> / ${d.id}</div>
+    <h1>${d.id}</h1>
+    <div class="lead">${esc(u.imie)} &nbsp;|&nbsp; ${esc(inst(u.inst).nazwa)} &nbsp;|&nbsp; ${d.urzad}</div>
+    <div class="two">
+      <div class="panel"><div class="ttl">Dane dofinansowania</div>
+        <dl class="kv">
+          <dt>Kwota przyznana</dt><dd>${zl(d.kwota)}</dd>
+          <dt>Data wniosku</dt><dd class="mono">${d.wniosek}</dd>
+          <dt>Okres realizacji</dt><dd>${d.od} do ${d.do}</dd>
+          <dt>Urząd</dt><dd>${d.urzad}</dd>
+          <dt>Liczba terminów</dt><dd>${d.terminy.length}</dd>
+          <dt>Ostatni termin</dt><dd>${ostatni}</dd>
+          <dt>Status rozliczenia</dt><dd>${d.rozliczenie}</dd>
+        </dl>
+      </div>
+      <div class="panel"><div class="ttl">Zasada rozliczenia</div>
+        <p>Kwota rozkłada się na terminy proporcjonalnie do cen katalogowych obowiązujących w dniu złożenia wniosku, czyli ${d.wniosek}. Rentowność liczona jest per termin, rozliczenie następuje jednorazowo, po ostatnim terminie.</p>
+        <p class="muted">Wariant alternatywny, równy podział po liczbie terminów, pozostaje do rozstrzygnięcia.</p>
+      </div>
+    </div>
+    <h2>Rozkład kwoty na terminy</h2>
+    <table>
+      <tr><th>Termin</th><th>Szkolenie</th><th>Data</th><th class="num">Cena z dnia wniosku</th><th class="num">Udział</th><th class="num">Kwota przypisana</th><th>Status</th></tr>
+      ${rows}
+      <tr class="sum"><td colspan="3">Razem</td><td class="num">${zl(sumaCen)}</td><td class="num">100%</td><td class="num">${zl(d.kwota)}</td><td></td></tr>
+    </table>
+    <div class="inline">
+      <button onclick="alert('Makieta: dopisanie terminu do dofinansowania')">Dopisz termin</button>
+      <button onclick="alert('Makieta: domknięcie rozliczenia po ostatnim terminie')">Domknij rozliczenie</button>
+    </div>
+    `;
+  }
+  const d = ctxDof();
+  return `
+  <h1>Dofinansowania</h1>
+  <div class="lead">${esc(inst(S.inst).nazwa)}. Jedno dofinansowanie może obejmować kilka terminów.</div>
+  <table>
+    <tr><th>ID</th><th>Uczestnik</th><th class="num">Kwota</th><th>Data wniosku</th><th>Okres realizacji</th><th>Urząd</th><th class="num">Terminy</th><th>Rozliczenie</th><th></th></tr>
+    ${d.map(x=>`<tr class="click" onclick="go('dofinansowania',{dof:'${x.id}'})">
+      <td class="mono">${x.id}</td><td>${esc(uczest(x.ucz).imie)}</td><td class="num">${zl(x.kwota)}</td>
+      <td class="mono">${x.wniosek}</td><td>${x.od} do ${x.do}</td><td>${x.urzad}</td><td class="num">${x.terminy.length}</td>
+      <td>${x.rozliczenie}</td><td class="right"><span class="tag">Otwórz</span></td></tr>`).join('')}
+  </table>
+  `;
+}
+
+/* --- terminy --- */
+function tabelaTerminy(list){
+  if(!list.length) return '<p class="muted">Brak terminów.</p>';
+  return `<table>
+    <tr><th>ID</th><th>Szkolenie</th><th>Od</th><th>Do</th><th>Miejsce</th><th class="num">Osób</th><th>Status</th><th></th></tr>
+    ${list.map(t=>`<tr class="click" onclick="go('terminy',{term:'${t.id}'})">
+      <td class="mono">${t.id}</td><td>${esc(szkol(t.szk).nazwa)}</td><td class="mono">${t.od}</td><td class="mono">${t.do}</td>
+      <td>${esc(t.miejsce)}</td><td class="num">${t.ucz.length}</td><td>${t.status}</td>
+      <td class="right"><span class="tag">Otwórz</span></td></tr>`).join('')}
+  </table>`;
+}
+
+function kalendarz(){
+  const [Y,M] = S.kalM.split('-').map(Number);
+  const first = new Date(Y, M-1, 1);
+  const startDow = (first.getDay()+6)%7;
+  const dni = new Date(Y, M, 0).getDate();
+  const nazwyM = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
+  const t = ctxTerm();
+  const pad = n => String(n).padStart(2,'0');
+
+  let cells = [];
+  for(let i=0;i<startDow;i++) cells.push(null);
+  for(let d=1;d<=dni;d++) cells.push(d);
+  while(cells.length%7) cells.push(null);
+
+  let rows='';
+  for(let w=0; w<cells.length/7; w++){
+    rows += '<div class="kalrow">';
+    for(let k=0;k<7;k++){
+      const d = cells[w*7+k];
+      if(d===null){ rows += '<div class="kalcell out"></div>'; continue; }
+      const iso = `${Y}-${pad(M)}-${pad(d)}`;
+      const ev = t.filter(x=>x.od<=iso && x.do>=iso);
+      rows += `<div class="kalcell"><div class="dnum">${d}</div>${
+        ev.map(x=>`<div class="kalev" onclick="go('terminy',{term:'${x.id}'})">${esc(szkol(x.szk).nazwa)}<br>${x.ucz.length} os., ${esc(x.miejsce.split(',')[0])}</div>`).join('')
+      }</div>`;
+    }
+    rows += '</div>';
+  }
+  const prev = M===1? `${Y-1}-12` : `${Y}-${pad(M-1)}`;
+  const next = M===12? `${Y+1}-01` : `${Y}-${pad(M+1)}`;
+  return `
+  <div class="kalnav">
+    <button onclick="setTab('kalM','${prev}')">Poprzedni</button>
+    <strong>${nazwyM[M-1]} ${Y}</strong>
+    <button onclick="setTab('kalM','${next}')">Następny</button>
+    <span class="muted">kliknij wydarzenie, aby otworzyć termin</span>
+  </div>
+  <div class="kal">
+    <div class="kalhd"><div>pon</div><div>wt</div><div>śr</div><div>czw</div><div>pt</div><div>sob</div><div>nd</div></div>
+    ${rows}
+  </div>`;
+}
+
+function vTerminy(){
+  if(S.term){
+    const t = termin(S.term); const s = szkol(t.szk);
+    const wolne = ctxUcz().filter(u=>!t.ucz.includes(u.id));
+    return `
+    <div class="crumb"><button onclick="go('terminy',{term:null})">Terminy i kalendarz</button> / ${t.id}</div>
+    <h1>${esc(s.nazwa)}</h1>
+    <div class="lead">${t.id} &nbsp;|&nbsp; ${t.od} do ${t.do} &nbsp;|&nbsp; ${esc(inst(s.inst).nazwa)}</div>
+    <div class="two">
+      <div class="panel"><div class="ttl">Szczegóły realizacji</div>
+        <dl class="kv">
+          <dt>Szkolenie z katalogu</dt><dd>${esc(s.nazwa)} (${s.id})</dd>
+          <dt>Termin</dt><dd>${t.od} do ${t.do}</dd>
+          <dt>Miejsce</dt><dd><input value="${esc(t.miejsce)}" style="width:100%"></dd>
+          <dt>Link do spotkania</dt><dd><input value="teams.microsoft.com/l/meetup/..." style="width:100%"></dd>
+          <dt>Status</dt><dd>${t.status}</dd>
+          <dt>Liczba zapisanych</dt><dd>${t.ucz.length}</dd>
+          <dt>Materiały</dt><dd>link do folderu, uzupełnia instytucja</dd>
+        </dl>
+        <div class="inline"><button onclick="alert('Makieta: zapis szczegółów terminu. Zmiana aktualizuje widok kalendarza i treść powiadomień.')">Zapisz</button>
+        <button onclick="alert('Makieta: wgranie materiałów')">Dodaj załącznik</button></div>
+      </div>
+      <div class="panel"><div class="ttl">Powiadomienia dla tego terminu</div>
+        <ul class="plain">
+          ${AUTOM.filter(a=>a.odb==='Uczestnicy terminu').map(a=>`<li>${esc(a.szablon)}, ${a.kiedy}, ${a.kanal}, ${a.stan.toLowerCase()}</li>`).join('')}
+        </ul>
+        <div class="inline"><button onclick="alert('Makieta: wysyłka zbiorcza do uczestników terminu, adresaci w ukrytej kopii')">Wyślij zbiorczo</button></div>
+      </div>
+    </div>
+    <h2>Zapisani uczestnicy</h2>
+    <table>
+      <tr><th>ID</th><th>Imię i nazwisko</th><th>Firma</th><th>Typ</th><th>Status</th><th>Kanał</th><th></th></tr>
+      ${t.ucz.map(id=>{const u=uczest(id);return `<tr class="click" onclick="go('uczestnicy',{ucz:'${id}',tab:'dane',term:null})">
+        <td class="mono">${u.id}</td><td>${esc(u.imie)}</td><td>${esc(u.firma)}</td><td>${u.typ}</td><td>${esc(u.status)}</td><td>${u.kanal}</td>
+        <td class="right"><span class="tag">Otwórz</span></td></tr>`}).join('')||'<tr><td colspan="7" class="muted">Brak zapisanych osób</td></tr>'}
+    </table>
+    <div class="inline">
+      <select>${wolne.map(u=>`<option>${esc(u.imie)}, ${u.typ}</option>`).join('')}</select>
+      <button onclick="alert('Makieta: przypisanie uczestnika do terminu')">Przypisz uczestnika</button>
+      <button onclick="alert('Makieta: dopisanie osoby komercyjnej spoza programu')">Dodaj osobę komercyjną</button>
+    </div>
+    `;
+  }
+  const t = ctxTerm();
+  return `
+  <h1>Terminy i kalendarz</h1>
+  <div class="lead">${esc(inst(S.inst).nazwa)}. Główny widok pracy instytucji szkoleniowej.</div>
+  <div class="inline"><button onclick="alert('Makieta: wystawienie nowego wolnego terminu')">Wystaw wolny termin</button></div>
+  <h2>Kalendarz</h2>
+  ${kalendarz()}
+  <h2>Lista terminów</h2>
+  ${tabelaTerminy(t)}
+  `;
+}
+
+/* --- powiadomienia --- */
+function vPowiadomienia(){
+  const moje = S.rola==='inst';
+  return `
+  <h1>Powiadomienia</h1>
+  <div class="lead">Wysyłka z oficjalnej domeny firmy pozyskującej dofinansowania. Szablony i automatyzacje mogą tworzyć obie strony.</div>
+
+  <h2>Biblioteka szablonów</h2>
+  <table>
+    <tr><th>ID</th><th>Nazwa</th><th>Autor szablonu</th><th>Kanał</th><th>Odbiorca</th><th></th></tr>
+    ${SZABLONY.filter(s=>!moje||s.odbiorca!=='Firma').map(s=>`<tr><td class="mono">${s.id}</td><td>${esc(s.nazwa)}</td><td>${s.autor}</td><td>${s.kanal}</td><td>${s.odbiorca}</td>
+      <td class="right"><button onclick="alert('Makieta: podgląd i edycja szablonu ${s.id}')">Podgląd</button></td></tr>`).join('')}
+  </table>
+  <div class="inline"><button onclick="alert('Makieta: nowy szablon')">Dodaj szablon</button></div>
+
+  <h2>Automatyzacje</h2>
+  <table>
+    <tr><th>ID</th><th>Wyzwalacz</th><th>Warunek</th><th>Kiedy</th><th>Szablon</th><th>Odbiorca</th><th>Kanał</th><th>Źródło</th><th>Stan</th><th></th></tr>
+    ${AUTOM.map(a=>`<tr><td class="mono">${a.id}</td><td>${a.wyzw}</td><td>${a.war}</td><td>${a.kiedy}</td>
+      <td>${esc(a.szablon)}</td><td>${a.odb}</td><td>${a.kanal}</td>
+      <td><span class="tag ${a.wl==='Domyślna'?'g':''}">${a.wl}</span></td><td>${a.stan}</td>
+      <td class="right"><button onclick="alert('Makieta: włączenie lub wyłączenie automatyzacji ${a.id}')">${a.stan==='Włączone'?'Wyłącz':'Włącz'}</button></td></tr>`).join('')}
+  </table>
+
+  <div class="panel"><div class="ttl">Konfigurator nowej automatyzacji</div>
+    <dl class="kv">
+      <dt>Wyzwalacz</dt><dd><select><option>Status uczestnika</option><option>Data terminu</option><option>Wpisany termin</option><option>Domknięcie rozliczenia</option></select></dd>
+      <dt>Warunek</dt><dd><select><option>dowolny</option><option>Pozytywna decyzja</option><option>Złożony</option><option>Termin ustalony</option><option>Szkolenie odbyte</option></select></dd>
+      <dt>Moment wysyłki</dt><dd><select><option>natychmiast</option><option>przed</option><option>po</option></select> <input value="2" style="width:50px"> <select><option>dni</option><option>godzin</option></select></dd>
+      <dt>Szablon</dt><dd><select>${SZABLONY.map(s=>`<option>${esc(s.nazwa)}</option>`).join('')}</select></dd>
+      <dt>Odbiorca</dt><dd><select><option>Uczestnicy terminu</option><option>Uczestnik</option><option>Instytucja</option><option>Firma</option></select></dd>
+      <dt>Kanał</dt><dd><label><input type="checkbox" checked> Mail</label> <label><input type="checkbox"> SMS</label></dd>
+    </dl>
+    <div class="inline"><button onclick="alert('Makieta: zapis nowej automatyzacji')">Dodaj automatyzację</button></div>
+  </div>
+
+  <h2>Wysyłka zbiorcza</h2>
+  <div class="panel">
+    <dl class="kv">
+      <dt>Termin</dt><dd><select>${ctxTerm().map(t=>`<option>${t.id}, ${esc(szkol(t.szk).nazwa)}, ${t.od}</option>`).join('')}</select></dd>
+      <dt>Szablon</dt><dd><select>${SZABLONY.map(s=>`<option>${esc(s.nazwa)}</option>`).join('')}<option>Treść własna</option></select></dd>
+      <dt>Kanał</dt><dd><label><input type="checkbox" checked> Mail</label> <label><input type="checkbox"> SMS</label></dd>
+      <dt>Adresaci</dt><dd>ukryta kopia, wszyscy uczestnicy wybranego terminu</dd>
+      <dt>Nadawca</dt><dd class="mono">powiadomienia@ldit.pl</dd>
+    </dl>
+    <textarea rows="3" style="width:100%;margin-top:6px">Dzień dobry, przypominamy o szkoleniu w dniach [TERMIN]. Miejsce: [MIEJSCE]. Materiały: [LINK]. Pozdrawiamy.</textarea>
+    <div class="inline">
+      <button onclick="alert('Makieta: podgląd wygenerowanych wiadomości')">Podgląd kolejki</button>
+      <button onclick="alert('Makieta: wysyłka')">Wyślij</button>
+    </div>
+  </div>
+
+  <h2>Historia wysyłek</h2>
+  <table>
+    <tr><th>Data</th><th>Szablon</th><th class="num">Odbiorców</th><th>Kanał</th><th>Wynik</th></tr>
+    <tr><td class="mono">2026-08-20 07:00</td><td>Terminy potwierdzone</td><td class="num">1</td><td>SMS</td><td>Dostarczone</td></tr>
+    <tr><td class="mono">2026-08-19 08:30</td><td>Decyzja pozytywna</td><td class="num">3</td><td>Mail</td><td>Dostarczone</td></tr>
+    <tr><td class="mono">2026-08-02 11:05</td><td>Wniosek złożony</td><td class="num">5</td><td>Mail</td><td>Dostarczone, 1 odbicie</td></tr>
+  </table>
+  `;
+}
+
+/* --- statystyki --- */
+function vStatystyki(){
+  if(S.rola==='inst') return statyInstWidok();
+  const tabs = [['przeglad','Przegląd'],['instytucje','Porównanie instytucji'],['lejek','Lejek'],['szkolenia','Szkolenia'],['finanse','Finanse i marżowość']];
+  const dostepne = S.rola==='admin'? tabs : tabs.filter(t=>t[0]!=='finanse');
+  if(!dostepne.some(t=>t[0]===S.statTab)) S.statTab = 'przeglad';
+  return `
+  <h1>Statystyki</h1>
+  <div class="lead">Wszystkie instytucje obsługiwane przez firmę. ${S.rola==='admin'?'Widok administratora, z marżowością.':'Widok pracownika, bez danych marżowych.'}</div>
+  <div class="tabs">${dostepne.map(([k,l])=>`<button class="${S.statTab===k?'on':''}" onclick="setTab('statTab','${k}')">${l}</button>`).join('')}</div>
+  <div class="tabbody">${
+    S.statTab==='przeglad'? statPrzeglad() :
+    S.statTab==='instytucje'? statInstytucje() :
+    S.statTab==='lejek'? statLejek() :
+    S.statTab==='szkolenia'? statSzkolenia() : statFinanse()
+  }</div>`;
+}
+
+function globalne(){
+  const g = INST.map(i=>Object.assign({inst:i}, statyInst(i.id)));
+  const sum = k => g.reduce((a,b)=>a+b[k],0);
+  return {g, sum};
+}
+
+function statPrzeglad(){
+  const {g,sum} = globalne();
+  return `
+  <div class="cards">
+    <div class="card"><div class="k">Instytucje</div><div class="v">${INST.length}</div><div class="n">aktywna współpraca</div></div>
+    <div class="card"><div class="k">Osoby w systemie</div><div class="v">${sum('osoby')}</div><div class="n">${sum('leady')} leadów, ${sum('komerc')} komercyjnych</div></div>
+    <div class="card"><div class="k">Dofinansowania</div><div class="v">${sum('wnioski')}</div><div class="n">${sum('przyzn')} przyznanych</div></div>
+    <div class="card"><div class="k">Kwota wnioskowana</div><div class="v">${sum('kwotaW').toLocaleString('pl-PL')}</div><div class="n">zł</div></div>
+    <div class="card"><div class="k">Kwota przyznana</div><div class="v">${sum('kwotaP').toLocaleString('pl-PL')}</div><div class="n">zł, ${pct(sum('kwotaP'),sum('kwotaW'))}% wnioskowanej</div></div>
+    ${S.rola==='admin'?`<div class="card"><div class="k">Prowizja</div><div class="v">${sum('prowizja').toLocaleString('pl-PL')}</div><div class="n">zł, ze zrealizowanych</div></div>`:''}
+  </div>
+  <h3>Terminy i realizacja</h3>
+  <div class="cards">
+    <div class="card"><div class="k">Terminy łącznie</div><div class="v">${sum('terminy')}</div><div class="n">wszystkie instytucje</div></div>
+    <div class="card"><div class="k">Zaplanowane</div><div class="v">${sum('zaplan')}</div><div class="n">${sum('wolne')} wolnych</div></div>
+    <div class="card"><div class="k">Odbyte</div><div class="v">${sum('odbyte')}</div><div class="n">zakończone realizacje</div></div>
+    <div class="card"><div class="k">Poniżej minimum</div><div class="v">${sum('minObsada')}</div><div class="n">mniej niż 3 osoby</div></div>
+  </div>`;
+}
+
+function statInstytucje(){
+  const {g,sum} = globalne();
+  const maxK = Math.max(...g.map(x=>x.kwotaP), 1);
+  return `
+  <h3>Porównanie instytucji</h3>
+  <table>
+    <tr><th>Instytucja</th><th class="num">Osoby</th><th class="num">Leady</th><th class="num">Wnioski</th><th class="num">Przyznane</th>
+      <th class="num">Skuteczność</th><th class="num">Kwota wnioskowana</th><th class="num">Kwota przyznana</th>
+      ${S.rola==='admin'?'<th class="num">Stawka</th><th class="num">Prowizja</th>':''}</tr>
+    ${g.map(x=>`<tr class="click" onclick="setInst('${x.inst.id}')">
+      <td>${esc(x.inst.nazwa)}</td><td class="num">${x.osoby}</td><td class="num">${x.leady}</td>
+      <td class="num">${x.wnioski}</td><td class="num">${x.przyzn}</td>
+      <td class="num">${pct(x.przyzn,x.wnioski)}%</td>
+      <td class="num">${zl(x.kwotaW)}</td><td class="num">${zl(x.kwotaP)}</td>
+      ${S.rola==='admin'?`<td class="num">${x.inst.prowizja}%</td><td class="num">${zl(x.prowizja)}</td>`:''}</tr>`).join('')}
+    <tr class="sum"><td>Razem</td><td class="num">${sum('osoby')}</td><td class="num">${sum('leady')}</td>
+      <td class="num">${sum('wnioski')}</td><td class="num">${sum('przyzn')}</td>
+      <td class="num">${pct(sum('przyzn'),sum('wnioski'))}%</td>
+      <td class="num">${zl(sum('kwotaW'))}</td><td class="num">${zl(sum('kwotaP'))}</td>
+      ${S.rola==='admin'?`<td class="num">—</td><td class="num">${zl(sum('prowizja'))}</td>`:''}</tr>
+  </table>
+
+  <h3>Wartość przyznanych dofinansowań</h3>
+  <table>
+    <tr><th>Instytucja</th><th class="num">Kwota</th><th style="width:40%">Udział</th></tr>
+    ${g.slice().sort((a,b)=>b.kwotaP-a.kwotaP).map(x=>`<tr><td>${esc(x.inst.nazwa)}</td><td class="num">${zl(x.kwotaP)}</td><td>${bar(x.kwotaP/maxK*100)}</td></tr>`).join('')}
+  </table>
+
+  <h3>Realizacja terminów</h3>
+  <table>
+    <tr><th>Instytucja</th><th class="num">Szkolenia w katalogu</th><th class="num">Terminy</th><th class="num">Zaplanowane</th><th class="num">Wolne</th><th class="num">Odbyte</th><th class="num">Obłożenie</th></tr>
+    ${g.map(x=>`<tr><td>${esc(x.inst.nazwa)}</td><td class="num">${x.szkolen}</td><td class="num">${x.terminy}</td>
+      <td class="num">${x.zaplan}</td><td class="num">${x.wolne}</td><td class="num">${x.odbyte}</td>
+      <td class="num">${pct(x.terminy-x.wolne, x.terminy)}%</td></tr>`).join('')}
+  </table>
+  <div class="inline"><button onclick="alert('Makieta: eksport porównania do pliku Excel')">Eksportuj do Excela</button></div>`;
+}
+
+function statLejek(){
+  const all = UCZ;
+  const etapy = [
+    ['Osoby w systemie', all.length],
+    ['Zarejestrowani do BUR', all.filter(x=>x.bur==='Tak').length],
+    ['Wnioski złożone', DOF.length],
+    ['Decyzje pozytywne', all.filter(x=>PRZYZNANE.includes(x.status)).length],
+    ['Terminy ustalone', all.filter(x=>['Termin ustalony','Szkolenie odbyte','Rozliczone'].includes(x.status)).length],
+    ['Szkolenia odbyte', all.filter(x=>['Szkolenie odbyte','Rozliczone'].includes(x.status)).length],
+    ['Rozliczone', all.filter(x=>x.status==='Rozliczone').length]
+  ];
+  const baza = etapy[0][1];
+  return `
+  <h3>Lejek, wszystkie instytucje</h3>
+  <table>
+    <tr><th>Etap</th><th class="num">Liczba</th><th class="num">Udział</th><th class="num">Konwersja z poprzedniego</th><th style="width:28%">Udział</th></tr>
+    ${etapy.map((e,idx)=>`<tr><td>${e[0]}</td><td class="num">${e[1]}</td><td class="num">${pct(e[1],baza)}%</td>
+      <td class="num">${idx===0?'—':pct(e[1],etapy[idx-1][1])+'%'}</td><td>${bar(pct(e[1],baza))}</td></tr>`).join('')}
+  </table>
+  <h3>Lejek w podziale na instytucje</h3>
+  <table>
+    <tr><th>Instytucja</th><th class="num">Osoby</th><th class="num">BUR</th><th class="num">Zakwalifikowani</th><th class="num">Konwersja</th></tr>
+    ${INST.map(i=>{const s=statyInst(i.id);return `<tr><td>${esc(i.nazwa)}</td><td class="num">${s.osoby}</td>
+      <td class="num">${s.bur}</td><td class="num">${s.zakwal}</td><td class="num">${pct(s.zakwal,s.osoby)}%</td></tr>`}).join('')}
+  </table>`;
+}
+
+function statSzkolenia(){
+  const wg = SZK.map(s=>{
+    const t = TERM.filter(x=>x.szk===s.id);
+    const osoby = t.reduce((a,b)=>a+b.ucz.length,0);
+    return {s, terminy:t.length, osoby, odbyte:t.filter(x=>x.status==='Odbyty').length};
+  }).filter(x=>x.osoby>0).sort((a,b)=>b.osoby-a.osoby);
+  const max = Math.max(...wg.map(x=>x.osoby),1);
+  return `
+  <h3>Szkolenia według liczby uczestników</h3>
+  <table>
+    <tr><th>Szkolenie</th><th>Instytucja</th><th class="num">Terminy</th><th class="num">Osób</th><th class="num">Odbyte</th><th style="width:28%">Udział</th></tr>
+    ${wg.map(x=>`<tr><td>${esc(x.s.nazwa)}</td><td>${esc(inst(x.s.inst).nazwa)}</td>
+      <td class="num">${x.terminy}</td><td class="num">${x.osoby}</td><td class="num">${x.odbyte}</td>
+      <td>${bar(x.osoby/max*100)}</td></tr>`).join('')}
+  </table>`;
+}
+
+function statFinanse(){
+  const {g,sum} = globalne();
+  const msc = {};
+  DOF.forEach(d=>{ const k=d.wniosek.slice(0,7); msc[k]=(msc[k]||0)+d.kwota; });
+  const klucze = Object.keys(msc).sort();
+  const maxM = Math.max(...Object.values(msc),1);
+  return `
+  <h3>Marżowość w podziale na instytucje</h3>
+  <table>
+    <tr><th>Instytucja</th><th class="num">Kwota przyznana</th><th class="num">Stawka</th><th class="num">Prowizja</th><th class="num">Udział w prowizji</th><th style="width:22%">Udział</th></tr>
+    ${g.slice().sort((a,b)=>b.prowizja-a.prowizja).map(x=>`<tr>
+      <td>${esc(x.inst.nazwa)}</td><td class="num">${zl(x.kwotaP)}</td><td class="num">${x.inst.prowizja}%</td>
+      <td class="num">${zl(x.prowizja)}</td><td class="num">${pct(x.prowizja,sum('prowizja'))}%</td>
+      <td>${bar(pct(x.prowizja,Math.max(...g.map(y=>y.prowizja),1)))}</td></tr>`).join('')}
+    <tr class="sum"><td>Razem</td><td class="num">${zl(sum('kwotaP'))}</td><td class="num">—</td><td class="num">${zl(sum('prowizja'))}</td><td class="num">100%</td><td></td></tr>
+  </table>
+
+  <h3>Wnioskowane kwoty według miesiąca złożenia</h3>
+  <table>
+    <tr><th>Miesiąc</th><th class="num">Kwota</th><th style="width:40%">Udział</th></tr>
+    ${klucze.map(k=>`<tr><td class="mono">${k}</td><td class="num">${zl(msc[k])}</td><td>${bar(msc[k]/maxM*100)}</td></tr>`).join('')}
+  </table>
+  <div class="inline"><button onclick="alert('Makieta: eksport danych finansowych')">Eksportuj do Excela</button></div>`;
+}
+
+function statyInstWidok(){
+  const s = statyInst();
+  const t = ctxTerm();
+  const wgSzk = ctxSzk().map(x=>{
+    const tt = TERM.filter(y=>y.szk===x.id);
+    return {x, terminy:tt.length, osoby:tt.reduce((a,b)=>a+b.ucz.length,0)};
+  }).sort((a,b)=>b.osoby-a.osoby);
+  const max = Math.max(...wgSzk.map(x=>x.osoby),1);
+  return `
+  <h1>Statystyki</h1>
+  <div class="lead">${esc(inst(S.inst).nazwa)}. Wskaźniki własnej instytucji.</div>
+  <div class="cards">
+    <div class="card"><div class="k">Osoby</div><div class="v">${s.osoby}</div><div class="n">${s.leady} leadów</div></div>
+    <div class="card"><div class="k">Zakwalifikowani</div><div class="v">${s.zakwal}</div><div class="n">${pct(s.zakwal,s.osoby)}% osób</div></div>
+    <div class="card"><div class="k">Kwota przyznana</div><div class="v">${s.kwotaP.toLocaleString('pl-PL')}</div><div class="n">zł z ${s.kwotaW.toLocaleString('pl-PL')} wnioskowanych</div></div>
+    <div class="card"><div class="k">Szkolenia odbyte</div><div class="v">${s.odbyte}</div><div class="n">z ${s.terminy} terminów</div></div>
+  </div>
+  <h2>Lejek własny</h2>
+  <table>
+    <tr><th>Etap</th><th class="num">Liczba</th><th class="num">Udział</th><th style="width:35%">Udział</th></tr>
+    <tr><td>Osoby w systemie</td><td class="num">${s.osoby}</td><td class="num">100%</td><td>${bar(100)}</td></tr>
+    <tr><td>Zarejestrowani do BUR</td><td class="num">${s.bur}</td><td class="num">${pct(s.bur,s.osoby)}%</td><td>${bar(pct(s.bur,s.osoby))}</td></tr>
+    <tr><td>Zakwalifikowani</td><td class="num">${s.zakwal}</td><td class="num">${pct(s.zakwal,s.osoby)}%</td><td>${bar(pct(s.zakwal,s.osoby))}</td></tr>
+  </table>
+  <h2>Szkolenia według liczby uczestników</h2>
+  <table>
+    <tr><th>Szkolenie</th><th class="num">Terminy</th><th class="num">Osób</th><th style="width:35%">Udział</th></tr>
+    ${wgSzk.map(r=>`<tr class="click" onclick="go('katalog',{szk:'${r.x.id}'})"><td>${esc(r.x.nazwa)}</td>
+      <td class="num">${r.terminy}</td><td class="num">${r.osoby}</td><td>${bar(r.osoby/max*100)}</td></tr>`).join('')}
+  </table>
+  <div class="inline"><button onclick="alert('Makieta: eksport zestawienia do pliku Excel')">Eksportuj do Excela</button></div>`;
+}
+
+/* --- rozliczenia --- */
+function vRozliczenia(){
+  const d = ctxDof();
+  const i = inst(S.inst);
+  const wiersze = [];
+  d.forEach(x=>{
+    const u = uczest(x.ucz);
+    const terminy = x.terminy.map(termin);
+    const sumaCen = terminy.reduce((a,t)=>a+cenaDof(t.szk,x.id),0);
+    if(!terminy.length){ wiersze.push({dof:x, u, szk:null, kwota:x.kwota, prow:x.kwota*i.prowizja/100, msc:'bez terminu', data:''}); return; }
+    terminy.forEach(t=>{
+      const c = cenaDof(t.szk,x.id);
+      const kwota = sumaCen? x.kwota*c/sumaCen : 0;
+      wiersze.push({dof:x, u, szk:szkol(t.szk), term:t, kwota, prow:kwota*i.prowizja/100, msc:t.do.slice(0,7), data:t.do});
+    });
+  });
+
+  const grup = {};
+  wiersze.forEach(w=>{
+    const k = S.rozlGrup==='szkolenia'? (w.szk? w.szk.nazwa : 'Bez przypisanego terminu')
+            : S.rozlGrup==='uczestnicy'? w.u.imie
+            : w.msc;
+    (grup[k]=grup[k]||[]).push(w);
+  });
+
+  const sumK = wiersze.reduce((a,b)=>a+b.kwota,0);
+  const sumP = wiersze.reduce((a,b)=>a+b.prow,0);
+
+  let body = Object.keys(grup).sort().map(k=>{
+    const g = grup[k];
+    const kw = g.reduce((a,b)=>a+b.kwota,0);
+    const pr = g.reduce((a,b)=>a+b.prow,0);
+    return `<tr class="sum"><td colspan="2">${esc(k)}</td><td class="num">${g.length}</td><td class="num">${zl(kw)}</td><td class="num">${zl(pr)}</td><td></td></tr>
+    ${g.map(w=>`<tr>
+      <td class="mono">${w.dof.id}</td>
+      <td>${S.rozlGrup==='uczestnicy'? (w.szk?esc(w.szk.nazwa):'<span class="muted">brak terminu</span>') : esc(w.u.imie)}</td>
+      <td class="mono">${w.term? w.term.id : '—'}</td>
+      <td class="num">${zl(w.kwota)}</td><td class="num">${zl(w.prow)}</td>
+      <td>${w.dof.rozliczenie}</td></tr>`).join('')}`;
+  }).join('');
+
+  return `
+  <h1>Rozliczenia i prowizje</h1>
+  <div class="lead">${esc(i.nazwa)}, stawka ${i.prowizja}%. Rozliczenie następuje jednorazowo, po ostatnim terminie w ramach dofinansowania.</div>
+
+  <div class="inline">
+    <span>Grupuj według:</span>
+    <button class="${S.rozlGrup==='szkolenia'?'':''}" onclick="setTab('rozlGrup','szkolenia')" ${S.rozlGrup==='szkolenia'?'style="background:#000;color:#fff"':''}>Szkolenia</button>
+    <button onclick="setTab('rozlGrup','uczestnicy')" ${S.rozlGrup==='uczestnicy'?'style="background:#000;color:#fff"':''}>Uczestnicy</button>
+    <button onclick="setTab('rozlGrup','miesiace')" ${S.rozlGrup==='miesiace'?'style="background:#000;color:#fff"':''}>Miesiąc rozliczenia</button>
+  </div>
+  <div class="hint">Miesiąc rozliczenia wyznacza data ostatniego dnia terminu, ponieważ rozliczenie zamyka się po realizacji.</div>
+
+  <table>
+    <tr><th>Dofinansowanie</th><th>${S.rozlGrup==='uczestnicy'?'Szkolenie':'Uczestnik'}</th><th>Termin</th><th class="num">Kwota przypisana</th><th class="num">Prowizja</th><th>Status</th></tr>
+    ${body}
+    <tr class="sum"><td colspan="3">Razem</td><td class="num">${zl(sumK)}</td><td class="num">${zl(sumP)}</td><td></td></tr>
+  </table>
+
+  <h2>Dane do faktury</h2>
+  <div class="panel">
+    <dl class="kv">
+      <dt>Wystawia</dt><dd>${esc(i.nazwa)}</dd>
+      <dt>Nabywca</dt><dd>uczestnik lub jego pracodawca, zależnie od formy</dd>
+      <dt>Podstawa</dt><dd>usługa szkoleniowa finansowana ze środków publicznych, zwolniona z podatku</dd>
+      <dt>Dokumenty</dt><dd>system nie przechowuje faktur, wyłącznie wartości</dd>
+    </dl>
+    <div class="inline">
+      <button onclick="alert('Makieta: wysyłka powiadomienia o fakturze do instytucji')">Wyślij powiadomienie o fakturze</button>
+      <button onclick="alert('Makieta: eksport rozliczenia do pliku Excel')">Eksportuj zestawienie</button>
+    </div>
+  </div>
+
+  <div class="note"><b>Do rozstrzygnięcia.</b> Sposób rozliczenia, gdy uczestnik nie stawi się na jednym z terminów wchodzących w skład dofinansowania.</div>
+  `;
+}
+
+/* --- nabory --- */
+function vNabory(){
+  const ogl = NABORY.filter(n=>n.status==='Nabór ogłoszony').length;
+  const prog = NABORY.filter(n=>n.prognoza).length;
+  const rodz = [...new Set(NABORY.map(n=>n.rodzaj))].length;
+  return `
+  <h1>Nabory</h1>
+  <div class="lead">Dane zaciągane z automatyzacji. System jest odbiorcą prognoz, nie liczy ich samodzielnie.</div>
+  <div class="cards">
+    <div class="card"><div class="k">Urzędy w bazie</div><div class="v">340</div><div class="n">obecna lista automatyzacji</div></div>
+    <div class="card"><div class="k">Nabory ogłoszone</div><div class="v">${ogl}</div><div class="n">terminy potwierdzone</div></div>
+    <div class="card"><div class="k">Prognozy</div><div class="v">${prog}</div><div class="n">terminy przewidywane</div></div>
+    <div class="card"><div class="k">Rodzaje naborów</div><div class="v">${rodz}</div><div class="n">${[...new Set(NABORY.map(n=>n.rodzaj))].join(', ')}</div></div>
+  </div>
+  <div class="inline">
+    <select><option>Wszystkie rodzaje</option><option>KFS</option><option>Powiatowy</option></select>
+    <select><option>Wszystkie statusy</option><option>Nabór ogłoszony</option><option>W trakcie kontaktu</option><option>Po naborze</option><option>Brak naboru</option></select>
+  </div>
+  <table>
+    <tr><th>Urząd pracy</th><th>Województwo</th><th>Powiat</th><th>Rodzaj</th><th>Prognoza słownie</th><th>Prognoza data</th><th>Faktyczny nabór</th><th>Status</th></tr>
+    ${NABORY.map(n=>`<tr><td>${esc(n.urzad)}</td><td>${n.woj}</td><td>${n.powiat}</td><td>${n.rodzaj}</td>
+      <td>${n.prognoza||'<span class="muted">—</span>'}</td><td class="mono">${n.data||'<span class="muted">—</span>'}</td>
+      <td class="mono">${n.faktyczny||'<span class="muted">—</span>'}</td><td>${n.status}</td></tr>`).join('')}
+  </table>
+  `;
+}
+
+/* --- konta --- */
+function vKonta(){
+  return `
+  <h1>Konta i uprawnienia</h1>
+  <div class="lead">Cztery rangi. Uprawnienia obowiązują tak samo w interfejsie, w eksportach i przez MCP.</div>
+  <h2>Użytkownicy</h2>
+  <table>
+    <tr><th>Login</th><th>Ranga</th><th>Instytucja</th><th>Ostatnie logowanie</th><th></th></tr>
+    ${UZYTK.map(u=>`<tr><td class="mono">${esc(u.login)}</td><td>${u.rola}</td><td>${u.inst==='—'?'—':esc(inst(u.inst).nazwa)}</td><td class="mono">${u.ost}</td>
+      <td class="right"><button onclick="alert('Makieta: edycja uprawnień')">Edytuj</button></td></tr>`).join('')}
+  </table>
+  <div class="inline"><button onclick="alert('Makieta: zaproszenie nowego użytkownika')">Dodaj użytkownika</button></div>
+
+  <h2>Macierz uprawnień</h2>
+  <table>
+    <tr><th>Obszar</th><th>Administrator</th><th>Pracownik firmy</th><th>Instytucja</th><th>Uczestnik</th></tr>
+    ${UPRAWNIENIA.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}
+  </table>
+
+  <h2>Tokeny MCP</h2>
+  <table>
+    <tr><th>Nazwa</th><th>Przypisany do</th><th>Zakres</th><th>Wygasa</th><th></th></tr>
+    <tr><td>mcp-firma-01</td><td class="mono">bartek@ldit.pl</td><td>Pełny, dziedziczony po koncie</td><td class="mono">2027-01-01</td><td class="right"><button onclick="alert('Makieta: unieważnienie tokenu')">Unieważnij</button></td></tr>
+    <tr><td>mcp-clickless-01</td><td class="mono">biuro@clickless.pl</td><td>Własna instytucja</td><td class="mono">2027-01-01</td><td class="right"><button onclick="alert('Makieta: unieważnienie tokenu')">Unieważnij</button></td></tr>
+  </table>
+  <div class="note"><b>Zasada.</b> Token nie ma własnych uprawnień, dziedziczy zakres widoczności konta, do którego jest przypisany. Uczestnicy nie otrzymują dostępu przez MCP.</div>
+  `;
+}
+
+/* --- panel uczestnika --- */
+function vPanelUcz(){
+  const u = uczest(S.panelUcz);
+  const d = DOF.filter(x=>x.ucz===u.id);
+  const t = TERM.filter(x=>x.ucz.includes(u.id));
+  return `
+  <h1>Panel uczestnika</h1>
+  <div class="lead">${S.rola==='ucz'?'Widok własny, wyłącznie do odczytu.':'Podgląd widoku uczestnika.'}
+    ${S.rola!=='ucz'?`&nbsp;Podglądaj jako: <select onchange="S.panelUcz=this.value;render()">${UCZ.map(x=>`<option value="${x.id}" ${x.id===u.id?'selected':''}>${esc(x.imie)}</option>`).join('')}</select>`:''}
+  </div>
+
+  <div class="panel"><div class="ttl">Mój status</div>
+    <dl class="kv">
+      <dt>Imię i nazwisko</dt><dd>${esc(u.imie)}</dd>
+      <dt>Instytucja szkoleniowa</dt><dd>${esc(inst(u.inst).nazwa)}</dd>
+      <dt>Status wniosku</dt><dd>${esc(u.status)}</dd>
+      <dt>Rejestracja w BUR</dt><dd>${u.bur}</dd>
+      <dt>Dofinansowanie</dt><dd>${d.length? zl(d[0].kwota)+', realizacja do '+d[0].do : 'brak'}</dd>
+    </dl>
+  </div>
+
+  <h2>Moje szkolenia</h2>
+  ${t.length? `<table>
+    <tr><th>Szkolenie</th><th>Od</th><th>Do</th><th>Miejsce</th><th>Materiały</th></tr>
+    ${t.map(x=>`<tr><td>${esc(szkol(x.szk).nazwa)}</td><td class="mono">${x.od}</td><td class="mono">${x.do}</td><td>${esc(x.miejsce)}</td><td>link, dostępny na 2 dni przed</td></tr>`).join('')}
+  </table>` : '<p class="muted">Brak zapisanych szkoleń.</p>'}
+
+  <h2>Nadchodzące nabory</h2>
+  <table>
+    <tr><th>Urząd pracy</th><th>Rodzaj</th><th>Przewidywany termin</th><th>Status</th></tr>
+    ${NABORY.filter(n=>n.status!=='Po naborze').map(n=>`<tr><td>${esc(n.urzad)}</td><td>${n.rodzaj}</td>
+      <td>${n.faktyczny? n.faktyczny : (n.prognoza||'—')}</td><td>${n.status}</td></tr>`).join('')}
+  </table>
+  <div class="note"><b>Zakres widoku.</b> Uczestnik nie widzi innych osób, kwot prowizji ani danych instytucji poza własnym szkoleniem.</div>
+  `;
+}
+
+/* ================= SZKIELET ================= */
+
+const VIEWS = {
+  pulpit:vPulpit, instytucje:vInstytucje, katalog:vKatalog, ustawienia:vUstawienia,
+  uczestnicy:vUczestnicy, dofinansowania:vDofinansowania, terminy:vTerminy,
+  powiadomienia:vPowiadomienia, statystyki:vStatystyki, rozliczenia:vRozliczenia,
+  nabory:vNabory, konta:vKonta, panelucz:vPanelUcz
+};
+
+function setInst(id){ S.inst=id; S.szk=S.ucz=S.dof=S.term=null; if(el('ctxInst')) el('ctxInst').value=id; render(); }
+window.setInst = setInst;
+
+function renderMenu(){
+  let h = '';
+  menuDef().forEach(m=>{
+    if(m.grp){ h += `<div class="grp">${m.grp}</div>`; return; }
+    h += `<a class="item ${S.view===m.id?'on':''}" href="#" onclick="go('${m.id}');return false;">
+      <div class="nm">${m.nm}</div><div class="ds">${m.ds}</div></a>`;
+  });
+  el('menu').innerHTML = h;
+}
+
+function render(){
+  const allow = menuDef().filter(m=>m.id).map(m=>m.id);
+  if(!allow.includes(S.view)) S.view = allow[0];
+  el('ctxInstWrap').style.display = (S.rola==='ucz') ? 'none' : 'flex';
+  el('ctxInst').disabled = (S.rola==='inst');
+  renderMenu();
+  el('view').innerHTML = VIEWS[S.view]();
+}
+
+el('ctxInst').innerHTML = INST.map(i=>`<option value="${i.id}">${i.nazwa}</option>`).join('');
+el('ctxInst').value = S.inst;
+el('ctxInst').addEventListener('change', e=>{ S.inst=e.target.value; S.ucz=S.dof=S.term=S.szk=null; render(); });
+el('rola').addEventListener('change', e=>{
+  S.rola = e.target.value;
+  S.ucz=S.dof=S.term=S.szk=null;
+  S.filtrTyp=S.filtrStatus='';
+  if(S.rola==='inst') S.inst='INS-01';
+  render();
+});
+render();
+</script>
+</body>
+</html>
