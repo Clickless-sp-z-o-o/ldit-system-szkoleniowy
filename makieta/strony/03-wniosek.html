@@ -152,7 +152,9 @@
 
 </div>
 
-<script src="../assets/data.js"></script>
+<script src="../assets/db.seed.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/db.js"></script>
 <script>
 var id = new URLSearchParams(location.search).get("id");
 var w = DB.WNIOSKI.filter(function (x) { return x.id === id; })[0] || DB.WNIOSKI[0];
