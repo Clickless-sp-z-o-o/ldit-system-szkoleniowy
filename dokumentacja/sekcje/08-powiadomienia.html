@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Powiadomienia i certyfikaty</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Funkcje</div>
+    <h1 class="doc-title">Powiadomienia, szablony i certyfikaty</h1>
+    <p class="doc-lead">
+      Cała komunikacja wychodzi z domeny LDIT, jedynym kanałem w etapie I jest e-mail. Ta sekcja
+      opisuje zasadę nadrzędną kontroli nad wysyłką, konfigurację poczty, katalog powiadomień,
+      alerty konfigurowalne, automatyzację certyfikatów, danych do faktury i dodawania klientów
+      do bazy, a także odrzucony pomysł wewnętrznego komunikatora.
+    </p>
+  </div>
+
+  <h2>Zasada nadrzędna: cała komunikacja wychodzi z domeny LDIT</h2>
+  <div class="callout">
+    <span class="ct">Żadne powiadomienie nie może wyjść z systemu w imieniu instytucji szkoleniowej</span>
+    Decyzja TWARDA. <span class="ref">D-45</span>
+  </div>
+  <div class="q">
+    „chcę mieć taką pełną kontrolę nad tym, co wysyłamy, nad tym, co wychodzi od nas. To jest produkt.”
+    <span class="who">Bartek, 2:37:46</span>
+  </div>
+  <div class="q">
+    „Więc instytucje szkoleniowe nie mogą wysyłać powiadomień z systemu bezpośrednio, nawet
+    SMS-owych, mogą ewentualnie eksportować szablony.”
+    <span class="who">Paweł, 2:38:07</span>
+  </div>
+  <p>
+    <b>Kompromis dla instytucji</b> <span class="ref">D-46</span>: przycisk w systemie otwiera
+    Outlooka z uzupełnionym adresatem, tematem i treścią. Instytucja wysyła z własnej skrzynki.
+  </p>
+  <div class="q">
+    „klikam sobie w przycisk, odpala się Outlook z już wpisanym klientem, wpisanym tytułem i treścią.”
+    <span class="who">Paweł, 2:37:10</span>
+  </div>
+  <div class="q">
+    „[Skopiuje sobie] i wyśle ze swojego maila.”
+    <span class="who">Bartek, 2:37:34</span>
+  </div>
+  <div class="callout open">
+    <span class="ct">Pytanie otwarte</span>
+    Czy to eksport pliku, czy generowanie linku <code>mailto:</code>. Mechanizm niedoprecyzowany.
+    <span class="ref p">P-16</span>
+  </div>
+
+  <h2>Kanał: wyłącznie e-mail</h2>
+  <div class="callout warn">
+    <span class="ct">SMS ODRZUCONY w etapie I</span>
+    Decyzja TWARDA. Powód: własne negatywne doświadczenie klienta z innym systemem.
+    <span class="ref">D-04</span>
+  </div>
+  <div class="q">
+    „nie chcę SMS-y (...) po jednym dniu spamu SMS-em to wyłączyłem. Zdenerwował mnie po prostu, jak
+    cały czas mi przychodziły: został ustalony nowy termin. Nie, nie, mailowy tylko.”
+    <span class="who">Bartek, 9:35</span>
+  </div>
+  <div class="q">
+    „SMS-owe trochę drażnią i nie chcę tego.”
+    <span class="who">Bartek, 52:29</span>
+  </div>
+  <p>
+    Furtka zostawiona na przyszłość: „docelowo kiedyś to upgradować, na ten moment uważam, że mailowe
+    będą w zupełności wystarczające.”
+  </p>
+  <div class="callout open">
+    <span class="ct">Propozycja wykonawcy niedomknięta</span>
+    Żeby zostawić SMS tylko dla uczestników szkoleń, wątek nie został domknięty.
+    <span class="ref p">P-17</span>
+  </div>
+
+  <h2>Konfiguracja wysyłki</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Element</th><th>Wartość</th></tr></thead>
+      <tbody>
+        <tr><td>Nadawca</td><td>Alias w domenie klienta, np. <code>powiadomienia@[domena].pl</code></td></tr>
+        <tr><td>Platforma</td><td>Microsoft 365 (tenant klienta)</td></tr>
+        <tr><td>Mechanizm</td><td>Rejestracja aplikacji z uprawnieniem <b>Send Mail</b></td></tr>
+        <tr><td>Koszt</td><td>Jedno dedykowane konto z licencją, ok. <b>4 USD/EUR</b> miesięcznie, po stronie klienta</td></tr>
+        <tr><td>Konfiguracja</td><td><b>Wspólna sesja na żywo, ok. 2 godziny</b> (alternatywa: dostęp do konta admina na 2-3 dni)</td></tr>
+        <tr><td>Środowisko testowe</td><td>Wysyłka z konta Gmail wykonawcy</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    „Na pewno z naszą domeną, może być to <code>powiadomienia@[domena].pl</code>.”
+    <span class="who">Bartek, 52:36</span>
+  </div>
+  <p>
+    Klient wybrał sesję na żywo zamiast przekazania konta administracyjnego. Powód: konto admina
+    tenanta to jego bieżące konto biznesowe, nie osobne konto techniczne. Zadanie odłożone na koniec
+    projektu.
+  </p>
+
+  <h2>Katalog powiadomień</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Powiadomienie</th><th>Odbiorca</th><th>Wyzwalacz</th><th>Tryb</th></tr></thead>
+      <tbody>
+        <tr><td>Prośba o ustalenie terminu</td><td>Instytucja, osoba od terminów</td><td>Status = Pozytywna decyzja</td><td>Auto</td></tr>
+        <tr><td>Termin ustalony, zgłoś do urzędu</td><td>LDIT</td><td>Instytucja wpisała termin</td><td>Auto</td></tr>
+        <tr><td>Wniosek w trakcie przygotowania</td><td>Klient końcowy</td><td>Przycisk</td><td>Ręczny</td></tr>
+        <tr><td><b>Dane do faktury</b></td><td>Instytucja</td><td>Przycisk przy wniosku</td><td>Ręczny</td></tr>
+        <tr><td>Alert o wystawieniu faktury</td><td>Osoba odpowiedzialna za faktury</td><td>IS oznaczyła fakturę</td><td>Auto</td></tr>
+        <tr><td>Sprawdzenie kompletu dokumentów</td><td>LDIT</td><td>8 dni przed szkoleniem</td><td>Auto</td></tr>
+        <tr><td>Szczegóły organizacyjne szkolenia</td><td>Uczestnicy terminu</td><td>1-2 dni przed terminem</td><td>Auto</td></tr>
+        <tr><td>Instrukcja zakładania konta praca.gov.pl</td><td>Klient końcowy</td><td>Przycisk</td><td>Ręczny</td></tr>
+        <tr><td>Instrukcja składania pisma</td><td>Klient końcowy</td><td>Przycisk</td><td>Ręczny</td></tr>
+        <tr><td>Prośba o opinię w Google</td><td>Klient końcowy</td><td>Przycisk</td><td>Ręczny</td></tr>
+        <tr><td>Klient uzyskał dofinansowanie</td><td>Instytucja</td><td>Przycisk (nie automat)</td><td>Ręczny</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    <b>Uwaga z dokumentu klienta:</b> powiadomienie o uzyskaniu dofinansowania ma być <b>pod
+    przyciskiem, nie automatem</b>, bo część instytucji nie chce powiadomień.
+  </div>
+  <div class="callout">
+    <span class="ct">Pełna lista szablonów do dosłania przez klienta</span>
+    Po postawieniu szkieletu. <span class="ref">D-119</span>
+  </div>
+
+  <h2>Alerty konfigurowalne</h2>
+  <div class="callout">
+    <span class="ct">Alerty ustawiane ręcznie obok automatyzacji systemowych</span>
+    Administrator i uprawnieni pracownicy mogą ustawić alert ręcznie. <span class="ref">D-89</span>
+  </div>
+
+  <h3>Cztery alerty rozpisane przez klienta</h3>
+  <p class="muted">Źródło: dokument klienta „spis funkcji”, sekcja „Terminy i automatyczne alerty”.</p>
+
+  <h3>1. Alerty ręczne</h3>
+  <p>Administrator i pracownicy ustawiają alert samodzielnie, podając datę i treść.</p>
+  <div class="q">
+    „po przeczytaniu umowy okazało się, że Klient 7 dni przed rozpoczęciem szkolenia musi dostarczyć
+    harmonogram, wtedy ustawiamy datę, kiedy chcemy otrzymać alert i o co chodzi.”
+    <span class="who">Klient</span>
+  </div>
+
+  <h3>2. Alert automatyczny z praca.gov.pl</h3>
+  <div class="callout open">
+    <span class="ct">Mechanizm nieustalony</span>
+    Klient sam nie rozstrzygnął formy alertu. <span class="ref p">P-52</span>
+  </div>
+  <div class="q">
+    „otrzymujemy alert mailowy od praca.gov.pl w sprawie Klienta, u którego jesteśmy w organizacji.
+    Może zdarzyć się, że Klient nie odbierze telefonu, przez co musimy ustawić maila jako
+    nieodczytany lub oflagować, żeby nam nie umknęło. Chciałbym, żeby alert był jako zadanie?
+    Wykrzyknik przy Kliencie? <b>Do przemyślenia jak zrobić to najlepiej.</b>”
+    <span class="who">Klient</span>
+  </div>
+  <p>
+    Klient sam nie rozstrzygnął formy. Trzy warianty do rozważenia: zadanie, znacznik przy kliencie,
+    wpis w kolejce do obsłużenia. Warsztat tego wątku nie podjął.
+  </p>
+  <p>
+    Uwaga: to jedyny alert wyzwalany zdarzeniem zewnętrznym (mail przychodzący z portalu), nie stanem
+    w systemie. Wymaga integracji odczytu poczty, która i tak jest planowana.
+  </p>
+
+  <h3>3. Alert „kiedy wystawić fakturę”</h3>
+  <p>
+    Wyzwalany zaznaczeniem checkboxa przez pracownika, że instytucja szkoleniowa wystawiła fakturę.
+  </p>
+  <div class="q">
+    „Alert dla administratora lub docelowo dla osoby odpowiedzialnej za wystawianie faktur, więc admin
+    powinien mieć też opcję kto może otrzymywać jakie alerty.”
+    <span class="who">Klient</span>
+  </div>
+
+  <h3>4. Alert o zbliżającym się terminie szkolenia</h3>
+  <p><b>8 dni przed rozpoczęciem szkolenia</b>, do zespołu LDIT.</p>
+  <div class="q">
+    „info do nas 8 dni przed rozpoczęciem szkolenia, żebyśmy mogli się upewnić, czy Klient dostał
+    wszystkie wymagane dokumenty. Opcja wysłania maila do IS z przypomnieniem o szkoleniu.”
+    <span class="who">Klient</span>
+  </div>
+  <p>Dwie akcje: powiadomienie wewnętrzne oraz opcjonalny mail do instytucji.</p>
+
+  <h3>Konfigurowalne uprawnienia do alertów</h3>
+  <p>Administrator decyduje, kto może otrzymywać jakie alerty.</p>
+  <div class="q">
+    „zdecyduję, że za tydzień pracownik wystawia faktury, więc chcę mieć opcję nadania mu uprawnienia
+    do otrzymywania alertów dotyczących faktur.”
+    <span class="who">Klient</span>
+  </div>
+
+  <h2>Automatyzacja: certyfikaty</h2>
+  <div class="callout ok">
+    <span class="ct">Pełna automatyzacja generowania</span>
+    To jedno z wymagań o najwyższej wartości biznesowej, bo eliminuje ręczną pracę przy 50 uczestnikach.
+  </div>
+
+  <details class="acc">
+    <summary>Mechanizm generowania certyfikatów (6 kroków)</summary>
+    <div class="acc-body">
+      <ul>
+        <li>Wzór certyfikatu wgrany per instytucja szkoleniowa (w konfiguratorze instytucji)</li>
+        <li>Placeholdery wypełniane danymi z bazy</li>
+        <li>Jedno kliknięcie „Generuj”</li>
+        <li>N osobnych plików PDF (jeden na uczestnika)</li>
+        <li>Spakowane do archiwum ZIP</li>
+        <li>Pobranie z poziomu wniosku</li>
+      </ul>
+      <div class="q">
+        „klikam sobie generuj i wygeneruje mi 50 różnych, 50 PDF-ów, dla każdego uczestnika certyfikat.”
+        <span class="who">Bartek, 2:58:39</span>
+      </div>
+    </div>
+  </details>
+
+  <h3>Zawartość certyfikatu</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pole</th><th>Źródło</th></tr></thead>
+      <tbody>
+        <tr><td>Imię i nazwisko uczestnika</td><td>Uczestnik wniosku</td></tr>
+        <tr><td>Nazwa szkolenia</td><td>Katalog szkoleń</td></tr>
+        <tr><td>Termin realizacji (w jakich dniach)</td><td>Termin szkolenia</td></tr>
+        <tr><td>Data wystawienia</td><td>Systemowa</td></tr>
+        <tr><td><b>Miejscowość</b></td><td><b>Siedziba instytucji szkoleniowej, NIE miejsce szkolenia</b> <span class="ref">D-99</span></td></tr>
+        <tr><td>Numer certyfikatu</td><td>Opcjonalny, jeśli wymagany</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    „Siedzibie firmy instytucji szkoleniowej. Bo nie miejscu szkolenia, tylko siedzibie.”
+    <span class="who">Bartek, 2:58:25</span>
+  </div>
+
+  <details class="acc">
+    <summary>Paczka ZIP, nazewnictwo plików i pobieranie</summary>
+    <div class="acc-body">
+      <div class="callout warn">
+        <span class="ct">System NIE wysyła certyfikatów mailem</span>
+        Decyzja klienta. <span class="ref">D-49</span>
+      </div>
+      <div class="q">
+        „Nie wysyłać. My sobie pobierzemy i my całą paczkę dopiero z rozliczeniem wysyłamy klientom.”
+        <span class="who">Bartek, 2:56:53</span>
+      </div>
+      <p>Konwencja nazwy pliku: <code>certyfikat_imie_nazwisko</code>.</p>
+      <p>
+        Jedna firma = jedna paczka ZIP. Pobieranie przez przeglądarkę, <b>bez zapisu na SharePoint</b>.
+      </p>
+      <h3>Paczka rozliczeniowa <span class="ref">D-53</span></h3>
+      <p>Klient końcowy dostaje kompletny zestaw:</p>
+      <ul>
+        <li>certyfikaty wszystkich uczestników</li>
+        <li>załączniki rozliczeniowe</li>
+        <li>faktura</li>
+        <li>instrukcja złożenia rozliczenia przez praca.gov.pl</li>
+      </ul>
+      <div class="q">
+        „klient poza certyfikatami dostaje również załączniki rozliczeniowe, całość razem też pewnie
+        z fakturą, ze wszystkim co jest potrzebne, żeby rozliczyć szkolenie. Wysyłam mailem i dostaje
+        też instrukcję, jak to złożyć.”
+        <span class="who">Bartek, 2:58:57</span>
+      </div>
+      <div class="callout open">
+        <span class="ct">Pytanie otwarte</span>
+        Czy faktura w paczce jest generowana przez system, czy dokładana ręcznie. Klient powiedział
+        „pewnie z fakturą”, bez doprecyzowania źródła. <span class="ref p">P-18</span>
+      </div>
+      <div class="callout open">
+        <span class="ct">Pytania otwarte</span>
+        Kto wgrywa wzór certyfikatu (admin czy sama IS) i w jakim formacie (Word, PDF, HTML). Brak też
+        reguły numeracji certyfikatów. <span class="ref p">P-19</span>
+      </div>
+    </div>
+  </details>
+
+  <h2>Automatyzacja: dane do faktury</h2>
+  <div class="callout">
+    <span class="ct">Przycisk przy wniosku generujący gotowego maila do instytucji szkoleniowej</span>
+    Nie automat, akcja na żądanie. <span class="ref">D-104</span>
+  </div>
+  <div class="q">
+    „żebym miał wybór przycisku przy kliencie. Wchodzę we wniosek i klikam przycisk, który generuje mi
+    maila do instytucji szkoleniowej z taką treścią uzupełnioną.”
+    <span class="who">Bartek, 3:00:28</span>
+  </div>
+
+  <h3>Pola uzupełniane automatycznie</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pole</th><th>Źródło</th></tr></thead>
+      <tbody>
+        <tr><td>Nazwa klienta</td><td>Klient</td></tr>
+        <tr><td>Adres siedziby</td><td>Klient</td></tr>
+        <tr><td>NIP</td><td>Klient</td></tr>
+        <tr><td>Imię i nazwisko odbiorcy faktury</td><td>Wniosek</td></tr>
+        <tr><td>Szkolenie, ilość osób</td><td>Uczestnicy wniosku</td></tr>
+        <tr><td>Cena jednostkowa, cena całkowita</td><td>Wniosek</td></tr>
+        <tr><td>Uczestnicy</td><td>Lista zakwalifikowanych</td></tr>
+        <tr><td>Termin</td><td>Termin szkolenia</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <details class="acc">
+    <summary>Stała treść maila z dokumentu klienta</summary>
+    <div class="acc-body">
+      <pre class="code">Dzień dobry, proszę o wystawienie faktur dla Klientów:
+
+Nazwa Klienta:
+Adres siedziby:
+NIP:
+
+Imię i nazwisko odbiorcy FV:
+
+Szkolenie:
+Ilość osób:
+Cena jedn.:
+Cena całk.:
+VAT: ZW
+Termin płatności:
+
+Uwagi:
+- Usługa zwolniona z podatku VAT na podstawie § 3 ust. 1 pkt 14
+  Rozporządzenia Ministra Finansów z dnia 20 grudnia 2013 r. w sprawie
+  zwolnień od podatku od towarów i usług oraz warunków stosowania tych
+  zwolnień (Dz. U. z 2020 r. poz. 1983). Szkolenie finansowane w 90%
+  z Krajowego Funduszu Szkoleniowego.
+- Uczestnicy:
+- Termin:</pre>
+      <div class="q">
+        <b>Uwaga merytoryczna:</b> klauzula mówi o finansowaniu w 90%, co odpowiada mikroprzedsiębiorcy.
+        Przy firmach powyżej mikro (70%) treść wymaga parametryzacji. Do potwierdzenia u klienta.
+      </div>
+    </div>
+  </details>
+  <p>
+    <b>Wymagane zatwierdzenie przed wysyłką</b>, zgodnie z zasadą z modułu Wysyłka maili.
+  </p>
+
+  <h2>Automatyzacja: dodawanie klientów do bazy</h2>
+  <div class="callout">
+    <span class="ct">Formularz elektroniczny plus bramka ręcznej akceptacji</span>
+    <span class="ref">D-105</span>
+  </div>
+
+  <details class="acc">
+    <summary>Przepływ zgłoszenia z formularza do bazy klientów</summary>
+    <div class="acc-body">
+      <ul>
+        <li>klient wypełnia formularz online</li>
+        <li>system rejestruje datę wpłynięcia automatycznie</li>
+        <li>zgłoszenie trafia na LISTĘ OCZEKUJĄCYCH (z datą wypełnienia, do ustalenia kolejności)</li>
+        <li>Bartek klika „Akceptuj”</li>
+        <li>rekord wchodzi do bazy klientów</li>
+      </ul>
+      <p>Powód bramki: ochrona przed spamem i błędnymi wpisami przez publiczny formularz.</p>
+      <div class="q">
+        „chcę mieć po prostu wgląd, żeby klikam akceptuj i dopiero się dodaje do bazy.”
+        <span class="who">Bartek, 3:01:38</span>
+      </div>
+      <div class="q">
+        „jeżeli za każdym razem będziemy klikali zatwierdź i nie będzie z tym problemów, no to
+        ewentualnie możemy kiedyś to zdjąć.”
+        <span class="who">Bartek, 3:02:05</span>
+      </div>
+      <p>Docelowo akceptację można zdjąć lub zautomatyzować.</p>
+    </div>
+  </details>
+  <p>
+    Szczegóły formularza w sekcji
+    <a href="../../docs/09-integracje-i-architektura.md">09. Integracje i architektura</a> (dokument źródłowy).
+  </p>
+
+  <h2>Odrzucone: wewnętrzny komunikator</h2>
+  <p>
+    Klient zaproponował „mały Messenger” przy kliencie zamiast maili, sam wyraził wątpliwość,
+    wykonawca przekierował na integrację istniejących kanałów <span class="ref r">D-44</span>.
+  </p>
+  <div class="q">
+    „żeby zamiast prowadzenia maili to prowadzenie takiego jakby mały Messenger. Aczkolwiek nie wiem
+    czy to ma sens.”
+    <span class="who">Bartek, 1:25:13</span>
+  </div>
+  <div class="q">
+    „Raczej [nie] osobnej komunikacji, bo zazwyczaj przez to się porozumiewacie z instytucją: mail
+    plus telefon.”
+    <span class="who">Paweł, 1:28:46</span>
+  </div>
+  <p>
+    <b>Zastąpione przez:</b> integrację skrzynek pocztowych plus notatki z rozmów telefonicznych.
+  </p>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/08-powiadomienia-i-automatyzacje.md">08-powiadomienia-i-automatyzacje.md</a>.
+  </div>
+
+</div>
+</body>
+</html>

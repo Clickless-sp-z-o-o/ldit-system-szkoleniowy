@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Zakres i etapy</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Realizacja</div>
+    <h1 class="doc-title">Zakres i etapowanie</h1>
+    <p class="doc-lead">
+      Podział prac na cztery etapy, lista elementów wykluczonych z zakresu, pozycje otwarte,
+      harmonogram następnych kroków oraz kontekst biznesowy terminu. Wycena wstępna
+      12&ndash;18 tys. PLN jest niewiążąca i zostanie potwierdzona po makiecie v2.
+    </p>
+  </div>
+
+  <h2>Stan po warsztacie</h2>
+  <div class="card">
+    <table class="t">
+      <tbody>
+        <tr><td class="muted" style="width:220px">Wycena wstępna</td><td>12&ndash;18 tys. PLN, podana „na rzut oka”</td></tr>
+        <tr><td class="muted">Oczekiwanie klienta</td><td>nieprzekroczenie 15 tys.</td></tr>
+        <tr><td class="muted">Termin realizacji</td><td>ok. 2 miesiące od 25.08.2026, czyli do ok. 25.10.2026</td></tr>
+        <tr><td class="muted">Twardy deadline biznesowy</td><td>gotowe przed styczniem 2027 (start nowych naborów)</td></tr>
+        <tr><td class="muted">Nakład pracy wykonawcy</td><td>ok. 6 tygodni</td></tr>
+        <tr><td class="muted">Status wyceny</td><td>niewiążąca, do potwierdzenia po makiecie v2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="q">
+    „celuję raczej w ten rząd widełek jak koło. Myślę 12, 18. Tak na teraz, tak po dzisiaj, szybko.”
+    <span class="who">Paweł, warsztat 25.08.2026, 3:18:19</span>
+  </div>
+  <div class="q">
+    „Myślę, że teraz to piętnastej nie przekroczyli, to byłoby gitara.”
+    <span class="who">Bartek, warsztat 25.08.2026, 3:18:41</span>
+  </div>
+
+  <div class="callout open">
+    <span class="ct">Jednostka i waluta nie padły wprost w transkrypcji <span class="ref p">P-28</span></span>
+    Interpretacja „tysiące PLN” wynika z kontekstu. Interpretacja wypowiedzi klienta
+    („piętnastej nie przekroczyli”) jako kwoty 15 tys. jest prawdopodobna, ale alternatywna
+    interpretacja (data 15. dnia miesiąca) nie została wykluczona. <b>Wymaga potwierdzenia.</b>
+  </div>
+
+  <h2>Następne kroki</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Krok</th><th>Kto</th><th>Termin</th><th>Produkt</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Podsumowanie warsztatu</td><td>Wykonawca</td><td>25&ndash;26.08.2026</td><td>Ostateczny zakres projektu</td></tr>
+        <tr><td>2</td><td><b>Prototyp konfiguratora prowizji (HTML)</b></td><td>Wykonawca</td><td>przed implementacją</td><td>Walidacja logiki obliczeń</td></tr>
+        <tr><td>3</td><td>Makieta v2 wyglądająca jak aplikacja</td><td>Wykonawca</td><td>tydzień 25&ndash;31.08</td><td>Makieta z modułami na kolorowo, 2&ndash;3 h pracy</td></tr>
+        <tr><td>4</td><td>Spotkanie: przegląd makiety</td><td>Obie strony</td><td>po makiecie</td><td>Akceptacja lub korekty</td></tr>
+        <tr><td>5</td><td>Wycena z podziałem na zakres</td><td>Wykonawca</td><td>po spotkaniu</td><td>Wersja I + opcje dodatkowe, „co ile kosztuje”</td></tr>
+        <tr><td>6</td><td>Checklista pokrycia dokumentu Word</td><td>Klient</td><td>równolegle</td><td>Weryfikacja kompletności wymagań</td></tr>
+        <tr><td>7</td><td><b>Progi prowizji wewnętrznej</b></td><td>Klient</td><td>„w najbliższych dniach”</td><td>Blokada modułu prowizji pracowniczych</td></tr>
+        <tr><td>8</td><td><b>Potwierdzenie eksportu CSV z systemu księgowego</b></td><td>Klient</td><td>pilne</td><td>Blokada modułu faktur</td></tr>
+        <tr><td>9</td><td>Szablony maili</td><td>Klient</td><td>po postawieniu szkieletu</td><td>Biblioteka treści</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>Kroki 7 i 8 są blokadami projektowymi.</b> Bez nich odpowiednie moduły nie mogą być zaprojektowane.</p>
+
+  <h2>Propozycja etapowania</h2>
+  <p>Klient wątpi, czy podział na moduły jest wykonalny. Wykonawca deklaruje, że będzie.</p>
+  <div class="q">
+    „tu są takie rzeczy, rozpisałem, co możemy i tak, i tak zrobimy na pewno, no bo to wszystko
+    razem ze sobą będzie współgrało. Więc nie wiem czy będzie to możliwe [rozdzielenie] na moduły.
+    To już jak będziesz nad tym siedział, to ewentualnie spróbuj to jakoś podzielić. W ratach.”
+    <span class="who">Bartek, warsztat 25.08.2026, 3:17:44</span>
+  </div>
+  <div class="q">
+    „Dobra, no, moduły na pewno.”
+    <span class="who">Paweł, warsztat 25.08.2026, 3:18:07</span>
+  </div>
+
+  <h3>Etap I: rdzeń operacyjny (MUST)</h3>
+  <p>Cel: zastąpić Excel w codziennej pracy.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Moduł</th><th>Uzasadnienie kolejności</th></tr></thead>
+      <tbody>
+        <tr><td>Konta, role i uprawnienia</td><td>Fundament wszystkiego, wpływa na każdy widok</td></tr>
+        <tr><td>Instytucje szkoleniowe + katalog szkoleń</td><td>Nadrzędne wobec klientów i wniosków</td></tr>
+        <tr><td>Baza klientów (formularz + akceptacja)</td><td>Wejście do procesu</td></tr>
+        <tr><td>Wnioski / Zestawienia z rocznikami</td><td>Główne miejsce pracy</td></tr>
+        <tr><td>Statusy, kolory, filtry, wyszukiwarka</td><td>Bez tego nie da się pracować operacyjnie</td></tr>
+        <tr><td>Model finansowy KFS (kwoty, kwalifikacja)</td><td>Rdzeń merytoryczny</td></tr>
+        <tr><td>Podstawowe powiadomienia mailowe</td><td>Realizuje priorytet klienta</td></tr>
+        <tr><td>Rejestr aktywności i log logowań</td><td>Wymóg bezpieczeństwa, tanio dodać od początku</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>Priorytet wskazany przez klienta w dokumentacji przedwarsztatowej:</b> informowanie instytucji
+  o statusach, żeby przestały dopytywać i przestały potrzebować własnych systemów.</p>
+
+  <h3>Etap II: finanse i rozliczenia</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Moduł</th><th>Zależność</th></tr></thead>
+      <tbody>
+        <tr><td><b>Silnik prowizji</b> (po walidacji prototypem)</td><td>Wymaga danych z etapu I</td></tr>
+        <tr><td>Konfigurator warunków prowizyjnych</td><td></td></tr>
+        <tr><td>Przewidywana prowizja</td><td></td></tr>
+        <tr><td>Moduł faktur (import CSV, podgląd PDF)</td><td>Zależy od potwierdzenia eksportu CSV</td></tr>
+        <tr><td>Administracja (prowizje szczegółowe)</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <span class="ct">Uwaga</span>
+    Silnik prowizji to najtrudniejszy element projektu. Warto rozważyć przesunięcie prototypu
+    konfiguratora przed etap I, bo jego walidacja może zmienić model danych.
+  </div>
+
+  <h3>Etap III: automatyzacje i integracje</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Moduł</th><th>Wartość</th></tr></thead>
+      <tbody>
+        <tr><td><b>Certyfikaty</b> (generowanie wsadowe, ZIP)</td><td>Wysoka, eliminuje ręczną pracę przy 50 uczestnikach</td></tr>
+        <tr><td><b>Dane do faktury</b> (przycisk generujący mail)</td><td>Wysoka, powtarzalna czynność</td></tr>
+        <tr><td>Biblioteka szablonów maili</td><td></td></tr>
+        <tr><td>Integracja poczty Microsoft 365 (odczyt)</td><td></td></tr>
+        <tr><td>Nabory (osadzenie aplikacji)</td><td></td></tr>
+        <tr><td>Terminy i kalendarz szkoleń</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Etap IV: rozszerzenia</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Moduł</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Statystyki i dashboardy rozbudowane</td><td>Zakres dla IS sporny</td></tr>
+        <tr><td>Zgłoszenia (incydenty)</td><td>SHOULD</td></tr>
+        <tr><td>Prowizja wewnętrzna dla pracowników</td><td>Zablokowane brakiem progów</td></tr>
+        <tr><td>Cele i premie</td><td>Brak zdefiniowanej metryki</td></tr>
+        <tr><td>Panel klienta końcowego</td><td>OTWARTE</td></tr>
+        <tr><td>Wersja premium dla IS</td><td>Odłożone „docelowo w przyszłości”</td></tr>
+        <tr><td>Eksport do Excela</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Wykluczone z zakresu</h2>
+  <div class="callout danger">
+    <span class="ct">Nie buduj tych elementów</span>
+    Poniższa lista to rzeczy świadomie odrzucone lub wypchnięte poza system. Każda ma decyzję
+    źródłową i wskazane miejsce docelowe.
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Element</th><th>Decyzja</th><th>Gdzie trafia</th></tr></thead>
+      <tbody>
+        <tr><td><b>Zadania pracowników</b></td><td>Wykluczone <span class="ref">D-118</span></td><td>Projectly</td></tr>
+        <tr><td><b>Integracja kalendarza Outlook</b></td><td>Wykluczone <span class="ref">D-118</span></td><td>Projectly</td></tr>
+        <tr><td><b>SMS</b></td><td>Odrzucone w etapie I <span class="ref">D-04</span></td><td>Furtka na przyszłość</td></tr>
+        <tr><td><b>API systemu księgowego</b></td><td>Odrzucone (10&ndash;15 h vs 1 h) <span class="ref">D-39</span></td><td>Import CSV</td></tr>
+        <tr><td><b>Foldery i pliki klientów</b></td><td>Poza zakresem <span class="ref">D-41</span></td><td>Eksplorator Windows, OneDrive</td></tr>
+        <tr><td><b>Wewnętrzny komunikator</b></td><td>Odrzucone <span class="ref">D-33</span></td><td>Integracja maili</td></tr>
+        <tr><td><b>Dowolne formuły w konfiguratorze prowizji</b></td><td>Odrzucone <span class="ref">D-15</span></td><td>Szablony parametryczne</td></tr>
+        <tr><td><b>Wysyłka powiadomień przez IS</b></td><td>Zakazane <span class="ref">D-87</span></td><td>Szablon otwierany w Outlooku</td></tr>
+        <tr><td><b>Informacja o naborach dla handlowca IS</b></td><td>Odrzucone <span class="ref">D-91</span></td><td>&ndash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Otwarte pozycje zakresu</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Element</th><th>Blokada</th></tr></thead>
+      <tbody>
+        <tr><td><b>Panel klienta końcowego</b></td><td>Klient wątpi w użyteczność, wykonawca chce, koszt utrzymania nierozstrzygnięty</td></tr>
+        <tr><td><b>Zakres statystyk dla IS</b></td><td>Klient odroczył decyzję wprost</td></tr>
+        <tr><td><b>Wersja premium dla IS</b></td><td>Kierunek zaakceptowany, warunki nieustalone</td></tr>
+        <tr><td><b>Kalendarz terminów w systemie</b></td><td>Nie potwierdzono, czy zostaje po wykluczeniu Outlooka</td></tr>
+        <tr><td><b>MCP</b></td><td>Przewidziane w dokumentacji przedwarsztatowej, warsztat nie potwierdził</td></tr>
+        <tr><td><b>Szkolenia komercyjne IS w systemie</b></td><td>Zamknięte słowami „bez decyzji”</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Tryb współpracy w trakcie realizacji</h2>
+  <p><b>Odbiór iteracyjny modułami</b> <span class="ref">D-30</span>.</p>
+  <div class="q">
+    „robisz jeden moduł czy tam kilka modułów i na spotkaniach przedstawiasz. Akceptujemy, zmieniamy,
+    i wtedy wrzucamy w system. Może w ten sposób, niż wszystko.”
+    <span class="who">Bartek, warsztat 25.08.2026, 1:33:36</span>
+  </div>
+  <p>Klient deklaruje <b>pełną dostępność telefoniczną</b>:</p>
+  <div class="q">
+    „chciałbym uczestniczyć w każdym etapie powstawania tego systemu. Więc nawet jeżeli byś miał
+    o dwunastej 30 pytanie, to dzwoń, i jak się okaże, za 10 minut masz kolejne, to nie ma problemu.
+    Chcę, żeby było wszystko dopracowane idealnie. No bo u nas w styczniu nie będzie takiej opcji.”
+    <span class="who">Bartek, warsztat 25.08.2026, 3:20:21</span>
+  </div>
+  <p>Płatność: klient sugeruje <b>raty</b>.</p>
+
+  <h2>Kontekst biznesowy terminu</h2>
+  <p>Sezon szkoleniowy jest silnie cykliczny:</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Miesiąc</th><th>Sytuacja klienta</th></tr></thead>
+      <tbody>
+        <tr><td>Październik</td><td>Termin ukończenia systemu</td></tr>
+        <tr><td>Listopad&ndash;grudzień</td><td>Ostatnie testy i poprawki</td></tr>
+        <tr><td><b>Styczeń</b></td><td>Start nowych naborów. <b>Brak możliwości spotkań</b></td></tr>
+        <tr><td><b>Luty</b></td><td>Szczyt. Klient przepracował ok. <b>400 godzin</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    „to jest 3,5 godziny zainwestowane, ale ja już nie będę musiał ciebie zwalniać na jakieś
+    półgodzinne dzwonki później. Jeżeli nie zostanie to dobrze ustalone, to potem w trakcie projektu
+    ja będę pracował 6 tygodni już nad tym i później powiesz, że jednak nie o to chodziło.”
+    <span class="who">Paweł, warsztat 25.08.2026, 3:19:30</span>
+  </div>
+
+  <h3>Warunek uruchomienia marketingu przez klienta</h3>
+  <p>Klient nie uruchomi marketingu, dopóki nie będzie pewien przepustowości operacyjnej.</p>
+  <div class="q">
+    „marketing możemy uruchomić dopiero wtedy, jeżeli będę wiedział, że wyrobimy tą ilość wniosków.
+    Mam tutaj 2 opcje: albo ten bot, albo nowy pracownik. Bo inaczej to jest niemożliwe, żeby więcej
+    osób obsłużyć.”
+    <span class="who">Bartek, warsztat 25.08.2026, 3:21:31</span>
+  </div>
+  <div class="q">
+    „Przez co prawdopodobnie część współprac pójdzie do wiatru.”
+    <span class="who">Bartek, warsztat 25.08.2026, 3:21:50</span>
+  </div>
+  <p><b>To jest realna wartość biznesowa systemu:</b> deklarowana oszczędność „kilkadziesiąt albo
+  kilkaset godzin roboty” miesięcznie.</p>
+
+  <h2>Brak ustaleń formalnych <span class="ref p">P-29</span></h2>
+  <p><b>Warsztat nie poruszył w ogóle:</b></p>
+  <ul>
+    <li>formy umowy</li>
+    <li>warunków płatności (poza sugestią rat)</li>
+    <li>gwarancji</li>
+    <li>utrzymania i wsparcia po wdrożeniu</li>
+    <li>SLA</li>
+    <li>własności kodu</li>
+    <li>migracji danych historycznych z Excela</li>
+  </ul>
+  <p>Ostatni punkt jest szczególnie istotny. Rozdzielenie encji Klient od Wniosku oznacza, że dane
+  z Excela nie przeniosą się mechanicznie.</p>
+  <div class="q">
+    „ja muszę tę bazę na nowo potem zaprojektować.”
+    <span class="who">Paweł, warsztat 25.08.2026, 1:45:35</span>
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/12-zakres-i-etapowanie.md">12-zakres-i-etapowanie.md</a>.
+  </div>
+
+</div>
+</body>
+</html>

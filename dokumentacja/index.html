@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dokumentacja systemu KFS &middot; LDIT</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">LD</div>
+      <div>
+        <div class="name">Dokumentacja KFS</div>
+        <div class="sub">LDIT &middot; Odczaruj Low Code</div>
+      </div>
+    </div>
+
+    <div class="nav-search">
+      <input type="text" id="navSearch" placeholder="Filtruj sekcje...">
+    </div>
+
+    <div class="sidebar-scroll" id="nav"></div>
+
+    <div class="sidebar-foot">
+      Źródło prawdy: <code>docs/*.md</code><br>
+      Warsztat 25.08.2026 &middot; uzup. 04.09.2026
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb"><b>Start</b></div>
+      <div class="topbar-right">
+        <span>Makieta: <a class="tb-link" href="../makieta/index.html" target="_blank" rel="noopener">otwórz &#8599;</a></span>
+      </div>
+    </div>
+
+    <div class="frame-wrap">
+      <iframe id="view" src="sekcje/00-start.html" title="Treść sekcji"></iframe>
+    </div>
+  </div>
+</div>
+
+<script src="assets/docs.js"></script>
+</body>
+</html>

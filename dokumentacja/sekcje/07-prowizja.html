@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Silnik prowizji</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Funkcje</div>
+    <h1 class="doc-title">Silnik prowizji &mdash; zależności liczenia</h1>
+    <p class="doc-lead">
+      Najtrudniejszy element projektu. Cztery modele naliczania z realnych umów, progi, wersjonowanie
+      warunków, prognoza stawki i nadpisanie per wniosek. Poniżej diagram zależności, cztery modele,
+      pułapka implementacyjna oraz komplet przypadków testowych.
+    </p>
+  </div>
+
+  <div class="q">
+    „dzisiaj udało nam się przejść przez ten system prowizji, bo to jest chyba jedna z takich rzeczy trudniejszych.”
+    <span class="who">Paweł, 24:28</span>
+  </div>
+
+  <div class="callout warn">
+    <span class="ct">Warunek wstępny <span class="ref">D-20</span></span>
+    Zanim powstanie kod aplikacji, wykonawca buduje prosty konfigurator w HTML, w którym klient wpisuje
+    liczby i potwierdza poprawność wyliczeń. Działający prototyp z kompletem przypadków testowych jest
+    w makiecie: <a href="../../makieta/strony/15-konfigurator-prowizji.html" target="_blank" rel="noopener">15-konfigurator-prowizji &#8599;</a>.
+  </div>
+
+  <h2>Diagram zależności liczenia prowizji LDIT</h2>
+  <div class="diagram">  <span class="hi">koszt_calkowity</span> (ręczne) ─────────────┐
+  <span class="hi">kwota_doplaty_dodatkowej</span> (ręczne) ────┼──▶  <span class="em">koszt_calkowity_z_doplata</span>  ──┐
+                                          │      (= PODSTAWA naliczenia)      │
+                                          ┘                                   │
+                                                                              ▼
+  <span class="hi">warunki_prowizyjne</span> (per instytucja, wersjonowane w czasie)          <span class="em">prowizja_kwota</span>
+    ├─ rodzaj_kumulacji   (miesięczny / roczny / brak) ──┐                  = podstawa × stawka
+    ├─ sposob_liczenia    (od_calosci / od_nadwyzki / stala) ─┼──▶ <span class="em">stawka %</span> ──┘
+    └─ progi[]            (próg, stawka) ◀── <span class="hi">obrót narastający w okresie</span>
+                                                    ▲
+                                <span class="hi">data_wystawienia_faktury</span> wyznacza okres i kolejność
+
+  <span class="hi">nadpisanie per wniosek</span> (admin) ──▶ kasuje regułę ──▶ <span class="em">prowizja_procent</span> ustawiona ręcznie
+                                             (przywracalna: „Przywróć regułę”)</div>
+
+  <div class="two">
+    <div class="card">
+      <h3>Podstawa naliczenia <span class="ref">D-18</span> <span class="ref">D-64</span></h3>
+      <p style="margin-top:0"><b>Koszt całkowity z dopłatą</b>, nie kwota przyznanego dofinansowania. Prowizja zawsze procentowo, nigdy kwotowo <span class="ref">D-21</span>.</p>
+      <div class="q" style="margin-bottom:0">„Koszt całkowity, przyznanego nieprzyznanego [nie ma znaczenia], tylko koszt całkowity szkolenia.” <span class="who">Bartek, 39:38</span></div>
+    </div>
+    <div class="card">
+      <h3>Okres rozliczeniowy <span class="ref">D-13</span></h3>
+      <p style="margin-top:0"><b>Data wystawienia faktury</b>, osobne pole per szkolenie/uczestnik, domyślnie ostatni dzień szkolenia, edytowalna. Termin płatności faktury prowizyjnej: 14 dni.</p>
+      <div class="q" style="margin-bottom:0">„chcieli od niego faktury [wcześniej]. Więc ten przychód liczy się nie do grudnia, tylko do sierpnia.” <span class="who">Bartek, 26:22</span></div>
+    </div>
+  </div>
+
+  <h2>Cztery modele naliczania</h2>
+  <p>Wszystkie cztery występują w realnych umowach klienta. Silnik musi obsłużyć każdy. Rozwiń model, żeby zobaczyć przykład liczbowy.</p>
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Model</th><th>rodzaj_kumulacji</th><th>sposob_liczenia</th><th>progi</th></tr></thead>
+      <tbody>
+        <tr><td><b>A</b> (10/12)</td><td>miesięczny</td><td>od całości</td><td>(0, 10%), (50 000, 12%)</td></tr>
+        <tr><td><b>B</b> (YTD)</td><td>roczny</td><td>od nadwyżki</td><td>(0, 20%), (500 000, 17,5%), (1 000 000, 15%)</td></tr>
+        <tr><td><b>C</b> (18/14)</td><td>miesięczny</td><td>od nadwyżki</td><td>(0, 18%), (100 000, 14%)</td></tr>
+        <tr><td><b>D</b> (stała)</td><td>brak</td><td>stała</td><td>stawka_stala = 20%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <details class="acc">
+    <summary>Model A: próg miesięczny, stawka od CAŁOŚCI (umowa „10/12%”)</summary>
+    <div class="acc-body">
+      <p>Po przekroczeniu progu wyższa stawka obejmuje <b>cały obrót miesiąca</b>, nie tylko nadwyżkę. Próg 50 000 zł, poniżej 10%, od progu 12%.</p>
+      <pre class="code">Przykład graniczny (kluczowy dla testów):
+  faktury na 49 000 zł  ->  49 000 x 10% = 4 900 zł
+  faktury na 50 000 zł  ->  50 000 x 12% = 6 000 zł
+Wzrost obrotu o 1 000 zł podnosi prowizję o 1 100 zł.
+
+Przykład z warsztatu:
+  Styczeń:  26 000 + 25 000 = 51 000 zł  ->  12% od całości
+  Luty:     25 000 + 24 000 = 49 000 zł  ->  10% od całości</pre>
+      <div class="q" style="margin-bottom:0">„dokładnie od całej, tak, to nie jest od nadwyżki powyżej 50, tylko już od całej.” <span class="who">Bartek, 31:04</span></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Model B: skala roczna (YTD), stawka od NADWYŻKI</summary>
+    <div class="acc-body">
+      <p>Dla instytucji o dużym wolumenie. Prowizja <b>maleje</b> wraz ze wzrostem obrotu: 0&ndash;500k = 20%, 500k&ndash;1M = 17,5%, 1M&ndash;1,5M = 15%, powyżej schodzi do 10%.</p>
+      <pre class="code">Faktura przekraczająca próg 500k (rzeczywiste stawki):
+  Narastająco po dwóch szkoleniach:  490 000 zł   (nadal 20%)
+  Kolejna faktura:                    15 000 zł
+    część do progu:  10 000 x 20,0% =  2 000,00 zł
+    nadwyżka:         5 000 x 17,5% =    875,00 zł
+                                     ------------
+    prowizja z faktury:                2 875,00 zł
+    efektywna stawka: 2 875 / 15 000 = ok. 19,17%</pre>
+      <p><b>Wymaganie:</b> system pokazuje średnią (efektywną) stawkę dla faktury podzielonej między progi. Uzasadnienie kierunku:</p>
+      <div class="q" style="margin-bottom:0">„z jedną instytucją zrobimy milion w 100 wnioskach, a z drugą milion w 10 przy dużych szkoleniach. Przy tych 10 wnioskach dużo mniej się napracujemy niż przy 100.” <span class="who">Bartek, 47:00</span></div>
+      <p class="muted">Trzeci próg (powyżej 1M) do potwierdzenia z umowy <span class="ref p">P-32</span>.</p>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Model C: próg miesięczny, stawka od NADWYŻKI (Fit Akademia)</summary>
+    <div class="acc-body">
+      <p>Próg 100 000 zł, do progu 18%, nadwyżka 14%.</p>
+      <pre class="code">Obrót 102 000 zł:
+  100 000 x 18% = 18 000 zł
+    2 000 x 14% =    280 zł
+                  ---------
+                   18 280 zł</pre>
+      <div class="q" style="margin-bottom:0">„jak przekroczymy [w Modelu A], to całość liczymy po 12. A tu jak przekroczymy, to robimy do 100000 po 18, a jak będzie 102000, to te 2000 już będzie po 14.” <span class="who">Bartek, 37:28</span></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Model D: stała stawka</summary>
+    <div class="acc-body">
+      <p>Standard w firmie: <b>20%</b> dla wszystkich klientów bez negocjowanych warunków.</p>
+    </div>
+  </details>
+
+  <h2>Konfigurator warunków <span class="ref">D-14</span></h2>
+  <p>Konfigurator jest <b>self-service</b>: klient sam definiuje warunki bez zlecania zmian wykonawcy. Dowolne formuły matematyczne zostały <b>odrzucone</b> jako niestabilne <span class="ref">D-15</span> na rzecz szablonów parametrycznych.</p>
+  <pre class="code">WARUNKI PROWIZYJNE (per instytucja, wersjonowane w czasie)
++-- rodzaj_kumulacji:  miesieczny | roczny | brak
++-- sposob_liczenia:   od_calosci | od_nadwyzki | stala
++-- progi[]:           [ (kwota_progu, stawka_%), ... ]
++-- stawka_stala:      %          (gdy rodzaj_kumulacji = brak)
++-- obowiazuje_od:     data       (typowo 1 stycznia kolejnego roku)</pre>
+  <div class="callout"><b>Ryzyko rezydualne:</b> szablony parametryczne mogą nie pokryć przyszłych umów („tych przypadków jest przeróżne”, 35:32). Mitygacja: zawsze dostępne ręczne nadpisanie stawki per wniosek. Kompletność zestawu modeli niepotwierdzona <span class="ref p">P-31</span>.</div>
+
+  <h2>Nadpisanie indywidualne per wniosek <span class="ref">D-17</span></h2>
+  <p>
+    Nie per klient, nie per część klienta. Pojedynczy wniosek wypada spod ogólnych zasad instytucji.
+    Warunki negocjuje się <b>przed</b> złożeniem wniosku, nigdy w trakcie <span class="ref">D-25</span>.
+    Przykład: wniosek na 160 000 zł rozliczany po 15% zamiast 20%, wynegocjowany mailowo przed startem.
+  </p>
+  <div class="callout ok">
+    <span class="ct">Miejsce nadpisania <span class="ref">D-93</span> (zaktualizowane 04.09.2026, <span class="ref p">P-06</span> zamknięte)</span>
+    Nadpisanie robi <b>wyłącznie administrator</b>, bezpośrednio na <b>karcie wniosku</b>
+    (Dofinansowania &rarr; instytucja &rarr; wniosek), a nie tylko w module Administracja.
+    Edycja kasuje regułę i jest przywracalna <span class="ref">D-19</span> (flaga <code>regula_aktywna</code>
+    + <code>wartosc_wyliczona</code> + akcja „Przywróć regułę”).
+  </div>
+  <p class="muted">Otwarte: czy wniosek z nadpisaną stawką wlicza się do sumy narastającej wypełniającej progi pozostałych wniosków tej instytucji <span class="ref p">P-03</span>.</p>
+
+  <h2>Przewidywana prowizja <span class="ref">D-26</span></h2>
+  <p>
+    System prognozuje, w którym progu znajdzie się instytucja w danym miesiącu, <b>zanim faktury
+    zostaną wystawione</b>, na podstawie zaplanowanych terminów szkoleń. Zmiana pojedynczej pozycji
+    <b>przelicza stawkę dla wszystkich pozycji w okresie</b>.
+  </p>
+  <div class="q">
+    „możemy zrobić przewidywaną prowizję. Czy to będzie 10 czy 12, no bo tutaj było 54000, a ten się
+    odpadł, zrobiło się 48. No to ja nie mogę mieć 12% tylko 10.”
+    <span class="who">Bartek, 26:58</span>
+  </div>
+
+  <h2>Pułapka implementacyjna: Model A liczy się na całym okresie</h2>
+  <div class="callout danger">
+    <span class="ct">Naiwna implementacja daje w Modelu A błędny wynik zaniżony o 9%</span>
+    W modelu „od całości” nie wolno liczyć prowizji fakturami po kolei i sumować wyników.
+    Przekroczenie progu podnosi stawkę dla <b>całego obrotu okresu</b>, także faktur już wystawionych.
+  </div>
+  <pre class="code">Styczeń: 26 000 zł + 25 000 zł
+
+BLEDNIE, przyrostowo faktura po fakturze:
+  faktura 1: obrot 26 000  -> ponizej progu -> 10%  ->  2 600 zl
+  faktura 2: obrot 51 000  -> powyzej progu -> 12%  ->  3 000 zl
+                                                 razem   5 600 zl   <- ZLE
+
+POPRAWNIE, na sumie okresu:
+  obrot okresu 51 000 -> powyzej progu 50 000 -> 12% dla calosci
+  26 000 x 12% = 3 120 zl
+  25 000 x 12% = 3 000 zl
+                 razem  6 120 zl   <- DOBRZE</pre>
+  <p>
+    <b>Konsekwencja architektoniczna:</b> rozliczenie musi być operacją na okresie, nie na pojedynczej
+    fakturze. Modele B i C (od nadwyżki) liczą się przyrostowo i tam kolejność faktur ma znaczenie.
+    Działająca implementacja obu wariantów jest w makiecie (<code>assets/db.js</code>, funkcje
+    <code>liczProwizje()</code> i <code>liczOkres()</code>) i przechodzi komplet przypadków testowych.
+  </p>
+
+  <h2>Konflikt reguły okresu rozliczeniowego <span class="ref p">P-01</span></h2>
+  <div class="callout danger">
+    <span class="ct">Najważniejsze pytanie otwarte modułu prowizji, blokada</span>
+    Klient najpierw ustalił: okresem jest data wystawienia faktury (22:21). Pięć minut później pokazał,
+    że w praktyce prognozuje próg z kalendarza szkoleń (25:55), i sam wskazał problem: „ma szkolenie
+    w październiku, a wystawiliśmy to w sierpniu” (26:10).
+  </div>
+  <p><b>Propozycja rozstrzygnięcia:</b> rozdzielić dwa byty, które klient miesza. Oba liczone tym samym silnikiem, różnią się źródłem daty.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Byt</th><th>Podstawa</th><th>Zastosowanie</th></tr></thead>
+      <tbody>
+        <tr><td><b>Prowizja rzeczywista</b></td><td>data wystawienia faktury</td><td>Rozliczenie, faktura prowizyjna, księgowość</td></tr>
+        <tr><td><b>Prowizja przewidywana</b></td><td>data planowanego wystawienia (domyślnie ostatni dzień szkolenia)</td><td>Prognoza, dashboard, planowanie</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Poziom 2: prowizja wewnętrzna dla pracowników LDIT</h2>
+  <p>Model kaskadowy <span class="ref">D-32</span>: koszt szkolenia &rarr; prowizja LDIT (przychód) &rarr; prowizja pracownika (% od przychodu LDIT). Baza naliczania w dwóch wariantach: obecnie wartość złożonych wniosków, docelowo procent od przychodu. System obsługuje oba <span class="ref">D-33</span>.</p>
+  <div class="callout danger">
+    <span class="ct">Blokada projektowa <span class="ref p">P-02</span></span>
+    Progi i stawki prowizji wewnętrznej <b>nie istnieją</b>. „na tym się jeszcze nie zastanawiałem
+    nawet” (57:13). Do czasu dostarczenia struktury progów moduł nie może być zaprojektowany.
+  </div>
+
+  <h2>Przypadki testowe</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Scenariusz</th><th>Oczekiwany wynik</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Model A, obrót 49 000 zł</td><td>4 900 zł (10% od całości)</td></tr>
+        <tr><td>2</td><td>Model A, obrót 50 000 zł</td><td>6 000 zł (12% od całości)</td></tr>
+        <tr><td>3</td><td>Model A, obrót 51 000 zł (2 faktury)</td><td>6 120 zł, obie pozycje po 12%</td></tr>
+        <tr><td>4</td><td>Model A, rezygnacja obniża 54 000 &rarr; 48 000</td><td>Przeliczenie całego miesiąca na 10%</td></tr>
+        <tr><td>5</td><td>Model B, faktura przekraczająca próg 500k</td><td>10 000 x 20% + 5 000 x 17,5% = 2 875 zł, efektywnie 19,17%</td></tr>
+        <tr><td>6</td><td>Model C, obrót 102 000 zł</td><td>18 000 + 280 = 18 280 zł</td></tr>
+        <tr><td>7</td><td>Model D, dowolny obrót</td><td>20% liniowo</td></tr>
+        <tr><td>8</td><td>Nadpisanie ręczne 15% na jednym wniosku</td><td>Ten wniosek po 15%, pozostałe wg reguły</td></tr>
+        <tr><td>9</td><td>Przywrócenie reguły po nadpisaniu</td><td>Powrót do wartości wyliczonej</td></tr>
+        <tr><td>10</td><td>Zmiana warunków IS od 1.01.2027</td><td>Rozliczenia 2026 niezmienione</td></tr>
+        <tr><td>11</td><td>Faktura z sierpnia za szkolenie w grudniu</td><td>Przychód w sierpniu</td></tr>
+        <tr><td>12</td><td>Dopłata dodatkowa 20 000 zł</td><td>Prowizja od kosztu z dopłatą</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/07-silnik-prowizji.md">07-silnik-prowizji.md</a>,
+    <a href="../../Prowizja%20liczenie.xlsx">Prowizja liczenie.xlsx</a>. Powiązane:
+    <a href="06-finanse.html" onclick="if(parent!==window){parent.docNav('06-finanse');return false}">Model finansowy</a>,
+    <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">Pytania otwarte</a>.
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Kontekst i cel</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Fundament</div>
+    <h1 class="doc-title">Kontekst i cel biznesowy</h1>
+    <p class="doc-lead">
+      LDIT pozyskuje dla firm końcowych dofinansowania szkoleń z Krajowego Funduszu Szkoleniowego (KFS)
+      i kieruje te firmy na szkolenia realizowane przez współpracujące instytucje szkoleniowe.
+      System ma zastąpić pracę na Excelu, mailach i telefonie oraz uporządkować cały proces
+      wokół wniosku, rozliczenia i prowizji.
+    </p>
+  </div>
+
+  <h2>Model biznesowy klienta</h2>
+  <p>
+    LDIT (firma Bartłomieja Olejnika) pozyskuje dla firm końcowych dofinansowania szkoleń z
+    <b>Krajowego Funduszu Szkoleniowego (KFS)</b> i kieruje te firmy na szkolenia realizowane przez
+    współpracujące <b>instytucje szkoleniowe (IS)</b>.
+  </p>
+
+  <div class="diagram">Instytucja szkoleniowa (IS)          LDIT                    Klient końcowy (firma)
+        |                              |                              |
+   handlowiec pozyskuje  ---->  przejmuje proces  ---->  wypełnia formularz
+   klienta końcowego            i prowadzi wniosek        wysyła uczestników
+        |                              |                              |
+   realizuje szkolenie  &lt;----  składa wniosek do PUP  ---->  otrzymuje dofinansowanie
+        |                              |
+   wystawia fakturę      ---->  pobiera prowizję (% od kosztu szkolenia)</div>
+
+  <p>
+    <b>Źródło przychodu LDIT:</b> prowizja od instytucji szkoleniowej, liczona procentowo od kosztu
+    całkowitego szkolenia. Standard 20%, ale realne umowy mają skale progowe i wyjątki (patrz
+    <a href="07-prowizja.html" onclick="if(parent!==window){parent.docNav('07-prowizja');return false}">07. Silnik prowizji</a>).
+  </p>
+
+  <h3>Kto jest czyim klientem</h3>
+  <p>Rozróżnienie krytyczne dla nazewnictwa:</p>
+  <ul>
+    <li>Klientami LDIT są <b>instytucje szkoleniowe</b></li>
+    <li>Klientami instytucji szkoleniowych są <b>firmy końcowe</b> (w rozmowach nazywane po prostu „klientami”)</li>
+    <li>Uczestnikami szkoleń są <b>pracownicy firm końcowych</b></li>
+  </ul>
+
+  <div class="q">
+    „Pojedynczej nie instytucji szkoleniowej tylko o k. Firmę, czyli w zasadzie i tak uczestnika.”
+    <span class="who">Bartek, warsztat 25.08.2026, 1:01</span>
+  </div>
+
+  <h2>Problemy, które system ma rozwiązać</h2>
+
+  <h3>1. Excel przestał wystarczać</h3>
+  <p>
+    Cała operacja stoi na trzech plikach Excel (zakładki: <code>Zestawienie 2026 złożone</code>,
+    <code>Niezłożone</code>, <code>Rozpis szkoleń</code>), mailach i telefonach. Dane rozjeżdżają się
+    między plikami, pojawiają się błędy.
+  </p>
+  <div class="q">
+    „za ciężko się skupić mi na czymś konkretnym, z bardzo dużo tych informacji jednocześnie wyskakuje (...)
+    wolałbym, żeby to po prostu było mocno przejrzyste i wszystko miało swoje miejsce.”
+    <span class="who">Bartek, warsztat 25.08.2026, 1:32:18</span>
+  </div>
+
+  <h3>2. Każda instytucja ma inny system, brak wspólnego standardu</h3>
+  <p>
+    Jedna IS ma rozbudowany system z panelem logowania, inna sam kalendarz, część pracuje wyłącznie
+    na mailach. Przy ~20 współpracujących firmach nauczenie się każdego systemu jest niewykonalne.
+    Kierunek ma się odwrócić: jeden standard dla wszystkich.
+  </p>
+  <p>Dwa realne, sprzeczne modele operacyjne ustalania terminu, oba muszą być obsłużone:</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Model</th><th>Przykład</th><th>Przebieg</th></tr></thead>
+      <tbody>
+        <tr><td><b>A</b></td><td>Metal Maniak</td><td>LDIT ma kalendarz IS, sam ustala terminy z klientami i wpisuje do tabeli. IS tylko podgląda.</td></tr>
+        <tr><td><b>B</b></td><td>Dron Fortech</td><td>IS ustala termin telefonicznie z klientem, wpisuje do swojego systemu, LDIT dostaje maila. Potem LDIT składa w PUP pismo o zmianie terminu.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    „to zależy. Większość instytucji szkoleniowych to my się kontaktujemy (...) mam różne przykłady,
+    więc tu naprawdę u nas nie ma jednego standardu.”
+    <span class="who">Bartek, warsztat 25.08.2026, 10:06</span>
+  </div>
+
+  <h3>3. Obieg formularzy trwa dni zamiast minut</h3>
+  <p>
+    Dziś: handlowiec IS wysyła klientowi Excel mailem, klient odsyła, handlowiec przekazuje do LDIT.
+    Realne opóźnienie: <b>2 do 3 dni</b>. Cel: <b>pół godziny do godziny</b>. W sezonie to ok. 300
+    identycznych plików Excel w skrzynce.
+  </p>
+  <p>
+    Realny incydent: nabór kończył się 5 kwietnia, formularz od handlowca wpłynął tego samego dnia,
+    wniosku nie udało się złożyć. LDIT dostało pretensje i musiało przeszukiwać maile, żeby udowodnić,
+    kiedy dokumenty dotarły.
+  </p>
+
+  <h3>4. Historia kontaktu jest rozproszona</h3>
+  <p>
+    Ustalenia siedzą w skrzynkach pocztowych poszczególnych pracowników. Przypadek pracownicy Magdy:
+    klient przesłał umowę mailem, umowa nie trafiła na dysk, fizycznie zaginęła.
+  </p>
+  <div class="q">
+    „żeby była historia rozmowy między instytucją szkoleniową a nami i każdy ma do tego wgląd (...)
+    mamy jednak wiadomość, że klient podesłał tą umowę, tylko zapomniała po prostu przerzucić do folderu.”
+    <span class="who">Bartek, warsztat 25.08.2026, 1:27:42</span>
+  </div>
+
+  <h3>5. Dane finansowe widzi każdy pracownik</h3>
+  <p>
+    W obecnym Excelu każdy pracownik widzi cały zysk firmy oraz stawki prowizyjne wszystkich instytucji.
+    To ryzyko biznesowe: instytucje są wobec siebie konkurencyjne i mają różne stawki.
+  </p>
+  <div class="q">
+    „Na ten moment każdy widzi cały zysk firmy, jakie prowizje ma jaka firma. Chciałbym po prostu już
+    to ukrócić do tylko do administratora.”
+    <span class="who">Bartek, warsztat 25.08.2026, 57:52</span>
+  </div>
+
+  <h3>6. Ręczna robota przy certyfikatach i fakturach</h3>
+  <p>
+    Certyfikaty dla 50 uczestników z jednej firmy to dziś ręczna praca. Dane do faktury wysyłane mailem
+    wg stałego wzoru, przepisywane z Excela.
+  </p>
+
+  <h2>Skala</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="k-label">Firmy w bazie</div><div class="k-value">„1000 parę”</div><div class="k-foot">szacunek klienta (3:53)</div></div>
+    <div class="kpi"><div class="k-label">Instytucje szkoleniowe</div><div class="k-value">ok. 20</div><div class="k-foot">obecnie, rok wcześniej 2 (4:46)</div></div>
+    <div class="kpi"><div class="k-label">Faktury LDIT rocznie</div><div class="k-value">ok. 300</div><div class="k-foot">miesięcznie 5&ndash;40, śr. ok. 30 (1:05:10)</div></div>
+    <div class="kpi"><div class="k-label">Szczyt operacyjny</div><div class="k-value">130 / 2 tyg.</div><div class="k-foot">wniosków w dwa tygodnie</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Wymiar</th><th>Wartość</th><th>Źródło</th></tr></thead>
+      <tbody>
+        <tr><td>Instytucje szkoleniowe w zeszłym roku</td><td>2</td><td class="muted">4:46</td></tr>
+        <tr><td>Instytucje szkoleniowe obecnie</td><td><b>ok. 20</b></td><td class="muted">4:46</td></tr>
+        <tr><td>Firmy w bazie (szacunek klienta)</td><td>„1000 parę”</td><td class="muted">3:53</td></tr>
+        <tr><td>Perspektywa modułu Zgłoszeń</td><td>ponad 1000 klientów</td><td class="muted">3:05:01</td></tr>
+        <tr><td>Faktury LDIT miesięcznie</td><td>5 do 40, średnio ok. 30</td><td class="muted">1:02:40</td></tr>
+        <tr><td>Faktury LDIT rocznie</td><td>ok. 300</td><td class="muted">1:05:10</td></tr>
+        <tr><td>Wnioski jednego klienta rocznie</td><td>do 3, wyjątkowo 5&ndash;6</td><td class="muted">2:46:58, 1:46:06</td></tr>
+        <tr><td>Numeracja klientów w roku</td><td>sekwencyjna, po pół roku ok. 170</td><td class="muted">1:45:00</td></tr>
+        <tr><td>Szczyt operacyjny</td><td>ok. 130 wniosków w 2 tygodnie</td><td class="muted">dok. przedwarsztatowa</td></tr>
+        <tr><td>Urzędy pracy w bazie naborów</td><td>340</td><td class="muted">dok. przedwarsztatowa</td></tr>
+        <tr><td>Uczestników na jednym szkoleniu</td><td>do 50</td><td class="muted">2:57:48</td></tr>
+        <tr><td>Skrzynka w sezonie</td><td>ok. 300 identycznych Exceli</td><td class="muted">2:11:20</td></tr>
+        <tr><td>Obciążenie klienta w szczycie</td><td>ok. 400 h pracy Bartka w lutym</td><td class="muted">3:21:01</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><b>Wzrost jest pewny.</b> Marketing i social media planowane od 2027. Ale klient warunkuje uruchomienie marketingu przepustowością operacyjną.</p>
+  <div class="q">
+    „marketing możemy uruchomić dopiero wtedy, jeżeli będę wiedział, że wyrobimy tą ilość wniosków,
+    bo mam tutaj 2 opcje, albo ten bot (...) albo nowy pracownik. Bo inaczej to jest niemożliwe,
+    żeby więcej osób obsłużyć.”
+    <span class="who">Bartek, warsztat 25.08.2026, 3:21:31</span>
+  </div>
+  <div class="q">
+    „Przez co prawdopodobnie część współprac pójdzie do wiatru.”
+    <span class="who">Bartek, warsztat 25.08.2026, 3:21:50</span>
+  </div>
+
+  <div class="callout warn">
+    <span class="ct">Koszt utrzymania jest kryterium decyzyjnym</span>
+    Klient traktuje koszt utrzymania jako kryterium decyzyjne przy każdym rozszerzeniu zakresu.
+  </div>
+  <div class="q">
+    „jeżeli to nie będzie znaczące jakoś zwiększone no to to spoko, ale jeżeli będzie miało jakiś
+    większy wpływ no to mi jest akurat to zbędne.”
+    <span class="who">Bartek, warsztat 25.08.2026, 6:10</span>
+  </div>
+  <p>
+    Wykonawca wskazał, że wąskim gardłem będzie wydajność serwera aplikacyjnego, nie baza danych (4:20).
+    <b>Kalkulacja kosztów hostingu w wariantach skali jest zadaniem otwartym</b> (patrz
+    <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">14. Pytania otwarte</a>).
+  </p>
+
+  <h2>Granice systemu</h2>
+
+  <h3>Co system robi</h3>
+  <ul>
+    <li>Prowadzi klienta przez cały proces: formularz, wniosek do PUP, decyzja, szkolenie, rozliczenie</li>
+    <li>Rozdziela dane między konkurencyjnymi instytucjami szkoleniowymi</li>
+    <li>Nalicza prowizje wg konfigurowalnych reguł progowych</li>
+    <li>Generuje certyfikaty i dane do faktur</li>
+    <li>Gromadzi historię korespondencji przy kliencie</li>
+    <li>Pokazuje nabory aktualne i prognozowane</li>
+    <li>Raportuje skuteczność i marżowość</li>
+  </ul>
+
+  <h3>Czego system NIE robi</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Wykluczenie</th><th>Uzasadnienie</th><th>Źródło</th></tr></thead>
+      <tbody>
+        <tr><td>Nie zastępuje wniosku w urzędzie</td><td>Wniosek składa się w praca.gov.pl / PUP, system prowadzi proces wokół niego</td><td class="muted">dok. przedwarsztatowa</td></tr>
+        <tr><td>Nie przechowuje folderów i plików klientów</td><td>Klient zostaje przy Eksploratorze Windows i OneDrive</td><td><span class="ref">D-41</span></td></tr>
+        <tr><td>Nie obsługuje zadań pracowników</td><td>Przeniesione do Projectly (druga aplikacja wykonawcy)</td><td><span class="ref">D-118</span></td></tr>
+        <tr><td>Nie integruje kalendarza Outlook</td><td>Wykluczone z zakresu</td><td><span class="ref">D-118</span></td></tr>
+        <tr><td>Nie wysyła SMS-ów</td><td>Odrzucone w etapie I</td><td><span class="ref">D-04</span></td></tr>
+        <tr><td>Nie integruje się z systemem księgowym przez API</td><td>Import CSV zamiast integracji, 1h vs 10&ndash;15h pracy</td><td><span class="ref">D-39</span></td></tr>
+        <tr><td>Nie pozwala instytucjom wysyłać powiadomień</td><td>Cała komunikacja wychodzi z domeny LDIT</td><td><span class="ref">D-87</span></td></tr>
+        <tr><td>Nie udostępnia publicznego API</td><td>W dokumentacji przedwarsztatowej przewidziano MCP, warsztat tego nie potwierdził</td><td class="muted">patrz <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">14</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Napięcie do rozwiązania</h3>
+  <div class="callout open">
+    <span class="ct">Deklaracja kontra wykluczenia</span>
+    Klient deklaruje „wszystko w jednym systemie”, ale jednocześnie wyłącza z niego pliki, zadania i kalendarz.
+  </div>
+  <div class="q">
+    „chciałbym, żeby ten system służył mi do wszystkiego, co robię w pracy, żebym nie musiał osobno
+    wchodzić na driva (...) Chcę przenieść do systemu, żeby odejść już od Excela przede wszystkim.”
+    <span class="who">Bartek, warsztat 25.08.2026, 1:02:48</span>
+  </div>
+  <div class="q">
+    „Przeglądarkowego nienawidzę, nie muszę mieć, muszę mieć po prostu ten eksplorator Windowsa i mi
+    się wygodnie to robi.”
+    <span class="who">Bartek, warsztat 25.08.2026, 1:22:27</span>
+  </div>
+  <p>
+    To ryzyko rozczarowania po wdrożeniu, opisane w
+    <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">15. Ryzyka</a>.
+  </p>
+
+  <h2>Filozofia realizacji</h2>
+  <p>Klient chce najpierw działającego szkieletu, szczegóły dopracowywane w trakcie.</p>
+  <div class="q">
+    „Na razie chciałbym, żebyśmy szkielet postawili na nogi, a takie szczegóły dopracujemy sobie myślę
+    już na bieżąco.”
+    <span class="who">Bartek, warsztat 25.08.2026, 2:59:50</span>
+  </div>
+  <div class="q">
+    „robisz jeden moduł czy tam kilka modułów i na spotkaniach przedstawiasz. Akceptujemy, zmieniamy
+    i wtedy wrzucamy w system. Może w ten sposób, niż wszystko.”
+    <span class="who">Bartek, warsztat 25.08.2026, 1:33:36</span>
+  </div>
+  <div class="callout ok">
+    <span class="ct">Tryb pracy: iteracyjny odbiór modułami</span>
+    Prezentacja i akceptacja przed wdrożeniem. Klient deklaruje pełną dostępność telefoniczną w trakcie
+    realizacji, bo w styczniu jej nie będzie.
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/01-kontekst-i-cel.md">01-kontekst-i-cel.md</a>.
+    Kompletna sekcja kontekstu i celu biznesowego systemu KFS LDIT.
+  </div>
+
+</div>
+</body>
+</html>

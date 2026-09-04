@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Role i uprawnienia</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Fundament</div>
+    <h1 class="doc-title">Role, uprawnienia i separacja danych</h1>
+    <p class="doc-lead">
+      Kto widzi co i dlaczego. Warsztat rozszerzył model z 4 do 5 ról bazowych plus możliwość
+      tworzenia własnych, ustalił trójwymiarowy model uprawnień (rola x moduł, przypisanie do
+      instytucji, filtrowanie wierszy) oraz trzy warstwy separacji danych między konkurencyjnymi
+      instytucjami szkoleniowymi.
+    </p>
+  </div>
+
+  <h2>Role w systemie</h2>
+  <p>Warsztat rozszerzył model z 4 do <b>5 ról bazowych</b>, plus możliwość tworzenia własnych.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Rola</th><th>Kto to</th><th>Zakres widoczności</th></tr></thead>
+      <tbody>
+        <tr><td><b>Administrator</b></td><td>Bartek</td><td>Wszystko: wszystkie instytucje, wszyscy klienci, finanse, konfiguracja, prowizje</td></tr>
+        <tr><td><b>Pracownik LDIT</b></td><td>Łucja, Martyna, Asia</td><td>Klienci <b>przypisanych mu instytucji</b>. Bez zysków firmy i bez stawek prowizyjnych</td></tr>
+        <tr><td><b>Instytucja szkoleniowa</b> (admin IS)</td><td>np. Odczaruj, Metal Maniak</td><td>Wyłącznie własna zakładka i własni klienci. Nie widzi swojej stawki prowizji</td></tr>
+        <tr><td><b>Pracownik IS</b> (handlowiec)</td><td>np. Mirka z Fortech</td><td>Tylko dane klientów IS, dodatkowo przefiltrowane (np. tylko najnowszy nabór)</td></tr>
+        <tr><td><b>Klient końcowy</b></td><td>firma / uczestnik</td><td>OTWARTE, patrz niżej</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Zasada: własne konto, działanie we własnym imieniu <span class="ref new">D-121</span></h3>
+  <p>
+    Każdy użytkownik loguje się na <b>własne, imienne konto</b> i wykonuje działania w swoim
+    imieniu. Nie ma kont współdzielonych, spójnie z brakiem wspólnej skrzynki firmowej
+    <span class="ref">D-45</span>. Konsekwencje:
+  </p>
+  <ul>
+    <li>każda akcja (zmiana danych, wysyłka maila, wpis zgłoszenia) jest przypisana do konkretnej osoby i widoczna w <a href="10-bezpieczenstwo.html" onclick="if(parent!==window){parent.docNav('10-bezpieczenstwo');return false}">rejestrze aktywności</a>;</li>
+    <li>na karcie Zgłoszeń autor wpisu jest <b>domyślnie ustawiany na zalogowanego użytkownika</b>, z możliwością zmiany <span class="ref new">D-121</span>;</li>
+    <li>administrator może dzięki temu odtworzyć, kto co zrobił i kiedy <span class="ref">D-122</span>.</li>
+  </ul>
+
+  <h3>Rola: pracownik instytucji szkoleniowej (handlowiec)</h3>
+  <p><b>Nowa rola dodana na warsztacie</b> <span class="ref">D-72</span>. Nadawana przez administratora IS swojemu handlowcowi.</p>
+  <div class="q">
+    „Dodałbym jeszcze jedną rolę w naszej apce. Że ja jako administrator instytucji szkoleniowej
+    mam jeszcze swojego pracownika, któremu nadaję rolę. I chcę mu ograniczyć dostęp do pełnego
+    systemu, czyli dać mu tylko dane klientów i to jeszcze przefiltrowane.”
+    <span class="who">Paweł, 2:14:40</span>
+  </div>
+  <div class="q">
+    „Dobra. Spoko jest to.”
+    <span class="who">Bartek, 2:15:13</span>
+  </div>
+  <p><b>Zakres roli w procesie kończy się na wypełnieniu formularza przez klienta.</b> Dalej sprawę przejmuje w całości LDIT.</p>
+  <div class="q">
+    „Idąc po procesie, rola handlowca kończy się jak ktoś wypełnia ten formularz i wtedy ty go przejmujesz zupełnie.”
+    <span class="who">Paweł, 2:18:12</span>
+  </div>
+  <div class="q">
+    „Tak.”
+    <span class="who">Bartek, 2:18:23</span>
+  </div>
+  <p>Konsekwencja: handlowiec <b>nie dostaje</b> informacji o zbliżających się naborach u swoich klientów, bo kontakt z klientem po formularzu należy do LDIT <span class="ref">D-91</span>.</p>
+
+  <h3>Rola: klient końcowy (panel uczestnika)</h3>
+  <div class="callout open">
+    <span class="ct">STATUS: OTWARTA</span>
+    Klient ma wątpliwości, wykonawca (jako IS) bardzo chce.
+  </div>
+  <div class="q">
+    „nie wiem czy w ogóle ktoś będzie z tego korzystał (...) oni często nie mają czasu czegoś
+    podpisać, albo im się nie chce, a co dopiero sobie wejść i sprawdzić na jakim etapie jest ich
+    wniosek. Ale pojawiają się tacy klienci.”
+    <span class="who">Bartek, 1:36</span>
+  </div>
+  <div class="q">
+    „jeżeli chodzi o ten moduł dostępu dla klienta, to tutaj możemy podzielić się tym kosztem, bo ja chętnie będę z tego korzystał.”
+    <span class="who">Paweł, 3:02</span>
+  </div>
+  <p>
+    Oczekiwany zakres (gdyby wszedł): podgląd etapu wniosku, lista wysłanych dokumentów do
+    ponownego pobrania, informacje przedszkoleniowe (co, gdzie, materiały), lista naborów.
+    Wyłącznie odczyt.
+  </p>
+  <p>
+    Blokery: skokowy wzrost bazy użytkowników (z kilkunastu do kilkuset), koszt utrzymania,
+    ryzyko bezpieczeństwa (wpuszczenie osób spoza obu organizacji).
+  </p>
+
+  <h2>Konfigurator ról</h2>
+  <div class="callout ok">
+    <span class="ct">Decyzja TWARDA <span class="ref">D-36</span></span>
+    Administrator sam tworzy role i nadaje im uprawnienia, bez udziału wykonawcy.
+  </div>
+
+  <h3>Model uprawnień</h3>
+  <ul>
+    <li><b>Płaski, nie hierarchiczny.</b> Menedżer nie musi widzieć więcej niż pracownik. Dowolna kombinacja.</li>
+    <li><b>Uprawnienia per rola, nie per pracownik</b> <span class="ref">D-35</span>.</li>
+    <li><b>Jednostka uprawnienia = zakładka (moduł)</b> z lewej nawigacji.</li>
+    <li><b>Dwa poziomy: podgląd i edycja.</b></li>
+    <li><b>Menu boczne renderowane dynamicznie</b> na podstawie roli zalogowanego użytkownika.</li>
+  </ul>
+  <div class="q">
+    „docelowo mówię, żebyśmy te role mogli nadawać co kto widzi, cały konfigurator roli, żebyśmy
+    mieli powiedzmy checkboxy, że ty masz dostęp do tego i tego, ale pracownik już inny ma dostęp
+    tylko do spisu klientów i kontaktów.”
+    <span class="who">Bartek, 58:19</span>
+  </div>
+  <div class="q">
+    „chciałbym mieć możliwość samodzielnej decyzji, co widzi ten menedżer, a co widzi to nie.
+    Nawet absurdalny przykład: jeżeli będę chciał, żeby pracownik zwykły widział więcej niż
+    menedżer, to żebym mógł sobie to ustawić.”
+    <span class="who">Bartek, 59:04</span>
+  </div>
+  <div class="callout warn">
+    <span class="ct">Uwaga projektowa</span>
+    Reakcja wykonawcy „dobrze, że to mówisz teraz” (1:00:01) sygnalizuje, że dynamiczna macierz
+    uprawnień nie była wcześniej wyceniona. To istotne rozszerzenie zakresu, patrz
+    <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">15. Ryzyka</a>.
+  </div>
+
+  <h3>Drugi wymiar: przypisanie użytkownik do instytucji</h3>
+  <div class="callout ok">
+    <span class="ct">Decyzja TWARDA <span class="ref">D-113</span></span>
+    Niezależnie od macierzy rola x moduł, administrator przypisuje pracownikom konkretne instytucje szkoleniowe.
+  </div>
+  <div class="q">
+    „pracownik Łucjan ma dostęp tylko do Metal Maniak, pracownik Martyna ma dostęp do Odczaruj Power BI [i] Dron Fortech.”
+    <span class="who">Bartek, 3:12:21</span>
+  </div>
+  <p>Konsekwencja: zakładka <b>Dofinansowania</b> rozwija listę instytucji ograniczoną do przydziału zalogowanego użytkownika.</p>
+
+  <h3>Trzeci wymiar: filtrowanie wierszy</h3>
+  <p>Uprawnienia muszą działać nie tylko na poziomie modułu, ale też na poziomie <b>wierszy</b>:</p>
+  <ul>
+    <li>po instytucji szkoleniowej</li>
+    <li>po etapie procesu (np. tylko klienci na etapie początkowym)</li>
+    <li>po naborze (np. tylko najnowszy nabór) <span class="ref">D-73</span></li>
+  </ul>
+
+  <h2>Macierz widoczności</h2>
+  <p>Wersja robocza do potwierdzenia. Pola oznaczone <code>?</code> wymagają rozstrzygnięcia.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Moduł</th><th>Administrator</th><th>Pracownik LDIT</th><th>Instytucja szkoleniowa</th><th>Pracownik IS</th><th>Klient końcowy</th></tr></thead>
+      <tbody>
+        <tr><td>Dashboard (statystyki)</td><td>Pełny, wszystkie IS</td><td>Bez marżowości i zysków</td><td>Własne wskaźniki (zakres <code>?</code>)</td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Dofinansowania / Zestawienia</td><td>Wszystkie IS</td><td>Przypisane IS</td><td>Własna zakładka</td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Baza klientów (Niezłożone)</td><td>Pełna</td><td>Przypisane IS</td><td>Własni klienci</td><td>Własni, przefiltrowani</td><td>Brak</td></tr>
+        <tr><td>Karta klienta i wniosku</td><td>Pełna edycja</td><td>Edycja w kontekście</td><td>Odczyt statusu</td><td>Odczyt ograniczony</td><td>Własny status (<code>?</code>)</td></tr>
+        <tr><td>Katalog szkoleń</td><td>Pełny</td><td>Odczyt</td><td>Własny, pełna edycja</td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Terminy i kalendarz</td><td>Pełny</td><td>W kontekście</td><td>Własne terminy</td><td>Brak</td><td>Własne (<code>?</code>)</td></tr>
+        <tr><td>Konfigurator IS (prowizje)</td><td><b>Wyłącznie admin</b></td><td>Brak</td><td><b>Brak</b></td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Administracja (prowizje szczegółowe)</td><td><b>Wyłącznie admin</b></td><td>Brak (<code>?</code>)</td><td>Brak</td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Faktury</td><td>Pełny</td><td>Brak</td><td>Brak</td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Powiadomienia i szablony</td><td>Pełny</td><td>Wysyłka</td><td>Szablony do Outlooka</td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Zgłoszenia (incydenty)</td><td>Pełny</td><td>Pełny</td><td><b>Brak</b></td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Nabory</td><td>Pełny</td><td>Odczyt</td><td>Odczyt (<code>?</code>)</td><td>Brak</td><td>Odczyt (<code>?</code>)</td></tr>
+        <tr><td>Konta i uprawnienia</td><td>Pełny</td><td>Brak</td><td>Użytkownicy własnej IS</td><td>Brak</td><td>Brak</td></tr>
+        <tr><td>Rejestr aktywności</td><td>Pełny</td><td>Brak</td><td>Brak</td><td>Brak</td><td>Brak</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Separacja danych</h2>
+  <div class="callout danger">
+    <span class="ct">To jest wymaganie biznesowe, nie tylko techniczne</span>
+    Instytucje szkoleniowe są wobec siebie konkurencyjne.
+  </div>
+
+  <h3>Trzy warstwy separacji</h3>
+
+  <h3>1. Stawki prowizji ukryte przed instytucjami <span class="ref">D-07</span></h3>
+  <p>
+    Konfigurator warunków prowizyjnych widoczny wyłącznie dla administratora. Instytucja nie
+    widzi ani swojej, ani cudzej stawki.
+  </p>
+  <div class="q">
+    „chciałbym to ograniczyć do konfiguratora, który widzę tylko ja, czyli żeby nie wiedzieli, że oni nam płacą 10%, a inni płacą nam 20.”
+    <span class="who">Bartek, 14:28</span>
+  </div>
+  <p>To rozstrzyga pytanie otwarte z dokumentacji przedwarsztatowej: <b>IS nie widzi swojej stawki prowizji</b>.</p>
+
+  <h3>2. Dane finansowe ukryte przed pracownikami <span class="ref">D-19</span></h3>
+  <p>Zyski firmy, prowizje instytucji i faktury widoczne wyłącznie dla administratora.</p>
+
+  <h3>3. Twarda separacja katalogów między instytucjami <span class="ref">D-35</span></h3>
+  <p>Instytucja widzi wyłącznie własnych klientów. Dotyczy interfejsu, wyszukiwarki, eksportów i formularzy.</p>
+  <div class="q">
+    „Żeby nie było tak, że ja mam swój formularz, Forteca też ma ten sam mój formularz i odpowiedzi
+    spływają do jednego excela. To jest złe pod kątem Security, jeden plik, a dane zmiksowane.”
+    <span class="who">Paweł, 2:20:00</span>
+  </div>
+  <div class="q">
+    „instytucje szkoleniowe też mogą [mieć wyszukiwarkę], tylko żeby nie zdarzyło się, że wpiszą
+    przypadkowo jakiegoś klienta i im się to wyświetli. Więc tutaj też na to trzeba będzie uważać.”
+    <span class="who">Bartek, 3:06:43</span>
+  </div>
+
+  <h3>Napięcie architektoniczne, NIEROZSTRZYGNIĘTE</h3>
+  <p>Wykonawca dwukrotnie sygnalizował implementację przez <b>osobne bazy pod spodem</b>:</p>
+  <div class="q">
+    „Prawdopodobnie dane klientów u ciebie, dane instytucji szkoleniowych będą w bazie podzielone
+    na osobne bazy. Albo na osobne instancje bazy. To jeszcze do przemyślenia, jak to zaprojektować.”
+    <span class="who">Paweł, 2:20:19</span>
+  </div>
+  <div class="q">
+    „wydaje mi się, że powinienem zrobić tutaj osobne bazy.”
+    <span class="who">Paweł, 3:12:16</span>
+  </div>
+  <p><b>Ale to stoi w sprzeczności z wymaganiami klienta:</b></p>
+  <ul>
+    <li>zbiorcze zestawienie wszystkich instytucji w jednej tabeli</li>
+    <li>ciągła numeracja klientów w roku (numer trafia na fakturę)</li>
+    <li>dashboard z przekrojem przez wszystkie instytucje</li>
+    <li>zestawienia roczne na żądanie</li>
+  </ul>
+  <div class="callout">
+    <span class="ct">Rekomendacja do rozstrzygnięcia w 09. Integracje i architektura</span>
+    <b>Jedna baza z egzekwowaną separacją na poziomie wierszy (Row Level Security)</b>, a nie
+    osobne bazy. Osobne bazy uniemożliwiają zbiorczy widok bez budowania warstwy agregacji, która
+    i tak łączyłaby dane w jednym miejscu.
+    <span class="ref p">P-25</span>
+  </div>
+
+  <h2>Uwierzytelnianie i cykl życia konta</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Wymaganie</th><th>Priorytet</th><th>Źródło</th></tr></thead>
+      <tbody>
+        <tr><td>Panel logowania dla wszystkich grup</td><td>MUST</td><td>3:15:04</td></tr>
+        <tr><td>Dwuskładnikowe uwierzytelnianie (2FA)</td><td>MUST</td><td>3:14:42</td></tr>
+        <tr><td>Reset haseł</td><td>MUST</td><td>3:14:42</td></tr>
+        <tr><td>Automatyczne wylogowanie po bezczynności</td><td>MUST</td><td>3:15:16</td></tr>
+        <tr><td>Blokada konta byłego pracownika z panelu admina</td><td>MUST</td><td>3:15:04</td></tr>
+        <tr><td>Dodawanie i usuwanie kont użytkowników przez admina</td><td>MUST</td><td>3:15:04</td></tr>
+        <tr><td>Dodawanie i usuwanie instytucji szkoleniowych przez admina</td><td>MUST</td><td>3:15:06</td></tr>
+        <tr><td>Log logowań (kto, kiedy) na potrzeby wyjaśniania wycieków</td><td>MUST</td><td>3:14:25</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    „Na przykład twoje konto się zalogowało o czternastej 30. Żeby w razie jakby był jakiś wyciek
+    czegokolwiek, to żeby było też wiadomo z jakiego powodu mogło to wyniknąć.”
+    <span class="who">Bartek, 3:14:25</span>
+  </div>
+  <p>Szczegóły w <a href="10-bezpieczenstwo.html" onclick="if(parent!==window){parent.docNav('10-bezpieczenstwo');return false}">10. Bezpieczeństwo i RODO</a>.</p>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/02-aktorzy-i-uprawnienia.md">02-aktorzy-i-uprawnienia.md</a>.
+    Cytaty i znaczniki czasu dosłownie z transkrypcji warsztatu 25.08.2026.
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Słownik</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Rejestry</div>
+    <h1 class="doc-title">Słownik pojęć</h1>
+    <p class="doc-lead">
+      Wspólna terminologia projektu KFS LDIT: pojęcia domenowe, kwoty, prowizje, encje i moduły
+      systemu, mapowanie nazw technicznych na etykiety dla użytkownika oraz podmioty, narzędzia
+      i skróty. Zapobiega rozjazdowi między dokumentacją, kodem a interfejsem.
+    </p>
+  </div>
+
+  <h2>Pojęcia domenowe KFS</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pojęcie</th><th>Znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td><b>KFS</b></td><td>Krajowy Fundusz Szkoleniowy. Dofinansowanie szkoleń przyznawane <b>pracodawcy</b>, nie uczestnikowi</td></tr>
+        <tr><td><b>PUP</b></td><td>Powiatowy Urząd Pracy. Instytucja przyjmująca wnioski. <b>340 urzędów</b> w bazie naborów</td></tr>
+        <tr><td><b>BUR</b></td><td>Baza Usług Rozwojowych. Uczestnik musi być w niej zarejestrowany. Etap w lejku statystyk</td></tr>
+        <tr><td><b>Nabór</b></td><td>Okno czasowe, w którym urząd przyjmuje wnioski. Kluczowe pole: <b>data zakończenia</b></td></tr>
+        <tr><td><b>Nabór prognozowany</b></td><td>Przewidywany, jeszcze nieogłoszony nabór. Z aplikacji do przewidywania naborów</td></tr>
+        <tr><td><b>praca.gov.pl</b></td><td>Portal, przez który klient zakłada konto i składa dokumenty</td></tr>
+        <tr><td><b>Mikroprzedsiębiorca</b></td><td>Firma zatrudniająca <b>do 9 osób</b> łącznie na umowie o pracę. Dofinansowanie 90%</td></tr>
+        <tr><td><b>Wkład własny</b></td><td>Część kosztu pokrywana przez firmę. <b>10%</b> dla mikro, <b>30%</b> dla pozostałych</td></tr>
+        <tr><td><b>Uczestnik zakwalifikowany</b></td><td>Osoba spełniająca warunki KFS, wchodzi do kosztu całkowitego projektu</td></tr>
+        <tr><td><b>Uczestnik niezakwalifikowany</b></td><td>Np. prezes zarządu będący większościowym udziałowcem bez umowy o pracę. <b>Wymaga odrębnej faktury komercyjnej</b></td></tr>
+        <tr><td><b>Precedens cenowy</b></td><td>Jeśli instytucja raz zejdzie z ceny, urząd nie zaakceptuje już wyższej kwoty dla tego szkolenia</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Kwoty (najczęstsze źródło nieporozumień)</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pojęcie</th><th>Definicja</th><th>Sposób</th></tr></thead>
+      <tbody>
+        <tr><td><b>Całkowita wartość szkolenia</b></td><td>Pełna wartość szkolenia z wkładem własnym, o którą wnioskujemy. Suma kwot uczestników zakwalifikowanych. Wcześniej mylnie nazywana „kwotą wnioskowaną”</td><td>Wyliczane</td></tr>
+        <tr><td><b>Koszt całkowity</b></td><td>Wartość <b>uznana przez urząd</b>, podstawa wyliczenia dofinansowania. Może być niższa od wnioskowanej. <b>Nazwa sporna</b>, klient proponował „dofinansowanie ze wkładem własnym”</td><td>Ręczne</td></tr>
+        <tr><td><b>Przyznano</b></td><td>Kwota dofinansowania przyznana przez urząd. <code>koszt_calkowity x 0,9</code> (mikro) lub <code>x 0,7</code></td><td>Wyliczane</td></tr>
+        <tr><td><b>Dopłata standard</b></td><td>Wkład własny wyrażony kwotowo. <code>wartosc x procent_wkladu</code></td><td>Wyliczane</td></tr>
+        <tr><td><b>Kwota dopłaty dodatkowej</b></td><td>Dodatkowa kwota płacona przez klienta poza wkładem własnym, gdy urząd przyznał za mało lub instytucja nie zeszła z ceny. Domyślnie 0</td><td>Ręczne</td></tr>
+        <tr><td><b>Koszt całkowity z dopłatą</b></td><td><code>koszt_calkowity + doplata_dodatkowa</code>. <b>Podstawa naliczania prowizji LDIT</b></td><td>Wyliczane</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>Równanie kontrolne:</b> <code>przyznano + wklad_wlasny = koszt_calkowity</code></p>
+
+  <h2>Prowizje</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pojęcie</th><th>Znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td><b>Prowizja LDIT</b></td><td>Wynagrodzenie firmy Bartka, płacone przez instytucję szkoleniową. Zawsze procentowo, nigdy kwotowo. Standard 20%</td></tr>
+        <tr><td><b>Prowizja wewnętrzna</b></td><td>Prowizja pracowników LDIT, liczona kaskadowo od przychodu firmy. <b>Progi nieustalone</b></td></tr>
+        <tr><td><b>Prowizja potencjalna</b></td><td>Prowizja szacowana z wniosków jeszcze nierozstrzygniętych. Prezentowana na dashboardzie</td></tr>
+        <tr><td><b>Prowizja przewidywana</b></td><td>Prognoza stawki dla okresu, wyliczona z zaplanowanych szkoleń przed wystawieniem faktur</td></tr>
+        <tr><td><b>Prowizja przyznana</b></td><td>Prowizja wyliczona od faktycznie przyznanego dofinansowania</td></tr>
+        <tr><td><b>Prowizja ustalona ręcznie</b></td><td>Nadpisanie stawki dla pojedynczego wniosku. Edytowalne wyłącznie z modułu Administracja</td></tr>
+        <tr><td><b>Próg przychodu</b></td><td>Kwota graniczna (miesięczna lub roczna), po przekroczeniu której zmienia się stawka</td></tr>
+        <tr><td><b>Rodzaj kumulacji</b></td><td>Okres sumowania obrotu do progów: <b>miesięczny</b> albo <b>roczny (YTD)</b></td></tr>
+        <tr><td><b>Liczenie od całości</b></td><td>Po przekroczeniu progu nowa stawka obejmuje <b>cały obrót okresu</b></td></tr>
+        <tr><td><b>Liczenie od nadwyżki</b></td><td>Stawka progowa obowiązuje tylko dla części obrotu <b>powyżej progu</b></td></tr>
+        <tr><td><b>Średnia (efektywna) stawka</b></td><td>Wynikowy procent dla faktury podzielonej między dwa progi. Np. 2 500 / 15 000 = 16,7%</td></tr>
+        <tr><td><b>YTD</b></td><td>Year to date, naliczanie narastające od początku roku</td></tr>
+        <tr><td><b>Forma dokumentowa</b></td><td>Mailowe ustalenie zmiany warunków umowy, dopuszczone przy dużych wnioskach</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Encje i moduły systemu</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pojęcie</th><th>Znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td><b>Instytucja szkoleniowa (IS)</b></td><td>Klient LDIT. Podmiot prowadzący szkolenia i płacący prowizję. W transkrypcji często zniekształcane na „intencja szkoleniowa”</td></tr>
+        <tr><td><b>Klient / firma końcowa</b></td><td>Klient instytucji szkoleniowej. Firma, dla której składany jest wniosek. Osobna encja od wniosku</td></tr>
+        <tr><td><b>Uczestnik</b></td><td>Pracownik firmy końcowej idący na szkolenie</td></tr>
+        <tr><td><b>Wniosek / Projekt</b></td><td>Pojedynczy wniosek o dofinansowanie. <b>Jeden projekt = jeden wniosek</b>. Jeden klient ma wiele wniosków</td></tr>
+        <tr><td><b>Katalog szkoleń</b></td><td>Zbiór <b>szablonów</b> szkoleń danej instytucji. Cena zmienna w czasie</td></tr>
+        <tr><td><b>Termin szkolenia</b></td><td>Konkretna <b>realizacja</b> szkolenia z katalogu. Jeden szablon może być zrealizowany 50 razy w roku</td></tr>
+        <tr><td><b>Plan szkolenia</b></td><td>Zestaw parametrów dodawany przez instytucję, np. tryb wieczorowy</td></tr>
+        <tr><td><b>Standard</b></td><td>Powtarzalny wzorzec godzin i dni szkolenia danej instytucji, np. 9:30-20:00, śr/czw/pt</td></tr>
+        <tr><td><b>Konfigurator instytucji</b></td><td>Moduł z danymi firmy, warunkami prowizji, wzorem certyfikatu. <b>Widoczny wyłącznie dla admina</b></td></tr>
+        <tr><td><b>Zgłoszenia</b></td><td>Moduł wewnętrznej bazy incydentów (oszustwa, próby zaniżenia prowizji). Tylko admin i pracownicy LDIT</td></tr>
+        <tr><td><b>Rejestr aktywności</b></td><td>Log zmian danych: kto, kiedy, wartość przed i po</td></tr>
+        <tr><td><b>Log logowań</b></td><td>Log sesji: kto i kiedy zalogował się do systemu</td></tr>
+        <tr><td><b>Reguła (na polu)</b></td><td>Automatyczne wyliczanie wartości. Kasowane po ręcznej edycji, z możliwością przywrócenia</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Nazewnictwo: nazwa techniczna kontra nazwa dla użytkownika</h2>
+  <p>Klient zażądał zachowania obecnych nazw <span class="ref">D-55</span>. Ta tabela zapobiega rozjazdowi.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>W dokumentacji / kodzie</th><th>Dla użytkownika (etykieta w UI)</th></tr></thead>
+      <tbody>
+        <tr><td>Dofinansowania (moduł roczny)</td><td><b>Zestawienia</b> (2025 / 2026 / 2027)</td></tr>
+        <tr><td>Dofinansowania (wybór instytucji)</td><td><b>Dofinansowania</b> (rozwija listę IS)</td></tr>
+        <tr><td>Wnioski</td><td><b>Nabory</b></td></tr>
+        <tr><td>Wniosek</td><td><b>Projekt</b></td></tr>
+        <tr><td>Baza uczestników i leadów</td><td><b>Baza klientów</b> (dziś w Excelu: „Niezłożone”)</td></tr>
+        <tr><td>Zestawienie złożonych wniosków</td><td><b>Zestawienie [rok] złożone</b></td></tr>
+        <tr><td>Panel finansowy administratora</td><td><b>Administracja</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Nazwy wymagające zmiany</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Obecna</th><th>Problem</th></tr></thead>
+      <tbody>
+        <tr><td><code>NW</code> (status)</td><td>Rozwinięcie skrótu zapomniane przez samego klienta. Znaczenie: umówione z klientem, że piszemy wniosek, ale sprawa stoi</td></tr>
+        <tr><td><code>Niezłożone</code> (zakładka)</td><td>Myląca, zawiera też klientów ze złożonymi wnioskami. Klient proponuje „Baza klientów”</td></tr>
+        <tr><td><code>koszt całkowity</code> (pole)</td><td>Myli się z całkowitą wartością szkolenia. Rekomendacja: „Koszt uznany przez urząd”</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Podmioty i osoby</h2>
+
+  <h3>Strony projektu</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Nazwa</th><th>Rola</th></tr></thead>
+      <tbody>
+        <tr><td><b>LDIT</b></td><td>Firma Bartłomieja Olejnika. Klient projektu. Pozyskuje dofinansowania</td></tr>
+        <tr><td><b>Bartłomiej Olejnik (Bartek)</b></td><td>Właściciel LDIT, administrator systemu</td></tr>
+        <tr><td><b>Odczaruj Low Code</b></td><td>Wykonawca</td></tr>
+        <tr><td><b>Paweł Czapiewski</b></td><td>Wykonawca. Jednocześnie właściciel instytucji szkoleniowej „Odczaruj Power BI”</td></tr>
+        <tr><td><b>Kacper Fułek</b></td><td>Zespół wykonawcy, obecny w części warsztatu</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Zespół LDIT (wymienieni w warsztacie)</h3>
+  <p>Łucja, Martyna, Asia, Magda, Łucjan. Pracownicy obsługujący klientów i instytucje.</p>
+
+  <h3>Instytucje szkoleniowe (przykłady z warsztatu)</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Nazwa</th><th>Kontekst</th></tr></thead>
+      <tbody>
+        <tr><td><b>Metal Maniak</b></td><td>Model operacyjny A: LDIT ma kalendarz IS i sam ustala terminy</td></tr>
+        <tr><td><b>Dron Fortech</b></td><td>Model operacyjny B: IS ustala termin telefonicznie i powiadamia mailem</td></tr>
+        <tr><td><b>Odczaruj Power BI</b></td><td>Firma wykonawcy jako IS. Stawka „prawie 20%”</td></tr>
+        <tr><td><b>Fit Akademia</b></td><td>Źródło modelu prowizyjnego C (18/14%, próg 100 000 zł miesięcznie)</td></tr>
+        <tr><td><b>Cognity, Akademia, Klik-less</b></td><td>Podmioty w makiecie</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Narzędzia</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Nazwa</th><th>Kontekst</th></tr></thead>
+      <tbody>
+        <tr><td><b>Excel</b></td><td>Obecne narzędzie pracy. Trzy pliki: <code>Zestawienie [rok] złożone</code>, <code>Niezłożone</code>, <code>Rozpis szkoleń</code></td></tr>
+        <tr><td><b>Microsoft 365</b></td><td>Środowisko klienta. Podstawa integracji poczty</td></tr>
+        <tr><td><b>Outlook</b></td><td>Klient poczty. Integracja kalendarza <b>wykluczona</b></td></tr>
+        <tr><td><b>OneDrive / SharePoint</b></td><td>Repozytorium plików. <b>Zostaje poza systemem</b></td></tr>
+        <tr><td><b>Projectly</b></td><td>Druga aplikacja wykonawcy. Docelowe miejsce na zadania</td></tr>
+        <tr><td><b>Zoho CRM</b></td><td>System wykonawcy, demonstrowany na warsztacie jako wzorzec integracji poczty</td></tr>
+        <tr><td><b>Fakturownia</b></td><td>Poprzedni system fakturowy klienta</td></tr>
+        <tr><td><b>inFakt</b></td><td>System fakturowy wykonawcy, referencja dla eksportu</td></tr>
+        <tr><td><b>eSzokBR</b></td><td>System księgowy klienta. W transkrypcji zniekształcany do „e shock”, „br shock”</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Skróty używane w dokumentacji</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Skrót</th><th>Znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref">D-xx</span></td><td>Decyzja z <a href="13-decyzje.html" onclick="if(parent!==window){parent.docNav('13-decyzje');return false}">13. Rejestru decyzji</a></td></tr>
+        <tr><td><span class="ref p">P-xx</span></td><td>Pytanie otwarte z sekcji <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">Pytania otwarte i ryzyka</a></td></tr>
+        <tr><td><span class="ref r">R-xx</span></td><td>Ryzyko z sekcji <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">Pytania otwarte i ryzyka</a></td></tr>
+        <tr><td><b>[K]</b></td><td>Decyzja klienta (potrzeba biznesowa)</td></tr>
+        <tr><td><b>[W]</b></td><td>Propozycja wykonawcy (rozwiązanie)</td></tr>
+        <tr><td><b>IS</b></td><td>Instytucja szkoleniowa</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Uwaga o jakości transkrypcji</h2>
+  <p>
+    Transkrypcja warsztatu jest automatyczna (Teams) i zawiera liczne błędy rozpoznawania mowy.
+    Typowe zniekształcenia napotkane w materiale:
+  </p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>W transkrypcji</th><th>Właściwe znaczenie</th></tr></thead>
+      <tbody>
+        <tr><td>„intencja szkoleniowa”, „inicjacja szkoleniowa”</td><td>instytucja szkoleniowa</td></tr>
+        <tr><td>„kfc”</td><td>KFS</td></tr>
+        <tr><td>„jertu days”</td><td>YTD</td></tr>
+        <tr><td>„dasz bort”, „deszporcie”</td><td>dashboard</td></tr>
+        <tr><td>„podłoga”</td><td>podkreślnik (underscore) w nazwie pliku</td></tr>
+        <tr><td>„project i”</td><td>Projectly</td></tr>
+        <tr><td>„odczaruj BRBI”</td><td>Odczaruj Power BI</td></tr>
+        <tr><td>„klik le spółka”</td><td>Klik-less sp. z o.o.</td></tr>
+        <tr><td>„pewne plecak”</td><td>praca.gov.pl</td></tr>
+        <tr><td>„stron fortech”, „dron forte”</td><td>Dron Fortech</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Cytaty w dokumentacji zachowano dosłownie. Interpretacje oznaczono nawiasami kwadratowymi.</p>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/16-slownik.md">16-slownik.md</a>.
+  </div>
+
+</div>
+</body>
+</html>

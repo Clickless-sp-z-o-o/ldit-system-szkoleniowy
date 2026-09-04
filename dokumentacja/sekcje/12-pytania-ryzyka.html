@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Pytania otwarte i ryzyka</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Rejestry</div>
+    <h1 class="doc-title">Pytania otwarte i ryzyka</h1>
+    <p class="doc-lead">
+      Dwa rejestry z jednego warsztatu. 54 pytania otwarte uporządkowane wg pilności, w tym 4 blokady,
+      bez których odpowiedni moduł nie może zostać zaprojektowany. Obok tego 24 ryzyka projektowe
+      z oceną wpływu i prawdopodobieństwa oraz proponowaną mitygacją. To lista rzeczy, które trzeba
+      domknąć albo świadomie zaakceptować przed rozpoczęciem prac.
+    </p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k-label">Pytania otwarte</div><div class="k-value">54</div><div class="k-foot">w tym 4 blokady</div></div>
+    <div class="kpi"><div class="k-label">Ryzyka</div><div class="k-value">24</div><div class="k-foot">4 krytyczne, 8 wysokich</div></div>
+    <div class="kpi"><div class="k-label">Blokady</div><div class="k-value">4</div><div class="k-foot">P-01, P-02, P-09, P-25</div></div>
+    <div class="kpi"><div class="k-label">Ryzyka krytyczne</div><div class="k-value">4</div><div class="k-foot">priorytet 16&ndash;25</div></div>
+  </div>
+
+  <h2>Pytania otwarte</h2>
+  <p>
+    Uporządkowane wg pilności. <b>Blokady</b> to pytania, bez których odpowiedni moduł nie może zostać
+    zaprojektowany.
+  </p>
+
+  <h3>Blokady (wymagają odpowiedzi przed projektowaniem)</h3>
+  <div class="callout danger">
+    <span class="ct">Cztery pytania blokujące projektowanie</span>
+    Bez rozstrzygnięcia tych czterech pytań odpowiednie moduły nie mogą zostać zaprojektowane.
+    Trzy odpowiadają po stronie klienta, jedno to decyzja techniczna wykonawcy.
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Pytanie</th><th>Blokuje</th><th>Odpowiada</th><th>Pilność</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref p">P-01</span></td><td>Konflikt reguły okresu rozliczeniowego prowizji (data faktury kontra prognoza z kalendarza)</td><td>silnik prowizji, najtrudniejszy element projektu</td><td>klient</td><td>przed prototypem konfiguratora</td></tr>
+        <tr><td><span class="ref p">P-02</span></td><td>Progi i stawki prowizji wewnętrznej dla pracowników</td><td>cały moduł prowizji pracowniczych</td><td>klient</td><td>wysoka</td></tr>
+        <tr><td><span class="ref p">P-09</span></td><td>Czy system księgowy udostępnia eksport CSV</td><td>cały moduł faktur</td><td>klient</td><td>wysoka</td></tr>
+        <tr><td><span class="ref p">P-25</span></td><td>Architektura danych: osobne bazy czy jedna z separacją wierszy</td><td>projekt bazy danych, fundament całego systemu</td><td>wykonawca (decyzja techniczna)</td><td>przed implementacją</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref p">P-01</span> Konflikt reguły okresu rozliczeniowego prowizji</h3>
+    <p><b>Blokuje:</b> silnik prowizji, czyli najtrudniejszy element projektu.</p>
+    <p>
+      Klient najpierw ustalił jednoznacznie: okresem rozliczeniowym jest <b>data wystawienia faktury</b>
+      (22:21). Pięć minut później pokazał, że w praktyce prognozuje próg z kalendarza szkoleń (25:55),
+      i sam wskazał problem: „ma szkolenie w październiku, a wystawiliśmy to w sierpniu” (26:10).
+    </p>
+    <p>
+      <b>Propozycja rozstrzygnięcia</b> (opisana w Silniku prowizji): rozdzielić prowizję rzeczywistą
+      (data faktury) od przewidywanej (data planowana). Oba widoki liczone tym samym silnikiem.
+    </p>
+    <p><b>Odpowiada:</b> klient. <b>Pilność:</b> przed prototypem konfiguratora.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref p">P-02</span> Progi i stawki prowizji wewnętrznej dla pracowników</h3>
+    <p><b>Blokuje:</b> cały moduł prowizji pracowniczych.</p>
+    <div class="q">
+      „No i właśnie to jest problem, bo na tym się jeszcze nie zastanawiałem nawet.”
+      <span class="who">Bartek, warsztat 25.08.2026, 57:13</span>
+    </div>
+    <div class="q">
+      „Właściwie mogę to wymyśleć teraz, w najbliższych dniach.”
+      <span class="who">Bartek, warsztat 25.08.2026, 57:38</span>
+    </div>
+    <p>Klient zadeklarował dostarczenie „w najbliższych dniach”. <b>Nie dostarczono w ramach warsztatu.</b></p>
+    <p><b>Odpowiada:</b> klient. <b>Pilność:</b> wysoka.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref p">P-09</span> Czy system księgowy udostępnia eksport CSV</h3>
+    <p><b>Blokuje:</b> cały moduł faktur.</p>
+    <p>Klient miał zadzwonić do księgowej w przerwie warsztatu. Odpowiedź nie padła w transkrypcji.</p>
+    <p>
+      System księgowy klienta to <b>eSzokBR</b> (nazwa z dokumentu klienta, w transkrypcji zniekształcona
+      do „e shock” i „br shock”).
+    </p>
+    <p>
+      Jeśli eksport nie istnieje, decyzja „import zamiast integracji API” upada i trzeba wrócić do wyceny
+      integracji (10&ndash;15 h).
+    </p>
+    <p><b>Odpowiada:</b> klient. <b>Pilność:</b> wysoka.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref p">P-25</span> Architektura danych: osobne bazy czy jedna z separacją wierszy</h3>
+    <p><b>Blokuje:</b> projekt bazy danych, czyli fundament całego systemu.</p>
+    <p>
+      Wykonawca dwukrotnie sygnalizował „osobne bazy pod spodem” (2:20:19, 3:12:16). To stoi w sprzeczności
+      z sześcioma wymaganiami klienta (zbiorcze zestawienie, ciągła numeracja klientów, dashboard,
+      zestawienia roczne, wyszukiwarka globalna, ten sam klient u różnych IS).
+    </p>
+    <p>
+      <b>Rekomendacja</b> w Integracjach i architekturze: jedna baza z egzekwowaną separacją na poziomie
+      wierszy.
+    </p>
+    <p><b>Odpowiada:</b> wykonawca (decyzja techniczna). <b>Pilność:</b> przed implementacją.</p>
+  </div>
+
+  <h3>Model finansowy i prowizje</h3>
+  <details class="acc">
+    <summary>12 pytań otwartych o model finansowy i prowizje</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-03</span> <b>Czy wniosek z nadpisaną stawką wlicza się do progów.</b>
+        Nie ustalono, czy wartość wniosku rozliczanego indywidualnie (np. 15% zamiast 20%) wlicza się
+        do sumy narastającej wypełniającej progi pozostałych wniosków tej instytucji. Ma bezpośredni
+        wpływ na testy jednostkowe silnika prowizji.</p>
+      <p><span class="ref p">P-04</span> <b>Faktury niechronologiczne i korekty.</b>
+        Ustalono, że kolejność wystawiania faktur ma znaczenie dla wypełniania progów (33:45), ale nie
+        ustalono reguły dla faktur wystawianych poza kolejnością ani dla korekt faktur.</p>
+      <p><span class="ref p">P-05</span> <b>Prowizja od dopłaty dodatkowej.</b>
+        Klient chce prowizji od dopłaty <b>tylko gdy figuruje ona na wspólnej fakturze KFS</b>. Sprzedaż
+        komercyjna instytucji nie generuje prowizji. Wątek urwany, obie strony zmęczone. Pytanie
+        wykonawcy bez odpowiedzi:</p>
+      <div class="q">
+        „Skąd bierzesz tę wartość 10000 jako dopłata?”
+        <span class="who">Paweł, warsztat 25.08.2026, 2:33:12</span>
+      </div>
+      <p><span class="ref p">P-06</span> <b>Kto może nadpisać prowizję per wniosek.</b>
+        Wykonawca zapytał: „Tylko ty możesz to zmienić czy pracownik twój też? I z poziomu admina,
+        czy z poziomu wniosków?” Klient odpowiedział „Administracja”, czyli tylko na drugą część pytania.
+        <b>Uprawnienie pozostaje nieokreślone.</b></p>
+      <p><span class="ref p">P-07</span> <b>Wymiar prezentacji prowizji.</b>
+        Per uczestnik, per firma czy per wniosek. Pytanie wykonawcy (2:51:05) bez precyzyjnej odpowiedzi.
+        Kontekst wskazuje na <b>per wniosek</b>, bo prowizja jest podstawą fakturowania.</p>
+      <p><span class="ref p">P-13</span> <b>Nazwa pola „koszt całkowity”.</b>
+        Klient zakwestionował nazwę (2:06:02), proponował „dofinansowanie ze wkładem własnym”. Nie ustalono.
+        <b>Rekomendacja:</b> „Koszt uznany przez urząd”.</p>
+      <p><span class="ref p">P-14</span> <b>Od jakiej podstawy liczy się wkład własny.</b>
+        W przykładzie z warsztatu „dopłata standard” została policzona od 200 000 (wartość wnioskowana),
+        a „przyznano” od 180 000 (koszt uznany). Nie ustalono, która podstawa jest właściwa.</p>
+      <p><span class="ref p">P-30</span> <b>Czy „Przyznano” ma być całkowicie nieedytowalne.</b>
+        Dokument klienta sprzed warsztatu zakładał ręczne nadpisanie z wyłączeniem reguły. Wykonawca na
+        warsztacie zadeklarował „przyznano nie edytuję” (2:00:52), klient nie zaprotestował, ale też nie
+        potwierdził wprost. Sprzeczne z zasadą ogólną z <span class="ref">D-19</span> (każda wyliczana
+        wartość edytowalna, reguła kasowana i przywracalna).</p>
+      <p><span class="ref p">P-31</span> <b>Ile jest wariantów modeli prowizyjnych łącznie.</b>
+        Wykonawca pytał wprost dwukrotnie (33:45, 38:48). Klient podał cztery modele plus negocjacje
+        indywidualne, ale sam przyznał: „tych przypadków jest przeróżnie” (35:32).
+        <b>Brak potwierdzenia, że zestaw jest kompletny.</b></p>
+      <p><span class="ref p">P-32</span> <b>Trzeci próg skali rocznej.</b>
+        Klient wspomniał, że powyżej miliona jest kolejny próg (31:23), ale nie podał stawki. W przykładach
+        użyto roboczo 10%. Arkusz <code>Prowizja liczenie.xlsx</code> zawiera dwa różne warianty.
+        <b>Wymaga potwierdzenia z umowy.</b></p>
+      <p><span class="ref p">P-51</span> <b>Reguły zaokrąglania kwot.</b>
+        Nie ustalone na warsztacie. Wskaźniki 0,9 i 0,7 dają wartości niecałkowite, a system ma pilnować
+        równania <code>przyznano + wkład własny = koszt całkowity</code>. Bez ustalonych reguł równanie
+        będzie się rozjeżdżać o grosze. Propozycja w Modelu finansowym KFS: typ dziesiętny
+        stałoprzecinkowy, zaokrąglanie matematyczne do 2 miejsc, wkład własny liczony jako reszta.
+        <b>Do potwierdzenia:</b> czy urząd stosuje własne zaokrąglenia, które mogą się różnić od
+        systemowych.</p>
+      <p><span class="ref p">P-53</span> <b>Konflikt: wkład własny wyliczany czy wpisywany ręcznie.</b>
+        Dwie decyzje TWARDE stoją w sprzeczności: <span class="ref">D-59</span> (wynika z wielkości
+        przedsiębiorstwa, przechowywany procentowo) i <span class="ref">D-80</span> (wpisywany ręcznie).
+        Propozycja pogodzenia w Modelu finansowym KFS: procent wyliczany jako domyślny, kwota nadpisywalna
+        ręcznie zgodnie z zasadą <span class="ref">D-19</span>.</p>
+      <p><span class="ref p">P-15</span> <b>Metryka celów i premii.</b>
+        Klient chce widoku celów i historii ich realizacji, ale nie zdefiniował ani jednostki celu
+        (kwota wniosków? liczba wniosków? przychód?), ani okresu rozliczeniowego.</p>
+    </div>
+  </details>
+
+  <h3>Zakres i uprawnienia</h3>
+  <details class="acc">
+    <summary>7 pytań otwartych o zakres i uprawnienia</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-12</span> <b>Jakie dane statystyczne widzi instytucja szkoleniowa.</b>
+        <b>Klient odroczył decyzję wprost.</b></p>
+      <div class="q">
+        „Dobra, ja będę musiał się nad tym zastanowić, czy chcę takie szczegóły.”
+        <span class="who">Bartek, warsztat 25.08.2026, 2:54:45</span>
+      </div>
+      <p>Sporne konkretnie: liczba i daty wpłynięcia formularzy, rozbicie per handlowiec. Wykonawca
+        (jako instytucja szkoleniowa) potrzebuje tego do rozliczania własnego handlowca. To jest
+        <b>konflikt interesów klienta i wykonawcy</b>, opisany w rejestrze ryzyk.</p>
+      <p><span class="ref p">P-33</span> <b>Czy panel klienta końcowego wchodzi do etapu I.</b>
+        Klient wątpi w użyteczność, wykonawca deklaruje potrzebę i współfinansowanie. Nic nie zostało
+        zapisane jako decyzja.</p>
+      <p><span class="ref p">P-34</span> <b>Czy instytucja zobaczy widok „Niezłożone” z nadchodzącymi
+        naborami.</b> Wykonawca stwierdził, że „instytucja szkoleniowa też powinna to widzieć” (2:49:01).
+        Klient nie potwierdził i przekierował rozmowę.</p>
+      <p><span class="ref p">P-35</span> <b>Czy pracownik LDIT ma dostęp do danych finansowych.</b></p>
+      <div class="q">
+        „na razie tylko zostaje [dla] admina, no ale docelowo...”
+        <span class="who">Bartek, warsztat 25.08.2026, 58:02</span>
+      </div>
+      <p>Zdanie urwane.</p>
+      <p><span class="ref p">P-10</span> <b>Czy zostaje kalendarz terminów szkoleń w systemie.</b>
+        Wykluczono zadania i integrację Outlook, ale <b>nie potwierdzono wprost</b>, czy zostaje jakikolwiek
+        kalendarz terminów wewnątrz systemu. Z wcześniejszej części warsztatu i dokumentacji
+        przedwarsztatowej wynika, że powinien.</p>
+      <p><span class="ref p">P-08</span> <b>Zbiorcze zestawienie: dashboard czy widok operacyjny.</b>
+        Klient powiedział, że zbiorczy widok wszystkich instytucji ma być tylko na dashboardzie
+        („po co wyświetlać 2 razy”), ale wcześniej opisywał go jako widok operacyjny do masowej zmiany
+        statusów po filtrze PUP. Dashboard ma być „tylko statystyki, żadnej rozpiski klientów”.
+        <b>Te dwa wymagania się wykluczają.</b></p>
+      <p><span class="ref p">P-36</span> <b>Czy MCP wchodzi w zakres.</b>
+        Dokumentacja przedwarsztatowa przewidywała serwery MCP zamiast publicznego API, z uprawnieniami
+        dziedziczonymi po użytkowniku. <b>Warsztat w ogóle tego nie poruszył.</b></p>
+      <p><span class="ref p">P-37</span> <b>Czy zakładka Zadania jest natywna czy to okno na Projectly.</b>
+        Decyzja <span class="ref">D-118</span> wyklucza zadania z systemu, ale nie ustalono formy dostępu
+        do Projectly. Klient pytał wprost (2:39:13), odpowiedź brzmiała „Tak, tak, tak” bez określenia
+        mechanizmu.</p>
+    </div>
+  </details>
+
+  <h3>Integracje i dane</h3>
+  <details class="acc">
+    <summary>6 pytań otwartych o integracje i dane</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-20</span> <b>Dokładny zakres integrowanych skrzynek pocztowych.</b>
+        Wypowiedź klienta jest niepełna: „zrobimy klientów wszystkie skrzynki, a [instytucji]
+        szkoleniowych tylko [wybrane]” (1:35:32). Trzeba potwierdzić: czy skrzynka właściciela jest
+        wyłączona całkowicie czy częściowo, i z których skrzynek zaciągana jest korespondencja
+        z instytucjami. <b>Wpływa na konfigurację uprawnień aplikacji Microsoft 365.</b></p>
+      <p><span class="ref p">P-21</span> <b>Mechanizm powiązania maila z klientem.</b>
+        Przyjęto obejście procesowe (nazwa klienta w temacie). Nie ustalono rozwiązania systemowego.
+        <b>Rekomendacja:</b> dopasowanie po adresie e-mail jako mechanizm podstawowy, konwencja tematu
+        jako uzupełnienie.</p>
+      <p><span class="ref p">P-22</span> <b>Czy załączniki z maili są wiązane automatycznie.</b>
+        Klient mówi o ręcznym przeciąganiu (1:28:06). Brak decyzji o automatyzacji.</p>
+      <p><span class="ref p">P-23</span> <b>Skąd pochodzi lista szkoleń w formularzu.</b>
+        Z katalogu w systemie czy konfigurowana przez instytucję.</p>
+      <div class="q">
+        „albo zrobimy im listę, albo się to będzie pobierało od nas z systemu, już mniejsza.”
+        <span class="who">Paweł, warsztat 25.08.2026, 2:28:22</span>
+      </div>
+      <p><span class="ref p">P-24</span> <b>Technologia formularza zgłoszeniowego.</b>
+        Google Forms z arkuszem czy formularz natywny. Wykonawca sam się wycofał z Google Sheets,
+        nie doprecyzował alternatywy. <b>Rekomendacja</b> w Integracjach: formularz natywny, ze względu
+        na RODO (PESEL), utrzymanie 20 kopii i integrację z katalogiem szkoleń.</p>
+      <p><span class="ref p">P-38</span> <b>Częstotliwość synchronizacji formularza.</b>
+        „Co godzinę” zostało podane jako przykład („nie wiem, co godzinę”), nie jako ustalenie.
+        Przy formularzu natywnym pytanie znika.</p>
+      <p><span class="ref p">P-39</span> <b>Kto wypełnia formularz: klient końcowy czy handlowiec.</b>
+        Wybrano wstępnie wariant klienta końcowego, ale wariant alternatywny nie został formalnie
+        odrzucony. Klient dopuszczał: „w sumie chyba nawet może handlowiec wpisywać dane klienta”
+        (2:15:32).</p>
+    </div>
+  </details>
+
+  <h3>Certyfikaty i dokumenty</h3>
+  <details class="acc">
+    <summary>4 pytania otwarte o certyfikaty i dokumenty</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-18</span> <b>Czy faktura w paczce ZIP jest generowana przez system.</b>
+        Klient powiedział „pewnie z fakturą” bez doprecyzowania źródła.</p>
+      <p><span class="ref p">P-19</span> <b>Kto wgrywa wzór certyfikatu i w jakim formacie.</b>
+        Admin czy sama instytucja. Format: Word, PDF, HTML. Nie ustalono.</p>
+      <p><span class="ref p">P-40</span> <b>Reguła numeracji certyfikatów.</b></p>
+      <div class="q">
+        „ewentualny numer certyfikatu, jeżeli będzie wymagany.”
+        <span class="who">Bartek, warsztat 25.08.2026, 2:56:46</span>
+      </div>
+      <p>Brak reguły.</p>
+      <p><span class="ref p">P-16</span> <b>Szablony mailowe dla IS: eksport pliku czy link mailto.</b>
+        Wykonawca użył obu sformułowań. Mechanizm niedoprecyzowany.</p>
+    </div>
+  </details>
+
+  <h3>Bezpieczeństwo i RODO</h3>
+  <details class="acc">
+    <summary>4 pytania otwarte o bezpieczeństwo i RODO</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-26</span> <b>Retencja danych osobowych.</b>
+        Pytanie z dokumentacji przedwarsztatowej pozostało bez odpowiedzi. Nie ustalono:</p>
+      <ul>
+        <li>jak długo przechowywana jest zaimportowana korespondencja</li>
+        <li>co dzieje się z danymi uczestników po rozliczeniu szkolenia</li>
+        <li>czy starsze roczniki są archiwizowane z ograniczeniem dostępu</li>
+      </ul>
+      <p><b>Musi zostać domknięte przed wdrożeniem produkcyjnym</b>, bo wpływa na model danych.</p>
+      <p><span class="ref p">P-27</span> <b>Zewnętrzny audyt bezpieczeństwa.</b>
+        Dokumentacja przedwarsztatowa: „rozważane jest zlecenie zewnętrznego audytu firmie, która przejmuje
+        część odpowiedzialności. Temat do domknięcia przed startem prac.” <b>Warsztat nie wrócił do tego
+        tematu.</b></p>
+      <p><span class="ref p">P-41</span> <b>Czy ten sam uczestnik może być obsługiwany przez dwie
+        instytucje.</b> Pytanie z dokumentacji przedwarsztatowej, nierozstrzygnięte. Ma wpływ na model
+        danych i separację.</p>
+      <p><span class="ref p">P-54</span> <b>Zakres zdarzeń w logu akcji (kliknięć).</b>
+        Klient określił, że logi mają obejmować „wszystkie akcje”, w tym kliknięcia
+        <span class="ref">D-122</span>. Do doprecyzowania <b>lista zdarzeń</b>, które faktycznie trafiają
+        do logu akcji. Logowanie dosłownie każdego kliknięcia generuje ogromny wolumen i szum, więc
+        rekomendacja wykonawcy to lista istotnych akcji (otwarcie karty, eksport, wejście w moduł finansowy,
+        uruchomienie wysyłki), a nie każde zdarzenie interfejsu. Ma wpływ na wolumen danych i retencję
+        <span class="ref p">P-26</span>.</p>
+    </div>
+  </details>
+
+  <h3>Proces i nazewnictwo</h3>
+  <details class="acc">
+    <summary>8 pytań otwartych o proces i nazewnictwo</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-11</span> <b>Docelowa nazwa statusu „NW”.</b>
+        Klient wprost: „to nazwa do zmienienia”. Rozwinięcie skrótu zostało zapomniane.</p>
+      <p><span class="ref p">P-42</span> <b>Sposób prezentacji dwóch statusów.</b>
+        Ustalono, że dziś są dwa niezależne statusy. Nie ustalono, czy w systemie zostaną dwa pola,
+        czy jeden łańcuch.</p>
+      <p><span class="ref p">P-43</span> <b>Pełna lista kolumn widoku wniosku.</b>
+        Klient odesłał do swojego dokumentu Word: „ciężko mi teraz powiedzieć” (1:42:39). Nie przeszli
+        przez listę na warsztacie.</p>
+      <p><span class="ref p">P-44</span> <b>Priorytety na widoku klienta.</b>
+        Wykonawca zapytał „w jakiej kolejności, co jest dla ciebie najważniejsze na tym widoku” (1:42:25)
+        i nie dostał odpowiedzi.</p>
+      <p><span class="ref p">P-45</span> <b>Czy edycja planu szkolenia wymaga akceptacji czy tylko
+        powiadomienia.</b> Wykonawca użył obu sformułowań w jednym zdaniu (1:24:43).</p>
+      <p><span class="ref p">P-46</span> <b>Jak modelować szkolenie komercyjne dla osoby
+        niekwalifikowanej.</b> Odrębna faktura poza projektem. Czy system ma to rejestrować, czy pozostaje
+        poza jego zakresem.</p>
+      <p><span class="ref p">P-52</span> <b>Forma alertu z praca.gov.pl.</b>
+        Klient opisał alert automatyczny wyzwalany mailem z portalu, ale <b>sam nie rozstrzygnął
+        formy</b>.</p>
+      <div class="q">
+        „Chciałbym, żeby alert był jako zadanie? Wykrzyknik przy Kliencie? Do przemyślenia jak zrobić
+        to najlepiej.”
+        <span class="who">Klient, warsztat 25.08.2026</span>
+      </div>
+      <p>Warianty: zadanie, znacznik przy kliencie, wpis w kolejce do obsłużenia. Warsztat tego wątku
+        nie podjął. Komplikacja: zadania zostały wykluczone z systemu <span class="ref">D-118</span>,
+        więc wariant „jako zadanie” wymagałby integracji z Projectly.</p>
+      <p><span class="ref p">P-17</span> <b>Czy SMS zostaje dla samych uczestników.</b>
+        Wykonawca zaproponował (9:51), klient nie odpowiedział wprost, zszedł na inny wątek.
+        Nierozstrzygnięte także, kto ponosiłby koszt.</p>
+    </div>
+  </details>
+
+  <h3>Handlowe i formalne</h3>
+  <details class="acc">
+    <summary>6 pytań otwartych, handlowych i formalnych</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-28</span> <b>Wycena: jednostka, waluta, interpretacja.</b>
+        Widełki „12, 18” podano bez jednostki. Interpretacja „tysiące PLN” wynika z kontekstu.
+        Wypowiedź klienta „piętnastej nie przekroczyli” prawdopodobnie oznacza kwotę 15 tys., ale
+        interpretacja jako daty nie została wykluczona.</p>
+      <p><span class="ref p">P-29</span> <b>Brak ustaleń formalnych.</b>
+        Warsztat nie poruszył: formy umowy, warunków płatności (poza sugestią rat), gwarancji, utrzymania
+        i wsparcia, SLA, własności kodu.</p>
+      <p><span class="ref p">P-47</span> <b>Migracja danych historycznych z Excela.</b>
+        Nie poruszone. Rozdzielenie encji Klient od Wniosku oznacza, że dane nie przeniosą się
+        mechanicznie.</p>
+      <p><span class="ref p">P-48</span> <b>Kalkulacja kosztów hostingu w wariantach skali.</b>
+        Wykonawca odroczył na warsztacie: „zostawiamy to jako coś do przeanalizowania i później podejmiemy
+        decyzję” (5:26). Klient warunkuje tym zgodę na panel klienta i inne rozszerzenia.</p>
+      <p><span class="ref p">P-49</span> <b>Czy da się realnie podzielić projekt na moduły.</b>
+        Klient wątpi („wszystko razem ze sobą będzie współgrało”), wykonawca deklaruje że moduły
+        „na pewno” będą. Sposób podziału do rozpisania w wycenie.</p>
+      <p><span class="ref p">P-50</span> <b>Termin kolejnego spotkania.</b>
+        Nie ustalono daty, tylko sekwencję (po makiecie, w tym tygodniu).</p>
+    </div>
+  </details>
+
+  <h3>Podsumowanie pytań</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Kategoria</th><th class="num">Liczba pytań</th></tr></thead>
+      <tbody>
+        <tr><td><b>Blokady</b></td><td class="num">4</td></tr>
+        <tr><td>Model finansowy i prowizje</td><td class="num">12</td></tr>
+        <tr><td>Zakres i uprawnienia</td><td class="num">7</td></tr>
+        <tr><td>Integracje i dane</td><td class="num">6</td></tr>
+        <tr><td>Certyfikaty i dokumenty</td><td class="num">4</td></tr>
+        <tr><td>Bezpieczeństwo i RODO</td><td class="num">4</td></tr>
+        <tr><td>Proces i nazewnictwo</td><td class="num">8</td></tr>
+        <tr><td>Handlowe i formalne</td><td class="num">6</td></tr>
+        <tr><td><b>Razem</b></td><td class="num"><b>54</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <span class="ct">Uwaga procesowa</span>
+    Wykonawca zadeklarował po warsztacie: „myślę, że po dzisiejszym warsztacie to ja już nie będę musiał
+    się do ciebie za dużo odzywać.” (Paweł, 2:57:33). Przy 53 otwartych pytaniach, w tym 4 blokadach,
+    to założenie jest zbyt optymistyczne. Patrz rejestr ryzyk poniżej.
+  </div>
+
+  <h2>Ryzyka</h2>
+  <p>Ocena: <b>W</b> wpływ, <b>P</b> prawdopodobieństwo, skala 1&ndash;5. Priorytet = W x P.</p>
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Ryzyko</th><th class="c">W</th><th class="c">P</th><th class="num">Priorytet</th><th>Poziom</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref r">R-01</span></td><td>Silnik prowizji jest niedospecyfikowany, a stanowi rdzeń wartości systemu</td><td class="c">5</td><td class="c">4</td><td class="num">20</td><td>krytyczny</td></tr>
+        <tr><td><span class="ref r">R-02</span></td><td>Rozjazd oczekiwań cenowych i zakresowych</td><td class="c">5</td><td class="c">4</td><td class="num">20</td><td>krytyczny</td></tr>
+        <tr><td><span class="ref r">R-03</span></td><td>Napięcie architektoniczne: separacja danych kontra widok zbiorczy</td><td class="c">5</td><td class="c">4</td><td class="num">20</td><td>krytyczny</td></tr>
+        <tr><td><span class="ref r">R-04</span></td><td>Ryzyko wycieku danych między konkurencyjnymi instytucjami</td><td class="c">5</td><td class="c">3</td><td class="num">15</td><td>krytyczny (skutek nieodwracalny)</td></tr>
+        <tr><td><span class="ref r">R-05</span></td><td>Termin 2 miesiące przy zapowiedzianym trybie ciągłych zmian</td><td class="c">5</td><td class="c">3</td><td class="num">15</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-06</span></td><td>Konflikt interesów: klient chce systemu „dla siebie”, wykonawca jest też użytkownikiem</td><td class="c">4</td><td class="c">4</td><td class="num">16</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-07</span></td><td>Powiązanie maila z klientem opiera się na dyscyplinie ludzi</td><td class="c">4</td><td class="c">4</td><td class="num">16</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-08</span></td><td>Cały moduł faktur zależy od niepotwierdzonego założenia</td><td class="c">4</td><td class="c">3</td><td class="num">12</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-09</span></td><td>Wymagania klienta pisane strumieniem świadomości</td><td class="c">4</td><td class="c">4</td><td class="num">16</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-10</span></td><td>Konfigurator ról jako niedoszacowana zmiana zakresu</td><td class="c">4</td><td class="c">3</td><td class="num">12</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-11</span></td><td>Deklaracja „wszystko w jednym systemie” kontra realne wyłączenia</td><td class="c">3</td><td class="c">4</td><td class="num">12</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-12</span></td><td>Opór zespołu przed zmianą narzędzia</td><td class="c">4</td><td class="c">3</td><td class="num">12</td><td>wysoki</td></tr>
+        <tr><td><span class="ref r">R-13</span></td><td>Wyliczenie „Przyznano” jest kruche przy nietypowych decyzjach urzędu</td><td class="c">3</td><td class="c">3</td><td class="num">9</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-14</span></td><td>Opór handlowców IS przed zmianą kanału zgłoszeń</td><td class="c">3</td><td class="c">3</td><td class="num">9</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-15</span></td><td>Niedojrzałość demonstrowanego rozwiązania AI</td><td class="c">3</td><td class="c">3</td><td class="num">9</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-16</span></td><td>Retencja danych osobowych nieustalona</td><td class="c">4</td><td class="c">2</td><td class="num">8</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-17</span></td><td>Prywatność skrzynki właściciela</td><td class="c">4</td><td class="c">2</td><td class="num">8</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-18</span></td><td>Precedens cenowy w urzędach</td><td class="c">3</td><td class="c">3</td><td class="num">9</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-19</span></td><td>Ocena UI na podstawie krótkiego dema</td><td class="c">3</td><td class="c">3</td><td class="num">9</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-20</span></td><td>Decyzje z końcówki warsztatu podjęte przy zmęczeniu</td><td class="c">3</td><td class="c">3</td><td class="num">9</td><td>średni</td></tr>
+        <tr><td><span class="ref r">R-21</span></td><td>Rozjazd nazewnictwa między dokumentacją a klientem</td><td class="c">2</td><td class="c">3</td><td class="num">6</td><td>niski</td></tr>
+        <tr><td><span class="ref r">R-22</span></td><td>Migracja danych historycznych z Excela</td><td class="c">3</td><td class="c">2</td><td class="num">6</td><td>niski</td></tr>
+        <tr><td><span class="ref r">R-23</span></td><td>Koszt utrzymania jako niewiadoma blokująca decyzje</td><td class="c">2</td><td class="c">3</td><td class="num">6</td><td>niski</td></tr>
+        <tr><td><span class="ref r">R-24</span></td><td>Brak ustaleń formalnych</td><td class="c">3</td><td class="c">2</td><td class="num">6</td><td>niski</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Ryzyka krytyczne (priorytet 16&ndash;25)</h3>
+
+  <div class="card">
+    <h3><span class="ref r">R-01</span> Silnik prowizji jest niedospecyfikowany, a stanowi rdzeń wartości systemu <span class="pill od">W:5 P:4 = 20</span></h3>
+    <p>
+      Cztery różne modele naliczania, wersjonowanie w czasie, prognozowanie, nadpisania per wniosek,
+      przeliczanie całego okresu przy zmianie pojedynczej pozycji. Do tego drugi poziom (prowizje
+      pracownicze), którego progi w ogóle nie istnieją.
+    </p>
+    <p>
+      Sam wykonawca nazwał to najtrudniejszym elementem projektu (24:28). Pozostaje 10 pytań otwartych
+      w tym obszarze, w tym konflikt reguły okresu rozliczeniowego <span class="ref p">P-01</span>.
+    </p>
+    <p><b>Mitygacja:</b></p>
+    <ul>
+      <li>Prototyp konfiguratora HTML <b>przed</b> implementacją <span class="ref">D-20</span>, zwalidowany realnymi liczbami klienta</li>
+      <li>Rozstrzygnąć <span class="ref p">P-01</span> (data faktury kontra data planowana) przed prototypem</li>
+      <li>Wyegzekwować dostarczenie progów prowizji wewnętrznej <span class="ref p">P-02</span></li>
+      <li>Zestaw 12 przypadków testowych z Silnika prowizji jako kryterium odbioru</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-02</span> Rozjazd oczekiwań cenowych i zakresowych <span class="pill od">W:5 P:4 = 20</span></h3>
+    <p>
+      Górna granica widełek wykonawcy (18) przekracza komfort klienta (15). Jednocześnie w trakcie
+      warsztatu zakres <b>urósł</b> o rzeczy, które prawdopodobnie nie były wycenione:
+    </p>
+    <ul>
+      <li>konfigurator ról z dynamiczną macierzą uprawnień (reakcja wykonawcy: „dobrze, że to mówisz teraz”)</li>
+      <li>nowa rola pracownika IS z filtrowaniem wierszy</li>
+      <li>osobne formularze per instytucja (20 kopii)</li>
+      <li>moduł Zgłoszeń</li>
+      <li>podgląd PDF faktur</li>
+      <li>generowanie certyfikatów wsadowo z pakowaniem ZIP</li>
+      <li>bramka akceptacji zgłoszeń</li>
+    </ul>
+    <p>Klient zapowiada dalsze zmiany po zobaczeniu szkieletu.</p>
+    <div class="q">
+      „teraz muszę zobaczyć jak to będzie pierwszy szkielet wyglądał i dopiero dam ci z metra co dalej
+      zmieniamy, robimy.”
+      <span class="who">Bartek, warsztat 25.08.2026, 3:16:34</span>
+    </div>
+    <p><b>Mitygacja:</b></p>
+    <ul>
+      <li>Wycena <b>z podziałem na wersję I i opcje dodatkowe</b>, tak jak zaplanowano <span class="ref">D-120</span></li>
+      <li>Jawna lista tego, co zostało dodane na warsztacie względem dokumentacji przedwarsztatowej</li>
+      <li>Ustalić tryb obsługi zmian zakresu po podpisaniu (kto decyduje, jak wpływa na cenę i termin)</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-03</span> Napięcie architektoniczne: separacja danych kontra widok zbiorczy <span class="pill od">W:5 P:4 = 20</span></h3>
+    <p>
+      Wykonawca skłania się do osobnych baz per instytucja. Klient wymaga zbiorczego widoku wszystkich
+      instytucji, ciągłej numeracji klientów w roku (numer trafia na fakturę), dashboardu przekrojowego
+      i wyszukiwarki globalnej.
+    </p>
+    <p>Zła decyzja tutaj oznacza <b>przebudowę fundamentu w trakcie projektu</b>.</p>
+    <p>
+      <b>Mitygacja:</b> rozstrzygnąć <span class="ref p">P-25</span> przed implementacją. Rekomendacja:
+      jedna baza z separacją na poziomie wierszy, opisana w Integracjach.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-04</span> Ryzyko wycieku danych między konkurencyjnymi instytucjami <span class="pill od">W:5 P:3 = 15, ale skutek nieodwracalny</span></h3>
+    <p>
+      Instytucje są wobec siebie konkurencyjne. Wyciek nie jest tylko incydentem technicznym, tylko
+      zniszczeniem relacji handlowych klienta. Klient sam sygnalizował ryzyko przez wyszukiwarkę.
+    </p>
+    <p>
+      Kanałów wycieku jest wiele: widoki, wyszukiwarka globalna, eksporty, formularze, ewentualny panel
+      klienta.
+    </p>
+    <p><b>Mitygacja:</b></p>
+    <ul>
+      <li>Separacja egzekwowana na poziomie danych, nie interfejsu</li>
+      <li><b>Automatyczne testy separacji dla każdego kanału</b> jako element definicji ukończenia</li>
+      <li>Checklist z Bezpieczeństwa i RODO przed wdrożeniem</li>
+    </ul>
+  </div>
+
+  <h3>Ryzyka wysokie (priorytet 9&ndash;15)</h3>
+
+  <div class="card">
+    <h3><span class="ref r">R-05</span> Termin 2 miesiące przy zapowiedzianym trybie ciągłych zmian <span class="pill ws">W:5 P:3 = 15</span></h3>
+    <p>
+      Twardy deadline biznesowy: gotowe przed styczniem, bo wtedy startują nabory i klient jest
+      niedostępny. Wykonawca szacuje 6 tygodni pracy. Klient zapowiada ciągłe konsultacje i zmiany
+      „z metra”. Do tego 47 pytań otwartych i 4 blokady.
+    </p>
+    <p><b>Mitygacja:</b></p>
+    <ul>
+      <li>Zamrozić zakres wersji I po makiecie v2</li>
+      <li>Blokady <span class="ref p">P-01</span>, <span class="ref p">P-02</span>, <span class="ref p">P-09</span>, <span class="ref p">P-25</span> rozstrzygnąć w pierwszym tygodniu</li>
+      <li>Etapowanie z Zakresu, żeby etap I był użyteczny nawet jeśli reszta się opóźni</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-06</span> Konflikt interesów: klient chce systemu „dla siebie”, wykonawca jest też użytkownikiem <span class="pill ws">W:4 P:4 = 16</span></h3>
+    <p>
+      Wykonawca występuje w podwójnej roli: buduje system i jest jedną z instytucji szkoleniowych, która
+      ma go używać. W kilku miejscach forsował wymagania z perspektywy użytkownika IS:
+    </p>
+    <ul>
+      <li>panel klienta końcowego (klient wątpi, wykonawca chce i deklaruje współfinansowanie)</li>
+      <li>statystyki per handlowiec (klient odroczył wprost)</li>
+      <li>widok naborów dla handlowca IS (klient odrzucił)</li>
+    </ul>
+    <div class="q">
+      „ja miałem założenie, że ten system służy tylko tak naprawdę nam.”
+      <span class="who">Bartek, warsztat 25.08.2026, 2:54:45</span>
+    </div>
+    <div class="q">
+      „najwyżej zrobimy dla mnie jakiś moduł, to już zrobię, albo będziesz mi to kasował za usługi.”
+      <span class="who">Paweł, warsztat 25.08.2026, 2:55:21</span>
+    </div>
+    <p><b>Ryzyko:</b> dwa równoległe źródła prawdy albo późniejsza przebudowa modelu uprawnień.</p>
+    <p>
+      <b>Mitygacja:</b> jawnie rozdzielić w wycenie zakres „dla LDIT” od ewentualnego zakresu
+      „dla instytucji”. Rozstrzygnąć <span class="ref p">P-12</span> przed projektowaniem statystyk.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-07</span> Powiązanie maila z klientem opiera się na dyscyplinie ludzi <span class="pill ws">W:4 P:4 = 16</span></h3>
+    <p>
+      Przyjęte rozwiązanie to konwencja tematu maila („pielesiak - zapytanie”). Jeden zapomniany prefiks
+      oznacza, że mail nie trafi do rekordu.
+    </p>
+    <p>
+      Przy szczycie 130 wniosków w dwa tygodnie i wielu pracownikach obsługujących tego samego klienta
+      to się nie skaluje.
+    </p>
+    <p>
+      <b>Mitygacja:</b> dopasowanie po adresie e-mail jako mechanizm podstawowy, konwencja tematu jako
+      uzupełnienie. Patrz <span class="ref p">P-21</span>.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-08</span> Cały moduł faktur zależy od niepotwierdzonego założenia <span class="pill ws">W:4 P:3 = 12</span></h3>
+    <p>
+      Decyzja „import CSV zamiast API” opiera się na założeniu, że system księgowy klienta udostępnia
+      eksport CSV. <b>Nie potwierdzono.</b> Nazwa systemu nie została nawet rozpoznana.
+    </p>
+    <p>
+      Jeśli eksportu nie ma, wracamy do wyceny integracji API (10&ndash;15 h) plus ryzyko przechowywania
+      klucza.
+    </p>
+    <p><b>Mitygacja:</b> <span class="ref p">P-09</span> to blokada. Potwierdzić przed wyceną końcową.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-09</span> Wymagania klienta pisane strumieniem świadomości <span class="pill ws">W:4 P:4 = 16</span></h3>
+    <div class="q">
+      „ja to pisałem tak, co mi wpada do głowy.”
+      <span class="who">Bartek, warsztat 25.08.2026, 1:00:41</span>
+    </div>
+    <div class="q">
+      „jest tu nieład, trochę w tym co rozpisałem, bo czasami znajdziesz gdzieś tam niżej. Już odkryłem,
+      że się powtórzyło.”
+      <span class="who">Bartek, warsztat 25.08.2026, 8:52</span>
+    </div>
+    <p>
+      Dokument klienta jest niekompletny i niespójny. Na warsztacie nie przeszli przez całość, mimo że
+      klient tego chciał („Chciałbym na pewno przejść przez to wszystko, co rozpisałem”).
+    </p>
+    <p>
+      Nie ustalono też pełnej listy kolumn widoku wniosku <span class="ref p">P-43</span> ani priorytetów
+      na widoku klienta <span class="ref p">P-44</span>.
+    </p>
+    <p>
+      <b>Mitygacja:</b> klient zadeklarował checklistę pokrycia własnego dokumentu. Wyegzekwować ją przed
+      wyceną końcową.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-10</span> Konfigurator ról jako niedoszacowana zmiana zakresu <span class="pill ws">W:4 P:3 = 12</span></h3>
+    <p>
+      Dynamiczna macierz uprawnień (role x moduły x podgląd/edycja), plus przypisanie użytkowników do
+      instytucji, plus filtrowanie wierszy po instytucji, etapie i naborze, plus dynamiczne renderowanie
+      menu.
+    </p>
+    <p>To znaczący nakład, prawdopodobnie nieujęty w pierwotnej wycenie.</p>
+    <p><b>Mitygacja:</b> wycenić osobno jako pozycję w wycenie końcowej.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-11</span> Deklaracja „wszystko w jednym systemie” kontra realne wyłączenia <span class="pill ws">W:3 P:4 = 12</span></h3>
+    <p>
+      Klient deklaruje, że system ma służyć do wszystkiego, ale jednocześnie wyłącza pliki, foldery,
+      zadania i kalendarz. Ryzyko rozczarowania po wdrożeniu: „miało być wszystko w jednym miejscu,
+      a dalej muszę wchodzić do trzech narzędzi”.
+    </p>
+    <p>
+      <b>Mitygacja:</b> jawnie wypisać w umowie lub zakresie, co zostaje poza systemem i dlaczego
+      (lista w Zakresie).
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><span class="ref r">R-12</span> Opór zespołu przed zmianą narzędzia <span class="pill ws">W:4 P:3 = 12</span></h3>
+    <p>
+      Excel jest głęboko wyuczony. Klient szacuje adaptację na „parę dni, tygodni”. W firmie nie ma
+      podziału stanowisk („wszyscy robią wszystko”), więc każdy musi opanować cały system.
+    </p>
+    <p>
+      <b>Mitygacja:</b> zachowanie nazewnictwa <span class="ref">D-55</span>, układ „jak Excel”
+      <span class="ref">D-108</span>, edycja inline <span class="ref">D-115</span>. To już jest
+      uwzględnione w projekcie. Warto dodać wdrożenie i krótką instrukcję.
+    </p>
+  </div>
+
+  <h3>Ryzyka średnie (priorytet 6&ndash;8)</h3>
+  <details class="acc">
+    <summary>8 ryzyk średnich: R-13 do R-20</summary>
+    <div class="acc-body">
+      <p><span class="ref r">R-13</span> <b>Wyliczenie „Przyznano” jest kruche przy nietypowych decyzjach
+        urzędu.</b> <span class="pill ot">W:3 P:3 = 9</span><br>
+        Urząd może przyznać kwotę niewynikającą z mnożnika 0,7 ani 0,9 (przyznanie na część modułów,
+        arbitralne obniżenie). Rozwiązanie przyjęte na warsztacie, czyli wsteczna korekta pola
+        <code>koszt_calkowity</code>, jest obejściem. Dodatkowo dane z urzędu przychodzą raz jako kwota
+        przyznana, raz jako koszt całkowity z procentem.<br>
+        <b>Mitygacja:</b> rozstrzygnąć <span class="ref p">P-30</span> (czy „Przyznano” ma być edytowalne).
+        Rekomendacja: pozwolić na nadpisanie z zachowaniem zasady kasowania i przywracania reguły, tak
+        jak wszędzie indziej.</p>
+      <p><span class="ref r">R-14</span> <b>Opór handlowców IS przed zmianą kanału zgłoszeń.</b>
+        <span class="pill ot">W:3 P:3 = 9</span></p>
+      <div class="q">
+        „Obawiam się, że będą trochę stękać, bo handlowcy standardowo tylko przekierowują ten formularz.”
+        <span class="who">Bartek, warsztat 25.08.2026, 2:16:07</span>
+      </div>
+      <p>Handlowcy nie są pracownikami klienta, tylko instytucji szkoleniowych. Klient ma nad nimi
+        ograniczony wpływ.<br>
+        <b>Mitygacja:</b> rozwiązanie przyjęte (handlowiec wysyła tylko link, klient końcowy wypełnia)
+        faktycznie <b>zmniejsza</b> ich pracę. Warto to zakomunikować instytucjom przy wdrożeniu.</p>
+      <p><span class="ref r">R-15</span> <b>Niedojrzałość demonstrowanego rozwiązania AI.</b>
+        <span class="pill ot">W:3 P:3 = 9</span><br>
+        Podczas dema agent AI zaczął spamować mailami, a zadanie do niego nie dotarło.</p>
+      <div class="q">
+        „Mój mechanizm zaczął wysyłać maila. Niedobrze. Za mocno to poszło.”
+        <span class="who">Paweł, warsztat 25.08.2026, 2:45:02</span>
+      </div>
+      <p>Klient warunkuje uruchomienie marketingu istnieniem „bota albo nowego pracownika”. Jeśli bot ma
+        być tym rozwiązaniem, jego niedojrzałość jest ryzykiem biznesowym klienta.<br>
+        <b>Mitygacja:</b> zadania i agent AI zostały wykluczone z zakresu tego systemu
+        <span class="ref">D-118</span>. Trzymać ten podział.</p>
+      <p><span class="ref r">R-16</span> <b>Retencja danych osobowych nieustalona.</b>
+        <span class="pill ot">W:4 P:2 = 8</span><br>
+        System będzie przechowywał PESEL uczestników i pełną korespondencję. Brak polityki retencji to
+        ryzyko zgodności z RODO, zwłaszcza że klient ma umowy z podmiotami mającymi zespoły prawne.<br>
+        <b>Mitygacja:</b> <span class="ref p">P-26</span> domknąć przed wdrożeniem produkcyjnym. Wpływa
+        na model danych.</p>
+      <p><span class="ref r">R-17</span> <b>Prywatność skrzynki właściciela.</b>
+        <span class="pill ot">W:4 P:2 = 8</span><br>
+        Skrzynka właściciela zawiera sprawy pracownicze i prywatne. Bezrefleksyjna integracja ujawniłaby
+        je zespołowi.<br>
+        <b>Mitygacja:</b> wyłączenie na poziomie <b>źródła danych</b>, nie widoku. Application Access
+        Policy w Exchange Online ograniczające aplikację do wskazanych skrzynek. Potwierdzić zakres
+        <span class="ref p">P-20</span>.</p>
+      <p><span class="ref r">R-18</span> <b>Precedens cenowy w urzędach.</b>
+        <span class="pill ot">W:3 P:3 = 9</span><br>
+        Jeśli jedna instytucja obniży cenę, blokuje wyższe stawki dla wszystkich kolejnych wniosków w tym
+        urzędzie. Skala: 1 000 zł x 100 wniosków = 100 000 zł. System nie ma mechanizmu ostrzegania
+        o historycznych cenach zaakceptowanych przez dany urząd.<br>
+        <b>Mitygacja:</b> potencjalne rozszerzenie w kolejnym etapie. Nie zgłoszone jako wymaganie, ale
+        wynika wprost z reguły biznesowej. Warto zaproponować klientowi.</p>
+      <p><span class="ref r">R-19</span> <b>Ocena UI na podstawie krótkiego dema.</b>
+        <span class="pill ot">W:3 P:3 = 9</span><br>
+        Klient chwalił czytelność pokazanego CRM, zaznaczając że widzi go pierwszy raz. Akceptacja może
+        nie przetrwać kontaktu z realnym wolumenem (1000+ klientów, 400 maili przy jednym rekordzie).<br>
+        <b>Mitygacja:</b> makieta v2 z <b>realistyczną ilością danych</b>, nie z pięcioma rekordami
+        przykładowymi.</p>
+      <p><span class="ref r">R-20</span> <b>Decyzje z końcówki warsztatu podjęte przy zmęczeniu.</b>
+        <span class="pill ot">W:3 P:3 = 9</span></p>
+      <div class="q">
+        „żeby nie było, że się pogubiłem, bo ciężko mi się już myśli.”
+        <span class="who">Bartek, warsztat 25.08.2026, 2:32:41</span>
+      </div>
+      <div class="q">
+        „byłam góra w 10 minut, bo się pali trochę.”
+        <span class="who">Bartek, warsztat 25.08.2026, 2:46:21</span>
+      </div>
+      <div class="q">
+        „Jestem padnięty.”
+        <span class="who">Paweł, warsztat 25.08.2026, 3:21:59</span>
+      </div>
+      <p>Ostatnia godzina warsztatu objęła: prowizje w UI, dane dla IS, certyfikaty, architekturę widoków,
+        bezpieczeństwo, wycenę. Część ustaleń jest powierzchowna.<br>
+        <b>Mitygacja:</b> potwierdzić decyzje <span class="ref">D-86</span> do <span class="ref">D-120</span>
+        na spotkaniu przy makiecie v2.</p>
+    </div>
+  </details>
+
+  <h3>Ryzyka niskie (priorytet 1&ndash;5)</h3>
+  <details class="acc">
+    <summary>4 ryzyka niskie: R-21 do R-24</summary>
+    <div class="acc-body">
+      <p><span class="ref r">R-21</span> <b>Rozjazd nazewnictwa między dokumentacją a klientem.</b>
+        <span class="pill">W:2 P:3 = 6</span></p>
+      <div class="q">
+        „jak ty zmieniłeś nazewnictwo, to mi się teraz miesza.”
+        <span class="who">Paweł, warsztat 25.08.2026, 1:47:39</span>
+      </div>
+      <p><b>Mitygacja:</b> Słownik jako mapowanie nazw technicznych i nazw dla użytkownika.</p>
+      <p><span class="ref r">R-22</span> <b>Migracja danych historycznych z Excela.</b>
+        <span class="pill">W:3 P:2 = 6</span><br>
+        Rozdzielenie encji Klient od Wniosku oznacza, że dane nie przeniosą się mechanicznie. Temat nie
+        został w ogóle poruszony <span class="ref p">P-47</span>.</p>
+      <p><span class="ref r">R-23</span> <b>Koszt utrzymania jako niewiadoma blokująca decyzje.</b>
+        <span class="pill">W:2 P:3 = 6</span><br>
+        Klient warunkuje zgodę na rozszerzenia kosztem hostingu, ale kalkulacja nie powstała
+        <span class="ref p">P-48</span>.</p>
+      <p><span class="ref r">R-24</span> <b>Brak ustaleń formalnych.</b>
+        <span class="pill">W:3 P:2 = 6</span><br>
+        Umowa, płatności, gwarancja, utrzymanie, własność kodu, SLA. Nie poruszone
+        <span class="ref p">P-29</span>.</p>
+    </div>
+  </details>
+
+  <h3>Podsumowanie ryzyk</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Priorytet</th><th class="num">Liczba ryzyk</th></tr></thead>
+      <tbody>
+        <tr><td>Krytyczne (16&ndash;25)</td><td class="num">4</td></tr>
+        <tr><td>Wysokie (9&ndash;15)</td><td class="num">8</td></tr>
+        <tr><td>Średnie (6&ndash;8)</td><td class="num">8</td></tr>
+        <tr><td>Niskie (1&ndash;5)</td><td class="num">4</td></tr>
+        <tr><td><b>Razem</b></td><td class="num"><b>24</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout ok">
+    <span class="ct">Trzy działania o największym efekcie</span>
+    <ol>
+      <li><b>Rozstrzygnąć 4 blokady</b> (<span class="ref p">P-01</span> okres rozliczeniowy prowizji,
+        <span class="ref p">P-02</span> progi prowizji wewnętrznej, <span class="ref p">P-09</span>
+        eksport CSV, <span class="ref p">P-25</span> architektura danych) przed rozpoczęciem implementacji.
+        Adresuje R-01, R-03, R-08.</li>
+      <li><b>Zbudować prototyp konfiguratora prowizji i zwalidować go realnymi liczbami klienta</b> przed
+        napisaniem linijki kodu aplikacji. Adresuje R-01, częściowo R-02.</li>
+      <li><b>Wycena z jawnym podziałem na wersję I i opcje</b>, z wypisaniem tego, co przybyło na
+        warsztacie. Adresuje R-02, R-06, R-10.</li>
+    </ol>
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/14-pytania-otwarte.md">14-pytania-otwarte.md</a>,
+    <a href="../../docs/15-ryzyka.md">15-ryzyka.md</a>.
+    Dokumentacja techniczno-biznesowa systemu KFS LDIT.
+  </div>
+
+</div>
+</body>
+</html>

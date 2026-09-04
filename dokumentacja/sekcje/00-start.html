@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Start</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Dokumentacja projektu</div>
+    <h1 class="doc-title">System zarządzania dofinansowaniami KFS</h1>
+    <p class="doc-lead">
+      Platforma dla firmy pozyskującej dofinansowania KFS (LDIT), współpracujących instytucji
+      szkoleniowych i klientów końcowych. Zastępuje pracę na Excelu, mailach i telefonie.
+      Ta dokumentacja to klikalna wersja materiału spisanego z warsztatu wymagań, uzupełniona
+      o ustalenia po nim.
+    </p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k-label">Warsztat</div><div class="k-value">25.08.2026</div><div class="k-foot">3h22m, ok. 206 tys. znaków transkrypcji</div></div>
+    <div class="kpi"><div class="k-label">Decyzje</div><div class="k-value">124</div><div class="k-foot">w tym 4 uzupełnienia po warsztacie</div></div>
+    <div class="kpi"><div class="k-label">Pytania otwarte</div><div class="k-value">54</div><div class="k-foot">w tym 4 blokady</div></div>
+    <div class="kpi"><div class="k-label">Termin</div><div class="k-value">~2 mies.</div><div class="k-foot">gotowe przed styczniem 2027</div></div>
+  </div>
+
+  <div class="card">
+    <table class="t">
+      <tbody>
+        <tr><td class="muted" style="width:200px">Klient</td><td><b>Bartłomiej Olejnik</b>, LDIT</td></tr>
+        <tr><td class="muted">Wykonawca</td><td><b>Paweł Czapiewski</b>, Odczaruj Low Code</td></tr>
+        <tr><td class="muted">Status</td><td>po warsztacie, przed makietą v2 i wyceną końcową</td></tr>
+        <tr><td class="muted">Wycena wstępna</td><td>12&ndash;18 tys. PLN (niewiążąca, do potwierdzenia po makiecie)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Jak czytać tę dokumentację</h2>
+  <p>
+    Po lewej stronie masz nawigację podzieloną na grupy tematyczne. Grupy zwijają się i rozwijają,
+    a pole u góry menu filtruje sekcje. Każda sekcja to osobny plik w katalogu
+    <code>sekcje/</code>, a wspólne formatowanie leży w <code>assets/</code>. Żeby zmienić jeden
+    temat, edytujesz jeden plik.
+  </p>
+  <p>
+    <b>Źródłem prawdy pozostają pliki <code>docs/*.md</code></b> w repozytorium. Ta strona jest ich
+    czytelną, klikalną prezentacją. W stopce każdej sekcji jest odnośnik do pliku źródłowego.
+  </p>
+
+  <h2>To, o co pytał klient wprost</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Zależności liczenia prowizji</h3>
+      <p class="muted" style="margin-top:0">Najtrudniejszy element. Cztery modele naliczania, progi, wersjonowanie, prognoza.</p>
+      <p><a href="07-prowizja.html" onclick="if(parent!==window){parent.docNav('07-prowizja');return false}">Przejdź do Silnika prowizji &rarr;</a></p>
+    </div>
+    <div class="card">
+      <h3>Diagram tabel</h3>
+      <p class="muted" style="margin-top:0">Encje, relacje, pola wyliczane kontra ręczne.</p>
+      <p><a href="03-model-danych.html" onclick="if(parent!==window){parent.docNav('03-model-danych');return false}">Przejdź do Modelu danych &rarr;</a></p>
+    </div>
+    <div class="card">
+      <h3>Właściwości każdej zakładki</h3>
+      <p class="muted" style="margin-top:0">17 zakładek: kto widzi, co robi, priorytet, powiązane decyzje.</p>
+      <p><a href="05-zakladki.html" onclick="if(parent!==window){parent.docNav('05-zakladki');return false}">Przejdź do Zakładek systemu &rarr;</a></p>
+    </div>
+    <div class="card">
+      <h3>Całość z warsztatu</h3>
+      <p class="muted" style="margin-top:0">Kontekst, role, statusy, finanse, powiadomienia, bezpieczeństwo, zakres.</p>
+      <p><a href="13-decyzje.html" onclick="if(parent!==window){parent.docNav('13-decyzje');return false}">Zobacz Rejestr decyzji &rarr;</a></p>
+    </div>
+  </div>
+
+  <h2>Cztery blokady projektowe</h2>
+  <p>Bez rozstrzygnięcia tych pytań odpowiednie moduły nie mogą być projektowane.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Pytanie</th><th>Blokuje</th><th>Odpowiada</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref p">P-01</span></td><td>Konflikt reguły okresu rozliczeniowego prowizji (data faktury kontra prognoza z kalendarza)</td><td>Silnik prowizji</td><td>Klient</td></tr>
+        <tr><td><span class="ref p">P-02</span></td><td>Progi prowizji wewnętrznej dla pracowników nie istnieją</td><td>Moduł prowizji pracowniczych</td><td>Klient</td></tr>
+        <tr><td><span class="ref p">P-09</span></td><td>Czy system księgowy udostępnia eksport CSV</td><td>Moduł faktur</td><td>Klient</td></tr>
+        <tr><td><span class="ref p">P-25</span></td><td>Architektura danych: osobne bazy czy jedna z separacją wierszy</td><td>Projekt bazy danych</td><td>Wykonawca</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Warunek wstępny implementacji</h2>
+  <div class="callout">
+    <span class="ct">Najpierw prototyp konfiguratora prowizji w HTML</span>
+    Zwalidowany przez klienta realnymi liczbami, zanim ruszy kodowanie silnika prowizji.
+    <span class="ref">D-20</span>
+  </div>
+  <div class="q">
+    „mógłbym ci zrobić taki konfigurator, żebyśmy nie kodowali aplikacji, zanim nie zostanie to
+    ustalone. Taki prosty konfigurator w HTML, będziesz wpisywał cyferki i mi powiesz, czy to się
+    dobrze liczy, czy nie.”
+    <span class="who">Paweł, warsztat 25.08.2026, 45:09</span>
+  </div>
+
+  <h2>Uzupełnienia po warsztacie (04.09.2026)</h2>
+  <p>Cztery ustalenia dopisane po warsztacie. Trzy doprecyzowują decyzje warsztatowe, czwarta wprowadza tę dokumentację.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Ustalenie</th><th>Sekcja</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref new">D-121</span></td><td>Każdy działa na własnym koncie i we własnym imieniu; autor zgłoszenia domyślnie zalogowany</td><td><a href="09-logi-zgloszenia.html" onclick="if(parent!==window){parent.docNav('09-logi-zgloszenia');return false}">Logi i zgłoszenia</a></td></tr>
+        <tr><td><span class="ref new">D-122</span></td><td>Rejestr aktywności loguje wszystkie akcje: kliknięcia i wysyłki powiadomień</td><td><a href="09-logi-zgloszenia.html" onclick="if(parent!==window){parent.docNav('09-logi-zgloszenia');return false}">Logi i zgłoszenia</a></td></tr>
+        <tr><td><span class="ref new">D-123</span></td><td>Paleta kolorów statusów rozszerzona do 5 stanów</td><td><a href="04-proces-statusy.html" onclick="if(parent!==window){parent.docNav('04-proces-statusy');return false}">Proces i statusy</a></td></tr>
+        <tr><td><span class="ref new">D-124</span></td><td>Dokumentacja prowadzona jako klikalna strona HTML (ta strona)</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Legenda</h2>
+  <p>Siła decyzji i typy znaczników używanych w całej dokumentacji:</p>
+  <div class="chips">
+    <span class="pill tw">TWARDA</span>
+    <span class="pill ws">WSTĘPNA</span>
+    <span class="pill od">ODRZUCONA</span>
+    <span class="pill ot">OTWARTA</span>
+  </div>
+  <div class="chips">
+    <span class="ref">D-01</span> <span class="muted" style="align-self:center">decyzja z warsztatu</span>
+    <span class="ref new">D-121</span> <span class="muted" style="align-self:center">uzupełnienie po warsztacie</span>
+    <span class="ref p">P-01</span> <span class="muted" style="align-self:center">pytanie otwarte / blokada</span>
+  </div>
+
+  <details class="acc">
+    <summary>Konwencje nazewnictwa (nienegocjowalne z klientem)</summary>
+    <div class="acc-body">
+      <p>Klient wymaga zachowania nazw z Excela. W interfejsie obowiązują nazwy z lewej kolumny:</p>
+      <dl class="kv">
+        <dt>Zestawienia</dt><dd>nie „Dofinansowania” (dla widoku rocznego)</dd>
+        <dt>Nabory</dt><dd>nie „Wnioski”</dd>
+        <dt>Projekt</dt><dd>nie „Wniosek” (jeden projekt = jeden wniosek)</dd>
+        <dt>Baza klientów</dt><dd>nie „Uczestnicy i leady” (dziś myląca nazwa „Niezłożone”)</dd>
+      </dl>
+    </div>
+  </details>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/README.md">docs/README.md</a> oraz <a href="../../docs/13-rejestr-decyzji.md">13-rejestr-decyzji.md</a>.
+    Dokumentacja techniczno-biznesowa systemu KFS LDIT.
+  </div>
+
+</div>
+</body>
+</html>

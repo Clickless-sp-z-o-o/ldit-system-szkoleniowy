@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Logi i zgłoszenia</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Funkcje</div>
+    <h1 class="doc-title">Logi i zgłoszenia</h1>
+    <p class="doc-lead">
+      Dwa powiązane tematy z uzupełnień po warsztacie: zakładka Zgłoszeń, gdzie każdy pracownik
+      wpisuje wpis we własnym imieniu, oraz Rejestr aktywności, w którym administrator widzi wszystkie
+      akcje. Podstawą obu jest zasada: każdy działa na własnym koncie.
+    </p>
+  </div>
+
+  <h2>Zasada: własne konto, działanie we własnym imieniu <span class="ref new">D-121</span></h2>
+  <p>
+    Każdy użytkownik loguje się na <b>własne, imienne konto</b> i wykonuje działania w swoim imieniu.
+    Nie ma kont współdzielonych, spójnie z brakiem wspólnej skrzynki firmowej <span class="ref">D-45</span>.
+  </p>
+  <ul>
+    <li>każda akcja (zmiana danych, wysyłka maila, wpis zgłoszenia) jest przypisana do konkretnej osoby;</li>
+    <li>na karcie Zgłoszeń autor wpisu jest <b>domyślnie ustawiany na zalogowanego użytkownika</b>, z możliwością zmiany;</li>
+    <li>administrator może dzięki temu odtworzyć, kto co zrobił i kiedy <span class="ref new">D-122</span>.</li>
+  </ul>
+
+  <h2>Zgłoszenia (incydenty) <span class="ref">D-107</span></h2>
+  <p>
+    Wewnętrzna baza incydentów. <b>Dostępna wyłącznie dla administratora i pracowników LDIT.</b>
+    Nie jest podzakładką instytucji, instytucja nie widzi tego modułu ani wpisów dotyczących siebie.
+    Blokada egzekwowana na poziomie danych, nie interfejsu. Wpis ręczny: podmiot (instytucja lub
+    klient), powód, opis, data, autor.
+  </p>
+  <div class="callout ok">
+    <span class="ct">Autor domyślnie zalogowany <span class="ref new">D-121</span></span>
+    Każdy pracownik może wpisać własne zgłoszenie, a autor jest domyślnie ustawiany na zalogowanego
+    użytkownika (pole edytowalne). Autor jest widoczny na liście i w rejestrze aktywności.
+  </div>
+  <div class="q">
+    „kiedyś nas jedna instytucja chciała w kulki zrobić (...) próbowali nas kręcić w coś, żebyśmy
+    zapłacili mniejszą prowizję, stąd muszę mieć wgląd do tego i historię, że na przykład ta firma już
+    2 razy coś takiego zrobiła. Nie współpracujemy z nią, do widzenia.”
+    <span class="who">Bartek, 3:03:28</span>
+  </div>
+  <div class="callout">
+    <b>Czym to się różni od notatek przy kliencie.</b> Do Zgłoszeń trafiają wyłącznie sytuacje krytyczne
+    (oszustwo, próba zaniżenia prowizji, obejście LDIT, podejrzenie wyłudzenia). Bieżąca obsługa
+    (ustalenia telefoniczne, terminy) to notatki przy kliencie. Uzasadnienie rozdziału: przy ponad
+    1000 klientów krytyczne incydenty giną w zwykłych notatkach.
+  </div>
+  <p class="muted">Makieta: <a href="../../makieta/strony/10-zgloszenia.html" target="_blank" rel="noopener">10-zgloszenia &#8599;</a></p>
+
+  <h2>Rejestr aktywności <span class="ref">D-116</span> <span class="ref new">D-122</span></h2>
+  <p>
+    Zakładka dla administratora. Cel: wgląd, <b>co każdy pracownik zrobił i kiedy</b>. Na warsztacie
+    ustalono dwa niezależne rejestry (zmiany danych i log logowań). Klient doprecyzował później, że
+    logowanie ma obejmować <b>wszystkie akcje</b>, w tym kliknięcia i wysyłki powiadomień
+    <span class="ref new">D-122</span>. Cztery strumienie zdarzeń w jednej zakładce:
+  </p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Rejestr</th><th>Zawartość</th><th>Źródło zdarzeń</th></tr></thead>
+      <tbody>
+        <tr><td><b>Rejestr zmian danych</b></td><td>Kto, kiedy, wartość przed i po. Szczególny nacisk na wartości wpisywane ręcznie i zmiany kwot</td><td>zapis do bazy</td></tr>
+        <tr><td><b>Log akcji (kliknięcia)</b></td><td>Istotne akcje w interfejsie: otwarcie karty, uruchomienie eksportu, wejście w moduł finansowy, kliknięcie przycisku akcji</td><td>zdarzenia interfejsu</td></tr>
+        <tr><td><b>Log wysyłek</b></td><td>Wysyłki powiadomień i maili: kto wysłał, do kogo, jaki szablon, kiedy, jaki wyzwalacz</td><td>moduł powiadomień</td></tr>
+        <tr><td><b>Log logowań</b></td><td>Kto i o której się zalogował, adres IP, urządzenie, wynik próby</td><td>uwierzytelnianie</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    „No szczególnie przy tych wartościach z ręki wpisywanych.”
+    <span class="who">Paweł, 3:14:02 (o rejestrze zmian)</span>
+  </div>
+  <div class="q">
+    „twoje konto się zalogowało o czternastej 30. Żeby w razie jakby był jakiś wyciek czegokolwiek,
+    żeby było też wiadomo z jakiego powodu mogło to wyniknąć.”
+    <span class="who">Bartek, 3:14:25 (o logu logowań)</span>
+  </div>
+  <div class="callout warn">
+    <span class="ct">Zakres do doprecyzowania <span class="ref p">P-54</span></span>
+    „Wszystkie kliknięcia” należy rozumieć jako <b>istotne akcje</b>, nie każdy ruch myszy. Logowanie
+    dosłownie każdego kliknięcia generuje ogromny wolumen i szum. Lista zdarzeń trafiających do logu
+    akcji wymaga ustalenia, także ze względu na retencję <span class="ref p">P-26</span>.
+  </div>
+  <div class="callout">
+    <b>Rejestr jest tylko do odczytu, także dla administratora.</b> Wpisu nie da się edytować ani
+    usunąć, bo inaczej traci wartość dowodową. Korekta błędnej zmiany to kolejna zmiana, również
+    zalogowana.
+  </div>
+  <p class="muted">Makieta: <a href="../../makieta/strony/12-rejestr-aktywnosci.html" target="_blank" rel="noopener">12-rejestr-aktywnosci &#8599;</a>. Retencja i RODO: <a href="10-bezpieczenstwo.html" onclick="if(parent!==window){parent.docNav('10-bezpieczenstwo');return false}">Bezpieczeństwo i RODO</a>.</p>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/05-moduly-funkcjonalne.md">05-moduly-funkcjonalne.md</a>,
+    <a href="../../docs/10-bezpieczenstwo-i-rodo.md">10-bezpieczenstwo-i-rodo.md</a>,
+    <a href="../../docs/02-aktorzy-i-uprawnienia.md">02-aktorzy-i-uprawnienia.md</a>. Uzupełnienia po warsztacie:
+    <span class="ref new">D-121</span>, <span class="ref new">D-122</span>.
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Rejestr decyzji</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Rejestry</div>
+    <h1 class="doc-title">Rejestr decyzji</h1>
+    <p class="doc-lead">
+      124 decyzje podjęte na warsztacie 25.08.2026, w kolejności chronologicznej, plus
+      4 uzupełnienia dopisane po nim (04.09.2026). Każda decyzja ma siłę (twarda, wstępna,
+      odrzucona, odroczona), autora potrzeby lub rozwiązania oraz znacznik czasu z nagrania.
+    </p>
+  </div>
+
+  <div class="card">
+    <p style="margin-top:0"><b>Legenda:</b></p>
+    <ul style="margin-bottom:0">
+      <li><b>TWARDA</b> jednoznaczne ustalenie, można na nim budować</li>
+      <li><b>WSTĘPNA</b> zgoda kierunkowa bez domknięcia szczegółów</li>
+      <li><b>ODRZUCONA</b> świadomie wykluczone z zakresu</li>
+      <li><b>[K]</b> zdecydował klient (Bartek), <b>[W]</b> zaproponował wykonawca (Paweł)</li>
+    </ul>
+  </div>
+
+  <details class="acc" open>
+    <summary>Fundament: role, alerty, kolory (0:00 &ndash; 26:10)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-01</span></td><td>Kolorowanie całego wiersza wg statusu, zmiana koloru automatyczna przy zmianie statusu. Pierwotnie 3 kolory (czerwony negatywna, zielony pozytywna, fioletowy rozliczone). <b>Paleta rozszerzona do 5 stanów 2026-09-04, patrz [D-123]</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>0:14</td></tr>
+            <tr><td><span class="ref">D-02</span></td><td>Cztery role bazowe (admin, pracownik, IS, klient) plus możliwość tworzenia własnych przez admina</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:27</td></tr>
+            <tr><td><span class="ref">D-03</span></td><td>Panel klienta końcowego w zakresie, ale zakres i finansowanie nierozstrzygnięte</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W] popycha</td><td>1:36-3:21</td></tr>
+            <tr><td><span class="ref">D-04</span></td><td><b>SMS odrzucone w etapie I.</b> Wyłącznie powiadomienia mailowe</td><td><span class="pill od">ODRZUCONA</span></td><td>[K]</td><td>9:35</td></tr>
+            <tr><td><span class="ref">D-05</span></td><td>Alerty ręczne i automatyczne czasowe. Klient ma 4 alerty rozpisane w dokumencie</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>8:00</td></tr>
+            <tr><td><span class="ref">D-06</span></td><td>Rozdzielenie modułu katalogu szkoleń od modułu terminów</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>11:32</td></tr>
+            <tr><td><span class="ref">D-07</span></td><td><b>Konfigurator prowizji widoczny wyłącznie dla administratora.</b> IS nie widzi swojej ani cudzej stawki</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>14:28</td></tr>
+            <tr><td><span class="ref">D-08</span></td><td>Prowizje progowe, negocjowane per instytucja, malejące wraz ze wzrostem obrotu</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>12:35</td></tr>
+            <tr><td><span class="ref">D-09</span></td><td>Rejestr faktur LDIT wewnątrz systemu jako podstawa naliczania progów</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>22:38</td></tr>
+            <tr><td><span class="ref">D-10</span></td><td>Nazewnictwo kwot: "koszt całkowity" i "kwota przyznana", nie "wartość szkolenia"</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>23:33</td></tr>
+            <tr><td><span class="ref">D-11</span></td><td>Model premium / subskrypcja dla IS oraz szkolenia komercyjne w systemie: bez decyzji</td><td><span class="pill">ODROCZONA</span></td><td>[W]</td><td>7:57</td></tr>
+            <tr><td><span class="ref">D-12</span></td><td>Obsługa dwóch modeli operacyjnych ustalania terminu (A: LDIT z kalendarza IS, B: IS telefonicznie)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>10:17</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Silnik prowizji (26:14 &ndash; 51:14)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-13</span></td><td><b>Okres rozliczeniowy = data wystawienia faktury</b>, osobne pole per szkolenie/uczestnik, domyślnie ostatni dzień szkolenia, edytowalne</td><td><span class="pill tw">TWARDA</span></td><td>[W] struktura, [K] potrzeba</td><td>26:38, 45:38</td></tr>
+            <tr><td><span class="ref">D-14</span></td><td>Konfigurator warunków prowizyjnych <b>self-service</b>, klient konfiguruje sam bez zlecania wykonawcy</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>34:56</td></tr>
+            <tr><td><span class="ref">D-15</span></td><td><b>Szablony parametryczne zamiast dowolnych formuł matematycznych.</b> Propozycja klienta odrzucona jako niestabilna</td><td><span class="pill tw">TWARDA</span> (odrzucenie)</td><td>[W]</td><td>41:26</td></tr>
+            <tr><td><span class="ref">D-16</span></td><td>Parametry konfiguratora: rodzaj kumulacji (miesięczny/roczny), progi przychodu, sposób liczenia (od całości / od nadwyżki), stała stawka</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>34:10, 37:47</td></tr>
+            <tr><td><span class="ref">D-17</span></td><td><b>Indywidualne warunki prowizyjne przypisywane PER WNIOSEK</b>, nie per klient</td><td><span class="pill tw">TWARDA</span></td><td>[K] potrzeba, [W] poziom</td><td>39:20</td></tr>
+            <tr><td><span class="ref">D-18</span></td><td><b>Podstawa naliczenia prowizji: koszt całkowity szkolenia</b>, nie kwota przyznana</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>39:38</td></tr>
+            <tr><td><span class="ref">D-19</span></td><td>Ręczna edycja wyliczonej wartości kasuje regułę, <b>z możliwością jej przywrócenia</b>. Zasada dla całego systemu</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>44:37-45:09</td></tr>
+            <tr><td><span class="ref">D-20</span></td><td><b>Prototyp konfiguratora w HTML przed kodowaniem systemu</b></td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>45:09</td></tr>
+            <tr><td><span class="ref">D-21</span></td><td>Prowizja zawsze wyrażana procentowo, nigdy kwotowo</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>45:36</td></tr>
+            <tr><td><span class="ref">D-22</span></td><td>Warunki instytucji <b>wersjonowane w czasie</b>, zmiany obowiązują od kolejnego roku</td><td><span class="pill ws">WSTĘPNA</span> (po oporze klienta)</td><td>[W] przeforsował</td><td>48:41-49:51</td></tr>
+            <tr><td><span class="ref">D-23</span></td><td>Historia rozliczeń nie może być przeliczana wstecz po zmianie warunków</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>50:08</td></tr>
+            <tr><td><span class="ref">D-24</span></td><td>Zestawienia roczne, baza wniosków dzielona na roczniki (2025/2026/2027)</td><td><span class="pill tw">TWARDA</span> co do potrzeby</td><td>[K]</td><td>49:51</td></tr>
+            <tr><td><span class="ref">D-25</span></td><td>Renegocjacja warunków w trakcie realizacji: odrzucona. Warunki znane od początku umowy</td><td><span class="pill od">ODRZUCONA</span></td><td>[K]</td><td>43:39</td></tr>
+            <tr><td><span class="ref">D-26</span></td><td><b>Przewidywana prowizja</b>: prognoza stawki z zaplanowanych szkoleń, przeliczana przy każdej zmianie wolumenu</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>26:58</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Uprawnienia, dashboardy, faktury (51:21 &ndash; 1:22:27)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-27</span></td><td>Powiadomienia wychodzą z <b>domeny klienta przez Microsoft 365</b>, alias typu <code>powiadomienia@</code>, licencja ok. 4 USD</td><td><span class="pill tw">TWARDA</span></td><td>[K] potrzeba, [W] rozwiązanie</td><td>52:36</td></tr>
+            <tr><td><span class="ref">D-28</span></td><td>Konfiguracja M365 na <b>wspólnej sesji na żywo (ok. 2 h)</b> zamiast przekazania konta admina</td><td><span class="pill ws">WSTĘPNA</span></td><td>[K]</td><td>54:10</td></tr>
+            <tr><td><span class="ref">D-29</span></td><td>Na czas testów maile wysyłane z konta Gmail wykonawcy</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>54:10</td></tr>
+            <tr><td><span class="ref">D-30</span></td><td>Dwa oddzielne dashboardy: administratora i pracownika</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>54:48</td></tr>
+            <tr><td><span class="ref">D-31</span></td><td>Cele dla pracowników z historią realizacji, ustawiane samodzielnie przez admina</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>55:30</td></tr>
+            <tr><td><span class="ref">D-32</span></td><td>Kaskadowy model prowizji wewnętrznej: koszt szkolenia -&gt; prowizja LDIT -&gt; prowizja pracownika</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>56:36</td></tr>
+            <tr><td><span class="ref">D-33</span></td><td>Baza naliczania prowizji wewnętrznej: obecnie wartość wniosków, docelowo procent od przychodu. <b>System obsługuje oba</b></td><td><span class="pill ws">WSTĘPNA</span></td><td>[K]</td><td>55:56</td></tr>
+            <tr><td><span class="ref">D-34</span></td><td><b>Zyski, prowizje instytucji i faktury widoczne wyłącznie dla administratora</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>57:52</td></tr>
+            <tr><td><span class="ref">D-35</span></td><td>Uprawnienia nadawane <b>per rola, nie per pracownik</b></td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>58:19</td></tr>
+            <tr><td><span class="ref">D-36</span></td><td><b>Konfigurator ról z checkboxami per zakładka.</b> Model płaski, bez hierarchii. Dwa poziomy: podgląd i edycja</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>58:19-59:32</td></tr>
+            <tr><td><span class="ref">D-37</span></td><td>Kolumna "numer faktury" znika z arkusza, powstaje osobny moduł faktur</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:00:52</td></tr>
+            <tr><td><span class="ref">D-38</span></td><td>Lista faktur z filtrami, przypisana do instytucji szkoleniowej</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:01:40</td></tr>
+            <tr><td><span class="ref">D-39</span></td><td><b>Import CSV zamiast integracji API</b> z systemem księgowym (1 h vs 10-15 h plus ryzyko klucza)</td><td><span class="pill tw">TWARDA</span> (odrzucenie API)</td><td>[K] po wycenie [W]</td><td>1:04:47</td></tr>
+            <tr><td><span class="ref">D-40</span></td><td><b>Podgląd PDF faktury w systemie</b>, nie tylko numer. Główny cel: sprawdzenie terminu płatności</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:05:33</td></tr>
+            <tr><td><span class="ref">D-41</span></td><td>Pliki i foldery klientów <b>zostają poza systemem</b> (Eksplorator Windows, OneDrive)</td><td><span class="pill tw">TWARDA</span> (wyłączenie)</td><td>[K]</td><td>1:22:27</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Korespondencja, model danych, nazewnictwo (1:23:05 &ndash; 1:49:46)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-42</span></td><td>Instytucja sama wprowadza informacje o szkoleniach, admin też może zarządzać</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>1:23:05</td></tr>
+            <tr><td><span class="ref">D-43</span></td><td>Dodanie nowego planu szkolenia swobodne, <b>edycja istniejącego przechodzi przez admina lub go powiadamia</b></td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>1:24:43</td></tr>
+            <tr><td><span class="ref">D-44</span></td><td><b>Odrzucenie wewnętrznego komunikatora</b> na rzecz integracji maili i notatek z telefonu</td><td><span class="pill od">ODRZUCONA</span></td><td>[K] pomysł, [W] przekierował</td><td>1:25:13-1:34:05</td></tr>
+            <tr><td><span class="ref">D-45</span></td><td><b>Brak wspólnej skrzynki firmowej.</b> Każdy pracownik ma własną, imienną</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:29:50</td></tr>
+            <tr><td><span class="ref">D-46</span></td><td>System integruje skrzynki i pokazuje historię korespondencji w rekordach</td><td><span class="pill tw">TWARDA</span></td><td>[K] potrzeba</td><td>1:30:22</td></tr>
+            <tr><td><span class="ref">D-47</span></td><td>Priorytet: korespondencja z <b>klientami</b>, nie z instytucjami</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:34:25</td></tr>
+            <tr><td><span class="ref">D-48</span></td><td><b>Skrzynka właściciela wyłączona z pełnej integracji</b> ze względu na prywatność</td><td><span class="pill tw">TWARDA</span> co do zasady</td><td>[K] obawa, [W] rozwiązanie</td><td>1:34:58</td></tr>
+            <tr><td><span class="ref">D-49</span></td><td>Integracja poczty przez aplikację Microsoft, ta sama technologia co wysyłka</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>1:35:39</td></tr>
+            <tr><td><span class="ref">D-50</span></td><td>Konwencja tematu maila (nazwa klienta) jako obejście procesowe dla powiązania korespondencji</td><td><span class="pill tw">TWARDA</span> jako obejście</td><td>[K]</td><td>1:40:13</td></tr>
+            <tr><td><span class="ref">D-51</span></td><td>Wyszukiwarka korespondencji po tytule i treści</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:41:08</td></tr>
+            <tr><td><span class="ref">D-52</span></td><td>Korespondencja widoczna na panelu instytucji <b>oraz</b> na karcie klienta</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:41:39, 1:42:04</td></tr>
+            <tr><td><span class="ref">D-53</span></td><td><b>Rozdzielenie encji Klient od Wniosku.</b> Jeden klient, wiele wniosków. "Jeden projekt = jeden wniosek"</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] nazwał</td><td>1:44:21-1:44:57</td></tr>
+            <tr><td><span class="ref">D-54</span></td><td>Dane klienta i korespondencja <b>wspólne dla wszystkich jego wniosków</b>. Główny widok roboczy pozostaje widokiem wniosków</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>1:45:35</td></tr>
+            <tr><td><span class="ref">D-55</span></td><td><b>Zachowanie obecnego nazewnictwa</b> klienta: "Zestawienia" zamiast "Dofinansowania", drzewo lat, "Nabory"</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:47:16</td></tr>
+            <tr><td><span class="ref">D-56</span></td><td>Definicje kwot: Wartość = wnioskowana, Przyznano = dofinansowanie, Koszt całkowity = dofinansowanie + wkład własny</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:48:38</td></tr>
+            <tr><td><span class="ref">D-57</span></td><td><b>Po warsztacie nie startuje implementacja.</b> Najpierw makieta v2 i test prowizji, potem odbiór iteracyjny modułami</td><td><span class="pill tw">TWARDA</span></td><td>[W] plan, [K] uszczegółowił</td><td>1:33:00-1:33:55</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Model finansowy KFS (1:49:49 &ndash; 2:10:24)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-58</span></td><td><b>Koszt całkowity wpisywany ręcznie, "Przyznano" wyliczane automatycznie i nieedytowalne</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:00:34</td></tr>
+            <tr><td><span class="ref">D-59</span></td><td>Wkład własny zależny od wielkości przedsiębiorstwa: mikro (do 9 osób) 90/10, powyżej 70/30. Przechowywany <b>procentowo</b></td><td><span class="pill tw">TWARDA</span> (reguła zewnętrzna)</td><td>[K]</td><td>1:51:21</td></tr>
+            <tr><td><span class="ref">D-60</span></td><td><b>KFS przyznawany zawsze firmie, nie uczestnikowi.</b> Hierarchia: firma -&gt; wniosek -&gt; uczestnicy</td><td><span class="pill tw">TWARDA</span></td><td>[W] pytanie, [K] potwierdził</td><td>1:53:14</td></tr>
+            <tr><td><span class="ref">D-61</span></td><td>Lista uczestników na wniosku ze <b>statusem kwalifikacji</b> (zakwalifikowany / niezakwalifikowany)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:53:36, 1:56:06</td></tr>
+            <tr><td><span class="ref">D-62</span></td><td>Dane kwotowe potrzebne <b>równocześnie</b> na poziomie wniosku i uczestnika</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>1:55:55</td></tr>
+            <tr><td><span class="ref">D-63</span></td><td><b>Kwota dopłaty dodatkowej</b> jako osobne pole ręczne, domyślnie 0, nie wchodzi do podstawy wyliczenia "Przyznano"</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] potwierdził</td><td>2:01:56</td></tr>
+            <tr><td><span class="ref">D-64</span></td><td>Dwie kolumny kosztu: "Koszt całkowity" (ręczny) i "Koszt całkowity z dopłatą" (wyliczany). <b>Prowizja od wersji z dopłatą</b></td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>2:02:30</td></tr>
+            <tr><td><span class="ref">D-65</span></td><td>"Kwota wnioskowana" to w rzeczywistości <b>całkowita wartość szkolenia</b> (z wkładem własnym)</td><td><span class="pill tw">TWARDA</span></td><td>[K] korekta</td><td>2:03:18</td></tr>
+            <tr><td><span class="ref">D-66</span></td><td><b>Formularz elektroniczny zamiast parsowania przesyłanego pliku</b></td><td><span class="pill tw">TWARDA</span> kierunkowa</td><td>[K] propozycja, [W] entuzjastycznie</td><td>2:07:37</td></tr>
+            <tr><td><span class="ref">D-67</span></td><td>Dopłata dodatkowa <b>nie może podnosić wartości ponad ustaloną</b> całkowitą wartość szkolenia</td><td>ODRZUCENIE wariantu</td><td>[K]</td><td>2:04:45</td></tr>
+            <tr><td><span class="ref">D-68</span></td><td>Wielkość przedsiębiorstwa wyznaczana automatycznie z liczby zatrudnionych podanej w formularzu</td><td><span class="pill ws">WSTĘPNA</span></td><td>[K]</td><td>2:07:09</td></tr>
+            <tr><td><span class="ref">D-69</span></td><td>Cykliczna synchronizacja formularza (np. co godzinę) zamiast odpytywania w czasie rzeczywistym</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>2:10:16</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Formularze, role IS, kwoty per uczestnik (2:10:43 &ndash; 2:33:34)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-70</span></td><td><b>Osobny formularz zgłoszeniowy dla każdej instytucji</b> (ok. 20 kopii na start), osadzony u klienta, spięty z systemem</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>2:18:45</td></tr>
+            <tr><td><span class="ref">D-71</span></td><td><b>Zakaz mieszania danych różnych IS</b> w jednym pliku i jednej tabeli. Argument bezpieczeństwa</td><td><span class="pill tw">TWARDA</span> co do zasady, <span class="pill ws">WSTĘPNA</span> co do implementacji</td><td>[W]</td><td>2:20:00</td></tr>
+            <tr><td><span class="ref">D-72</span></td><td><b>Nowa rola: pracownik instytucji szkoleniowej (handlowiec)</b>, nadawana przez administratora IS, z przefiltrowanym dostępem</td><td><span class="pill tw">TWARDA</span></td><td>[W] jako użytkownik IS, [K] zaakceptował</td><td>2:14:40</td></tr>
+            <tr><td><span class="ref">D-73</span></td><td>Filtrowanie widoczności pracownika IS <b>po naborze</b> (np. tylko najnowszy)</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>2:21:23</td></tr>
+            <tr><td><span class="ref">D-74</span></td><td><b>Formularz wypełnia klient końcowy</b>, handlowiec wysyła tylko link i widzi status wypełnienia</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>2:16:20</td></tr>
+            <tr><td><span class="ref">D-75</span></td><td><b>Rola handlowca kończy się w momencie wypełnienia formularza.</b> Dalej proces przejmuje LDIT</td><td><span class="pill tw">TWARDA</span></td><td>[W] opisał, [K] potwierdził</td><td>2:18:12</td></tr>
+            <tr><td><span class="ref">D-76</span></td><td>Widok instytucji: <b>jedna zakładka opisana nazwą własnej spółki</b>, tylko własni klienci</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:21:03</td></tr>
+            <tr><td><span class="ref">D-77</span></td><td>Kwoty i statusy kwalifikacji <b>na poziomie pojedynczego uczestnika</b>. Osoba niezakwalifikowana ma kwotę zero</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:22:59</td></tr>
+            <tr><td><span class="ref">D-78</span></td><td>Jeden wniosek może obejmować <b>kilka różnych szkoleń o różnych cenach</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:23:44</td></tr>
+            <tr><td><span class="ref">D-79</span></td><td><b>Całkowita wartość szkolenia liczona automatycznie</b> sumą warunkową po uczestnikach zakwalifikowanych</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>2:31:05</td></tr>
+            <tr><td><span class="ref">D-80</span></td><td>Wkład własny i kwota dopłaty dodatkowej <b>wpisywane ręcznie</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:25:46</td></tr>
+            <tr><td><span class="ref">D-81</span></td><td>Konwencja makiety: pola ręczne oznaczone <b>na żółto</b></td><td><span class="pill ws">WSTĘPNA</span> (prototyp)</td><td>[W]</td><td>2:26:00</td></tr>
+            <tr><td><span class="ref">D-82</span></td><td><b>Lista szkoleń do wyboru w formularzu</b> zamiast wpisywania nazwy, wraz z kwotą</td><td><span class="pill tw">TWARDA</span> co do kierunku</td><td>[W]</td><td>2:29:20</td></tr>
+            <tr><td><span class="ref">D-83</span></td><td>Rezygnacja z obiegu Excela mailem na rzecz formularza spiętego z systemem</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>2:13:40</td></tr>
+            <tr><td><span class="ref">D-84</span></td><td><b>Osoba niekwalifikująca się do KFS wymaga odrębnej faktury komercyjnej</b>, nie wchodzi do kosztu całkowitego</td><td><span class="pill tw">TWARDA</span> (reguła zewnętrzna)</td><td>[K]</td><td>2:30:18</td></tr>
+            <tr><td><span class="ref">D-85</span></td><td>Prowizja od dopłaty należna <b>tylko gdy dopłata jest na wspólnej fakturze KFS</b></td><td><span class="pill ws">WSTĘPNA</span> (wątek urwany)</td><td>[K]</td><td>2:32:17</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Certyfikaty, prowizje w UI, dane dla IS (2:33:35 &ndash; 2:58:40)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-86</span></td><td>Dopłaty i nietypowe kwoty <b>wpisywane ręcznie</b> w etapie I, zapisywane jako historia/status</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] akceptacja</td><td>2:36:02</td></tr>
+            <tr><td><span class="ref">D-87</span></td><td><b>Instytucje szkoleniowe NIE mogą wysyłać powiadomień z systemu</b> (ani mail, ani SMS)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:37:46</td></tr>
+            <tr><td><span class="ref">D-88</span></td><td>Kompromis dla IS: <b>szablon mailowy otwierany w Outlooku</b>, wysyłka z własnej skrzynki IS</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>2:37:10</td></tr>
+            <tr><td><span class="ref">D-89</span></td><td>Alerty pozostają konfigurowalne</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:36:44</td></tr>
+            <tr><td><span class="ref">D-90</span></td><td>Widok "Niezłożone" (baza klientów) <b>powiązany z modułem naborów</b>, w tym prognozowanych. Sortowanie po dacie zakończenia naboru rosnąco</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] akceptacja</td><td>2:48:42</td></tr>
+            <tr><td><span class="ref">D-91</span></td><td><b>Handlowiec IS nie dostaje informacji o zbliżającym się naborze.</b> Propozycja wykonawcy odrzucona</td><td><span class="pill od">ODRZUCONA</span></td><td>[K]</td><td>2:49:28</td></tr>
+            <tr><td><span class="ref">D-92</span></td><td>Prowizja: <b>prosty wykres na dashboardzie, szczegóły w module Administracja</b> jako podstawa fakturowania</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:51:18</td></tr>
+            <tr><td><span class="ref">D-93</span></td><td><b>Ręczne nadpisanie prowizji per wniosek wyłącznie z modułu Administracja</b></td><td><span class="pill tw">TWARDA</span> (miejsce), <span class="pill ot">OTWARTA</span> (kto)</td><td>[K]</td><td>2:52:18</td></tr>
+            <tr><td><span class="ref">D-94</span></td><td><b>Data wpłynięcia formularza rejestrowana automatycznie</b>, plus data aktualizacji</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] potrzeba</td><td>2:53:07</td></tr>
+            <tr><td><span class="ref">D-95</span></td><td>Zakres danych dla IS ograniczony do <b>prostych informacji o statusie klienta</b></td><td><span class="pill ws">WSTĘPNA</span>, klient odroczył wprost</td><td>[K]</td><td>2:54:45</td></tr>
+            <tr><td><span class="ref">D-96</span></td><td><b>Wersja premium dla IS odłożona poza etap I</b></td><td><span class="pill ws">WSTĘPNA</span></td><td>[K]</td><td>2:55:45</td></tr>
+            <tr><td><span class="ref">D-97</span></td><td><b>System generuje certyfikaty PDF do pobrania, NIE wysyła ich mailem</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:56:53</td></tr>
+            <tr><td><span class="ref">D-98</span></td><td>Wzór certyfikatu <b>per instytucja</b>, z placeholderami, generowanie wsadowe (50 osób = 50 PDF)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:57:48</td></tr>
+            <tr><td><span class="ref">D-99</span></td><td>Miejscowość na certyfikacie: <b>zawsze siedziba instytucji</b>, nie miejsce szkolenia</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] potwierdził</td><td>2:58:25</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Domknięcie: architektura widoków, bezpieczeństwo, zakres (2:58:49 &ndash; 3:22:49)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Czas</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref">D-100</span></td><td>Certyfikaty pobierane jako <b>paczka ZIP z poziomu wniosku</b>. Nazwa pliku <code>certyfikat_imie_nazwisko</code>. Jedna firma = jedna paczka</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:59:25</td></tr>
+            <tr><td><span class="ref">D-101</span></td><td>Wzór certyfikatu konfigurowany <b>w konfiguratorze instytucji szkoleniowej</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:58:49</td></tr>
+            <tr><td><span class="ref">D-102</span></td><td>Paczka rozliczeniowa dla klienta: certyfikaty + załączniki rozliczeniowe + faktura + instrukcja złożenia</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:58:57</td></tr>
+            <tr><td><span class="ref">D-103</span></td><td><b>Najpierw szkielet systemu, szczegóły dopracowywane na bieżąco</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>2:59:50</td></tr>
+            <tr><td><span class="ref">D-104</span></td><td><b>Przycisk "Dane do faktury"</b> przy wniosku, generujący maila do IS z uzupełnionymi polami</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:00:28</td></tr>
+            <tr><td><span class="ref">D-105</span></td><td>Formularz elektroniczny plus <b>bramka ręcznej akceptacji</b> przed wejściem rekordu do bazy (anty-spam), lista z datą wypełnienia</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:01:38</td></tr>
+            <tr><td><span class="ref">D-106</span></td><td>Zakładka <b>"Wysyłka maili"</b> z biblioteką szablonów przy kliencie/wniosku, <b>z potwierdzeniem przed wysyłką</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:03:07</td></tr>
+            <tr><td><span class="ref">D-107</span></td><td>Moduł <b>"Zgłoszenia"</b> jako wewnętrzna baza incydentów, dostęp <b>tylko admin i pracownicy LDIT</b>, osobna zakładka</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:04:47</td></tr>
+            <tr><td><span class="ref">D-108</span></td><td>Nawigacja: <b>zakładki z lewej strony, wygląd zbliżony do Excela</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:04:28</td></tr>
+            <tr><td><span class="ref">D-109</span></td><td><b>Integracja aplikacji naborów wewnątrz systemu</b>, nie pod osobnym linkiem</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:05:37</td></tr>
+            <tr><td><span class="ref">D-110</span></td><td><b>Wyszukiwarka globalna</b> plus wyszukiwarka na zakładce wniosków. Kryteria: NIP, nazwa klienta, PUP</td><td><span class="pill tw">TWARDA</span></td><td>[W] architektura, [K] potrzeba</td><td>3:06:31</td></tr>
+            <tr><td><span class="ref">D-111</span></td><td>Wyszukiwarka dla IS <b>ograniczona wyłącznie do własnych klientów</b></td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:06:43</td></tr>
+            <tr><td><span class="ref">D-112</span></td><td><b>Kompromis architektury widoków:</b> zakładka "Dofinansowania" z lewej rozwija listę instytucji przypisanych do konta. Zbiorczy widok wszystkich instytucji na dashboardzie</td><td><span class="pill tw">TWARDA</span></td><td>[K] wymaganie, [W] modyfikacja makiety</td><td>3:06:55-3:13:25</td></tr>
+            <tr><td><span class="ref">D-113</span></td><td><b>Pracownik przypisany do konkretnych instytucji</b> przez administratora</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:10:38</td></tr>
+            <tr><td><span class="ref">D-114</span></td><td><b>Dashboard wyłącznie statystyczny</b>, bez rozpisek klientów</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:09:08</td></tr>
+            <tr><td><span class="ref">D-115</span></td><td><b>Edycja inline w komórkach</b> jak w Excelu</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>3:12:03</td></tr>
+            <tr><td><span class="ref">D-116</span></td><td><b>Dwa niezależne rejestry:</b> rejestr zmian danych (kto, kiedy, wartość przed/po) i log logowań</td><td><span class="pill tw">TWARDA</span></td><td>[K] potrzeba, [W] rozdzielił</td><td>3:13:36-3:14:42</td></tr>
+            <tr><td><span class="ref">D-117</span></td><td>Bezpieczeństwo: <b>2FA, reset haseł, blokada konta byłego pracownika, auto-wylogowanie, kopie zapasowe</b>, zarządzanie kontami i instytucjami przez admina</td><td><span class="pill tw">TWARDA</span></td><td>[W] lista, [K] potwierdził</td><td>3:14:42-3:15:16</td></tr>
+            <tr><td><span class="ref">D-118</span></td><td><b>Przypisywanie zadań i integracja z Outlookiem WYKLUCZONE</b> z systemu, przeniesione do Projectly</td><td><span class="pill od">ODRZUCONA</span></td><td>[W] propozycja, [K] akceptacja</td><td>3:16:19</td></tr>
+            <tr><td><span class="ref">D-119</span></td><td>Rozbudowa biblioteki szablonów maili przesunięta na etap po fundamencie. Klient dośle listę</td><td><span class="pill ws">WSTĘPNA</span></td><td>[K]</td><td>3:22:04</td></tr>
+            <tr><td><span class="ref">D-120</span></td><td>Wycena wstępna 12-18 (prawdopodobnie tys. PLN), realizacja w 2 miesiące, ostateczna wycena po makiecie z podziałem na wersję I i opcje</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>3:18:19-3:18:45</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <h2>Uzupełnienia po warsztacie (2026-09-04)</h2>
+  <div class="callout ok">
+    <span class="ct">Cztery ustalenia dopisane po warsztacie, na podstawie dodatkowych notatek klienta</span>
+    Trzy doprecyzowują lub rozszerzają decyzje warsztatowe, czwarta wprowadza dokumentację
+    techniczno-biznesową jako produkt prowadzony równolegle do systemu. Zachowano numerację
+    ciągłą (D-121 i dalej), żeby rejestr pozostał jednym źródłem prawdy.
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Powiązania</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref new">D-121</span></td><td>Każdy pracownik loguje się na <b>własne konto i działa we własnym imieniu</b>. Na karcie Zgłoszeń autor wpisu jest <b>domyślnie ustawiany na zalogowanego użytkownika</b> i pozostaje edytowalny</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozszerza D-107, spójne z D-45</td></tr>
+        <tr><td><span class="ref new">D-122</span></td><td><b>Rejestr aktywności rozszerzony do pełnego logowania akcji.</b> System zapisuje wszystkie działania użytkownika: kliknięcia (log akcji) oraz wysyłki powiadomień i maili (log wysyłek), z przypisaniem do konta i znacznikiem czasu. Administrator ma wgląd, kto co zrobił i kiedy</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozszerza D-116, D-55</td></tr>
+        <tr><td><span class="ref new">D-123</span></td><td><b>Paleta kolorów statusów rozszerzona do pięciu stanów</b> (aktualizacja D-01): czekamy = biały, pozytywny = zielony (delikatny), negatywny = pomarańczowy (intensywny, alternatywnie jasny czerwony), rezygnacja = żółty, rozliczone = granatowy z delikatnym fioletem (alternatywnie granatowy z szarym). Kolor obejmuje cały wiersz i zmienia się automatycznie</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>aktualizuje D-01</td></tr>
+        <tr><td><span class="ref new">D-124</span></td><td><b>Dokumentacja projektu prowadzona także jako klikalna strona HTML</b>: wiele plików tematycznych, wspólny plik index, wspólne assets. Obejmuje zależności liczenia prowizji, diagram tabel i właściwości każdej zakładki. Utrzymywana równolegle do rozwoju systemu, tak by łatwo ją było aktualizować</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>nowy produkt</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">
+    <b>Uwaga.</b> Te uzupełnienia nie pochodzą z nagrania warsztatu z 25.08.2026, tylko z dodatkowych
+    ustaleń przekazanych po nim.
+  </p>
+
+  <h2>Decyzje unieważnione w trakcie warsztatu</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Wcześniejsza decyzja</th><th>Czas</th><th>Unieważniona przez</th><th>Czas</th></tr></thead>
+      <tbody>
+        <tr><td>Zakładka Zadania z panelem admina i widokiem pracownika</td><td>2:43:48</td><td>D-118 (wykluczenie zadań)</td><td>3:16:19</td></tr>
+        <tr><td>Moduł zadań realizowany przez Projectly z dostępem z systemu</td><td>2:38:11</td><td>D-118 (całkowite wykluczenie)</td><td>3:16:19</td></tr>
+        <tr><td>Makieta z przełącznikiem instytucji w prawym górnym rogu</td><td>makieta v1</td><td>D-112 (lista w lewym menu)</td><td>3:12:21</td></tr>
+        <tr><td>Reguła "Przyznano" wyłącza się po ręcznej edycji</td><td>dok. klienta</td><td>D-58 ("przyznano nie edytuję")</td><td>2:00:52</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Statystyka decyzji</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Kategoria</th><th>Liczba</th></tr></thead>
+      <tbody>
+        <tr><td>TWARDA (w tym warianty typu "TWARDA co do zasady")</td><td class="num">96</td></tr>
+        <tr><td>WSTĘPNA</td><td class="num">19</td></tr>
+        <tr><td>ODRZUCONA / wykluczenie</td><td class="num">7</td></tr>
+        <tr><td>ODROCZONA bez decyzji</td><td class="num">2</td></tr>
+        <tr><td><b>Razem</b></td><td class="num"><b>124</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Potrzebę zgłosił klient: <b>82</b> decyzji. Rozwiązanie zaproponował wykonawca: <b>42</b>.</p>
+  <p>Liczby obejmują 4 uzupełnienia po warsztacie (D-121 &ndash; D-124, wszystkie TWARDE, wszystkie z potrzeby klienta).</p>
+  <div class="callout warn">
+    <span class="ct">Uwaga o interpretacji</span>
+    Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde
+    ustalenia w wąskim zakresie, obok których stoi 50 pytań otwartych, w tym 4 blokady. Decyzje
+    z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu
+    stron i wymagają potwierdzenia.
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/13-rejestr-decyzji.md">13-rejestr-decyzji.md</a>.
+  </div>
+
+</div>
+</body>
+</html>

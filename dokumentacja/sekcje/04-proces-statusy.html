@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Proces i statusy</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Fundament</div>
+    <h1 class="doc-title">Proces i statusy</h1>
+    <p class="doc-lead">
+      Ścieżka od leada do rozliczenia, statusy funkcjonujące dziś w Excelu oraz paleta kolorów
+      wiersza. Paleta została po warsztacie rozszerzona do pięciu stanów <span class="ref new">D-123</span>.
+    </p>
+  </div>
+
+  <h2>Przebieg procesu od początku do końca</h2>
+  <div class="diagram">1. <span class="hi">POZYSKANIE</span>      handlowiec IS pozyskuje klienta końcowego, wysyła link do formularza
+              |
+2. <span class="hi">FORMULARZ</span>       klient wypełnia formularz online, system rejestruje datę wpłynięcia
+              |
+3. <span class="hi">AKCEPTACJA</span>      Bartek klika „Akceptuj”, rekord wchodzi do bazy (bramka anty-spamowa)
+              |          <span class="em">&gt;&gt;&gt; ROLA HANDLOWCA IS SIĘ KOŃCZY &lt;&lt;&lt;</span>
+4. <span class="hi">OCZEKIWANIE</span>     klient trafia do bazy, system wiąże go z naborem właściwego PUP
+   NA NABÓR                (aktualnym lub prognozowanym)
+              |
+5. <span class="hi">PRZYGOTOWANIE</span>   rejestracja klienta w BUR, ustalenie szkoleń i kwot
+   WNIOSKU
+              |
+6. <span class="hi">ZŁOŻENIE</span>        wniosek złożony w PUP
+              |
+7. <span class="hi">DECYZJA</span>         urząd wydaje decyzję pozytywną lub negatywną, może obciąć kwotę lub osoby
+              |
+8. <span class="hi">USTALENIE</span>       termin szkolenia ustalony (model A lub B), ewentualne pismo do PUP
+   TERMINU
+              |
+9. <span class="hi">REALIZACJA</span>      szkolenie się odbywa
+              |
+10. <span class="hi">ROZLICZENIE</span>    IS wystawia fakturę, system generuje certyfikaty (ZIP),
+                          LDIT wysyła paczkę i wystawia fakturę prowizyjną</div>
+
+  <h2>Statusy</h2>
+  <p>W obecnym Excelu funkcjonują <b>dwa niezależne statusy</b> na jednym wierszu. Nie ustalono, czy w systemie zostaną dwa pola, czy jeden łańcuch <span class="ref p">P-42</span>.</p>
+
+  <div class="two">
+    <div class="card">
+      <h3>Status składania (dziś „status lewy”)</h3>
+      <dl class="kv">
+        <dt>Niezłożony</dt><dd>Klient w bazie, wniosek jeszcze nie poszedł</dd>
+        <dt>NW</dt><dd>Umówione, że piszemy wniosek, ale sprawa stoi. <b>Nazwa do zmiany</b> <span class="ref p">P-11</span></dd>
+        <dt>Złożony</dt><dd>Wniosek trafił do urzędu</dd>
+        <dt>Rezygnacja</dt><dd>Klient zrezygnował przed złożeniem</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>Status decyzji i finansowy</h3>
+      <dl class="kv">
+        <dt>Pozytywna</dt><dd>Dofinansowanie przyznane &mdash; zielony</dd>
+        <dt>Negatywna</dt><dd>Odmowa (często brak środków) &mdash; pomarańczowy</dd>
+        <dt>Rezygnacja po napisaniu</dt><dd>Klient zrezygnował po przygotowaniu wniosku &mdash; żółty</dd>
+        <dt>Rozliczone</dt><dd>Projekt rozliczony kompletnie &mdash; granatowy</dd>
+      </dl>
+    </div>
+  </div>
+
+  <h2>Kolorowanie wierszy <span class="ref">D-01</span> <span class="ref new">D-123</span></h2>
+  <p>
+    Kolor obejmuje <b>cały wiersz</b> i zmienia się <b>automatycznie</b> przy zmianie statusu.
+    Na warsztacie ustalono paletę trójbarwną (czerwony / zielony / fioletowy), a 04.09.2026 klient
+    rozszerzył ją do pięciu stanów. Poniżej paleta obowiązująca, z podglądem koloru:
+  </p>
+
+  <div class="tbl-wrap">
+    <table class="t pal">
+      <thead><tr><th>Podgląd</th><th>Status</th><th>Kolor</th><th>Tło</th><th>Wariant alternatywny</th></tr></thead>
+      <tbody>
+        <tr class="demo-czekamy"><td><span class="swatch" style="background:#ffffff"></span></td><td><b>Czekamy</b> (oczekuje na decyzję)</td><td>biały</td><td class="mono">#ffffff</td><td class="muted">&mdash;</td></tr>
+        <tr class="demo-poz"><td><span class="swatch" style="background:#dcf3e3"></span></td><td><b>Pozytywny</b> (decyzja pozytywna)</td><td>zielony delikatny</td><td class="mono">#dcf3e3</td><td class="muted">&mdash;</td></tr>
+        <tr class="demo-neg"><td><span class="swatch" style="background:#f6a94a"></span></td><td><b>Negatywny</b> (decyzja negatywna)</td><td>pomarańczowy intensywny</td><td class="mono">#f6a94a</td><td>jasny czerwony <span class="mono">#f4b4b4</span></td></tr>
+        <tr class="demo-rez"><td><span class="swatch" style="background:#fce98a"></span></td><td><b>Rezygnacja</b></td><td>żółty</td><td class="mono">#fce98a</td><td class="muted">&mdash;</td></tr>
+        <tr class="demo-set"><td><span class="swatch" style="background:#3a3f72"></span></td><td><b>Rozliczone</b> (kompletnie)</td><td>granatowy z fioletem</td><td class="mono">#3a3f72</td><td>granatowy z szarym <span class="mono">#39435a</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Osobny kontekst: klient z aktywnym naborem w widoku „Baza klientów” wyróżniany jest zielonym akcentem na krawędzi wiersza, niezależnie od statusu decyzji.</p>
+
+  <div class="q">
+    „w przypadku negatywnej odpowiedzi używamy po całym wierszu koloru czerwonego, takiego jasnego,
+    w przypadku pozytywnej używamy zielonego, w przypadku już rozliczenia kompletnego całego projektu
+    używamy fioletowego koloru (...) Czyli jeżeli zmienimy status wniosku z pozytywnej na rozliczony,
+    żeby kolor się po całej długości ustawił.”
+    <span class="who">Bartek, 0:14 (paleta pierwotna)</span>
+  </div>
+  <div class="callout ok">
+    <span class="ct">Aktualizacja 04.09.2026 <span class="ref new">D-123</span></span>
+    Negatywny zmienia się z czerwonego na intensywny pomarańczowy (ewentualnie jasny czerwony),
+    dochodzi żółty dla rezygnacji i biały dla stanu „czekamy”, a rozliczone przechodzi z fioletu
+    na granatowy z domieszką delikatnego fioletu (albo granatowy z szarym).
+  </div>
+  <div class="callout warn">
+    <span class="ct">Uwaga dostępnościowa</span>
+    Kolor jest dodatkiem do statusu tekstowego, nie jego zamiennikiem. Nazwany status musi być
+    widoczny obok koloru. Wiersz „rozliczone” ma ciemne tło, więc tekst na nim jest jasny.
+  </div>
+
+  <h2>Wyzwalacze powiadomień</h2>
+  <p>Powiadomienia mailowe wyzwalane zmianą statusu lub datą. Szczegóły w sekcji <a href="08-powiadomienia.html" onclick="if(parent!==window){parent.docNav('08-powiadomienia');return false}">Powiadomienia i certyfikaty</a>.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Wyzwalacz</th><th>Powiadomienie</th><th>Odbiorca</th><th>Tryb</th></tr></thead>
+      <tbody>
+        <tr><td>Status = Pozytywna decyzja</td><td>Prośba o ustalenie terminu</td><td>Instytucja (osoba od terminów)</td><td>Automatyczny</td></tr>
+        <tr><td>IS wpisała termin</td><td>Termin ustalony, zgłoś do urzędu</td><td>LDIT</td><td>Automatyczny</td></tr>
+        <tr><td>Ręcznie, przyciskiem</td><td>Wniosek w trakcie przygotowania</td><td>Klient końcowy</td><td>Ręczny</td></tr>
+        <tr><td>Ręcznie, przy wniosku</td><td>Dane do faktury</td><td>Instytucja</td><td>Ręczny <span class="ref">D-104</span></td></tr>
+        <tr><td>IS oznaczyła fakturę wystawioną</td><td>Alert o fakturze</td><td>Osoba od faktur</td><td>Automatyczny</td></tr>
+        <tr><td>Zbliżający się termin (8 dni)</td><td>Sprawdzenie kompletu dokumentów</td><td>LDIT</td><td>Automatyczny</td></tr>
+        <tr><td>Dzień lub dwa przed terminem</td><td>Szczegóły organizacyjne</td><td>Uczestnicy terminu</td><td>Automatyczny</td></tr>
+        <tr><td>Ręcznie, przyciskiem</td><td>Instrukcja zakładania konta praca.gov.pl</td><td>Klient końcowy</td><td>Ręczny <span class="ref">D-106</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>Kanał: wyłącznie e-mail.</b> SMS odrzucony w etapie I <span class="ref">D-04</span>.</p>
+
+  <h2>Widok „Niezłożone” jako baza klientów <span class="ref">D-43</span></h2>
+  <p>Nazwa myląca, do zmiany. To jest <b>baza wszystkich klientów</b>, niezależnie od tego, czy wniosek już poszedł.</p>
+  <div class="q">
+    „teraz co tu: klienci, którzy już byli złożeni, plus 5, którzy oczekują na nabór. Czasami [klient]
+    idzie 3 razy w roku na inne szkolenie, 3 razy wnioskuje do urzędu. Inaczej bym to nazwał: baza klientów.”
+    <span class="who">Bartek, 2:46:58</span>
+  </div>
+  <ul>
+    <li><b>Powiązanie z modułem naborów</b>, w tym prognozowanymi. Dziś Bartek ręcznie wpisuje daty naboru i zaznacza rekordy na zielono.</li>
+    <li><b>Wizualne wyróżnienie</b> klienta, u którego ruszył lub zaraz ruszy nabór.</li>
+    <li><b>Sortowanie po dacie zakończenia naboru rosnąco</b> (najpilniejsze na górze).</li>
+    <li><b>Widok zestawienia, nie alerty.</b></li>
+  </ul>
+  <p>Handlowiec IS <b>nie</b> dostaje tej informacji <span class="ref">D-91</span>: kontakt z klientem po formularzu należy do LDIT.</p>
+
+  <h2>Masowa aktualizacja statusów</h2>
+  <p>Realny scenariusz: urząd ogłasza wyniki, LDIT filtruje wnioski po PUP i masowo zmienia statusy. Wymaganie: filtr po urzędzie pracy na zakładce wniosków plus oznaczanie wyników kolorami w widoku przefiltrowanym <span class="ref">D-110</span>. Przykład z warsztatu: „wszystkie wnioski na Warszawę”.</p>
+
+  <h2>Rejestracja dat</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Data</th><th>Rejestracja</th><th>Rola</th></tr></thead>
+      <tbody>
+        <tr><td>Data wpłynięcia formularza</td><td>Automatyczna <span class="ref">D-94</span></td><td>Dowód, kiedy dokumenty dotarły. Obrona przed pretensjami</td></tr>
+        <tr><td>Data aktualizacji rekordu</td><td>Automatyczna</td><td>Ślad zmian</td></tr>
+        <tr><td>Data wystawienia faktury</td><td>Domyślnie ostatni dzień szkolenia, edytowalna <span class="ref">D-13</span></td><td><b>Wyznacza okres rozliczeniowy prowizji</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="q">
+    „mieliśmy sytuację, gdzie kończył się nabór 5 kwietnia, dostaliśmy formularz też 5 kwietnia i były
+    do nas pretensje, czemu nie zrobiliśmy wniosku. Musiałem prześledzić maila, kiedy dostaliśmy
+    formularz od tego handlowca (...)”
+    <span class="who">Bartek, 2:52:40</span>
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/04-proces-i-statusy.md">04-proces-i-statusy.md</a>. Powiązane:
+    <a href="05-zakladki.html" onclick="if(parent!==window){parent.docNav('05-zakladki');return false}">Zakładki systemu</a>,
+    <a href="08-powiadomienia.html" onclick="if(parent!==window){parent.docNav('08-powiadomienia');return false}">Powiadomienia</a>.
+  </div>
+
+</div>
+</body>
+</html>

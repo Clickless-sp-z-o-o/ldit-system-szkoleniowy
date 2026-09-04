@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Bezpieczeństwo i RODO</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Realizacja</div>
+    <h1 class="doc-title">Bezpieczeństwo i RODO</h1>
+    <p class="doc-lead">
+      System przechowuje dane osobowe uczestników szkoleń, w tym numery PESEL, a instytucje
+      szkoleniowe są wobec siebie konkurencyjne. Bezpieczeństwo i separacja danych to warunek
+      brzegowy, nie opcja. Ta sekcja zbiera wymagania, rejestr aktywności, warstwy separacji,
+      zakres danych osobowych i checklistę przed wdrożeniem.
+    </p>
+  </div>
+
+  <h2>Dlaczego to jest warunek brzegowy, nie opcja</h2>
+  <p>
+    System przechowuje <b>dane osobowe uczestników szkoleń</b>, w tym numery PESEL. Klient ma umowy
+    z dużymi podmiotami, po których stronie stoją zespoły prawne.
+  </p>
+  <p>
+    Dodatkowo: instytucje szkoleniowe są wobec siebie <b>konkurencyjne</b>. Wyciek danych do
+    niewłaściwego katalogu to scenariusz krytyczny, nie tylko techniczny incydent.
+  </p>
+  <p>
+    Panel klienta końcowego (jeśli wejdzie) podnosi stawkę jeszcze wyżej, bo wpuszcza do systemu
+    osoby spoza obu organizacji.
+  </p>
+
+  <h2>Wymagania bezpieczeństwa</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Wymaganie</th><th>Priorytet</th><th>Źródło</th></tr></thead>
+      <tbody>
+        <tr><td class="c">1</td><td>Dwuskładnikowe uwierzytelnianie (2FA)</td><td>MUST</td><td>3:14:42</td></tr>
+        <tr><td class="c">2</td><td>Reset haseł</td><td>MUST</td><td>3:14:42</td></tr>
+        <tr><td class="c">3</td><td>Automatyczne wylogowanie po bezczynności</td><td>MUST</td><td>3:15:16</td></tr>
+        <tr><td class="c">4</td><td>Blokada konta byłego pracownika z panelu admina</td><td>MUST</td><td>3:15:04</td></tr>
+        <tr><td class="c">5</td><td>Rejestr aktywności: zmiany danych (wartość przed i po), akcje (kliknięcia) i wysyłki powiadomień</td><td>MUST</td><td>3:13:36, <span class="ref new">D-122</span></td></tr>
+        <tr><td class="c">6</td><td>Log logowań (kto, kiedy, IP, wynik)</td><td>MUST</td><td>3:14:25</td></tr>
+        <tr><td class="c">7</td><td>Kopie zapasowe</td><td>MUST</td><td>3:15:16</td></tr>
+        <tr><td class="c">8</td><td>Twarda separacja danych między instytucjami</td><td>MUST</td><td>2:20:00, 3:06:43</td></tr>
+        <tr><td class="c">9</td><td>Ukrycie danych finansowych przed pracownikami</td><td>MUST</td><td>57:52</td></tr>
+        <tr><td class="c">10</td><td>Ukrycie stawek prowizji przed instytucjami</td><td>MUST</td><td>14:28</td></tr>
+        <tr><td class="c">11</td><td>Bramka akceptacji zgłoszeń z publicznego formularza (anty-spam)</td><td>MUST</td><td>3:01:38</td></tr>
+        <tr><td class="c">12</td><td>Ograniczenie wyszukiwarki IS do własnych klientów</td><td>MUST</td><td>3:06:43</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Rejestr aktywności: pełne logowanie akcji <span class="ref">D-116</span> <span class="ref new">D-122</span></h2>
+  <p>
+    Na warsztacie wykonawca doprecyzował rozdzielenie na dwa niezależne rejestry (zmiany danych +
+    logowania). <b>2026-09-04 klient rozszerzył zakres <span class="ref new">D-122</span>:</b> logowane
+    mają być <b>wszystkie akcje</b> użytkownika, tak by administrator mógł odtworzyć, co każdy
+    pracownik zrobił i kiedy. Ponieważ każdy działa na własnym koncie <span class="ref new">D-121</span>,
+    każde zdarzenie jest przypisane do osoby.
+  </p>
+  <p>
+    Cztery strumienie zdarzeń, prezentowane w zakładce
+    <a href="09-logi-zgloszenia.html" onclick="if(parent!==window){parent.docNav('09-logi-zgloszenia');return false}">Rejestr aktywności</a>:
+  </p>
+
+  <h3>Rejestr zmian danych</h3>
+  <p>Co ma być logowane:</p>
+  <ul>
+    <li>kto zmienił status wniosku</li>
+    <li>kto zmienił kwotę (przyznaną, koszt całkowity, dopłatę)</li>
+    <li>kto usunął dokument</li>
+    <li>kto dodał lub zmienił notatkę</li>
+    <li><b>wartość przed zmianą i po zmianie</b></li>
+  </ul>
+  <p><b>Szczególny nacisk na wartości wpisywane ręcznie.</b></p>
+  <div class="q">
+    „No szczególnie przy tych wartościach z ręki wpisywanych.”
+    <span class="who">Paweł, 3:14:02</span>
+  </div>
+  <p>Uzasadnienie z dokumentu klienta: „Przy wielu pracownikach to będzie bardzo ważne.”</p>
+
+  <h3>Log akcji (kliknięcia) <span class="ref new">D-122</span></h3>
+  <p>
+    Istotne działania w interfejsie, także te, które nie zmieniają danych: otwarcie karty klienta
+    lub wniosku, uruchomienie eksportu, kliknięcie przycisku akcji, wejście w moduł finansowy. Cel:
+    odtworzenie ścieżki pracy i wykrycie nietypowego dostępu (np. masowe otwieranie kart tuż przed
+    odejściem pracownika).
+  </p>
+  <div class="callout warn">
+    <span class="ct">Uwaga projektowa</span>
+    „Wszystkie kliknięcia” należy rozumieć jako <b>istotne akcje</b>, nie każdy ruch myszy. Logowanie
+    dosłownie każdego kliknięcia generuje ogromny wolumen i szum. Zakres zdarzeń do zalogowania
+    wymaga doprecyzowania listą, patrz
+    <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">Pytania otwarte i ryzyka</a> <span class="ref p">P-54</span>.
+  </div>
+
+  <h3>Log wysyłek <span class="ref new">D-122</span></h3>
+  <p>
+    Każda wysyłka powiadomienia lub maila z systemu: kto wysłał, do kogo, jaki szablon, kiedy,
+    z jakiego wyzwalacza (automatyczny czy ręczny). Domyka wymóg potwierdzenia przed wysyłką
+    <span class="ref">D-106</span> dowodem, że wysyłka faktycznie nastąpiła.
+  </p>
+
+  <h3>Log logowań</h3>
+  <p>
+    Kto i o której godzinie zalogował się do systemu, adres IP, urządzenie, wynik próby.
+  </p>
+  <div class="q">
+    „Na przykład twoje konto się zalogowało o czternastej 30. Żeby w razie, jakby był jakiś wyciek
+    czegokolwiek, żeby było też wiadomo, z jakiego powodu mogło to wyniknąć.”
+    <span class="who">Bartek, 3:14:25</span>
+  </div>
+  <p>Cel: materiał dowodowy przy wyjaśnianiu incydentów bezpieczeństwa.</p>
+
+  <h2>Separacja danych: trzy warstwy</h2>
+  <p>
+    Opisane szczegółowo w
+    <a href="02-role.html" onclick="if(parent!==window){parent.docNav('02-role');return false}">02. Aktorzy i uprawnienia</a>.
+    Podsumowanie z perspektywy bezpieczeństwa:
+  </p>
+
+  <h3>Warstwa 1: instytucja nie widzi cudzych klientów</h3>
+  <p>
+    Musi być egzekwowana <b>na poziomie danych, nie interfejsu</b>, i obowiązywać identycznie w:
+  </p>
+  <ul>
+    <li>widokach i listach</li>
+    <li>wyszukiwarce globalnej i lokalnej</li>
+    <li>eksportach do Excela</li>
+    <li>formularzach zgłoszeniowych</li>
+    <li>ewentualnym panelu klienta końcowego</li>
+  </ul>
+  <div class="callout danger">
+    <span class="ct">Test akceptacyjny</span>
+    Użytkownik instytucji A próbuje odczytać rekord należący do instytucji B poprzez każdy
+    z powyższych kanałów. Każda próba musi zakończyć się odmową.
+  </div>
+
+  <h3>Warstwa 2: instytucja nie widzi stawek prowizji</h3>
+  <p>
+    Ani swojej, ani cudzej. Konfigurator warunków prowizyjnych widoczny wyłącznie dla administratora.
+  </p>
+  <p>
+    To ryzyko <b>biznesowe</b>, nie techniczne, ale ma twarde konsekwencje dla modelu uprawnień.
+    Ujawnienie różnic w stawkach między instytucjami może zniszczyć relacje handlowe.
+  </p>
+
+  <h3>Warstwa 3: pracownik nie widzi danych finansowych firmy</h3>
+  <p>
+    Zyski firmy, marżowość, stawki prowizyjne instytucji i faktury wyłącznie dla administratora.
+  </p>
+  <p>Stan obecny do wyeliminowania: w Excelu każdy pracownik widzi wszystko.</p>
+
+  <h2>Prywatność skrzynek pocztowych</h2>
+  <p>
+    <b>Skrzynka właściciela firmy wyłączona z pełnej integracji</b> <span class="ref">D-48</span>.
+  </p>
+  <div class="q">
+    „Nie chciałbym, żeby wszystkie to były maile, bo moje szkolenia wyglądają inaczej. Maile
+    pracowników, czasami sprawy z nimi porozmawiam. Nie chcę, żeby każdy miał do tego wgląd.”
+    <span class="who">Bartek, 1:34:58</span>
+  </div>
+  <p><b>Ryzyko RODO:</b> bezrefleksyjna integracja skrzynki właściciela ujawniłaby zespołowi:</p>
+  <ul>
+    <li>korespondencję dotyczącą spraw pracowniczych (dane osobowe pracowników, potencjalnie dane wrażliwe)</li>
+    <li>korespondencję niezwiązaną z procesem</li>
+  </ul>
+  <p>
+    <b>Wymaganie:</b> selektywność na poziomie <b>źródła danych</b>, nie tylko widoku. Nie wystarczy
+    ukryć maili w interfejsie, nie mogą one w ogóle trafić do bazy.
+  </p>
+  <div class="callout open">
+    <span class="ct"><span class="ref p">P-20</span> Zakres integrowanych skrzynek</span>
+    Dokładny zakres integrowanych skrzynek wymaga potwierdzenia przed konfiguracją aplikacji
+    Microsoft 365.
+  </div>
+
+  <h2>Zakres uprawnień aplikacji Microsoft 365</h2>
+  <p>Aplikacja potrzebuje dwóch odrębnych uprawnień:</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Uprawnienie</th><th>Cel</th><th>Ryzyko</th></tr></thead>
+      <tbody>
+        <tr><td><b>Send Mail</b></td><td>Wysyłka powiadomień z domeny klienta</td><td>Niskie, ograniczone do jednego konta</td></tr>
+        <tr><td><b>Odczyt poczty</b></td><td>Historia korespondencji przy kliencie</td><td><b>Wysokie</b>, dostęp do treści maili</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <span class="ct">Rekomendacja</span>
+    Uprawnienie odczytu powinno być ograniczone do konkretnych skrzynek (Application Access Policy
+    w Exchange Online), a nie nadane na cały tenant. Bez tego aplikacja może odczytać każdą skrzynkę
+    w organizacji, w tym skrzynkę właściciela, która ma być wyłączona.
+  </div>
+
+  <h3>Dostęp wykonawcy do konta administracyjnego</h3>
+  <p>
+    Klient rozważał przekazanie dostępu do konta admina M365 na 2-3 dni. Ostatecznie skłonił się do
+    <b>wspólnej sesji konfiguracyjnej (ok. 2 godziny)</b>.
+  </p>
+  <p>
+    <b>To jest właściwy wybór.</b> Konto administracyjne tenanta to bieżące konto biznesowe klienta,
+    nie osobne konto techniczne. Przekazanie go wykonawcy byłoby naruszeniem zasady minimalnych
+    uprawnień i mogłoby naruszać umowy z klientami korporacyjnymi.
+  </p>
+
+  <h2>Odrzucenie integracji API z systemem księgowym</h2>
+  <p>Jednym z argumentów za importem CSV zamiast API było bezpieczeństwo.</p>
+  <div class="q">
+    „tam będzie trzeba przechowywać na pewno klucz API do twojego systemu fakturowego. Więc to już
+    jest kolejna rzecz, o którą trzeba zadbać, jeżeli chodzi o bezpieczeństwo.”
+    <span class="who">Paweł, 1:04:38</span>
+  </div>
+  <p>
+    <b>Ryzyko wraca</b>, jeśli integracja zostanie odblokowana w kolejnym etapie. Wtedy konieczne:
+    przechowywanie klucza w sejfie sekretów, rotacja, ograniczenie zakresu uprawnień klucza.
+  </p>
+
+  <h2>Ochrona przed nadużyciem publicznego formularza</h2>
+  <p>
+    Formularz zgłoszeniowy jest publicznie dostępny pod linkiem. Bramka ręcznej akceptacji chroni
+    bazę przed spamem <span class="ref">D-105</span>.
+  </p>
+  <div class="callout">
+    <span class="ct">Rekomendacja uzupełniająca</span>
+    Obok bramki akceptacji warto rozważyć podstawowe zabezpieczenia techniczne (rate limiting per
+    adres IP, honeypot), bo bramka chroni bazę, ale nie chroni przed zalaniem kolejki oczekujących.
+  </div>
+
+  <h2>Dane osobowe: zakres i retencja</h2>
+
+  <h3>Jakie dane osobowe system przechowuje</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Kategoria</th><th>Dane</th><th>Podstawa</th></tr></thead>
+      <tbody>
+        <tr><td>Uczestnicy szkoleń</td><td>imię, nazwisko, <b>PESEL</b></td><td>Wymóg wniosku KFS</td></tr>
+        <tr><td>Reprezentanci klientów</td><td>imię, nazwisko, telefon, e-mail</td><td>Kontakt operacyjny</td></tr>
+        <tr><td>Korespondencja</td><td>treść maili z klientami</td><td>Historia ustaleń</td></tr>
+        <tr><td>Pracownicy LDIT i IS</td><td>dane kont użytkowników</td><td>Dostęp do systemu</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>PESEL to dana wymagająca szczególnej ochrony. Pojawia się w formularzu zgłoszeniowym.</p>
+
+  <h3>Retencja: NIEUSTALONA <span class="ref p">P-26</span></h3>
+  <p>
+    Pytanie z dokumentacji przedwarsztatowej pozostało bez odpowiedzi: <b>jak długo przechowujemy
+    korespondencję zaimportowaną do kart uczestników</b>.
+  </p>
+  <p>Nie ustalono również:</p>
+  <ul>
+    <li>co dzieje się z danymi uczestników po zakończeniu i rozliczeniu szkolenia</li>
+    <li>czy potrzebna jest archiwizacja per rocznik z ograniczeniem dostępu</li>
+    <li>kiedy dane podlegają usunięciu</li>
+  </ul>
+  <div class="callout danger">
+    <span class="ct">To musi zostać domknięte przed wdrożeniem produkcyjnym</span>
+    Wpływa na model danych (soft delete, archiwizacja, anonimizacja).
+  </div>
+
+  <h3>Archiwizacja per rocznik</h3>
+  <p>
+    Baza dzielona na roczniki, ale nie ustalono, czy starsze roczniki mają być archiwizowane
+    z ograniczeniem dostępu, czy pozostają w pełni dostępne.
+  </p>
+
+  <h2>Audyt bezpieczeństwa</h2>
+  <p>
+    Dokumentacja przedwarsztatowa wskazuje: <b>rozważane jest zlecenie zewnętrznego audytu
+    bezpieczeństwa firmie, która przejmuje część odpowiedzialności. Temat do domknięcia przed startem
+    prac.</b>
+  </p>
+  <div class="callout open">
+    <span class="ct">Warsztat nie wrócił do tego tematu <span class="ref p">P-27</span></span>
+    Rekomendacja: audyt jest szczególnie uzasadniony, jeśli:
+    <ul>
+      <li>wejdzie panel klienta końcowego (osoby spoza obu organizacji)</li>
+      <li>system będzie przechowywał PESEL uczestników</li>
+      <li>klient ma umowy z podmiotami, których zespoły prawne mogą tego wymagać</li>
+    </ul>
+  </div>
+
+  <h2>Checklist przed wdrożeniem produkcyjnym</h2>
+  <ul>
+    <li>Separacja danych przetestowana automatycznie dla każdego kanału dostępu</li>
+    <li>Uprawnienie odczytu poczty ograniczone do wskazanych skrzynek (Application Access Policy)</li>
+    <li>Skrzynka właściciela potwierdzona jako wyłączona ze źródła danych</li>
+    <li>2FA wymuszone dla wszystkich kont, nie opcjonalne</li>
+    <li>Polityka retencji danych osobowych ustalona i zaimplementowana</li>
+    <li>Kopie zapasowe skonfigurowane i <b>odtworzenie przetestowane</b></li>
+    <li>Rejestr zmian obejmuje wszystkie pola kwotowe i statusy</li>
+    <li>Log akcji i log wysyłek obejmują uzgodnioną listę zdarzeń <span class="ref new">D-122</span></li>
+    <li>Log logowań działa i jest dostępny dla administratora</li>
+    <li>Blokada konta byłego pracownika przetestowana (czy sesja wygasa natychmiast)</li>
+    <li>Rate limiting na publicznym formularzu zgłoszeniowym</li>
+    <li>Decyzja o audycie zewnętrznym podjęta</li>
+    <li>Jeśli wchodzi panel klienta: osobny cykl testów separacji przed udostępnieniem</li>
+  </ul>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/10-bezpieczenstwo-i-rodo.md">10-bezpieczenstwo-i-rodo.md</a>.
+  </div>
+
+</div>
+</body>
+</html>

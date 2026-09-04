@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Zakładki systemu</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Funkcje</div>
+    <h1 class="doc-title">Zakładki systemu &mdash; właściwości każdej</h1>
+    <p class="doc-lead">
+      Wszystkie zakładany widoczne w lewej nawigacji, z priorytetem, zakresem widoczności per rola
+      i powiązanymi decyzjami. Nazewnictwo odzwierciedla żądanie klienta o zachowanie nazw z Excela
+      <span class="ref">D-55</span>. Każda pozycja linkuje do odpowiedniej strony makiety.
+    </p>
+  </div>
+
+  <div class="q">
+    „Chciałbym trochę zachować też nazewnictwo (...) żeby to tak jak już teraz działamy, jesteśmy
+    przyzwyczajeni, żeby też te nazwy pozostawały.”
+    <span class="who">Bartek, 1:47:16</span>
+  </div>
+
+  <h2>Mapa zakładek</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Zakładka</th><th>Priorytet</th><th>Specyfikacja</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>Dashboard</b></td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>2</td><td><b>Dofinansowania</b> (rozwija listę instytucji)</td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>3</td><td><b>Zestawienia</b> (2025 / 2026 / 2027)</td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>4</td><td><b>Baza klientów</b> (dziś „Niezłożone”)</td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>5</td><td><b>Nabory</b></td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>6</td><td><b>Instytucje szkoleniowe</b> + katalog</td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>7</td><td><b>Konfigurator instytucji</b></td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>8</td><td><b>Administracja</b></td><td><span class="pill tw">MUST</span></td><td>Częściowa</td></tr>
+        <tr><td>9</td><td><b>Wysyłka maili</b></td><td><span class="pill tw">MUST</span></td><td>Szablony do dosłania</td></tr>
+        <tr><td>10</td><td><b>Zgłoszenia</b> (incydenty)</td><td><span class="pill ws">SHOULD</span></td><td>Gotowa</td></tr>
+        <tr><td>11</td><td><b>Konta i uprawnienia</b></td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>12</td><td><b>Rejestr aktywności</b></td><td><span class="pill tw">MUST</span></td><td>Gotowa</td></tr>
+        <tr><td>13</td><td><b>Terminy i kalendarz szkoleń</b></td><td><span class="pill ws">SHOULD</span></td><td>Niepełna</td></tr>
+        <tr><td>14</td><td><b>Statystyki</b></td><td><span class="pill ws">SHOULD</span></td><td>Zakres dla IS sporny</td></tr>
+        <tr><td>15</td><td class="muted">Zadania</td><td><span class="pill od">WON'T</span></td><td>Przeniesione do Projectly</td></tr>
+        <tr><td>16</td><td class="muted">Kalendarz Outlook</td><td><span class="pill od">WON'T</span></td><td>Wykluczone</td></tr>
+        <tr><td>17</td><td><b>Panel klienta końcowego</b></td><td><span class="pill ot">OTWARTE</span></td><td>Nierozstrzygnięte</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Właściwości poszczególnych zakładek</h2>
+  <p>Rozwiń zakładkę, żeby zobaczyć kto ją widzi, co robi i które decyzje ją definiują.</p>
+
+  <details class="acc" open>
+    <summary>1. Dashboard</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Wyłącznie statystyki: ile wniosków, pozytywnych, negatywnych, rezygnacji, na jakie kwoty, prowizja potencjalna jako prosty wykres, cele zespołu. Jedyne miejsce z przekrojem przez wszystkie instytucje <span class="ref">D-112</span>.</dd>
+        <dt>Kto widzi</dt><dd>Admin (z finansami), Pracownik LDIT (bez zysków i stawek), IS (własne wskaźniki, zakres otwarty). Dwa warianty: administratora i pracownika <span class="ref">D-30</span>.</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-114</span> dashboard czysto statystyczny, <span class="ref">D-30</span> dwa dashboardy.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/01-dashboard.html" target="_blank" rel="noopener">01-dashboard &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>2. Dofinansowania (rozwija listę instytucji)</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Zakładka w lewej nawigacji rozwijająca listę instytucji przypisanych do zalogowanego użytkownika. Kompromis architektury widoków wypracowany na koniec warsztatu.</dd>
+        <dt>Kto widzi</dt><dd>Admin (wszystkie IS), Pracownik LDIT (przypisane IS). Instytucja widzi zamiast tego jedną zakładkę własnej spółki <span class="ref">D-76</span>.</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-112</span> lista w lewym menu, <span class="ref">D-113</span> pracownik przypisany do instytucji.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/02-zestawienia.html" target="_blank" rel="noopener">02-zestawienia &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>3. Zestawienia (2025 / 2026 / 2027)</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Drzewo lat w lewej nawigacji, odwzorowanie zakładek Excela. Zbiorcze zestawienie ułożone chronologicznie wg kolejności złożenia wniosków. Kluczowy jest numer klienta, sekwencyjny w roku, trafiający na fakturę.</dd>
+        <dt>Kto widzi</dt><dd>Admin (wszystkie IS), Pracownik LDIT (przypisane IS).</dd>
+        <dt>Decyzje / pytania</dt><dd><span class="ref">D-24</span> podział na roczniki, <span class="ref">D-55</span> nazewnictwo. Sprzeczność <span class="ref p">P-08</span>: widok zbiorczy tylko na dashboardzie czy też operacyjny.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/02-zestawienia.html" target="_blank" rel="noopener">02-zestawienia &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>4. Baza klientów (dziś „Niezłożone”)</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Baza wszystkich klientów, niezależnie od tego, czy wniosek poszedł. Powiązanie z modułem naborów, sortowanie po dacie zakończenia naboru, wizualne wyróżnienie aktywnego naboru. Szerzej: <a href="04-proces-statusy.html" onclick="if(parent!==window){parent.docNav('04-proces-statusy');return false}">Proces i statusy</a>.</dd>
+        <dt>Kto widzi</dt><dd>Admin (pełna), Pracownik LDIT (przypisane IS), IS (własni klienci), Pracownik IS (własni, przefiltrowani).</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-43</span> baza klientów, <span class="ref">D-90</span> powiązanie z naborami, <span class="ref">D-91</span> handlowiec nie dostaje info o naborze.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/04-baza-klientow.html" target="_blank" rel="noopener">04-baza-klientow &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>5. Nabory</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Integracja istniejącej aplikacji do przewidywania naborów wewnątrz systemu. System jest odbiorcą prognoz, nie liczy ich sam. Nabory aktualne, prognozowane i zakończone, przypisane do urzędu (340 w bazie).</dd>
+        <dt>Kto widzi</dt><dd>Admin (pełny), Pracownik LDIT (odczyt), IS (odczyt, zakres otwarty).</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-109</span> integracja aplikacji naborów wewnątrz systemu.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/05-nabory.html" target="_blank" rel="noopener">05-nabory &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>6. Instytucje szkoleniowe i katalog szkoleń</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Karta instytucji (dane firmy, siedziba jako źródło miejscowości na certyfikacie, osoby kontaktowe) plus katalog szkoleń prowadzony przez instytucję. Standard godzinowy per instytucja. Sekcja korespondencji mailowej.</dd>
+        <dt>Kto widzi</dt><dd>Admin (pełny), Pracownik LDIT (odczyt), IS (własny katalog, pełna edycja).</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-42</span> instytucja wprowadza szkolenia, <span class="ref">D-43</span> edycja przez admina lub powiadomienie, <span class="ref">D-06</span> katalog oddzielony od terminów.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/06-instytucje.html" target="_blank" rel="noopener">06-instytucje &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>7. Konfigurator instytucji szkoleniowej</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Warunki prowizyjne (patrz <a href="07-prowizja.html" onclick="if(parent!==window){parent.docNav('07-prowizja');return false}">Silnik prowizji</a>), wzór certyfikatu z placeholderami, dane firmy, ceny, przypisani klienci.</dd>
+        <dt>Kto widzi</dt><dd><b>Wyłącznie administrator</b> <span class="ref">D-07</span>. Instytucja nie widzi ani swojej, ani cudzej stawki.</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-07</span> konfigurator tylko dla admina, <span class="ref">D-98</span> wzór certyfikatu per instytucja.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/07-konfigurator-is.html" target="_blank" rel="noopener">07-konfigurator-is &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>8. Administracja</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Moduł finansowy: prowizje szczegółowe jako podstawa fakturowania, ręczne nadpisanie prowizji per wniosek (jedyne miejsce), lista faktur z filtrami, import faktur z CSV, podgląd PDF faktury.</dd>
+        <dt>Kto widzi</dt><dd><b>Wyłącznie administrator.</b> Zakres dla pracownika LDIT otwarty <span class="ref p">P-06</span>.</dd>
+        <dt>Decyzje / blokady</dt><dd><span class="ref">D-93</span> nadpisanie prowizji, <span class="ref">D-38</span> lista faktur, <span class="ref">D-39</span> import CSV. Blokada <span class="ref p">P-09</span>: czy system księgowy daje eksport CSV.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/08-administracja.html" target="_blank" rel="noopener">08-administracja &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>9. Wysyłka maili</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Zakładka na karcie klienta lub wniosku z biblioteką szablonów. Wymagane potwierdzenie przed wysyłką, żeby uniknąć przypadkowego kliknięcia.</dd>
+        <dt>Kto widzi</dt><dd>Admin (pełny), Pracownik LDIT (wysyłka). IS dostaje szablony do Outlooka, nie wysyła z systemu <span class="ref">D-87</span>.</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-106</span> zakładka z potwierdzeniem, <span class="ref">D-119</span> pełna lista szablonów do dosłania.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/09-wysylka-maili.html" target="_blank" rel="noopener">09-wysylka-maili &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>10. Zgłoszenia (incydenty)</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Wewnętrzna baza incydentów krytycznych (oszustwo, próba zaniżenia prowizji). Autor wpisu domyślnie zalogowany pracownik, edytowalny <span class="ref new">D-121</span>. Szerzej: <a href="09-logi-zgloszenia.html" onclick="if(parent!==window){parent.docNav('09-logi-zgloszenia');return false}">Logi i zgłoszenia</a>.</dd>
+        <dt>Kto widzi</dt><dd><b>Wyłącznie administrator i pracownicy LDIT</b> <span class="ref">D-107</span>. Instytucja nie widzi tego modułu.</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-107</span> baza incydentów, <span class="ref new">D-121</span> autor domyślnie zalogowany.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/10-zgloszenia.html" target="_blank" rel="noopener">10-zgloszenia &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>11. Konta i uprawnienia</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Konfigurator ról z checkboxami per zakładka (model płaski, dwa poziomy: podgląd i edycja), przypisanie użytkowników do instytucji, zarządzanie kontami i instytucjami. Szerzej: <a href="02-role.html" onclick="if(parent!==window){parent.docNav('02-role');return false}">Role i uprawnienia</a>.</dd>
+        <dt>Kto widzi</dt><dd>Admin (pełny). IS zarządza użytkownikami własnej instytucji.</dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-36</span> konfigurator ról, <span class="ref">D-35</span> uprawnienia per rola, <span class="ref">D-113</span> przypisanie do instytucji.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/11-konta-uprawnienia.html" target="_blank" rel="noopener">11-konta-uprawnienia &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>12. Rejestr aktywności</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Wgląd, kto co zrobił i kiedy. Cztery strumienie: zmiany danych (wartość przed i po), log akcji (kliknięcia), log wysyłek, log logowań <span class="ref new">D-122</span>. Tylko do odczytu. Szerzej: <a href="09-logi-zgloszenia.html" onclick="if(parent!==window){parent.docNav('09-logi-zgloszenia');return false}">Logi i zgłoszenia</a>.</dd>
+        <dt>Kto widzi</dt><dd><b>Wyłącznie administrator.</b></dd>
+        <dt>Decyzje</dt><dd><span class="ref">D-116</span> dwa rejestry, <span class="ref new">D-122</span> rozszerzenie do pełnych logów.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/12-rejestr-aktywnosci.html" target="_blank" rel="noopener">12-rejestr-aktywnosci &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>13. Terminy i kalendarz szkoleń</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Instytucja wystawia wolne terminy z pozycją z katalogu, przypisuje uczestników. Widok jako tabela i kalendarz. Musi obsłużyć oba modele operacyjne (LDIT z kalendarza IS oraz IS telefonicznie). Po ustaleniu terminu pismo do PUP.</dd>
+        <dt>Kto widzi</dt><dd>Admin (pełny), Pracownik LDIT (w kontekście), IS (własne terminy).</dd>
+        <dt>Decyzje / pytania</dt><dd><span class="ref">D-12</span> dwa modele terminu, <span class="ref">D-06</span> oddzielenie od katalogu. <span class="ref p">P-10</span>: czy zostaje kalendarz terminów w systemie. Specyfikacja niepełna.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/13-terminy.html" target="_blank" rel="noopener">13-terminy &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>14. Statystyki</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Co robi</dt><dd>Dla LDIT: lejek dostarczonych osób per instytucja, ile dofinansowań i na jakie kwoty, marżowość (wyłącznie admin), skuteczność zespołu, eksport do Excela.</dd>
+        <dt>Kto widzi</dt><dd>Admin (pełny). Zakres dla IS sporny <span class="ref p">P-12</span>, kierunek: wersja premium poza etapem I <span class="ref">D-96</span>.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/14-statystyki.html" target="_blank" rel="noopener">14-statystyki &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>15 i 16. Wykluczone: Zadania i Kalendarz Outlook</summary>
+    <div class="acc-body">
+      <div class="callout danger">
+        <span class="ct">Poza zakresem systemu <span class="ref">D-118</span></span>
+        Zadania pracowników i integracja kalendarza Outlook zostały wykluczone na koniec warsztatu.
+        Zadania przechodzą do Projectly, drugiej aplikacji wykonawcy. Wcześniejsze ustalenie o zakładce
+        Zadania (2:43:48) zostało tym unieważnione.
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>17. Panel klienta końcowego</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>Status</dt><dd><b>OTWARTE</b> <span class="ref p">P-33</span>. Klient ma wątpliwości, wykonawca (jako IS) bardzo chce.</dd>
+        <dt>Zakres (gdyby wszedł)</dt><dd>Wyłącznie odczyt: podgląd etapu wniosku, lista wysłanych dokumentów, informacje przedszkoleniowe, lista naborów.</dd>
+        <dt>Blokery</dt><dd>Skokowy wzrost bazy użytkowników, koszt utrzymania, ryzyko bezpieczeństwa (osoby spoza obu organizacji). Separacja musi być przetestowana przed udostępnieniem.</dd>
+        <dt>Makieta</dt><dd><a href="../../makieta/strony/17-panel-klienta.html" target="_blank" rel="noopener">17-panel-klienta &#8599;</a></dd>
+      </dl>
+    </div>
+  </details>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/05-moduly-funkcjonalne.md">05-moduly-funkcjonalne.md</a>,
+    <a href="../../docs/02-aktorzy-i-uprawnienia.md">02-aktorzy-i-uprawnienia.md</a>. Powiązane:
+    <a href="02-role.html" onclick="if(parent!==window){parent.docNav('02-role');return false}">Role i uprawnienia</a>.
+  </div>
+
+</div>
+</body>
+</html>

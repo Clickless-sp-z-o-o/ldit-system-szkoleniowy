@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Model finansowy KFS</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Funkcje</div>
+    <h1 class="doc-title">Model finansowy KFS</h1>
+    <p class="doc-lead">
+      Ten rozdział opisuje kwoty po stronie klienta końcowego i urzędu. Prowizja LDIT jest opisana
+      osobno w <a href="07-prowizja.html" onclick="if(parent!==window){parent.docNav('07-prowizja');return false}">07. Silnik prowizji</a>.
+    </p>
+  </div>
+
+  <h2>Reguły zewnętrzne KFS</h2>
+  <p>To są przepisy, nie preferencje klienta. Nie podlegają negocjacji.</p>
+
+  <h3>Wskaźnik dofinansowania zależy od wielkości przedsiębiorstwa</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Wielkość</th><th>Kryterium</th><th>Dofinansowanie</th><th>Wkład własny</th></tr></thead>
+      <tbody>
+        <tr><td><b>Mikroprzedsiębiorca</b></td><td>do <b>9 osób</b> zatrudnionych łącznie na umowie o pracę</td><td><b>90%</b> (x 0,9)</td><td>10%</td></tr>
+        <tr><td>Mały, średni, duży, inny</td><td>powyżej 9 osób</td><td><b>70%</b> (x 0,7)</td><td>30%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="q">
+    „Jeżeli firma zatrudnia do 9 osób łącznie na umowie o pracę, jest mikroprzedsiębiorcą. Wszystko
+    powyżej to już mały, średni, duży, inny przedsiębiorca. I wszyscy ci powyżej mikro mają 70%
+    dofinansowania, 30 wkładu własnego. Znajdziemy tę informację o zatrudnieniu w formularzu klienta.”
+    <span class="who">Bartek, 1:51:21</span>
+  </div>
+
+  <p><b>Wkład własny przechowywany procentowo, nie kwotowo</b> <span class="ref">D-59</span>. Wynika z wielkości przedsiębiorstwa.</p>
+
+  <div class="callout warn">
+    <span class="ct">KONFLIKT DECYZJI <span class="ref p">P-53</span></span>
+    Warsztat wydał dwie sprzeczne decyzje o wkładzie własnym, obie oznaczone jako TWARDE:
+    <ul>
+      <li><span class="ref">D-59</span> (1:51:21): wkład własny <b>wynika z wielkości przedsiębiorstwa</b>, przechowywany procentowo, czyli wyliczany</li>
+      <li><span class="ref">D-80</span> (2:25:46): wkład własny i kwota dopłaty dodatkowej <b>wpisywane ręcznie</b></li>
+    </ul>
+    <b>Propozycja pogodzenia:</b> procent wkładu jest wyliczany z wielkości przedsiębiorstwa
+    (<span class="ref">D-59</span>) i to jest wartość domyślna. Kwota wkładu podlega ręcznemu
+    nadpisaniu (<span class="ref">D-80</span>) w przypadkach, gdy urząd narzuci inną kwotę niż
+    wynikającą ze wskaźnika, zgodnie z ogólną zasadą kasowania i przywracania reguły
+    <span class="ref">D-19</span>. Wymaga potwierdzenia u klienta.
+  </div>
+
+  <h3>Dofinansowanie przyznawane firmie, nie osobie</h3>
+  <p>Beneficjentem jest zawsze pracodawca. Uczestnicy są przypisani do firmy i do wniosku.</p>
+
+  <h3>Kwalifikowalność uczestnika</h3>
+  <p>
+    Osoba bez umowy o pracę nie kwalifikuje się do KFS. Typowy przypadek: prezes zarządu będący
+    większościowym udziałowcem.
+  </p>
+
+  <div class="q">
+    „Jestem prezesem zarządu, który jest większościowym udziałowcem, i nie ma na dodatek umowy o
+    pracę, czyli się w ogóle do KFS nie kwalifikuje.”
+    <span class="who">Bartek, 2:30:45</span>
+  </div>
+
+  <p>
+    <b>Konsekwencja twarda:</b> osoby niezakwalifikowanej <b>nie wolno dopisać do kosztu całkowitego
+    projektu</b>. Wymaga odrębnej faktury komercyjnej.
+  </p>
+
+  <div class="q">
+    „Osoba dziesiąta, która się nie zakwalifikowała, nie możemy jej wystawić tutaj 10000, dopisać do
+    kosztów całkowitych, bo jej w ogóle to szkolenie nie obejmuje z tego projektu, tylko musisz jej
+    wystawić odrębną fakturę na 10000 jako komercyjne.”
+    <span class="who">Bartek, 2:30:18</span>
+  </div>
+
+  <h2>Pola kwotowe wniosku</h2>
+  <p>
+    Nazewnictwo zostało na warsztacie dwukrotnie skorygowane. Poniżej wersja ostateczna, z
+    zastrzeżeniem że nazwa pola <code>koszt_calkowity</code> pozostaje sporna.
+  </p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pole</th><th>Sposób</th><th>Definicja</th></tr></thead>
+      <tbody>
+        <tr><td><b>Całkowita wartość szkolenia</b></td><td>wyliczane</td><td>Suma kwot uczestników <b>zakwalifikowanych</b>. Wartość szkolenia z wkładem własnym, nie samo dofinansowanie</td></tr>
+        <tr><td><b>Koszt całkowity</b></td><td><b>ręczne</b></td><td>Wartość <b>uznana przez urząd</b>, podstawa wyliczenia dofinansowania. Może być niższa od wnioskowanej</td></tr>
+        <tr><td><b>Przyznano</b></td><td>wyliczane, nieedytowalne</td><td><code>koszt_calkowity x wskaznik</code> (0,9 lub 0,7)</td></tr>
+        <tr><td><b>Wkład własny (%)</b></td><td>wyliczane</td><td>Z wielkości przedsiębiorstwa: 10% lub 30%</td></tr>
+        <tr><td><b>Dopłata standard</b></td><td>wyliczane, pomocnicze</td><td><code>calkowita_wartosc x procent_wkladu</code>. Ile klient musi dołożyć</td></tr>
+        <tr><td><b>Kwota dopłaty dodatkowej</b></td><td><b>ręczne</b>, domyślnie 0</td><td>Dodatkowa kwota poza wkładem własnym</td></tr>
+        <tr><td><b>Koszt całkowity z dopłatą</b></td><td>wyliczane</td><td><code>koszt_calkowity + kwota_doplaty_dodatkowej</code>. <b>Podstawa prowizji LDIT</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Korekta nazewnictwa z warsztatu</h3>
+  <div class="q">
+    „To jest nie kwota wnioskowana, tylko wartość na jaką szkolenie będzie, wartość szkolenia. Czyli
+    to jest ten koszt całkowity jaki wnioskujemy, a nie samo dofinansowanie.”
+    <span class="who">Bartek, 2:03:18</span>
+  </div>
+  <p>Pole nazywane wcześniej "kwota wnioskowana" oznacza <b>całkowitą wartość szkolenia</b>.</p>
+
+  <h3>Spór o nazwę <code>koszt całkowity</code> <span class="ref p">P-13</span> OTWARTE</h3>
+  <div class="q">
+    „to się nie nazywa koszt całkowity”, proponował „dofinansowanie ze wkładem własnym”.
+    <span class="who">Bartek, 2:06:02</span>
+  </div>
+  <div class="callout open">
+    <span class="ct">Spór o nazwę <span class="ref p">P-13</span></span>
+    Nazwa nie została ustalona. Rekomendacja: <b>„Koszt uznany przez urząd”</b>, bo to precyzyjnie
+    oddaje semantykę i nie myli się z całkowitą wartością szkolenia.
+  </div>
+
+  <h2>Wzory</h2>
+  <pre class="code">wskaznik_dofinansowania = 0,9  gdy wielkosc = mikro
+                        = 0,7  w pozostałych przypadkach
+
+calkowita_wartosc_szkolenia = SUMA( uczestnik.kwota )
+                              WHERE uczestnik.status = 'zakwalifikowany'
+
+przyznano = koszt_calkowity * wskaznik_dofinansowania
+
+doplata_standard = calkowita_wartosc_szkolenia * (1 - wskaznik_dofinansowania)
+
+koszt_calkowity_z_doplata = koszt_calkowity + kwota_doplaty_dodatkowej
+
+// kierunek odwrotny, gdy urząd podaje kwotę przyznaną:
+koszt_calkowity = przyznano / wskaznik_dofinansowania</pre>
+
+  <p>
+    <b>Ograniczenie 1:</b> formuła <code>przyznano</code> <b>nie może uwzględniać dopłaty
+    dodatkowej</b>. Dopłata to pieniądz klienta, nie urzędu.
+  </p>
+  <div class="q">
+    „jak doliczy się to do kosztu całkowitego, to się przyznano [zmieni], więc tutaj trzeba by było
+    jeszcze w formule dopisać, że nie uwzględnia tej dopłaty.”
+    <span class="who">Bartek, 2:01:41</span>
+  </div>
+
+  <p>
+    <b>Ograniczenie 2:</b> dopłata dodatkowa <b>nie może podnosić wartości ponad ustaloną całkowitą
+    wartość szkolenia</b>.
+  </p>
+  <div class="q">
+    „Nie mogą dopłacić więcej niż jeżeli ustawiliśmy, że koszt całkowity to było 200000. Nie może być
+    za 220. Czyli dopłata jest w przypadku, jeżeli na przykład dostali za mało.”
+    <span class="who">Bartek, 2:04:45</span>
+  </div>
+
+  <p><b>Ograniczenie 3:</b> równanie kontrolne</p>
+  <pre class="code">przyznano + wklad_wlasny = koszt_calkowity</pre>
+  <p>System ma go pilnować. Przykład: 90 000 + 10 000 = 100 000.</p>
+
+  <h2>Reguły zaokrąglania i typ danych</h2>
+  <div class="callout open">
+    <span class="ct">Uwaga <span class="ref p">P-51</span></span>
+    Ten rozdział nie wynika z warsztatu. To luka wykryta przy analizie dokumentacji, wymagająca
+    potwierdzenia u klienta. Bez ustalonych reguł równanie kontrolne będzie się rozjeżdżać o grosze
+    przy niepodzielnych kwotach.
+  </div>
+
+  <p>
+    <b>Problem.</b> Wskaźniki 0,9 i 0,7 dają wartości niecałkowite. Przykład: koszt całkowity
+    3 333,33 zł x 0,7 = 2 333,331 zł. Bez reguły zaokrąglania <code>przyznano + wkład własny</code>
+    nie zsumuje się do kosztu całkowitego.
+  </p>
+
+  <p><b>Rekomendacje do zatwierdzenia:</b></p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Zasada</th><th>Wartość</th></tr></thead>
+      <tbody>
+        <tr><td>Typ danych dla kwot</td><td>Dziesiętny stałoprzecinkowy, nigdy zmiennoprzecinkowy. Przechowywanie w groszach jako liczba całkowita lub <code>DECIMAL(12,2)</code></td></tr>
+        <tr><td>Precyzja prezentacji</td><td>2 miejsca po przecinku</td></tr>
+        <tr><td>Metoda zaokrąglania</td><td>Matematyczna, do najbliższej setnej (0,005 w górę)</td></tr>
+        <tr><td>Kolejność operacji</td><td>Najpierw wylicz <code>przyznano</code>, zaokrąglij. Wkład własny jako <b>reszta</b>: <code>koszt_calkowity - przyznano</code>. Dzięki temu równanie kontrolne domyka się zawsze</td></tr>
+        <tr><td>Stawki prowizji</td><td>Przechowywane z precyzją do 0,01 punktu procentowego (17,5% jako 17,50)</td></tr>
+        <tr><td>Prowizja przy podziale przez próg</td><td>Zaokrąglić <b>dopiero sumę</b> części, nie każdą część osobno</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    <b>Uzasadnienie reguły reszty.</b> Jeśli obie wartości zaokrąglić niezależnie, równanie kontrolne
+    może się nie domknąć:
+  </p>
+  <pre class="code">koszt 3 333,33 x 0,7 = 2 333,331  ->  zaokraglone: 2 333,33
+wklad 3 333,33 x 0,3 =   999,999  ->  zaokraglone:   999,99  ->  1000,00
+suma: 2 333,33 + 1 000,00 = 3 333,33  OK w tym przypadku, ale nie zawsze</pre>
+  <p>
+    Liczenie wkładu jako reszty (<code>3 333,33 - 2 333,33 = 1 000,00</code>) gwarantuje domknięcie
+    zawsze.
+  </p>
+
+  <p>
+    <b>Do potwierdzenia u klienta:</b> czy urząd stosuje własne zaokrąglenia, które mogą się różnić
+    od systemowych. Jeśli tak, pole <code>przyznano</code> musi dopuszczać korektę ręczną, co
+    dodatkowo przemawia za rozstrzygnięciem <span class="ref p">P-30</span> na korzyść edytowalności.
+  </p>
+
+  <h2>Kiedy pojawia się dopłata dodatkowa</h2>
+  <p>Dwa scenariusze:</p>
+
+  <p><b>Scenariusz A: urząd przyznał mniej niż potrzeba</b></p>
+  <div class="q">
+    „urząd powiedział, że nie możemy wam dać 140, możemy wam dać góra 120.”
+    <span class="who">Bartek, 2:04:45</span>
+  </div>
+
+  <p><b>Scenariusz B: instytucja szkoleniowa nie zejdzie z ceny</b></p>
+  <p>
+    Cena bywa wyznaczana za grupę. Wypadnięcie jednej osoby oznacza albo dopłatę, albo niemożność
+    realizacji.
+  </p>
+  <div class="q">
+    „Cena była wyznaczona za grupę i nie zrealizujesz szkolenia za 90000 dla tych wszystkich osób.
+    Muszą albo dopłacić 10000, albo niestety nie da się zrealizować szkolenia.”
+    <span class="who">Bartek, 2:30:55</span>
+  </div>
+
+  <h2>Przykłady liczbowe z warsztatu</h2>
+  <details class="acc">
+    <summary>Przykład 1: klient Abis, mikroprzedsiębiorca, częściowe przyznanie</summary>
+    <div class="acc-body">
+<pre class="code">Wnioskowano (całkowita wartość):     5 700 zł
+Urząd przyznał tylko na 2 moduły
+Kwota przyznana:                     4 000 zł
+Wskaźnik:                            0,9 (mikro)
+Koszt całkowity = 4 000 / 0,9  =  ok. 4 444 zł
+Wkład własny (10%)             =  ok.   444 zł</pre>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Przykład 2: firma średnia, 10 osób, jedna niezakwalifikowana</summary>
+    <div class="acc-body">
+<pre class="code">Zgłoszono:                           10 osób
+Wnioskowano:                        100 000 zł
+Przyznano na:                         9 osób (10. to prezes bez umowy o pracę)
+Koszt całkowity:                     90 000 zł
+Wielkość:                            średnia -> wskaźnik 0,7
+Przyznano = 90 000 x 0,7        =    63 000 zł
+Wkład własny (30%)              =    27 000 zł</pre>
+      <p>
+        Bartek najpierw omyłkowo podał 81 000 zł (mnożąc x 0,9), po czym sam się poprawił: „nie
+        możesz tego zrobić, bo to już nie jest mikroprzedsiębiorca.”
+      </p>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Przykład 3: firma średnia z dopłatą dodatkową</summary>
+    <div class="acc-body">
+<pre class="code">Całkowita wartość szkolenia:        200 000 zł
+Dopłata standard (30%)         =     60 000 zł
+Urząd uznał koszt:                  180 000 zł
+Przyznano = 180 000 x 0,7      =    126 000 zł
+Dopłata dodatkowa (ręczna):          20 000 zł  (IS nie zejdzie z ceny)
+Koszt całkowity z dopłatą      =    200 000 zł  &lt;- podstawa prowizji</pre>
+      <div class="callout warn">
+        <span class="ct">NIESPÓJNOŚĆ <span class="ref p">P-14</span></span>
+        Dopłata standard została policzona od 200 000 (wartość wnioskowana), a <code>przyznano</code>
+        od 180 000 (koszt uznany). Nie ustalono, od której podstawy liczy się wkład własny. Do
+        rozstrzygnięcia.
+      </div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Przykład 4: negocjacja z urzędem (sprawa prowadzona przez Asię)</summary>
+    <div class="acc-body">
+<pre class="code">Klient dostał decyzję negatywną (brak środków w urzędzie)
+Urząd oddzwonił: środki jednak są, ale koszt całkowity nie może być 16 000 zł
+Urząd da maksymalnie:                12 000 zł
+Liczba uczestników:                        2
+Koszt całkowity = 12 000 / 0,9  =  ok. 13 333 zł
+Klient dopłacił z własnych środków do:  16 000 zł</pre>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Przykład 5: jeden wniosek, trzy różne szkolenia</summary>
+    <div class="acc-body">
+<pre class="code">7 osób x 10 000 zł  =  70 000 zł
+1 osoba x  5 000 zł  =   5 000 zł
+1 osoba x 15 000 zł  =  15 000 zł
+                       ----------
+Całkowita wartość    =  90 000 zł</pre>
+      <p>
+        Reguła: <b>kwota dotyczy jednej osoby</b>, koszt całkowity to cena za osobę razy liczba osób,
+        każda osoba wpisywana odrębnie.
+      </p>
+      <div class="q">
+        „1900 zł za osobę szkolenia, wnioskuję 10 osób, czyli 19000, i każda ta osoba jest wpisywana
+        odrębnie.”
+        <span class="who">Bartek, 2:27:15</span>
+      </div>
+    </div>
+  </details>
+
+  <h2>Rozjazd danych źródłowych z urzędu [ryzyko]</h2>
+  <p>
+    Informacja od urzędu przychodzi <b>raz jako kwota przyznana, raz jako koszt całkowity z podanym
+    procentem wkładu</b>. System musi obsłużyć konwersję w obie strony.
+  </p>
+  <div class="q">
+    „no możemy to ujednolicić w systemie.”
+    <span class="who">Paweł, 2:00:33</span>
+  </div>
+  <div class="callout warn">
+    <span class="ct">Ryzyko</span>
+    Urząd może przyznać kwotę, która nie wynika z mnożnika 0,7 ani 0,9 (przyznanie na część modułów,
+    arbitralne obniżenie). Rozwiązanie przyjęte na warsztacie, czyli korekta pola
+    <code>koszt_calkowity</code> tak, żeby wynik się zgadzał, jest <b>obejściem, nie modelem</b>.
+    Patrz <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">15. Ryzyka</a>.
+  </div>
+
+  <h2>Polityka cenowa wobec urzędów</h2>
+  <p>
+    Reguła biznesowa istotna dla wartości systemu, choć nie jest wymaganiem funkcjonalnym etapu I.
+  </p>
+  <p>
+    <b>Precedens cenowy:</b> jeśli instytucja raz zejdzie z ceny, urząd nie zaakceptuje już wyższej
+    kwoty dla tego szkolenia.
+  </p>
+  <div class="q">
+    „Maciek zszedł z 6000 do 5. To żaden wniosek od tamtego momentu nie może być na 6. Wszystkie
+    muszą być na 5, jeżeli chodzi o to szkolenie.”
+    <span class="who">Bartek, 2:33:35</span>
+  </div>
+
+  <p><b>Rekomendowana praktyka:</b> zamiast obniżać cenę, IS dopłaca ok. 1 000 zł z własnych środków.</p>
+  <div class="q">
+    „Dopłacimy z naszej strony dodatkowe 1000 zł w celu realizacji szkolenia, żeby pokazać im, że
+    jednak to szkolenie kosztuje 6000, a nie 5. Bo jeżeli zeszła instytucja do 5, to u następnych
+    klientów też tak zrobi. A przy na przykład 100 wnioskach już będzie miało to duże znaczenie.”
+    <span class="who">Bartek, 2:33:35</span>
+  </div>
+
+  <p>Skala efektu: <b>1 000 zł x 100 wniosków = 100 000 zł</b> utraconego przychodu instytucji.</p>
+
+  <p>
+    <b>Potencjalne rozszerzenie (nie w etapie I):</b> system mógłby ostrzegać o historycznych cenach
+    zaakceptowanych przez dany urząd dla danego szkolenia. Nie zgłoszone jako wymaganie, ale wynika
+    wprost z tej reguły.
+  </p>
+
+  <p><b>W etapie I dopłaty i wkłady własne są wpisywane ręcznie</b>, bez automatyzacji <span class="ref">D-86</span>.</p>
+  <div class="q">
+    „Dobra, zostawmy to. To będzie jako historia. Czyli jako taki status będziesz miał tę informację,
+    ale to sobie wpiszesz z ręki, póki co.”
+    <span class="who">Paweł, 2:36:02</span>
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/06-model-finansowy-kfs.md">06-model-finansowy-kfs.md</a>.
+  </div>
+
+</div>
+</body>
+</html>

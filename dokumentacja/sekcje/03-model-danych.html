@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Model danych i diagram tabel</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Fundament</div>
+    <h1 class="doc-title">Model danych i diagram tabel</h1>
+    <p class="doc-lead">
+      Model wypracowany na warsztacie, w kilku miejscach skorygowany na żywo. Najważniejsza zmiana
+      względem Excela to rozdzielenie encji Klient od Wniosku. Poniżej podstawowy diagram tabel,
+      kluczowe decyzje modelowe, pełny wykaz encji z polami oraz zasada pól wyliczanych.
+    </p>
+  </div>
+
+  <div class="q">
+    „Bo ja tu widzę w bazie jeszcze jedną tabelę, o której nie myślałem wcześniej.”
+    <span class="who">Paweł, warsztat 25.08.2026, 1:52:56</span>
+  </div>
+
+  <h2>Diagram encji</h2>
+  <div class="diagram">                        <span class="hi">INSTYTUCJA SZKOLENIOWA</span>
+                        (dane firmy, siedziba, wzór certyfikatu)
+                                    |
+              +---------------------+---------------------+
+              |                     |                     |
+    <span class="hi">WARUNKI PROWIZYJNE</span>      <span class="hi">KATALOG SZKOLEŃ</span>         <span class="hi">UŻYTKOWNICY IS</span>
+    (wersjonowane w czasie)  (szablon szkolenia)     (admin IS, handlowiec)
+              |                     |
+              |                <span class="hi">TERMIN SZKOLENIA</span>
+              |                (realizacja szablonu)
+              |                     |
+              |                     |
+        <span class="hi">KLIENT</span> (firma końcowa)      |
+        (dane stałe, NIP, wielkość) |
+              |                     |
+              +-----> <span class="em">WNIOSEK / PROJEKT</span> <-----+
+                      (dane finansowe,        |
+                       nabór, PUP, statusy)   |
+                            |                 |
+                            |                 |
+                    <span class="hi">UCZESTNIK WNIOSKU</span> --------+
+                    (osoba, szkolenie, kwota,
+                     status kwalifikacji)
+                            |
+                        <span class="hi">CERTYFIKAT</span>
+
+     <span class="hi">KORESPONDENCJA</span> ----> KLIENT (wspólna dla wszystkich wniosków)
+     <span class="hi">NOTATKI</span>       ----> KLIENT
+     <span class="hi">ZGŁOSZENIA</span>    ----> INSTYTUCJA lub KLIENT (baza incydentów)
+     <span class="hi">NABÓR</span>         ----> URZĄD PRACY (PUP), 340 pozycji
+     <span class="hi">FAKTURA</span>       ----> INSTYTUCJA SZKOLENIOWA</div>
+
+  <h2>Kluczowe decyzje modelowe</h2>
+
+  <h3>1. Rozdzielenie Klienta od Wniosku <span class="ref">D-53</span></h3>
+  <p>Najważniejsza zmiana względem obecnego Excela, gdzie wszystko jest w jednym wierszu.</p>
+  <div class="q">
+    „czy nie lepiej byłoby, gdybyśmy mieli w systemie Człowieka jako jedną tabelę (...) Czyli
+    rozróżniłbym człowieka od naboru. Jeden człowiek może mieć wiele naborów.”
+    <span class="who">Paweł, 1:44:21</span>
+  </div>
+  <p>
+    <b>Zasada: jeden projekt = jeden wniosek.</b> Jeden klient ma wiele wniosków (do 3 razy w roku,
+    wyjątkowo 5&ndash;6). Dane wspólne dla wszystkich wniosków klienta: dane kontaktowe,
+    korespondencja, notatki, historia ustaleń. <b>Główny widok roboczy pozostaje widokiem
+    wniosków</b>, nie klientów.
+  </p>
+
+  <div class="two">
+    <div class="card">
+      <h3>2. KFS przyznawany firmie <span class="ref">D-60</span></h3>
+      <p style="margin-top:0">Beneficjentem jest zawsze firma. Hierarchia: <b>firma (klient) &rarr; wniosek &rarr; uczestnicy</b>.</p>
+    </div>
+    <div class="card">
+      <h3>3. Kwoty na dwóch poziomach <span class="ref">D-62</span></h3>
+      <p style="margin-top:0">Kwota jest na wniosku firmy, ale kwalifikacja i przypisanie szkolenia są per uczestnik. „Tak i tak.”</p>
+    </div>
+    <div class="card">
+      <h3>4. Katalog oddzielony od terminów <span class="ref">D-06</span></h3>
+      <p style="margin-top:0">Jedno szkolenie w katalogu (szablon) realizowane wielokrotnie, nawet 50 razy w roku. Termin wybiera pozycję z katalogu.</p>
+    </div>
+    <div class="card">
+      <h3>5. Warunki prowizyjne wersjonowane <span class="ref">D-22</span></h3>
+      <p style="margin-top:0">Warunki to nie atrybut instytucji, tylko rekord z okresem obowiązywania. Zmiany od kolejnego roku, historia nieprzeliczana wstecz <span class="ref">D-23</span>.</p>
+    </div>
+  </div>
+
+  <h2>Encje i pola</h2>
+  <p>Rozwiń wybraną tabelę, żeby zobaczyć pola i uwagi.</p>
+
+  <details class="acc" open>
+    <summary>WNIOSEK / PROJEKT &mdash; główna encja robocza</summary>
+    <div class="acc-body">
+      <p>Kompletna specyfikacja pól finansowych w sekcji <a href="06-finanse.html" onclick="if(parent!==window){parent.docNav('06-finanse');return false}">Model finansowy KFS</a>.</p>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Pole</th><th>Typ</th><th>Ręczne / wyliczane</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">klient_id</td><td>ref</td><td class="muted">&mdash;</td></tr>
+          <tr><td class="mono">nabor_id</td><td>ref</td><td class="muted">&mdash;</td></tr>
+          <tr><td class="mono">numer</td><td>liczba</td><td>Sekwencyjny w roku</td></tr>
+          <tr><td class="mono">rok</td><td>liczba</td><td>Klucz podziału na roczniki (2025, 2026, 2027)</td></tr>
+          <tr><td class="mono">calkowita_wartosc_szkolenia</td><td>kwota</td><td>Wyliczane (suma warunkowa po zakwalifikowanych) <span class="ref">D-79</span></td></tr>
+          <tr><td class="mono">koszt_calkowity</td><td>kwota</td><td><b>Ręczne</b> <span class="ref">D-58</span></td></tr>
+          <tr><td class="mono">przyznano</td><td>kwota</td><td><b>Wyliczane, nieedytowalne:</b> koszt_calkowity x wskaznik <span class="ref">D-58</span></td></tr>
+          <tr><td class="mono">wklad_wlasny_procent</td><td>procent</td><td>Wyliczane z wielkości przedsiębiorstwa (10% lub 30%)</td></tr>
+          <tr><td class="mono">doplata_standard</td><td>kwota</td><td>Wyliczane: wartość x procent wkładu</td></tr>
+          <tr><td class="mono">kwota_doplaty_dodatkowej</td><td>kwota</td><td><b>Ręczne</b>, domyślnie 0 <span class="ref">D-63</span></td></tr>
+          <tr><td class="mono">koszt_calkowity_z_doplata</td><td>kwota</td><td>Wyliczane. <b>Podstawa prowizji</b> <span class="ref">D-64</span></td></tr>
+          <tr><td class="mono">status_skladania</td><td>enum</td><td>Złożony / Niezłożony / NW / Rezygnacja</td></tr>
+          <tr><td class="mono">status_decyzji</td><td>enum</td><td>Pozytywna / Negatywna / Rezygnacja po napisaniu</td></tr>
+          <tr><td class="mono">status_finansowy</td><td>enum</td><td>Oczekuje / Zafakturowany / Rozliczone</td></tr>
+          <tr><td class="mono">data_wplyniecia_formularza</td><td>data</td><td><b>Rejestrowana automatycznie</b> <span class="ref">D-94</span></td></tr>
+          <tr><td class="mono">data_wystawienia_faktury</td><td>data</td><td>Domyślnie ostatni dzień szkolenia, edytowalna. <b>Wyznacza okres rozliczeniowy prowizji</b> <span class="ref">D-13</span></td></tr>
+          <tr><td class="mono">prowizja_procent</td><td>procent</td><td>Wyliczane z warunków IS, nadpisywalne z modułu Administracja <span class="ref">D-17</span> <span class="ref">D-93</span></td></tr>
+          <tr><td class="mono">prowizja_kwota</td><td>kwota</td><td>Wyliczane</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>UCZESTNIK_WNIOSKU</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Pole</th><th>Typ</th><th>Uwagi</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">wniosek_id</td><td>ref</td><td class="muted">&mdash;</td></tr>
+          <tr><td class="mono">imie_nazwisko</td><td>tekst</td><td>Trafia na certyfikat i do urzędu</td></tr>
+          <tr><td class="mono">pesel</td><td>tekst</td><td>Z formularza. Dane wrażliwe</td></tr>
+          <tr><td class="mono">szkolenie_id</td><td>ref</td><td><b>Jeden wniosek może obejmować kilka różnych szkoleń</b> <span class="ref">D-78</span></td></tr>
+          <tr><td class="mono">kwota</td><td>kwota</td><td>Cena szkolenia dla tej osoby</td></tr>
+          <tr><td class="mono">status_kwalifikacji</td><td>enum</td><td>zakwalifikowany / niezakwalifikowany <span class="ref">D-61</span></td></tr>
+          <tr><td class="mono">termin_id</td><td>ref</td><td>Przypisany termin realizacji</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout"><b>Reguła:</b> do sumy <code>calkowita_wartosc_szkolenia</code> wchodzą wyłącznie uczestnicy zakwalifikowani.</div>
+      <div class="q">„7 osób ma szkolenie to samo za 10 tysięcy, 8 osoba ma szkolenie za 5000, a druga ma za 15. Czyli są 3 różne szkolenia. Byśmy też rozróżnienie.” <span class="who">Bartek, 2:23:44</span></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>KLIENT (firma końcowa)</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Pole</th><th>Typ</th><th>Uwagi</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">numer_klienta</td><td>liczba</td><td><b>Sekwencyjny w ramach roku</b>, trafia na fakturę <span class="ref">D-112</span></td></tr>
+          <tr><td class="mono">nazwa</td><td>tekst</td><td class="muted">&mdash;</td></tr>
+          <tr><td class="mono">nip</td><td>tekst</td><td>Kryterium wyszukiwania</td></tr>
+          <tr><td class="mono">adres_siedziby</td><td>tekst</td><td>Do maila „dane do faktury”</td></tr>
+          <tr><td class="mono">wielkosc_przedsiebiorstwa</td><td>enum</td><td>mikro / maly / sredni / duzy / inny</td></tr>
+          <tr><td class="mono">liczba_zatrudnionych</td><td>liczba</td><td>Z formularza. <b>Do 9 osób = mikro</b></td></tr>
+          <tr><td class="mono">instytucja_id</td><td>ref</td><td>Instytucja, która pozyskała klienta</td></tr>
+          <tr><td class="mono">pup_id</td><td>ref</td><td>Właściwy urząd pracy</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted">Dane stałe w czasie. Dane zmienne siedzą we wniosku.</p>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>INSTYTUCJA_SZKOLENIOWA, WARUNKI_PROWIZYJNE, KATALOG_SZKOLEN, TERMIN</summary>
+    <div class="acc-body">
+      <h3>INSTYTUCJA_SZKOLENIOWA</h3>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Pole</th><th>Uwagi</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">nazwa</td><td>Wyświetlana jako etykieta zakładki w widoku IS</td></tr>
+          <tr><td class="mono">siedziba_miejscowosc</td><td><b>Źródło pola „miejscowość” na certyfikacie</b> <span class="ref">D-99</span></td></tr>
+          <tr><td class="mono">osoby_kontaktowe</td><td>Kontakt główny, osoba od terminów, osoba od faktur</td></tr>
+          <tr><td class="mono">wzor_certyfikatu</td><td>Szablon z placeholderami, per instytucja <span class="ref">D-98</span></td></tr>
+          <tr><td class="mono">standard_godzinowy</td><td>Np. 9:30&ndash;20:00, środa/czwartek/piątek</td></tr>
+        </tbody>
+      </table></div>
+      <h3>WARUNKI_PROWIZYJNE (wersjonowane)</h3>
+      <div class="tbl-wrap"><table class="t">
+        <thead><tr><th>Pole</th><th>Wartości</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">obowiazuje_od / _do</td><td>Okres obowiązywania. NULL w _do = aktualne</td></tr>
+          <tr><td class="mono">rodzaj_kumulacji</td><td>miesieczny / roczny / brak</td></tr>
+          <tr><td class="mono">sposob_liczenia</td><td>od_calosci / od_nadwyzki / stala</td></tr>
+          <tr><td class="mono">progi[]</td><td>Pary (próg kwotowy, stawka %)</td></tr>
+          <tr><td class="mono">stawka_stala</td><td>Gdy rodzaj_kumulacji = brak</td></tr>
+        </tbody>
+      </table></div>
+      <p>Semantyka w sekcji <a href="07-prowizja.html" onclick="if(parent!==window){parent.docNav('07-prowizja');return false}">Silnik prowizji</a>.</p>
+      <h3>KATALOG_SZKOLEN (szablon) i TERMIN_SZKOLENIA (realizacja)</h3>
+      <p>Katalog: nazwa (spójna, trafia do formularza jako lista wyboru), plan, liczba godzin i dni, tryb, procedura przed szkoleniem, historia cen (cena zmienna w czasie). Dodanie planu swobodne, edycja istniejącego przez administratora lub go powiadamia <span class="ref">D-43</span>. Termin: pozycja z katalogu, data_od/do, miejsce, szczegóły organizacyjne, status realizacji (Wolny / Zaplanowany / Odbyty), lista uczestników.</p>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>KORESPONDENCJA, NOTATKA, ZGŁOSZENIE, FAKTURA, NABÓR, URZĄD PRACY</summary>
+    <div class="acc-body">
+      <dl class="kv">
+        <dt>KORESPONDENCJA</dt><dd>Wspólna dla wszystkich wniosków klienta (albo z IS). Skrzynka źródłowa, kierunek, temat, treść, data (indeksowane do wyszukiwania), załączniki.</dd>
+        <dt>NOTATKA</dt><dd>Notatka z rozmowy telefonicznej przy kliencie lub instytucji. Widoczna dwustronnie.</dd>
+        <dt>ZGŁOSZENIE (incydent)</dt><dd>Podmiot (instytucja lub klient), powód, opis, data, autor. Widoczne wyłącznie dla administratora i pracowników LDIT <span class="ref">D-107</span>. Szerzej: <a href="09-logi-zgloszenia.html" onclick="if(parent!==window){parent.docNav('09-logi-zgloszenia');return false}">Logi i zgłoszenia</a>.</dd>
+        <dt>FAKTURA</dt><dd>Instytucja, numer, kwota, data wystawienia, termin płatności (z importu CSV), plik PDF do podglądu <span class="ref">D-40</span>.</dd>
+        <dt>NABÓR i URZĄD PRACY</dt><dd>340 urzędów. Rodzaj (KFS, powiatowy, inne, model musi dopuszczać kolejne), status, data prognozowana (z aplikacji do przewidywania naborów), faktyczny termin.</dd>
+      </dl>
+    </div>
+  </details>
+
+  <h2>Pola wyliczane kontra ręczne</h2>
+  <p>Zasada ogólna ustalona na warsztacie, obowiązująca w całym systemie:</p>
+  <div class="q">
+    „wszystko co będzie chciałbym mieć możliwość edycji ręcznej, tak żeby ta reguła się usunęła
+    w momencie, jak ja sobie edytuję ręcznie.”
+    <span class="who">Bartek, 46:16</span>
+  </div>
+  <div class="callout ok">
+    <span class="ct">Wymaganie implementacyjne: każde pole wyliczane potrzebuje trzech rzeczy</span>
+    1. flagi <code>regula_aktywna</code> (bool),
+    2. przechowanej <code>wartosc_wyliczona</code> (nawet gdy reguła nieaktywna),
+    3. akcji <b>Przywróć regułę</b> w interfejsie.
+  </div>
+  <div class="callout warn">
+    <span class="ct">Wyjątek do rozstrzygnięcia <span class="ref p">P-30</span></span>
+    Pole <code>przyznano</code> zostało na warsztacie zadeklarowane jako <b>nieedytowalne</b>
+    („Czyli przyznano nie edytuję”, 2:00:52). To sprzeczne z dokumentem klienta sprzed warsztatu,
+    gdzie reguła miała się wyłączać po edycji. Bartek nie zaprotestował, ale też nie potwierdził wprost.
+  </div>
+  <p>W makiecie przyjęto konwencję: <b>pola ręczne oznaczone na żółto</b> <span class="ref">D-81</span>.</p>
+
+  <h2>Podział na roczniki</h2>
+  <p>
+    Baza wniosków dzielona na roczniki (odwzorowanie zakładek Excela). Nawigacja: <b>Zestawienia
+    &rarr; 2025 / 2026 / 2027</b> jako drzewo w lewym menu <span class="ref">D-55</span>.
+    Nierozstrzygnięte: czy to osobne widoki, filtr po roku, czy fizycznie osobne zbiory danych.
+    Rekomendacja: <b>filtr po roku na jednej tabeli</b>, bo numeracja klientów jest roczna, ale
+    klient i jego korespondencja są ciągłe w czasie.
+  </p>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/03-model-danych.md">03-model-danych.md</a>. Powiązane:
+    <a href="06-finanse.html" onclick="if(parent!==window){parent.docNav('06-finanse');return false}">Model finansowy</a>,
+    <a href="07-prowizja.html" onclick="if(parent!==window){parent.docNav('07-prowizja');return false}">Silnik prowizji</a>.
+  </div>
+
+</div>
+</body>
+</html>
