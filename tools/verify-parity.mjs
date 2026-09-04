@@ -39,12 +39,30 @@ const nowe = run([
   path.join(A, "db.js")
 ]).DB;
 
-function stable(v) {
-  if (Array.isArray(v)) return "[" + v.map(stable).join(",") + "]";
-  if (v && typeof v === "object") {
-    return "{" + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ":" + stable(v[k]); }).join(",") + "}";
+/* Porownanie "podzbioru": adapter MUSI wiernie odtworzyc kazde pole legacy,
+   ale wolno mu dodac nowe pola (intencjonalne rozszerzenia, np. nadpisanie
+   prowizji per wniosek). Zwraca sciezke pierwszej roznicy albo null. */
+function diffPath(legacy, actual, path) {
+  if (Array.isArray(legacy)) {
+    if (!Array.isArray(actual)) return path + " (oczekiwano tablicy)";
+    if (legacy.length !== actual.length) return path + " (dlugosc " + legacy.length + " != " + actual.length + ")";
+    for (let i = 0; i < legacy.length; i++) {
+      const d = diffPath(legacy[i], actual[i], path + "[" + i + "]");
+      if (d) return d;
+    }
+    return null;
   }
-  return JSON.stringify(v);
+  if (legacy && typeof legacy === "object") {
+    if (!actual || typeof actual !== "object") return path + " (oczekiwano obiektu)";
+    for (const k of Object.keys(legacy)) {
+      const d = diffPath(legacy[k], actual[k], path + "." + k);
+      if (d) return d;
+    }
+    return null;
+  }
+  if (legacy === actual) return null;
+  if (typeof legacy === "number" && typeof actual === "number" && Math.abs(legacy - actual) < 1e-9) return null;
+  return path + " (" + JSON.stringify(legacy) + " != " + JSON.stringify(actual) + ")";
 }
 
 const TABELE = ["INSTYTUCJE", "PUPY", "SZKOLENIA", "KLIENCI", "WNIOSKI", "WNIOSKI_2025",
@@ -56,14 +74,13 @@ for (const t of TABELE) {
   const a = legacy[t], b = nowe[t];
   if (!Array.isArray(a) || !Array.isArray(b)) { console.error("  " + t + ": brak tabeli po jednej ze stron"); bledy++; continue; }
   if (a.length !== b.length) { console.error("  " + t + ": rozna liczba wierszy " + a.length + " vs " + b.length); bledy++; continue; }
-  let rozne = 0, pierwszy = -1;
+  let rozne = 0, pierwszy = null;
   for (let i = 0; i < a.length; i++) {
-    if (stable(a[i]) !== stable(b[i])) { rozne++; if (pierwszy < 0) pierwszy = i; }
+    const d = diffPath(a[i], b[i], t + "[" + i + "]");
+    if (d) { rozne++; if (!pierwszy) pierwszy = d; }
   }
   if (rozne) {
-    console.error("  " + t + ": rozne wiersze " + rozne + "/" + a.length + ", pierwszy indeks " + pierwszy);
-    console.error("    legacy: " + stable(a[pierwszy]).slice(0, 300));
-    console.error("    nowe:   " + stable(b[pierwszy]).slice(0, 300));
+    console.error("  " + t + ": rozne wiersze " + rozne + "/" + a.length + ", pierwsza roznica: " + pierwszy);
     bledy++;
   } else {
     console.log("  OK " + t + " (" + a.length + ")");
