@@ -36,7 +36,7 @@
     </div>
     <div class="ph-actions">
       <button class="btn" onclick="alert('Eksport listy kont do Excela.')">Eksport kont</button>
-      <button class="btn primary" onclick="alert('Formularz nowego konta: imię i nazwisko, login (adres e-mail), rola, przypisane instytucje, wymuszenie 2FA przy pierwszym logowaniu.')">+ Dodaj użytkownika</button>
+      <button class="btn primary" id="btnDodajUsera">+ Dodaj użytkownika</button>
     </div>
   </div>
 
@@ -67,6 +67,8 @@
       <div class="card-body" style="padding:0 16px 4px">
         <div class="note warn mb0" style="margin:14px 0" id="alert2fa"></div>
       </div>
+
+      <div id="userForm" class="card-body" style="display:none"></div>
 
       <div class="tbl-wrap">
         <table class="tbl">
@@ -329,7 +331,8 @@ function renderU() {
           : '<span class="tag neg dot">wyłączone</span>') + '</td>' +
       '<td class="mono muted nowrap">' + u.ost + '</td>' +
       '<td class="right nowrap">' +
-        '<button class="btn xs" onclick="alert(\'Edycja konta: ' + u.imie + '\')">Edytuj</button> ' +
+        '<button class="btn xs" onclick="edytujUsera(\'' + u.login + '\')">Edytuj</button> ' +
+        '<button class="btn xs" onclick="usunUsera(\'' + u.login + '\')">Usuń</button> ' +
         '<button class="btn xs danger" onclick="blokuj(\'' + u.imie + '\')">Zablokuj</button>' +
       '</td></tr>';
   }).join("");
@@ -341,13 +344,16 @@ function renderU() {
   }
 }
 
-var bez = U.filter(function (u) { return !u["2fa"]; });
-document.getElementById("alert2fa").innerHTML =
-  '<b>' + bez.length + ' konta bez dwuskładnikowego uwierzytelnienia:</b> ' +
-  bez.map(function (u) { return u.imie + " (" + u.login + ")"; }).join(", ") + '. ' +
-  'Wymaganie MUST z warsztatu mówi o 2FA wymuszonym, nie opcjonalnym. Konta wyróżnione żółtym tłem ' +
-  'nie spełniają tego warunku i przy wdrożeniu produkcyjnym powinny zostać objęte wymuszeniem ' +
-  'przy pierwszym logowaniu.';
+function renderAlert2fa() {
+  var bez = U.filter(function (u) { return !u["2fa"]; });
+  document.getElementById("alert2fa").innerHTML =
+    '<b>' + bez.length + ' konta bez dwuskładnikowego uwierzytelnienia:</b> ' +
+    bez.map(function (u) { return u.imie + " (" + u.login + ")"; }).join(", ") + '. ' +
+    'Wymaganie MUST z warsztatu mówi o 2FA wymuszonym, nie opcjonalnym. Konta wyróżnione żółtym tłem ' +
+    'nie spełniają tego warunku i przy wdrożeniu produkcyjnym powinny zostać objęte wymuszeniem ' +
+    'przy pierwszym logowaniu.';
+}
+renderAlert2fa();
 
 function blokuj(imie) {
   alert("Blokada konta: " + imie + "\n\nW systemie docelowym: sesja unieważniona natychmiast, " +
@@ -364,6 +370,93 @@ document.getElementById("chip2fa").addEventListener("click", function () {
   document.getElementById(id).addEventListener("change", renderU);
 });
 renderU();
+
+/* ================================================================
+   Inline CRUD kont. Administrator dodaje, edytuje i usuwa konta
+   (D-116). Zapis do wspólnego JSON przez Store, odświeżanie przez
+   db:changed. Blokada konta (unieważnienie sesji) to osobny koncept.
+   ================================================================ */
+var POLA_ROLE = ["Administrator", "Pracownik LDIT", "Instytucja szkoleniowa", "Pracownik IS", "Klient końcowy"];
+var edytowanyUser = null;
+
+function userFormHTML(u, tytul) {
+  function esc(v) { return String(v == null ? "" : v).replace(/"/g, "&quot;"); }
+  function inp(idp, label, val, ro) {
+    return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
+      '<span class="muted">' + label + '</span>' +
+      '<input class="inp" id="uf_' + idp + '" value="' + esc(val) + '"' + (ro ? " readonly" : "") + '></label>';
+  }
+  var rolaOpts = POLA_ROLE.map(function (r) { return "<option" + (u && u.rola === r ? " selected" : "") + ">" + r + "</option>"; }).join("");
+  return '<div class="card mb0"><div class="card-body">' +
+    '<div class="small strong" style="margin-bottom:10px">' + tytul + '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
+      inp("imie", "Imię i nazwisko", u ? u.imie : "", false) +
+      inp("login", "Login (e-mail)", u ? u.login : "", !!u) +
+      '<label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Rola</span>' +
+        '<select class="inp" id="uf_rola">' + rolaOpts + '</select></label>' +
+      inp("inst", "Przypisane instytucje", u ? u.inst : "", false) +
+      '<label class="small" style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
+        '<input type="checkbox" id="uf_2fa"' + (u && u["2fa"] ? " checked" : "") + '> Wymuszone 2FA</label>' +
+    '</div>' +
+    '<div class="btn-row" style="margin-top:12px">' +
+      '<button class="btn primary sm" onclick="zapiszUsera()">Zapisz</button>' +
+      '<button class="btn sm" onclick="zamknijUserForm()">Anuluj</button>' +
+    '</div></div></div>';
+}
+function otworzUserForm(u, tytul) {
+  var el = document.getElementById("userForm");
+  el.innerHTML = userFormHTML(u, tytul);
+  el.style.display = "block";
+}
+window.zamknijUserForm = function () {
+  var el = document.getElementById("userForm");
+  el.style.display = "none"; el.innerHTML = ""; edytowanyUser = null;
+};
+window.edytujUsera = function (login) {
+  edytowanyUser = login;
+  var u = U.filter(function (x) { return x.login === login; })[0];
+  otworzUserForm(u, "Edycja konta: " + (u ? u.imie : login));
+};
+function zbierzUsera() {
+  return {
+    imie_nazwisko: document.getElementById("uf_imie").value.trim(),
+    rola: document.getElementById("uf_rola").value,
+    instytucje: document.getElementById("uf_inst").value.trim() || "-",
+    dwa_fa: document.getElementById("uf_2fa").checked
+  };
+}
+window.zapiszUsera = function () {
+  var dane = zbierzUsera();
+  if (!dane.imie_nazwisko) { document.getElementById("uf_imie").focus(); return; }
+  if (edytowanyUser) {
+    Store.update("uzytkownicy", edytowanyUser, dane);
+  } else {
+    var login = document.getElementById("uf_login").value.trim();
+    if (!login) { document.getElementById("uf_login").focus(); return; }
+    Store.insert("uzytkownicy", {
+      id: login, login: login, imie_nazwisko: dane.imie_nazwisko, rola: dane.rola,
+      instytucje: dane.instytucje, ostatnie_logowanie: "nowe konto", dwa_fa: dane.dwa_fa
+    });
+  }
+  zamknijUserForm();
+};
+window.usunUsera = function (login) {
+  var u = U.filter(function (x) { return x.login === login; })[0];
+  if (window.confirm("Usunąć konto " + (u ? u.imie : login) + " (" + login + ")?")) {
+    Store.remove("uzytkownicy", login);
+  }
+};
+document.getElementById("btnDodajUsera").addEventListener("click", function () {
+  edytowanyUser = null;
+  otworzUserForm(null, "Nowe konto użytkownika");
+});
+
+/* Odświeżanie po zmianie kont */
+window.addEventListener("db:changed", function () {
+  U = DB.UZYTKOWNICY;
+  renderU();
+  renderAlert2fa();
+});
 
 /* ================= 2. KONFIGURATOR ROL ================= */
 var M = DB.MODULY;

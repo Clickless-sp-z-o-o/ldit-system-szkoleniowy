@@ -144,6 +144,19 @@ win.Store.insert("zgloszenia",
 ok(win.DB.ZGLOSZENIA.length === startZg + 1, "insert zgloszenia (append-only)");
 ok(win.DB.ZGLOSZENIA[win.DB.ZGLOSZENIA.length - 1].powod === "Test powod", "adapter przekazuje zgloszenie wprost");
 
+/* UZYTKOWNICY (11-konta-uprawnienia) */
+const startU = win.DB.UZYTKOWNICY.length;
+win.Store.insert("uzytkownicy",
+  { id: "test@ldit.pl", login: "test@ldit.pl", imie_nazwisko: "Test User", rola: "Pracownik LDIT",
+    instytucje: "Metal Maniak", ostatnie_logowanie: "nowe konto", dwa_fa: true });
+ok(win.DB.UZYTKOWNICY.length === startU + 1, "insert uzytkownika");
+const vU = win.DB.UZYTKOWNICY.filter((u) => u.login === "test@ldit.pl")[0];
+ok(vU && vU.imie === "Test User" && vU["2fa"] === true, "adapter mapuje uzytkownika (imie/2fa)");
+win.Store.update("uzytkownicy", "test@ldit.pl", { rola: "Administrator" });
+ok(win.DB.UZYTKOWNICY.filter((u) => u.login === "test@ldit.pl")[0].rola === "Administrator", "update roli uzytkownika");
+win.Store.remove("uzytkownicy", "test@ldit.pl");
+ok(win.DB.UZYTKOWNICY.length === startU, "remove uzytkownika przywraca liczbe");
+
 /* Trwalosc: zmiana zapisala sie do localStorage */
 ok(win.localStorage.getItem(win.Store.KEY) != null, "stan zapisany w localStorage");
 
