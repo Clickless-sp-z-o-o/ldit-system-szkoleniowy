@@ -20,7 +20,7 @@
     </div>
     <div class="ph-actions">
       <button class="btn">Eksport</button>
-      <button class="btn primary">+ Nowy projekt</button>
+      <button class="btn primary" id="btnNowyProjekt">+ Nowy projekt</button>
     </div>
   </div>
 
@@ -60,6 +60,8 @@
       </div>
     </div>
 
+    <div id="projForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
+
     <div class="tbl-wrap" style="max-height:calc(100vh - 330px);overflow-y:auto">
       <table class="tbl" id="tab">
         <thead>
@@ -98,7 +100,9 @@
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
 <script>
-var W = DB.WNIOSKI.slice();
+function budujW() { return DB.WNIOSKI.slice(); }
+var W = budujW();
+var _batch = false;   /* wstrzymanie przerysowania przy operacjach masowych */
 
 /* Filtry */
 var selIS = document.getElementById("fIS");
@@ -119,14 +123,6 @@ function klasaWiersza(w) {
   if (w.statusSkl === "Rezygnacja") return "row-rez";
   if (w.statusSkl === "Złożony") return "row-czekamy";
   return "";
-}
-function tagStatus(w) {
-  if (w.statusDec === "Pozytywna") return '<span class="tag st-poz dot">Pozytywna</span>';
-  if (w.statusDec === "Negatywna") return '<span class="tag st-neg dot">Negatywna</span>';
-  if (w.statusSkl === "Złożony") return '<span class="tag st-czekamy dot">Czekamy</span>';
-  if (w.statusSkl === "NW") return '<span class="tag warn dot">NW</span>';
-  if (w.statusSkl === "Rezygnacja") return '<span class="tag st-rez dot">Rezygnacja</span>';
-  return '<span class="tag mute dot">Niezłożony</span>';
 }
 function tagRozl(w) {
   if (w.rozliczenie === "Rozliczone") return '<span class="tag st-set">Rozliczone</span>';
@@ -171,9 +167,12 @@ function render() {
       '<td class="num">' + DB.fmtPLN(w.wartosc) + '</td>' +
       '<td class="num strong">' + (w.przyznano != null ? DB.fmtPLN(w.przyznano) : '<span class="muted">&mdash;</span>') + '</td>' +
       '<td class="num">' + (w.kosztCalkowity != null ? DB.fmtPLN(w.kosztCalkowity) : '<span class="muted">&mdash;</span>') + '</td>' +
-      '<td>' + tagStatus(w) + '</td>' +
+      '<td>' + selectStatus(w) + '</td>' +
       '<td>' + tagRozl(w) + '</td>' +
-      '<td class="right"><button class="btn xs" onclick="otworz(\'' + w.id + '\')">Otwórz</button></td>' +
+      '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
+        '<button class="btn xs" onclick="otworz(\'' + w.id + '\')">Otwórz</button>' +
+        '<button class="btn xs" onclick="usunWniosek(\'' + w.id + '\')">Usuń</button>' +
+      '</div></td>' +
       '</tr>';
   }).join("");
 
@@ -198,10 +197,21 @@ function licz() {
 }
 
 function masowo(status) {
-  var n = document.querySelectorAll(".ck:checked").length;
-  if (!n) { alert("Zaznacz wiersze, którym chcesz nadać status."); return; }
-  alert("Masowa zmiana statusu na: " + status + "\nLiczba projektów: " + n +
-        "\n\nW systemie docelowym: zmiana zapisywana w rejestrze aktywności wraz z wartością przed i po (D-116).");
+  var ids = [];
+  document.querySelectorAll(".ck:checked").forEach(function (c) {
+    var tr = c.closest("tr");
+    if (tr && tr.dataset.id) ids.push(tr.dataset.id);
+  });
+  if (!ids.length) { alert("Zaznacz wiersze, którym chcesz nadać status."); return; }
+  var patch = mapStatus(status);
+  _batch = true;
+  ids.forEach(function (id) {
+    var w = W.filter(function (x) { return x.id === id; })[0];
+    Store.update("wnioski", id, patch);
+    logZmiana(id, "Status decyzji", w ? statusValue(w) : "", status);
+  });
+  _batch = false;
+  W = budujW(); render();
 }
 
 function otworz(id) {
@@ -217,6 +227,141 @@ document.getElementById("all").addEventListener("change", function () {
   document.getElementById(id).addEventListener("input", render);
   document.getElementById(id).addEventListener("change", render);
 });
+
+/* ================================================================
+   Inline CRUD wniosków. Zapis do wspólnego JSON przez Store.
+   Status edytowany bezpośrednio w komórce (D-115); masowa zmiana i
+   pojedyncza zmiana trafiają do rejestru aktywności (D-116).
+   Koszt całkowity (ręczny, D-58) i reguła przyznano: karta 03-wniosek.
+   ================================================================ */
+
+var STATUSY = ["Niezłożony", "Czekamy", "Pozytywna", "Negatywna", "NW", "Rezygnacja"];
+
+function statusValue(w) {
+  if (w.statusDec === "Pozytywna") return "Pozytywna";
+  if (w.statusDec === "Negatywna") return "Negatywna";
+  if (w.statusSkl === "Złożony") return "Czekamy";
+  if (w.statusSkl === "NW") return "NW";
+  if (w.statusSkl === "Rezygnacja") return "Rezygnacja";
+  return "Niezłożony";
+}
+function mapStatus(val) {
+  switch (val) {
+    case "Pozytywna": return { status_skladania: "Złożony", status_decyzji: "Pozytywna" };
+    case "Negatywna": return { status_skladania: "Złożony", status_decyzji: "Negatywna" };
+    case "Czekamy": return { status_skladania: "Złożony", status_decyzji: null };
+    case "NW": return { status_skladania: "NW", status_decyzji: null };
+    case "Rezygnacja": return { status_skladania: "Rezygnacja", status_decyzji: null };
+    default: return { status_skladania: "Niezłożony", status_decyzji: null };
+  }
+}
+function selectStatus(w) {
+  var cur = statusValue(w);
+  return '<select class="inp" style="padding:3px 6px;font-size:12px" onchange="zmienStatus(\'' + w.id + '\', this.value)">' +
+    STATUSY.map(function (o) { return "<option" + (o === cur ? " selected" : "") + ">" + o + "</option>"; }).join("") +
+    '</select>';
+}
+function terazStr() {
+  var d = new Date();
+  function p(n) { return String(n).padStart(2, "0"); }
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function logZmiana(obiekt, pole, przed, po) {
+  Store.insert("rejestr_aktywnosci", {
+    czas: terazStr(), kto: "Bartłomiej Olejnik", typ: "Zmiana statusu",
+    obiekt: obiekt, pole: pole, przed: przed || "brak", po: po
+  }, "AKT-");
+}
+function zmienStatus(id, val) {
+  var w = W.filter(function (x) { return x.id === id; })[0];
+  logZmiana(id, "Status", w ? statusValue(w) : "", val);
+  Store.update("wnioski", id, mapStatus(val));
+}
+window.zmienStatus = zmienStatus;
+
+function usunWniosek(id) {
+  var w = W.filter(function (x) { return x.id === id; })[0];
+  if (!window.confirm("Usunąć projekt " + (w ? w.klNazwa : id) + " (" + id + ")? Usunie też jego uczestników.")) return;
+  _batch = true;
+  Store.get("uczestnicy").filter(function (u) { return u.wniosek_id === id; })
+    .map(function (u) { return u.id; })
+    .forEach(function (uid) { Store.remove("uczestnicy", uid); });
+  _batch = false;
+  Store.remove("wnioski", id);
+}
+window.usunWniosek = usunWniosek;
+
+/* Dodawanie projektu z wygenerowanymi uczestnikami */
+var IMIONA_NOWE = ["Jan Kowalski", "Anna Nowak", "Piotr Wiśniewski", "Maria Wójcik",
+  "Tomasz Kaczmarek", "Ewa Mazur", "Adam Lewandowski", "Zofia Kwiatkowska"];
+
+function pokazProjForm() {
+  var el = document.getElementById("projForm");
+  var klOpts = DB.KLIENCI.map(function (k) { return '<option value="' + k.id + '">' + k.nazwa + " (" + k.id + ")</option>"; }).join("");
+  var szkOpts = DB.SZKOLENIA.map(function (s) {
+    var i = DB.INSTYTUCJE.filter(function (x) { return x.id === s.is; })[0];
+    return '<option value="' + s.id + '">' + (i ? i.nazwa : "") + " — " + s.nazwa + " (" + DB.fmtPLN(s.cena) + ")</option>";
+  }).join("");
+  var stOpts = STATUSY.map(function (o) { return "<option>" + o + "</option>"; }).join("");
+  el.innerHTML =
+    '<div class="small strong" style="margin-bottom:8px">Nowy projekt (wniosek)</div>' +
+    '<div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:0">' +
+      '<select class="inp" id="pfKlient" style="min-width:240px">' + klOpts + '</select>' +
+      '<select class="inp" id="pfSzk" style="min-width:260px">' + szkOpts + '</select>' +
+      '<input class="inp" id="pfOsob" type="number" min="1" value="3" style="width:90px" title="Liczba uczestników">' +
+      '<input class="inp" id="pfKoszt" type="number" min="0" placeholder="Koszt całk." style="width:140px" title="Koszt całkowity (ręczne)">' +
+      '<input class="inp" id="pfDoplata" type="number" min="0" value="0" style="width:110px" title="Dopłata dodatkowa">' +
+      '<select class="inp" id="pfStatus">' + stOpts + '</select>' +
+      '<button class="btn primary sm" onclick="zapiszNowyProjekt()">Zapisz projekt</button>' +
+      '<button class="btn sm" onclick="ukryjProjForm()">Anuluj</button>' +
+    '</div>' +
+    '<div class="small muted" style="margin-top:6px">Koszt całkowity jest ręczny (D-58). Puste pole = liczba uczestników × cena szkolenia. Przyznano policzy się z wielkości firmy.</div>';
+  el.style.display = "block";
+}
+function ukryjProjForm() { var el = document.getElementById("projForm"); el.style.display = "none"; el.innerHTML = ""; }
+window.ukryjProjForm = ukryjProjForm;
+
+function zapiszNowyProjekt() {
+  var kl = DB.KLIENCI.filter(function (x) { return x.id === document.getElementById("pfKlient").value; })[0];
+  var szk = DB.SZKOLENIA.filter(function (x) { return x.id === document.getElementById("pfSzk").value; })[0];
+  if (!kl || !szk) return;
+  var osob = Math.max(1, parseInt(document.getElementById("pfOsob").value, 10) || 1);
+  var kosztRaw = document.getElementById("pfKoszt").value;
+  var koszt = kosztRaw === "" ? osob * szk.cena : parseInt(kosztRaw, 10) || 0;
+  var doplata = parseInt(document.getElementById("pfDoplata").value, 10) || 0;
+  var st = mapStatus(document.getElementById("pfStatus").value);
+  var numer = DB.WNIOSKI.reduce(function (m, w) { return Math.max(m, w.nr || 0); }, 0) + 1;
+  var id = "PR-26-" + String(numer).padStart(4, "0");
+  var dzis = "2026-08-29";
+
+  _batch = true;
+  Store.insert("wnioski", {
+    id: id, numer: numer, rok: "2026",
+    klient_id: kl.id, instytucja_id: kl.is, pup_id: kl.pup, szkolenie_glowne_id: szk.id,
+    koszt_calkowity: koszt, kwota_doplaty_dodatkowej: doplata, prowizja_procent_reczna: null,
+    status_skladania: st.status_skladania, status_decyzji: st.status_decyzji,
+    status_finansowy: st.status_decyzji === "Pozytywna" ? "Oczekuje" : "Brak",
+    data_wplyniecia_formularza: dzis, data_wniosku: dzis, data_wystawienia_faktury: dzis
+  });
+  for (var i = 0; i < osob; i++) {
+    Store.insert("uczestnicy", {
+      id: "UCZ-26-" + String(numer).padStart(4, "0") + "-" + String(i + 1).padStart(2, "0"),
+      wniosek_id: id, imie_nazwisko: IMIONA_NOWE[i % IMIONA_NOWE.length], pesel: "",
+      szkolenie_id: szk.id, kwota: szk.cena,
+      status_kwalifikacji: "zakwalifikowany", powod_niezakwalifikowania: "", termin_id: null
+    });
+  }
+  _batch = false;
+  document.getElementById("q").value = kl.nazwa;   /* pokaz nowy projekt na liscie */
+  ukryjProjForm();
+  W = budujW(); render();
+}
+window.zapiszNowyProjekt = zapiszNowyProjekt;
+
+document.getElementById("btnNowyProjekt").addEventListener("click", pokazProjForm);
+
+/* Odświeżanie po zmianie danych (poza operacjami masowymi) */
+window.addEventListener("db:changed", function () { if (_batch) return; W = budujW(); render(); });
 
 /* Podpowiedz filtra z wyszukiwarki globalnej */
 var qp = new URLSearchParams(location.search).get("q");

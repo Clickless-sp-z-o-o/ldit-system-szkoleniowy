@@ -111,6 +111,31 @@ ok(win.DB.KLIENCI.filter((k) => k.id === nowyKl.id)[0].tel === "601 999 999", "u
 win.Store.remove("klienci", nowyKl.id);
 ok(win.DB.KLIENCI.length === startKl, "remove klienta przywraca liczbe");
 
+/* WNIOSKI + UCZESTNICY (02-zestawienia): pola wyliczane */
+const startW = win.DB.WNIOSKI.length;
+const wId = "PR-26-9001";
+win.Store.insert("wnioski", {
+  id: wId, numer: 9001, rok: "2026", klient_id: "KL-0001", instytucja_id: "IS-01", pup_id: "PUP-01",
+  szkolenie_glowne_id: "SZ-101", koszt_calkowity: 10000, kwota_doplaty_dodatkowej: 0, prowizja_procent_reczna: null,
+  status_skladania: "Złożony", status_decyzji: "Pozytywna", status_finansowy: "Oczekuje",
+  data_wplyniecia_formularza: "2026-08-29", data_wniosku: "2026-08-29", data_wystawienia_faktury: "2026-08-29"
+});
+win.Store.insert("uczestnicy", {
+  id: "UCZ-26-9001-01", wniosek_id: wId, imie_nazwisko: "Test Osoba", pesel: "",
+  szkolenie_id: "SZ-101", kwota: 3200, status_kwalifikacji: "zakwalifikowany", powod_niezakwalifikowania: "", termin_id: null
+});
+ok(win.DB.WNIOSKI.length === startW + 1, "insert wniosku widoczny w DB.WNIOSKI 2026");
+const vW = win.DB.WNIOSKI.filter((w) => w.id === wId)[0];
+ok(vW && vW.osob === 1 && vW.wartosc === 3200 && vW.calkowita === 3200, "adapter liczy uczestnikow i wartosc wniosku");
+const klW = win.DB.KLIENCI.filter((k) => k.id === "KL-0001")[0];
+const wsk = klW.wielkosc === "mikro" ? 0.9 : 0.7;
+ok(vW && vW.przyznano === Math.round(10000 * wsk * 100) / 100, "adapter liczy przyznano (koszt x wskaznik)");
+win.Store.update("wnioski", wId, { status_decyzji: "Negatywna" });
+ok(win.DB.WNIOSKI.filter((w) => w.id === wId)[0].przyznano === null, "zmiana na Negatywna zeruje przyznano");
+win.Store.remove("uczestnicy", "UCZ-26-9001-01");
+win.Store.remove("wnioski", wId);
+ok(win.DB.WNIOSKI.length === startW, "remove wniosku przywraca liczbe");
+
 /* Trwalosc: zmiana zapisala sie do localStorage */
 ok(win.localStorage.getItem(win.Store.KEY) != null, "stan zapisany w localStorage");
 
