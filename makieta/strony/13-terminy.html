@@ -472,15 +472,16 @@
   window.anulujEdycje = function () { edytowany = null; renderLista(); };
 
   window.zapiszEdycje = function (id) {
-    Store.update("terminy", id, {
+    var patch = {
       data_od: document.getElementById("edOd").value,
       data_do: document.getElementById("edDo").value,
       miejsce: document.getElementById("edMiejsce").value || "-",
       status_realizacji: document.getElementById("edStatus").value,
       zapisani: parseInt(document.getElementById("edZap").value, 10) || 0,
       limit: parseInt(document.getElementById("edLimit").value, 10) || 1
-    });
-    edytowany = null;   /* db:changed przerysuje liste bez wiersza edycji */
+    };
+    edytowany = null;   /* wyczysc przed zapisem, by db:changed odrysowal normalny wiersz */
+    Store.update("terminy", id, patch);
   };
 
   window.usunTermin = function (id) {

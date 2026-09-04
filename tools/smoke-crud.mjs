@@ -70,6 +70,33 @@ win.Store.remove("terminy", nowy.id);
 ok(win.DB.TERMINY.length === startLen, "remove przywraca liczbe terminow");
 ok(win.DB.TERMINY.filter((t) => t.id === nowy.id).length === 0, "usuniety termin znika z widoku");
 
+/* KATALOG SZKOLEN (06-instytucje) */
+const startSzk = win.DB.SZKOLENIA.length;
+const nowySzk = win.Store.insert("katalog_szkolen",
+  { instytucja_id: "IS-01", nazwa: "Test plan", liczba_godzin: 8, liczba_dni: 1, tryb: "Online", cena: 1500 }, "SZ-");
+ok(win.DB.SZKOLENIA.length === startSzk + 1, "insert planu szkolenia zwieksza katalog");
+const vSzk = win.DB.SZKOLENIA.filter((s) => s.id === nowySzk.id)[0];
+ok(vSzk && vSzk.is === "IS-01" && vSzk.godz === 8 && vSzk.cena === 1500, "adapter mapuje plan (is/godz/cena)");
+win.Store.update("katalog_szkolen", nowySzk.id, { cena: 1800 });
+ok(win.DB.SZKOLENIA.filter((s) => s.id === nowySzk.id)[0].cena === 1800, "update ceny planu");
+win.Store.remove("katalog_szkolen", nowySzk.id);
+ok(win.DB.SZKOLENIA.length === startSzk, "remove planu przywraca katalog");
+
+/* INSTYTUCJE (06-instytucje) */
+const startIS = win.DB.INSTYTUCJE.length;
+const nowaIS = win.Store.insert("instytucje",
+  { nazwa: "Test IS", skrot: "TIS", siedziba_miejscowosc: "Poznań", nip: "1234567890",
+    osoba_kontaktowa: "Jan Test", email: "t@t.pl", telefon: "600 000 000",
+    opis_dzialalnosci: "x", standard_godzinowy: "9-16", opiekun_ldit: "Martyna" }, "IS-");
+ok(win.DB.INSTYTUCJE.length === startIS + 1, "insert instytucji");
+const vIS = win.DB.INSTYTUCJE.filter((x) => x.id === nowaIS.id)[0];
+ok(vIS && vIS.miasto === "Poznań" && vIS.prowizja && vIS.prowizja.model === "D",
+   "adapter mapuje instytucje + domyslne warunki prowizji (model D)");
+win.Store.update("instytucje", nowaIS.id, { nazwa: "Test IS 2" });
+ok(win.DB.INSTYTUCJE.filter((x) => x.id === nowaIS.id)[0].nazwa === "Test IS 2", "update nazwy instytucji");
+win.Store.remove("instytucje", nowaIS.id);
+ok(win.DB.INSTYTUCJE.length === startIS, "remove instytucji przywraca liczbe");
+
 /* Trwalosc: zmiana zapisala sie do localStorage */
 ok(win.localStorage.getItem(win.Store.KEY) != null, "stan zapisany w localStorage");
 

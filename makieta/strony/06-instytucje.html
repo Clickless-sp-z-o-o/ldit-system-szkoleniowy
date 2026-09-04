@@ -29,7 +29,7 @@
     </div>
     <div class="ph-actions">
       <button class="btn">Eksport listy</button>
-      <button class="btn primary">+ Nowa instytucja</button>
+      <button class="btn primary" id="btnNowaIS">+ Nowa instytucja</button>
     </div>
   </div>
 
@@ -79,7 +79,7 @@
       <span class="sub" id="detSub"></span>
       <div class="ch-actions">
         <a class="btn sm" href="07-konfigurator-is.html">Konfigurator instytucji</a>
-        <button class="btn sm">Edytuj kartę</button>
+        <button class="btn sm" id="btnEdytujIS">Edytuj kartę</button>
       </div>
     </div>
 
@@ -96,6 +96,7 @@
         <div class="grid g-2-1">
           <div>
             <dl class="dl" id="daneFirmy"></dl>
+            <div id="isForm" style="display:none"></div>
           </div>
           <div>
             <div class="note mb0">
@@ -117,8 +118,9 @@
       <div class="toolbar">
         <span class="small muted" id="katSub"></span>
         <span class="sp"></span>
-        <button class="btn sm">+ Dodaj plan szkolenia</button>
+        <button class="btn sm" id="btnDodajPlan">+ Dodaj plan szkolenia</button>
       </div>
+      <div id="planForm" class="card-body" style="display:none;border-top:1px solid var(--line)"></div>
       <div class="card-body tight">
         <table class="tbl">
           <thead>
@@ -214,8 +216,14 @@
 (function () {
   "use strict";
 
-  var PELNE = DB.INSTYTUCJE.slice(0, 8);
+  /* 8 podstawowych instytucji plus ewentualne nowo dodane (numer id > 20) */
+  function pelne() {
+    return DB.INSTYTUCJE.filter(function (i, idx) {
+      return idx < 8 || Number(String(i.id).replace(/\D/g, "")) > 20;
+    });
+  }
   var wybrana = "IS-01";
+  var edytowanyPlan = null;   /* id planu szkolenia w trybie edycji inline */
 
   function klienciIS(id) { return DB.KLIENCI.filter(function (k) { return k.is === id; }); }
   function szkoleniaIS(id) { return DB.SZKOLENIA.filter(function (s) { return s.is === id; }); }
@@ -229,7 +237,7 @@
 
   /* ---------- Lista kafelków ---------- */
   function renderLista() {
-    document.getElementById("listaIS").innerHTML = PELNE.map(function (i) {
+    document.getElementById("listaIS").innerHTML = pelne().map(function (i) {
       return '<div class="card is-card' + (i.id === wybrana ? " sel" : "") + '" data-id="' + i.id + '">' +
         '<div class="card-body">' +
           '<div style="display:flex;align-items:flex-start;gap:10px">' +
@@ -296,6 +304,7 @@
       ". Ceny obowiązują wg daty wnioskowania.";
 
     document.getElementById("katalog").innerHTML = szk.length ? szk.map(function (s) {
+      if (s.id === edytowanyPlan) return wierszPlanEdycji(s);
       var real = DB.WNIOSKI.filter(function (w) { return w.szkId === s.id; }).length;
       return "<tr>" +
         '<td class="strong">' + s.nazwa + '<div class="small muted mono">' + s.id + "</div></td>" +
@@ -304,7 +313,10 @@
         "<td><span class='tag " + (s.tryb === "Online" ? "info" : s.tryb === "Stacjonarne" ? "mute" : "warn") + "'>" + s.tryb + "</span></td>" +
         '<td class="num strong">' + DB.fmtPLN(s.cena) + '<div class="small muted">od 2026-01-01</div></td>' +
         '<td class="num">' + real + "</td>" +
-        '<td class="right"><button class="btn xs">Historia cen</button></td>' +
+        '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
+          '<button class="btn xs" onclick="edytujPlan(\'' + s.id + '\')">Edytuj</button>' +
+          '<button class="btn xs" onclick="usunPlan(\'' + s.id + '\')">Usuń</button>' +
+        '</div></td>' +
         "</tr>";
     }).join("") : '<tr><td colspan="7"><div class="empty"><div class="ei">&#9723;</div>' +
       '<div class="et">Katalog pusty</div>Instytucja nie wprowadziła jeszcze planów szkoleń.</div></td></tr>';
@@ -368,6 +380,150 @@
       document.getElementById(t.getAttribute("data-p")).classList.add("on");
     });
   });
+
+  /* ================================================================
+     Inline CRUD: katalog szkoleń (per instytucja) oraz karta instytucji.
+     Zapis do wspólnego JSON przez Store, odświeżanie przez db:changed.
+     ================================================================ */
+
+  function escAttr(v) { return String(v == null ? "" : v).replace(/"/g, "&quot;"); }
+  function opcjeTryb(sel) {
+    return ["Online", "Stacjonarne", "Mieszane"].map(function (t) {
+      return "<option" + (sel === t ? " selected" : "") + ">" + t + "</option>";
+    }).join("");
+  }
+  function aktualnaIS() { return DB.INSTYTUCJE.filter(function (x) { return x.id === wybrana; })[0] || {}; }
+
+  /* ---- Katalog szkoleń ---- */
+  function wierszPlanEdycji(s) {
+    return '<tr class="row-nabor">' +
+      '<td><input class="inp" id="epNazwa" value="' + escAttr(s.nazwa) + '" style="min-width:200px"></td>' +
+      '<td class="num"><input class="inp" id="epGodz" type="number" min="1" value="' + s.godz + '" style="width:72px"></td>' +
+      '<td class="num"><input class="inp" id="epDni" type="number" min="1" value="' + s.dni + '" style="width:62px"></td>' +
+      '<td><select class="inp" id="epTryb">' + opcjeTryb(s.tryb) + '</select></td>' +
+      '<td class="num"><input class="inp" id="epCena" type="number" min="0" value="' + s.cena + '" style="width:100px"></td>' +
+      '<td class="num muted">&mdash;</td>' +
+      '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
+        '<button class="btn xs primary" onclick="zapiszPlan(\'' + s.id + '\')">Zapisz</button>' +
+        '<button class="btn xs" onclick="anulujPlan()">Anuluj</button>' +
+      '</div></td></tr>';
+  }
+  function pokazPlanForm() {
+    var el = document.getElementById("planForm");
+    el.innerHTML =
+      '<div class="small strong" style="margin-bottom:8px">Nowy plan szkolenia dla: ' + (aktualnaIS().nazwa || "-") + '</div>' +
+      '<div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:0">' +
+        '<input class="inp" id="npNazwa" placeholder="Nazwa szkolenia" style="min-width:240px">' +
+        '<input class="inp" id="npGodz" type="number" min="1" value="16" style="width:82px" title="Godziny">' +
+        '<input class="inp" id="npDni" type="number" min="1" value="2" style="width:72px" title="Dni">' +
+        '<select class="inp" id="npTryb">' + opcjeTryb("Online") + '</select>' +
+        '<input class="inp" id="npCena" type="number" min="0" value="3000" style="width:110px" title="Cena">' +
+        '<button class="btn primary sm" onclick="zapiszNowyPlan()">Zapisz plan</button>' +
+        '<button class="btn sm" onclick="ukryjPlanForm()">Anuluj</button>' +
+      '</div>';
+    el.style.display = "block";
+  }
+  window.ukryjPlanForm = function () { var el = document.getElementById("planForm"); el.style.display = "none"; el.innerHTML = ""; };
+  window.zapiszNowyPlan = function () {
+    var nazwa = document.getElementById("npNazwa").value.trim();
+    if (!nazwa) { document.getElementById("npNazwa").focus(); return; }
+    Store.insert("katalog_szkolen", {
+      instytucja_id: wybrana, nazwa: nazwa,
+      liczba_godzin: parseInt(document.getElementById("npGodz").value, 10) || 0,
+      liczba_dni: parseInt(document.getElementById("npDni").value, 10) || 0,
+      tryb: document.getElementById("npTryb").value,
+      cena: parseInt(document.getElementById("npCena").value, 10) || 0
+    }, "SZ-");
+    ukryjPlanForm();
+  };
+  window.edytujPlan = function (id) { edytowanyPlan = id; renderSzczegol(); };
+  window.anulujPlan = function () { edytowanyPlan = null; renderSzczegol(); };
+  window.zapiszPlan = function (id) {
+    var patch = {
+      nazwa: document.getElementById("epNazwa").value.trim() || "(bez nazwy)",
+      liczba_godzin: parseInt(document.getElementById("epGodz").value, 10) || 0,
+      liczba_dni: parseInt(document.getElementById("epDni").value, 10) || 0,
+      tryb: document.getElementById("epTryb").value,
+      cena: parseInt(document.getElementById("epCena").value, 10) || 0
+    };
+    edytowanyPlan = null;               /* wyczysc przed zapisem, by db:changed odrysowal wiersz normalny */
+    Store.update("katalog_szkolen", id, patch);
+  };
+  window.usunPlan = function (id) {
+    if (window.confirm("Usunąć plan szkolenia " + id + " z katalogu?")) Store.remove("katalog_szkolen", id);
+  };
+  document.getElementById("btnDodajPlan").addEventListener("click", pokazPlanForm);
+
+  /* ---- Karta instytucji ---- */
+  var POLA_IS = [
+    ["nazwa", "Nazwa", "nazwa"], ["skrot", "Skrót", "skrot"],
+    ["siedziba_miejscowosc", "Siedziba (miejscowość)", "miasto"], ["nip", "NIP", "nip"],
+    ["osoba_kontaktowa", "Kontakt główny", "kontakt"], ["email", "E-mail", "mail"],
+    ["telefon", "Telefon", "tel"], ["opis_dzialalnosci", "Opis działalności", "opis"],
+    ["standard_godzinowy", "Standard godzinowy", "standard"], ["opiekun_ldit", "Opiekun LDIT", "opiekun"]
+  ];
+  function isFormHTML(i, tytul, submitLabel, onSubmit) {
+    var pola = POLA_IS.map(function (p) {
+      return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
+        '<span class="muted">' + p[1] + '</span>' +
+        '<input class="inp" id="if_' + p[0] + '" value="' + escAttr(i ? i[p[2]] : "") + '"></label>';
+    }).join("");
+    return '<div class="card mb0"><div class="card-body">' +
+      '<div class="small strong" style="margin-bottom:10px">' + tytul + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + pola + '</div>' +
+      '<div class="btn-row" style="margin-top:12px">' +
+        '<button class="btn primary sm" onclick="' + onSubmit + '">' + submitLabel + '</button>' +
+        '<button class="btn sm" onclick="zamknijISForm()">Anuluj</button>' +
+      '</div></div></div>';
+  }
+  function zbierzIS() {
+    var o = {};
+    POLA_IS.forEach(function (p) { o[p[0]] = document.getElementById("if_" + p[0]).value; });
+    return o;
+  }
+  function otworzISForm(html) {
+    document.getElementById("daneFirmy").style.display = "none";
+    var el = document.getElementById("isForm");
+    el.innerHTML = html;
+    el.style.display = "block";
+    aktywujTab("p-dane");
+  }
+  window.zamknijISForm = function () {
+    var el = document.getElementById("isForm");
+    el.style.display = "none"; el.innerHTML = "";
+    document.getElementById("daneFirmy").style.display = "";
+  };
+  window.zapiszEdycjeIS = function () {
+    var patch = zbierzIS();
+    Store.update("instytucje", wybrana, patch);
+    zamknijISForm();
+    renderLista(); renderSzczegol();
+  };
+  window.dodajIS = function () {
+    var o = zbierzIS();
+    if (!o.nazwa.trim()) { document.getElementById("if_nazwa").focus(); return; }
+    var nowa = Store.insert("instytucje", o, "IS-");
+    wybrana = nowa.id;
+    zamknijISForm();
+    renderLista(); renderSzczegol();
+  };
+  document.getElementById("btnEdytujIS").addEventListener("click", function () {
+    otworzISForm(isFormHTML(aktualnaIS(), "Edycja karty: " + (aktualnaIS().nazwa || ""), "Zapisz zmiany", "zapiszEdycjeIS()"));
+  });
+  document.getElementById("btnNowaIS").addEventListener("click", function () {
+    otworzISForm(isFormHTML(null, "Nowa instytucja szkoleniowa", "Dodaj instytucję", "dodajIS()"));
+  });
+
+  function aktywujTab(pid) {
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (x) { x.classList.remove("on"); });
+    Array.prototype.forEach.call(document.querySelectorAll(".tab-pane"), function (x) { x.classList.remove("on"); });
+    var tb = document.querySelector('#tabs .tab[data-p="' + pid + '"]');
+    if (tb) tb.classList.add("on");
+    document.getElementById(pid).classList.add("on");
+  }
+
+  /* Odświeżanie po zmianie danych */
+  window.addEventListener("db:changed", function () { renderLista(); renderSzczegol(); });
 
   renderLista();
   renderSzczegol();
