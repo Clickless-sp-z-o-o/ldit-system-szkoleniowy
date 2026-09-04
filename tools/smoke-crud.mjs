@@ -136,6 +136,14 @@ win.Store.remove("uczestnicy", "UCZ-26-9001-01");
 win.Store.remove("wnioski", wId);
 ok(win.DB.WNIOSKI.length === startW, "remove wniosku przywraca liczbe");
 
+/* ZGLOSZENIA (10-zgloszenia): append-only, bez usuwania (D-55) */
+const startZg = win.DB.ZGLOSZENIA.length;
+win.Store.insert("zgloszenia",
+  { data: "2026-08-29", podmiot: "Test IS", typ: "Instytucja", powod: "Test powod",
+    opis: "opis zdarzenia", autor: "Bartłomiej Olejnik", waga: "wysoka" }, "ZG-");
+ok(win.DB.ZGLOSZENIA.length === startZg + 1, "insert zgloszenia (append-only)");
+ok(win.DB.ZGLOSZENIA[win.DB.ZGLOSZENIA.length - 1].powod === "Test powod", "adapter przekazuje zgloszenie wprost");
+
 /* Trwalosc: zmiana zapisala sie do localStorage */
 ok(win.localStorage.getItem(win.Store.KEY) != null, "stan zapisany w localStorage");
 

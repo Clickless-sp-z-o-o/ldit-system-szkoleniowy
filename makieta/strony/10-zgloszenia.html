@@ -229,8 +229,10 @@ var ARCHIWUM = [
     autor: "Joanna Sadowska", waga: "niska" }
 ];
 
-var WSZYSTKIE = DB.ZGLOSZENIA.concat(ARCHIWUM);
-var LOKALNE = DB.ZGLOSZENIA.slice();
+function lokalne() { return DB.ZGLOSZENIA.slice(); }
+function wszystkie() { return DB.ZGLOSZENIA.concat(ARCHIWUM); }
+var WSZYSTKIE = wszystkie();
+var LOKALNE = lokalne();
 var filtrTyp = "";
 
 function wagaTag(w) {
@@ -276,11 +278,8 @@ function renderKpi() {
 
 /* ---------- Historia podmiotu ---------- */
 function historia(podmiot, pomijId) {
-  return WSZYSTKIE.concat(LOKALNE.filter(function (z) {
-    return DB.ZGLOSZENIA.indexOf(z) === -1;
-  })).filter(function (z, i, arr) {
-    return z.podmiot === podmiot && arr.indexOf(z) === i;
-  }).filter(function (z) { return z.id !== pomijId; })
+  return wszystkie()
+    .filter(function (z) { return z.podmiot === podmiot && z.id !== pomijId; })
     .sort(function (a, b) { return a.data < b.data ? 1 : -1; });
 }
 
@@ -413,8 +412,7 @@ function dodaj() {
       '<div class="note warn mt16 mb0">Powód i opis są wymagane. Zgłoszenie bez opisu jest bezużyteczne po roku.</div>';
     return;
   }
-  LOKALNE.unshift({
-    id: "ZG-" + String(8 + LOKALNE.length - DB.ZGLOSZENIA.length).padStart(3, "0"),
+  Store.insert("zgloszenia", {
     data: "2026-08-29",
     podmiot: s.options[s.selectedIndex].text,
     typ: s.value,
@@ -422,14 +420,14 @@ function dodaj() {
     opis: opis,
     autor: document.getElementById("nAutor").value,
     waga: document.getElementById("nWaga").value
-  });
+  }, "ZG-");
   document.getElementById("nPowod").value = "";
   document.getElementById("nOpis").value = "";
   document.getElementById("wynikDodania").innerHTML =
     '<div class="note mt16 mb0" style="border-left-color:var(--pos-ink);background:var(--pos-bg)">' +
-    "<b>Zgłoszenie zapisane.</b> Historia podmiotu przeliczyła się na liście powyżej.</div>";
-  odswiez();
+    "<b>Zgłoszenie zapisane w bazie.</b> Historia podmiotu przeliczyła się na liście powyżej.</div>";
   window.scrollTo(0, 0);
+  /* odswiez() wywola sie przez zdarzenie db:changed */
 }
 
 /* ---------- Filtry ---------- */
@@ -445,6 +443,14 @@ document.getElementById("szukaj").addEventListener("input", renderLista);
 document.getElementById("fWaga").addEventListener("change", renderLista);
 
 function odswiez() { renderKpi(); renderLista(); renderPowracajace(); }
+
+/* Odświeżanie po zapisaniu zgłoszenia do wspólnego JSON */
+window.addEventListener("db:changed", function () {
+  LOKALNE = lokalne();
+  WSZYSTKIE = wszystkie();
+  odswiez();
+});
+
 odswiezTyp();
 odswiez();
 </script>
