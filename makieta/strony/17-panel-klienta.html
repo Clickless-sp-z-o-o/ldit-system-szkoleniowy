@@ -256,7 +256,7 @@
   document.getElementById("subUcz").textContent = zakw + " zakwalifikowanych z " + w.uczestnicy.length + " zgłoszonych";
   document.getElementById("uczestnicy").innerHTML = w.uczestnicy.map(function (u) {
     var ok = u.status === "zakwalifikowany";
-    return '<tr' + (ok ? '' : ' class="row-neg"') + '>' +
+    return '<tr' + (ok ? '' : ' class="row-danger"') + '>' +
       '<td class="strong">' + u.imie + '</td>' +
       '<td>' + u.szkNazwa + '</td>' +
       '<td>' + (ok ? '<span class="tag pos dot">zakwalifikowany</span>' : '<span class="tag neg dot">niezakwalifikowany</span>') + '</td>' +

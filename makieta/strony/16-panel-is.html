@@ -334,7 +334,7 @@
     var tag = t.status === "Odbyty" ? '<span class="tag set dot">odbyty</span>'
             : t.status === "Zaplanowany" ? '<span class="tag pos dot">zaplanowany</span>'
             : '<span class="tag info dot">wolny</span>';
-    return '<tr' + (t.status === "Odbyty" ? ' class="row-set"' : '') + '>' +
+    return '<tr' + (t.status === "Odbyty" ? ' class="row-hl"' : '') + '>' +
       '<td class="strong">' + t.nazwa + '</td>' +
       '<td class="nowrap small">' + t.od + " &rsaquo; " + t.do + '</td>' +
       '<td class="small muted">' + t.miejsce + '</td>' +

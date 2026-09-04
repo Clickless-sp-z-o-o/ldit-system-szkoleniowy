@@ -12,7 +12,8 @@
     <div class="ph-text">
       <h1 class="page-title">Zestawienie 2026 &middot; wszystkie instytucje</h1>
       <p class="page-desc">
-        Główne miejsce pracy. Układ i kolory przeniesione z Excela <span class="ref">D-01</span>,
+        Główne miejsce pracy. Układ z Excela, kolory statusów wg palety 5 stanów
+        <span class="ref">D-01</span> <span class="ref">D-123</span>,
         numeracja klientów ciągła w ramach roku, trafia na fakturę <span class="ref">D-112</span>.
         Edycja bezpośrednio w komórce <span class="ref">D-115</span>.
       </p>
@@ -51,9 +52,11 @@
       <button class="btn xs" onclick="masowo('Negatywna')">Oznacz negatywne</button>
       <span class="sp"></span>
       <div class="legend">
-        <span><i style="background:var(--pos-bg);border-color:#86efac"></i>pozytywna</span>
-        <span><i style="background:var(--neg-bg);border-color:#fca5a5"></i>negatywna</span>
-        <span><i style="background:var(--set-bg);border-color:#d8b4fe"></i>rozliczone</span>
+        <span><i style="background:var(--st-czekamy-bg);border-color:var(--line-strong)"></i>czekamy</span>
+        <span><i style="background:var(--st-poz-bg);border-color:#86efac"></i>pozytywna</span>
+        <span><i style="background:var(--st-neg-bg);border-color:#e08a2e"></i>negatywna</span>
+        <span><i style="background:var(--st-rez-bg);border-color:#e6cf5a"></i>rezygnacja</span>
+        <span><i style="background:var(--st-set-bg)"></i>rozliczone</span>
       </div>
     </div>
 
@@ -107,22 +110,26 @@ DB.PUPY.forEach(function (p) {
   selPUP.innerHTML += '<option value="' + p.id + '">' + p.nazwa + '</option>';
 });
 
+/* Kolor wiersza wg palety 5 stanow (D-01, D-123). Rozliczone ma pierwszenstwo,
+   nastepnie decyzja, potem rezygnacja i stan "czekamy" (zlozony bez decyzji). */
 function klasaWiersza(w) {
   if (w.rozliczenie === "Rozliczone") return "row-set";
   if (w.statusDec === "Pozytywna") return "row-pos";
   if (w.statusDec === "Negatywna") return "row-neg";
+  if (w.statusSkl === "Rezygnacja") return "row-rez";
+  if (w.statusSkl === "Złożony") return "row-czekamy";
   return "";
 }
 function tagStatus(w) {
-  if (w.statusDec === "Pozytywna") return '<span class="tag pos dot">Pozytywna</span>';
-  if (w.statusDec === "Negatywna") return '<span class="tag neg dot">Negatywna</span>';
-  if (w.statusSkl === "Złożony") return '<span class="tag info dot">Oczekuje</span>';
+  if (w.statusDec === "Pozytywna") return '<span class="tag st-poz dot">Pozytywna</span>';
+  if (w.statusDec === "Negatywna") return '<span class="tag st-neg dot">Negatywna</span>';
+  if (w.statusSkl === "Złożony") return '<span class="tag st-czekamy dot">Czekamy</span>';
   if (w.statusSkl === "NW") return '<span class="tag warn dot">NW</span>';
-  if (w.statusSkl === "Rezygnacja") return '<span class="tag mute dot">Rezygnacja</span>';
+  if (w.statusSkl === "Rezygnacja") return '<span class="tag st-rez dot">Rezygnacja</span>';
   return '<span class="tag mute dot">Niezłożony</span>';
 }
 function tagRozl(w) {
-  if (w.rozliczenie === "Rozliczone") return '<span class="tag set">Rozliczone</span>';
+  if (w.rozliczenie === "Rozliczone") return '<span class="tag st-set">Rozliczone</span>';
   if (w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
   if (w.rozliczenie === "Oczekuje") return '<span class="tag mute">Oczekuje</span>';
   return '<span class="muted small">&mdash;</span>';

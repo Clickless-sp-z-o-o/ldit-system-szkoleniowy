@@ -20,11 +20,12 @@
     <div class="ph-text">
       <h1 class="page-title">Rejestr aktywności</h1>
       <p class="page-desc">
-        Moduł wyłącznie dla administratora. Dwa <b>niezależne</b> rejestry
-        <span class="ref">D-116</span> <span class="ref">D-55</span>: rejestr zmian danych
-        (kto, kiedy, co, wartość przed i po) oraz log logowań. Nie łączymy ich w jedną listę,
-        bo służą do zupełnie różnych rzeczy: pierwszy do wyjaśniania kto zmienił kwotę,
-        drugi do wyjaśniania incydentów bezpieczeństwa.
+        Moduł wyłącznie dla administratora. Cel: wgląd, <b>kto co zrobił i kiedy</b>
+        <span class="ref">D-122</span>. Cztery strumienie zdarzeń
+        <span class="ref">D-116</span> <span class="ref">D-55</span>: zmiany danych
+        (wartość przed i po), log akcji (kliknięcia), log wysyłek powiadomień oraz log logowań.
+        Każda akcja przypisana do konta zalogowanego pracownika <span class="ref">D-121</span>,
+        bo każdy działa we własnym imieniu.
       </p>
     </div>
     <div class="ph-actions">
@@ -41,6 +42,8 @@
   <div class="card">
     <div class="tabs">
       <div class="tab on" data-t="t1">Rejestr zmian danych</div>
+      <div class="tab" data-t="t3">Log akcji (kliknięcia)</div>
+      <div class="tab" data-t="t4">Log wysyłek</div>
       <div class="tab" data-t="t2">Log logowań</div>
     </div>
 
@@ -185,6 +188,47 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 3: LOG AKCJI (KLIKNIECIA) ============ -->
+    <div class="tab-pane" id="t3">
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Co jest logowane:</b> istotne akcje w interfejsie, także te, które nie zmieniają danych:
+          otwarcie karty klienta lub wniosku, uruchomienie eksportu, wejście w moduł finansowy,
+          podgląd PDF faktury, uruchomienie wysyłki. Każda akcja przypisana do zalogowanego
+          pracownika <span class="ref">D-121</span> <span class="ref">D-122</span>.<br><br>
+          <b>Zakres do doprecyzowania</b> <span class="ref p">P-54</span>: logujemy istotne akcje,
+          nie każde kliknięcie. Dosłowne logowanie każdego ruchu myszy generuje szum i ogromny wolumen,
+          a przy tym obciąża politykę retencji <span class="ref p">P-26</span>.
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th style="width:135px">Czas</th><th>Kto</th><th>Akcja</th><th>Obiekt</th><th>Kontekst</th></tr></thead>
+          <tbody id="bodyAkcje"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 4: LOG WYSYLEK ============ -->
+    <div class="tab-pane" id="t4">
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Co jest logowane:</b> każda wysyłka powiadomienia lub maila z systemu: kto wysłał,
+          do kogo, jaki szablon, kiedy i z jakiego wyzwalacza (automatyczny czy ręczny)
+          <span class="ref">D-122</span>. Log domyka wymóg potwierdzenia przed wysyłką
+          <span class="ref">D-106</span> dowodem, że wysyłka faktycznie nastąpiła. Instytucje
+          szkoleniowe nie wysyłają z systemu <span class="ref">D-87</span>, więc w tym logu
+          nadawcą jest zawsze LDIT albo automat systemowy.
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th style="width:135px">Czas</th><th>Nadawca</th><th>Odbiorca</th><th>Szablon</th><th>Wyzwalacz</th><th>Wynik</th></tr></thead>
+          <tbody id="bodyWys"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -420,7 +464,7 @@ function renderL() {
   document.getElementById("bodyL").innerHTML = lista.map(function (r) {
     var u = UMAP[r.kto];
     var ok = r.wynik === "OK";
-    return '<tr class="' + (ok ? "" : "row-neg") + '">' +
+    return '<tr class="' + (ok ? "" : "row-danger") + '">' +
       '<td class="mono muted nowrap">' + r.czas + '</td>' +
       '<td class="strong mono">' + r.kto +
         (u ? '<div class="small muted" style="font-family:inherit">' + u.imie + ", " + u.rola +
@@ -473,6 +517,54 @@ sygnaly.push(["done", "Konta bez 2FA nadal aktywne",
 document.getElementById("sygnaly").innerHTML = sygnaly.map(function (s) {
   return '<div class="tl-item ' + s[0] + '"><div class="t">' + s[1] + '</div>' +
     '<div class="m">' + s[2] + '</div></div>';
+}).join("");
+
+/* ================= 3. LOG AKCJI (KLIKNIECIA) [D-122] ================= */
+/* Dane demonstracyjne: log akcji nie ma jeszcze wlasnej tabeli w seedzie,
+   wiec pokazujemy reprezentatywny wycinek istotnych akcji. */
+var AKCJE = [
+  { czas: "2026-08-29 10:52", kto: "Martyna Kowal", akcja: "Otwarcie karty klienta", obiekt: "KL-0238", kontekst: "Metal Maniak" },
+  { czas: "2026-08-29 10:48", kto: "Martyna Kowal", akcja: "Eksport do Excela", obiekt: "Zestawienie 2026", kontekst: "widok przefiltrowany: PUP Warszawa" },
+  { czas: "2026-08-29 10:31", kto: "Bartłomiej Olejnik", akcja: "Wejście w moduł Administracja", obiekt: "Prowizje", kontekst: "dane finansowe, tylko admin" },
+  { czas: "2026-08-29 09:20", kto: "Asia Nowak", akcja: "Generowanie certyfikatów", obiekt: "PR-26-0141", kontekst: "paczka ZIP, 12 osób" },
+  { czas: "2026-08-29 09:05", kto: "Martyna Kowal", akcja: "Otwarcie karty wniosku", obiekt: "PR-26-0139", kontekst: "Dron Fortech" },
+  { czas: "2026-08-28 16:40", kto: "Łucja Dąbek", akcja: "Kliknięcie: Dane do faktury", obiekt: "PR-26-0132", kontekst: "przygotowanie maila do IS" },
+  { czas: "2026-08-28 15:12", kto: "Bartłomiej Olejnik", akcja: "Podgląd PDF faktury", obiekt: "FV-2026-084", kontekst: "sprawdzenie terminu płatności" },
+  { czas: "2026-08-28 11:03", kto: "Asia Nowak", akcja: "Wyszukiwarka globalna", obiekt: "NIP 527-xxx", kontekst: "wynik: 1 klient" }
+];
+document.getElementById("bodyAkcje").innerHTML = AKCJE.map(function (a) {
+  return '<tr>' +
+    '<td class="mono muted nowrap">' + a.czas + '</td>' +
+    '<td class="strong nowrap">' + a.kto + '</td>' +
+    '<td>' + a.akcja + '</td>' +
+    '<td class="mono nowrap">' + a.obiekt + '</td>' +
+    '<td class="small muted">' + a.kontekst + '</td>' +
+    '</tr>';
+}).join("");
+
+/* ================= 4. LOG WYSYLEK [D-122] ================= */
+var WYSYLKI = [
+  { czas: "2026-08-29 10:50", kto: "Martyna Kowal", odbiorca: "klient: Metal Maniak sp. z o.o.", szablon: "Wniosek w trakcie przygotowania", wyzwalacz: "ręczny", wynik: "OK" },
+  { czas: "2026-08-29 10:12", kto: "System", odbiorca: "IS: Dron Fortech (osoba od terminów)", szablon: "Prośba o ustalenie terminu", wyzwalacz: "automatyczny", wynik: "OK" },
+  { czas: "2026-08-29 09:22", kto: "Asia Nowak", odbiorca: "IS: Odczaruj Power BI", szablon: "Dane do faktury", wyzwalacz: "ręczny", wynik: "OK" },
+  { czas: "2026-08-28 17:05", kto: "System", odbiorca: "uczestnicy terminu (14)", szablon: "Szczegóły organizacyjne", wyzwalacz: "automatyczny", wynik: "OK" },
+  { czas: "2026-08-28 14:30", kto: "Łucja Dąbek", odbiorca: "klient: Zenit sp.j.", szablon: "Instrukcja konta praca.gov.pl", wyzwalacz: "ręczny", wynik: "OK" },
+  { czas: "2026-08-28 12:00", kto: "System", odbiorca: "LDIT (osoba od faktur)", szablon: "Alert o fakturze", wyzwalacz: "automatyczny", wynik: "OK" },
+  { czas: "2026-08-28 08:15", kto: "Łucja Dąbek", odbiorca: "klient: Termex Serwis", szablon: "Prośba o opinię w Google", wyzwalacz: "ręczny", wynik: "nie wysłano: brak zgody" }
+];
+document.getElementById("bodyWys").innerHTML = WYSYLKI.map(function (w) {
+  var ok = w.wynik === "OK";
+  var wyz = w.wyzwalacz === "automatyczny"
+    ? '<span class="tag info">automatyczny</span>'
+    : '<span class="tag mute">' + w.wyzwalacz + '</span>';
+  return '<tr class="' + (ok ? "" : "row-danger") + '">' +
+    '<td class="mono muted nowrap">' + w.czas + '</td>' +
+    '<td class="strong nowrap">' + w.kto + '</td>' +
+    '<td>' + w.odbiorca + '</td>' +
+    '<td>' + w.szablon + '</td>' +
+    '<td>' + wyz + '</td>' +
+    '<td>' + (ok ? '<span class="tag pos dot">wysłano</span>' : '<span class="tag warn dot">' + w.wynik + '</span>') + '</td>' +
+    '</tr>';
 }).join("");
 </script>
 </body>

@@ -78,7 +78,7 @@
       <div class="card" id="formularz">
         <div class="card-head">
           <h3>Nowe zgłoszenie</h3>
-          <span class="sub">wpis ręczny, data rejestrowana automatycznie</span>
+          <span class="sub">wpis ręczny, autor domyślnie zalogowany (D-121), data automatyczna</span>
         </div>
         <div class="card-body">
           <div class="grid g2">
@@ -116,8 +116,9 @@
 
           <div class="grid g2">
             <div class="field">
-              <label>Autor <span class="calc-badge">wyliczane</span></label>
-              <input class="inp" value="Bartłomiej Olejnik" readonly>
+              <label>Autor <span class="calc-badge manual">domyślnie zalogowany</span></label>
+              <select class="inp" id="nAutor"></select>
+              <div class="hint">Domyślnie zalogowany pracownik, można wskazać innego. Każdy działa we własnym imieniu <span class="ref">D-121</span>.</div>
             </div>
             <div class="field">
               <label>Data wpisu <span class="calc-badge">wyliczane</span></label>
@@ -367,7 +368,7 @@ function renderPowracajace() {
     .sort(function (a, b) { return b.n - a.n; });
 
   document.getElementById("tbPowracajace").innerHTML = rows.length ? rows.map(function (r) {
-    return "<tr" + (r.n >= 3 ? ' class="row-neg"' : "") + ">" +
+    return "<tr" + (r.n >= 3 ? ' class="row-danger"' : "") + ">" +
       '<td class="strong">' + r.p + "</td>" +
       '<td class="small muted">' + r.typ + "</td>" +
       '<td class="num strong">' + r.n + "</td></tr>";
@@ -382,6 +383,19 @@ var opcje = '<optgroup label="Instytucje szkoleniowe">' +
   DB.KLIENCI.slice(0, 60).map(function (k) { return '<option value="Klient">' + k.nazwa + "</option>"; }).join("") +
   "</optgroup>";
 document.getElementById("nPodmiot").innerHTML = opcje;
+
+/* Autor domyslnie = zalogowany pracownik LDIT, pole edytowalne (D-121).
+   Zalogowanego wyliczamy z parametru rola przekazanego przez powloke makiety. */
+var PRACOWNICY_LDIT = DB.UZYTKOWNICY.filter(function (u) {
+  return u.rola === "Administrator" || u.rola === "Pracownik LDIT";
+});
+var rolaParam = new URLSearchParams(location.search).get("rola") || "admin";
+var domyslnyAutor = (PRACOWNICY_LDIT.filter(function (u) {
+  return rolaParam === "pracownik" ? u.rola === "Pracownik LDIT" : u.rola === "Administrator";
+})[0] || PRACOWNICY_LDIT[0] || { imie: "Bartłomiej Olejnik" }).imie;
+document.getElementById("nAutor").innerHTML = PRACOWNICY_LDIT.map(function (u) {
+  return '<option' + (u.imie === domyslnyAutor ? " selected" : "") + ">" + u.imie + "</option>";
+}).join("");
 
 function odswiezTyp() {
   var s = document.getElementById("nPodmiot");
@@ -406,7 +420,7 @@ function dodaj() {
     typ: s.value,
     powod: powod,
     opis: opis,
-    autor: "Bartłomiej Olejnik",
+    autor: document.getElementById("nAutor").value,
     waga: document.getElementById("nWaga").value
   });
   document.getElementById("nPowod").value = "";

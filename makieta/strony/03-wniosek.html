@@ -230,7 +230,7 @@ function renderUcz() {
 
   document.getElementById("uczestnicy").innerHTML = w.uczestnicy.map(function (u, i) {
     var zak = u.status === "zakwalifikowany";
-    return '<tr' + (zak ? "" : ' class="row-neg"') + '>' +
+    return '<tr' + (zak ? "" : ' class="row-danger"') + '>' +
       '<td class="strong">' + u.imie + '</td>' +
       '<td class="mono muted">' + u.pesel.slice(0, 6) + "*****" + '</td>' +
       '<td>' + u.szkNazwa + '</td>' +

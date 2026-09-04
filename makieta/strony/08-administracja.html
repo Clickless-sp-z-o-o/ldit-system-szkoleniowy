@@ -681,7 +681,7 @@
       DB.fmtPLN(lista.reduce(function (s, f) { return s + f.kwota; }, 0));
 
     document.getElementById("tabFakt").innerHTML = lista.map(function (f) {
-      return '<tr class="' + (f.status === "Po terminie" ? "row-neg" : "") + '">' +
+      return '<tr class="' + (f.status === "Po terminie" ? "row-danger" : "") + '">' +
         '<td class="strong mono">' + f.nr + '</td>' +
         '<td class="nowrap">' + f.is + '</td>' +
         '<td class="num strong">' + DB.fmtPLN2(f.kwota) + '</td>' +
