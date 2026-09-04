@@ -192,7 +192,7 @@
   S.subscribe(function () {
     rebuild();
     if (global.dispatchEvent && global.CustomEvent) {
-      global.dispatchEvent(new CustomEvent("db:changed"));
+      global.dispatchEvent(new global.CustomEvent("db:changed"));
     }
   });
 

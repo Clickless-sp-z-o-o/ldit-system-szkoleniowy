@@ -24,7 +24,7 @@
     </div>
     <div class="ph-actions">
       <button class="btn">Pismo do PUP o zmianie terminu</button>
-      <button class="btn primary">+ Nowy termin</button>
+      <button class="btn primary" id="btnNowy">+ Nowy termin</button>
     </div>
   </div>
 
@@ -81,6 +81,8 @@
         <span class="sp"></span>
         <span class="small muted" id="licz"></span>
       </div>
+
+      <div id="addForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
 
       <div class="tbl-wrap">
         <table class="tbl">
@@ -209,21 +211,26 @@
 
   /* KPI */
   var T = DB.TERMINY;
-  var wWrzesniu = T.filter(function (t) { return t.od.slice(0, 7) === "2026-09" || (t.od < "2026-09-01" && t.do >= "2026-09-01"); });
-  var zapisaniRazem = T.reduce(function (s, t) { return s + t.zapisani; }, 0);
-  var limitRazem = T.reduce(function (s, t) { return s + t.limit; }, 0);
-  var wolne = T.filter(function (t) { return t.status === "Wolny"; });
+  var edytowany = null;   /* id terminu w trybie edycji inline */
 
   function kpi(label, val, foot) {
     return '<div class="kpi"><div class="k-label">' + label + '</div>' +
       '<div class="k-value">' + val + '</div><div class="k-foot">' + foot + '</div></div>';
   }
-  document.getElementById("kpi").innerHTML =
-    kpi("Terminy we wrześniu 2026", wWrzesniu.length, "wraz z kursami wchodzącymi z sierpnia") +
-    kpi("Terminy z wolnymi miejscami", wolne.length, "można dopisywać uczestników bez pytania instytucji") +
-    kpi("Uczestnicy zapisani", zapisaniRazem, "na " + limitRazem + " miejsc, obłożenie " +
-        Math.round(zapisaniRazem / limitRazem * 100) + "%") +
-    kpi("Terminy w bazie", T.length, "8 instytucji, katalog 18 szkoleń");
+  function renderKPI() {
+    T = DB.TERMINY;
+    var wWrzesniu = T.filter(function (t) { return t.od.slice(0, 7) === "2026-09" || (t.od < "2026-09-01" && t.do >= "2026-09-01"); });
+    var zapisaniRazem = T.reduce(function (s, t) { return s + t.zapisani; }, 0);
+    var limitRazem = T.reduce(function (s, t) { return s + t.limit; }, 0);
+    var wolne = T.filter(function (t) { return t.status === "Wolny"; });
+    document.getElementById("kpi").innerHTML =
+      kpi("Terminy we wrześniu 2026", wWrzesniu.length, "wraz z kursami wchodzącymi z sierpnia") +
+      kpi("Terminy z wolnymi miejscami", wolne.length, "można dopisywać uczestników bez pytania instytucji") +
+      kpi("Uczestnicy zapisani", zapisaniRazem, "na " + limitRazem + " miejsc, obłożenie " +
+          (limitRazem ? Math.round(zapisaniRazem / limitRazem * 100) : 0) + "%") +
+      kpi("Terminy w bazie", T.length, "wystawiane przez instytucje, źródło prawdy o realizacji");
+  }
+  renderKPI();
 
   /* Filtry instytucji */
   var instId = {};
@@ -322,6 +329,7 @@
 
     document.getElementById("body").innerHTML = lista.map(function (t) {
       var idx = T.indexOf(t);
+      if (t.id === edytowany) return wierszEdycji(t);
       var pct = Math.round(t.zapisani / t.limit * 100);
       var pelny = t.zapisani >= t.limit;
       return '<tr>' +
@@ -335,7 +343,11 @@
           '<td><div class="progress' + (pelny ? " pos" : "") + '"><i style="width:' + pct + '%"></i></div>' +
             '<div class="small muted" style="margin-top:4px">' + t.zapisani + ' z ' + t.limit +
             ' miejsc' + (pelny ? ", komplet" : "") + '</div></td>' +
-          '<td class="right nowrap"><button class="btn xs" onclick="rozwin(' + idx + ')">Zapisani</button></td>' +
+          '<td class="right nowrap"><div class="btn-row" style="justify-content:flex-end">' +
+            '<button class="btn xs" onclick="rozwin(' + idx + ')">Zapisani</button>' +
+            '<button class="btn xs" onclick="edytujTermin(\'' + t.id + '\')">Edytuj</button>' +
+            '<button class="btn xs" onclick="usunTermin(\'' + t.id + '\')">Usuń</button>' +
+          '</div></td>' +
         '</tr>' +
         '<tr class="osoby" id="os' + idx + '" style="display:none"><td colspan="9">' +
           '<div class="small strong" style="margin-bottom:6px">Uczestnicy zapisani na ' + t.id + '</div>' +
@@ -370,6 +382,118 @@
       t.classList.add("on");
       document.getElementById(t.dataset.t).classList.add("on");
     });
+  });
+
+  /* ================================================================
+     Inline CRUD terminow, zapis do wspolnej bazy JSON przez Store.
+     Kazda zmiana emituje "db:changed", co przerysowuje KPI, kalendarz
+     i liste. Dane sa trwale w localStorage (patrz makieta/DANE.md).
+     ================================================================ */
+
+  function opcjeSzkolen(sel) {
+    return DB.SZKOLENIA.map(function (s) {
+      var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === s.is; })[0];
+      return '<option value="' + s.id + '"' + (sel === s.id ? " selected" : "") + '>' +
+             (inst ? inst.nazwa : "-") + " — " + s.nazwa + '</option>';
+    }).join("");
+  }
+  function opcjeStatus(sel) {
+    return ["Wolny", "Zaplanowany", "Odbyty"].map(function (s) {
+      return '<option' + (sel === s ? " selected" : "") + '>' + s + '</option>';
+    }).join("");
+  }
+  function esc(v) { return String(v == null ? "" : v).replace(/"/g, "&quot;"); }
+
+  /* Wiersz w trybie edycji (uzywany przez renderLista) */
+  function wierszEdycji(t) {
+    return '<tr class="row-nabor">' +
+        '<td class="mono strong">' + t.id + '</td>' +
+        '<td class="strong nowrap">' + t.nazwa + '<div class="small muted">' + t.szk + '</div></td>' +
+        '<td class="nowrap">' + nazwaIS(t.is) + '</td>' +
+        '<td><input class="inp" id="edOd" type="date" value="' + esc(t.od) + '" style="width:150px"></td>' +
+        '<td><input class="inp" id="edDo" type="date" value="' + esc(t.do) + '" style="width:150px"></td>' +
+        '<td><input class="inp" id="edMiejsce" value="' + esc(t.miejsce) + '"></td>' +
+        '<td><select class="inp" id="edStatus">' + opcjeStatus(t.status) + '</select></td>' +
+        '<td><div class="btn-row">' +
+          '<input class="inp" id="edZap" type="number" min="0" value="' + t.zapisani + '" style="width:70px" title="Zapisani">' +
+          '<input class="inp" id="edLimit" type="number" min="1" value="' + t.limit + '" style="width:70px" title="Limit">' +
+        '</div></td>' +
+        '<td class="right nowrap"><div class="btn-row" style="justify-content:flex-end">' +
+          '<button class="btn xs primary" onclick="zapiszEdycje(\'' + t.id + '\')">Zapisz</button>' +
+          '<button class="btn xs" onclick="anulujEdycje()">Anuluj</button>' +
+        '</div></td>' +
+      '</tr>';
+  }
+
+  /* Formularz dodawania */
+  function pokazForm() {
+    var el = document.getElementById("addForm");
+    el.innerHTML =
+      '<div class="small strong" style="margin-bottom:8px">Nowy termin</div>' +
+      '<div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:0">' +
+        '<select class="inp" id="nfSzk" style="min-width:280px">' + opcjeSzkolen("") + '</select>' +
+        '<input class="inp" id="nfOd" type="date" value="2026-09-01" title="Data od">' +
+        '<input class="inp" id="nfDo" type="date" value="2026-09-01" title="Data do">' +
+        '<input class="inp" id="nfMiejsce" placeholder="Miejsce, np. Online / adres" style="min-width:200px">' +
+        '<select class="inp" id="nfStatus">' + opcjeStatus("Wolny") + '</select>' +
+        '<input class="inp" id="nfLimit" type="number" min="1" value="12" style="width:90px" title="Limit miejsc">' +
+        '<button class="btn primary sm" onclick="zapiszNowyTermin()">Zapisz termin</button>' +
+        '<button class="btn sm" onclick="ukryjForm()">Anuluj</button>' +
+      '</div>';
+    el.style.display = "block";
+  }
+  window.ukryjForm = function () {
+    var el = document.getElementById("addForm");
+    el.style.display = "none";
+    el.innerHTML = "";
+  };
+  document.getElementById("btnNowy").addEventListener("click", pokazForm);
+
+  window.zapiszNowyTermin = function () {
+    var szk = DB.SZKOLENIA.filter(function (s) { return s.id === document.getElementById("nfSzk").value; })[0];
+    if (!szk) return;
+    var od = document.getElementById("nfOd").value;
+    var doData = document.getElementById("nfDo").value || od;
+    Store.insert("terminy", {
+      instytucja_id: szk.is,
+      szkolenie_id: szk.id,
+      nazwa: szk.nazwa,
+      data_od: od,
+      data_do: doData,
+      miejsce: document.getElementById("nfMiejsce").value || "-",
+      status_realizacji: document.getElementById("nfStatus").value,
+      zapisani: 0,
+      limit: parseInt(document.getElementById("nfLimit").value, 10) || 12
+    }, "TR-");
+    ukryjForm();   /* przerysowanie nastapi przez zdarzenie db:changed */
+  };
+
+  window.edytujTermin = function (id) { edytowany = id; renderLista(); };
+  window.anulujEdycje = function () { edytowany = null; renderLista(); };
+
+  window.zapiszEdycje = function (id) {
+    Store.update("terminy", id, {
+      data_od: document.getElementById("edOd").value,
+      data_do: document.getElementById("edDo").value,
+      miejsce: document.getElementById("edMiejsce").value || "-",
+      status_realizacji: document.getElementById("edStatus").value,
+      zapisani: parseInt(document.getElementById("edZap").value, 10) || 0,
+      limit: parseInt(document.getElementById("edLimit").value, 10) || 1
+    });
+    edytowany = null;   /* db:changed przerysuje liste bez wiersza edycji */
+  };
+
+  window.usunTermin = function (id) {
+    if (window.confirm("Usunąć termin " + id + "? Operacja dotyczy tylko danych makiety.")) {
+      Store.remove("terminy", id);
+    }
+  };
+
+  /* Po kazdej zmianie danych: odswiez wszystkie widoki tej strony */
+  window.addEventListener("db:changed", function () {
+    renderKPI();
+    render();
+    renderLista();
   });
 })();
 </script>
