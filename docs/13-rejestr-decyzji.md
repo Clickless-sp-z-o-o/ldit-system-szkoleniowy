@@ -14,7 +14,7 @@ Wszystkie decyzje podjęte na warsztacie 25.08.2026, w kolejności chronologiczn
 
 | ID | Decyzja | Siła | Kto | Czas |
 |---|---|---|---|---|
-| **D-01** | Kolorowanie całego wiersza wg statusu: czerwony negatywna, zielony pozytywna, fioletowy rozliczone. Kolor zmienia się automatycznie | TWARDA | [K] | 0:14 |
+| **D-01** | Kolorowanie całego wiersza wg statusu, zmiana koloru automatyczna przy zmianie statusu. Pierwotnie 3 kolory (czerwony negatywna, zielony pozytywna, fioletowy rozliczone). **Paleta rozszerzona do 5 stanów 2026-09-04, patrz [D-123]** | TWARDA | [K] | 0:14 |
 | **D-02** | Cztery role bazowe (admin, pracownik, IS, klient) plus możliwość tworzenia własnych przez admina | TWARDA | [K] | 1:27 |
 | **D-03** | Panel klienta końcowego w zakresie, ale zakres i finansowanie nierozstrzygnięte | WSTĘPNA | [W] popycha | 1:36-3:21 |
 | **D-04** | **SMS odrzucone w etapie I.** Wyłącznie powiadomienia mailowe | ODRZUCONA | [K] | 9:35 |
@@ -186,6 +186,21 @@ Wszystkie decyzje podjęte na warsztacie 25.08.2026, w kolejności chronologiczn
 
 ---
 
+## Uzupełnienia po warsztacie (2026-09-04)
+
+Cztery ustalenia dopisane po warsztacie, na podstawie dodatkowych notatek klienta. Trzy doprecyzowują lub rozszerzają decyzje warsztatowe, czwarta wprowadza dokumentację techniczno-biznesową jako produkt prowadzony równolegle do systemu.
+
+| ID | Decyzja | Siła | Kto | Powiązania |
+|---|---|---|---|---|
+| **D-121** | Każdy pracownik loguje się na **własne konto i działa we własnym imieniu**. Na karcie Zgłoszeń autor wpisu jest **domyślnie ustawiany na zalogowanego użytkownika** i pozostaje edytowalny | TWARDA | [K] | rozszerza D-107, spójne z D-45 |
+| **D-122** | **Rejestr aktywności rozszerzony do pełnego logowania akcji.** System zapisuje wszystkie działania użytkownika: kliknięcia (log akcji) oraz wysyłki powiadomień i maili (log wysyłek), z przypisaniem do konta i znacznikiem czasu. Administrator ma wgląd, kto co zrobił i kiedy | TWARDA | [K] | rozszerza D-116, D-55 |
+| **D-123** | **Paleta kolorów statusów rozszerzona do pięciu stanów** (aktualizacja D-01): czekamy = biały, pozytywny = zielony (delikatny), negatywny = pomarańczowy (intensywny, alternatywnie jasny czerwony), rezygnacja = żółty, rozliczone = granatowy z delikatnym fioletem (alternatywnie granatowy z szarym). Kolor obejmuje cały wiersz i zmienia się automatycznie | TWARDA | [K] | aktualizuje D-01 |
+| **D-124** | **Dokumentacja projektu prowadzona także jako klikalna strona HTML**: wiele plików tematycznych, wspólny plik index, wspólne assets. Obejmuje zależności liczenia prowizji, diagram tabel i właściwości każdej zakładki. Utrzymywana równolegle do rozwoju systemu, tak by łatwo ją było aktualizować | TWARDA | [K] | nowy produkt |
+
+> **Uwaga.** Te uzupełnienia nie pochodzą z nagrania warsztatu z 25.08.2026, tylko z dodatkowych ustaleń przekazanych po nim. Zachowano numerację ciągłą (D-121 i dalej), żeby rejestr pozostał jednym źródłem prawdy.
+
+---
+
 ## Decyzje unieważnione w trakcie warsztatu
 
 | Wcześniejsza decyzja | Czas | Unieważniona przez | Czas |
@@ -201,12 +216,14 @@ Wszystkie decyzje podjęte na warsztacie 25.08.2026, w kolejności chronologiczn
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 92 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 96 |
 | WSTĘPNA | 19 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **120** |
+| **Razem** | **124** |
 
-Potrzebę zgłosił klient: **78** decyzji. Rozwiązanie zaproponował wykonawca: **42**.
+Potrzebę zgłosił klient: **82** decyzji. Rozwiązanie zaproponował wykonawca: **42**.
+
+Liczby obejmują 4 uzupełnienia po warsztacie (D-121 - D-124, wszystkie TWARDE, wszystkie z potrzeby klienta).
 
 > **Uwaga o interpretacji.** Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde ustalenia w wąskim zakresie, obok których stoi 50 pytań otwartych, w tym 4 blokady. Decyzje z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu stron i wymagają potwierdzenia.

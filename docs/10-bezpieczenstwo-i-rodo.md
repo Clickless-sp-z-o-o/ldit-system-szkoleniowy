@@ -18,8 +18,8 @@ Panel klienta końcowego (jeśli wejdzie) podnosi stawkę jeszcze wyżej, bo wpu
 | 2 | Reset haseł | MUST | 3:14:42 |
 | 3 | Automatyczne wylogowanie po bezczynności | MUST | 3:15:16 |
 | 4 | Blokada konta byłego pracownika z panelu admina | MUST | 3:15:04 |
-| 5 | Rejestr zmian (kto, kiedy, wartość przed i po) | MUST | 3:13:36 |
-| 6 | Log logowań (kto, kiedy) | MUST | 3:14:25 |
+| 5 | Rejestr aktywności: zmiany danych (wartość przed i po), akcje (kliknięcia) i wysyłki powiadomień | MUST | 3:13:36, D-122 |
+| 6 | Log logowań (kto, kiedy, IP, wynik) | MUST | 3:14:25 |
 | 7 | Kopie zapasowe | MUST | 3:15:16 |
 | 8 | Twarda separacja danych między instytucjami | MUST | 2:20:00, 3:06:43 |
 | 9 | Ukrycie danych finansowych przed pracownikami | MUST | 57:52 |
@@ -29,9 +29,11 @@ Panel klienta końcowego (jeśli wejdzie) podnosi stawkę jeszcze wyżej, bo wpu
 
 ---
 
-## Rejestr aktywności: dwa niezależne logi [D-55]
+## Rejestr aktywności: pełne logowanie akcji [D-116, D-122]
 
-Wykonawca doprecyzował rozdzielenie na warsztacie.
+Na warsztacie wykonawca doprecyzował rozdzielenie na dwa niezależne rejestry (zmiany danych + logowania). **2026-09-04 klient rozszerzył zakres [D-122]:** logowane mają być **wszystkie akcje** użytkownika, tak by administrator mógł odtworzyć, co każdy pracownik zrobił i kiedy. Ponieważ każdy działa na własnym koncie [D-121], każde zdarzenie jest przypisane do osoby.
+
+Cztery strumienie zdarzeń, prezentowane w zakładce Rejestr aktywności:
 
 ### Rejestr zmian danych
 
@@ -48,9 +50,19 @@ Co ma być logowane:
 
 Uzasadnienie z dokumentu klienta: "Przy wielu pracownikach to będzie bardzo ważne."
 
+### Log akcji (kliknięcia) [D-122]
+
+Istotne działania w interfejsie, także te, które nie zmieniają danych: otwarcie karty klienta lub wniosku, uruchomienie eksportu, kliknięcie przycisku akcji, wejście w moduł finansowy. Cel: odtworzenie ścieżki pracy i wykrycie nietypowego dostępu (np. masowe otwieranie kart tuż przed odejściem pracownika).
+
+**Uwaga projektowa.** "Wszystkie kliknięcia" należy rozumieć jako **istotne akcje**, nie każdy ruch myszy. Logowanie dosłownie każdego kliknięcia generuje ogromny wolumen i szum. Zakres zdarzeń do zalogowania wymaga doprecyzowania listą, patrz [14. Pytania otwarte](14-pytania-otwarte.md).
+
+### Log wysyłek [D-122]
+
+Każda wysyłka powiadomienia lub maila z systemu: kto wysłał, do kogo, jaki szablon, kiedy, z jakiego wyzwalacza (automatyczny czy ręczny). Domyka wymóg potwierdzenia przed wysyłką [D-106] dowodem, że wysyłka faktycznie nastąpiła.
+
 ### Log logowań
 
-Kto i o której godzinie zalogował się do systemu.
+Kto i o której godzinie zalogował się do systemu, adres IP, urządzenie, wynik próby.
 
 > **Bartek (3:14:25):** "Na przykład twoje konto się zalogowało o czternastej 30. Żeby w razie, jakby był jakiś wyciek czegokolwiek, żeby było też wiadomo, z jakiego powodu mogło to wyniknąć."
 
@@ -192,6 +204,7 @@ Rekomendacja: audyt jest szczególnie uzasadniony, jeśli:
 - [ ] Polityka retencji danych osobowych ustalona i zaimplementowana
 - [ ] Kopie zapasowe skonfigurowane i **odtworzenie przetestowane**
 - [ ] Rejestr zmian obejmuje wszystkie pola kwotowe i statusy
+- [ ] Log akcji i log wysyłek obejmują uzgodnioną listę zdarzeń [D-122]
 - [ ] Log logowań działa i jest dostępny dla administratora
 - [ ] Blokada konta byłego pracownika przetestowana (czy sesja wygasa natychmiast)
 - [ ] Rate limiting na publicznym formularzu zgłoszeniowym

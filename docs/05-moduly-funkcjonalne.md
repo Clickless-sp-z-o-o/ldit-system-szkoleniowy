@@ -183,6 +183,8 @@ Wewnętrzna baza incydentów. **Dostępna wyłącznie dla administratora i praco
 
 Wpis ręczny: nazwa instytucji lub klienta + opis zdarzenia + data.
 
+**Każdy pracownik może wpisać własne zgłoszenie, a autor jest domyślnie ustawiany na zalogowanego użytkownika** (pole edytowalne) [D-121]. Wynika to z zasady, że każdy loguje się na własne konto i działa we własnym imieniu, spójnej z brakiem wspólnej skrzynki firmowej [D-45]. Autor każdego wpisu jest widoczny na liście i w [rejestrze aktywności](#12-rejestr-aktywności).
+
 Cel: historia incydentów jako podstawa do zerwania współpracy lub kroków prawnych.
 
 > **Bartek (3:03:28):** "kiedyś nas jedna instytucja chciała w kulki zrobić (...) próbowali nas kręcić w coś, żebyśmy zapłacili mniejszą prowizję, stąd muszę mieć wgląd do tego i historię, że na przykład ta firma już 2 razy coś takiego zrobiła. Nie współpracujemy z nią, do widzenia."
@@ -201,14 +203,20 @@ Konfigurator ról z checkboxami per zakładka, przypisanie użytkowników do ins
 
 ## 12. Rejestr aktywności
 
-Dwa niezależne rejestry [D-55]:
+**Zakładka dla administratora.** Cel: administrator ma wgląd, **co każdy pracownik zrobił i kiedy** [D-122]. Ponieważ każdy działa na własnym koncie [D-121], każda akcja jest przypisana do konkretnej osoby.
 
-| Rejestr | Zawartość |
-|---|---|
-| **Rejestr zmian** | Kto, kiedy, jaka wartość przed i po. Szczególny nacisk na wartości wpisywane ręcznie i zmiany kwot |
-| **Log logowań** | Kto i o której godzinie zalogował się do systemu |
+Cztery rejestry, zbierane z różnych źródeł zdarzeń, ale prezentowane w jednej zakładce [D-116, D-122]:
 
-Szczegóły w [10. Bezpieczeństwo i RODO](10-bezpieczenstwo-i-rodo.md).
+| Rejestr | Zawartość | Źródło zdarzeń |
+|---|---|---|
+| **Rejestr zmian danych** | Kto, kiedy, jaka wartość przed i po. Szczególny nacisk na wartości wpisywane ręcznie i zmiany kwot | zapis do bazy |
+| **Log akcji (kliknięcia)** | Wszystkie istotne akcje użytkownika w interfejsie: otwarcie karty, uruchomienie eksportu, kliknięcie przycisku akcji | zdarzenia interfejsu |
+| **Log wysyłek** | Wysyłki powiadomień i maili: kto wysłał, do kogo, jaki szablon, kiedy | moduł powiadomień |
+| **Log logowań** | Kto i o której godzinie zalogował się do systemu, adres IP, wynik próby | uwierzytelnianie |
+
+> **Rozszerzenie względem warsztatu [D-122].** Na warsztacie ustalono dwa niezależne rejestry (zmiany danych + log logowań) [D-116]. Klient doprecyzował później, że logowanie ma obejmować **wszystkie akcje**, w tym kliknięcia i wysyłki powiadomień, tak by dało się odtworzyć pełną aktywność każdego pracownika.
+
+Rejestr jest **tylko do odczytu**, także dla administratora, żeby nie stracił wartości dowodowej. Szczegóły i polityka retencji w [10. Bezpieczeństwo i RODO](10-bezpieczenstwo-i-rodo.md).
 
 ---
 

@@ -12,6 +12,14 @@ Warsztat rozszerzył model z 4 do **5 ról bazowych**, plus możliwość tworzen
 | **Pracownik IS** (handlowiec) | np. Mirka z Fortech | Tylko dane klientów IS, dodatkowo przefiltrowane (np. tylko najnowszy nabór) |
 | **Klient końcowy** | firma / uczestnik | OTWARTE, patrz niżej |
 
+### Zasada: własne konto, działanie we własnym imieniu [D-121]
+
+Każdy użytkownik loguje się na **własne, imienne konto** i wykonuje działania w swoim imieniu. Nie ma kont współdzielonych, spójnie z brakiem wspólnej skrzynki firmowej [D-45]. Konsekwencje:
+
+- każda akcja (zmiana danych, wysyłka maila, wpis zgłoszenia) jest przypisana do konkretnej osoby i widoczna w [rejestrze aktywności](10-bezpieczenstwo-i-rodo.md);
+- na karcie Zgłoszeń autor wpisu jest **domyślnie ustawiany na zalogowanego użytkownika**, z możliwością zmiany [D-121];
+- administrator może dzięki temu odtworzyć, kto co zrobił i kiedy [D-122].
+
 ### Rola: pracownik instytucji szkoleniowej (handlowiec)
 
 **Nowa rola dodana na warsztacie** [D-72]. Nadawana przez administratora IS swojemu handlowcowi.

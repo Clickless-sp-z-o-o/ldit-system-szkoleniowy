@@ -60,34 +60,41 @@ W obecnym Excelu funkcjonują **dwa niezależne statusy** na jednym wierszu. War
 
 | Status | Kolor wiersza | Znaczenie |
 |---|---|---|
-| `Pozytywna` | **zielony** | Dofinansowanie przyznane |
-| `Negatywna` | **czerwony jasny** | Odmowa (często brak środków w urzędzie) |
-| `Rezygnacja po napisaniu` | brak | Klient zrezygnował po przygotowaniu wniosku |
+| `Pozytywna` | **zielony** (delikatny) | Dofinansowanie przyznane |
+| `Negatywna` | **pomarańczowy** (intensywny, dawniej czerwony jasny) | Odmowa (często brak środków w urzędzie) |
+| `Rezygnacja po napisaniu` | **żółty** | Klient zrezygnował po przygotowaniu wniosku |
 
 ### Status finansowy
 
 | Status | Kolor wiersza |
 |---|---|
-| `Oczekuje` | brak |
+| `Oczekuje` (czekamy) | **biały** |
 | `Zafakturowany` | brak |
-| `Rozliczone` | **fioletowy** |
+| `Rozliczone` | **granatowy** (z delikatnym fioletem) |
 
 ---
 
-## Kolorowanie wierszy [D-01, TWARDA]
+## Kolorowanie wierszy [D-01, TWARDA; paleta zaktualizowana D-123]
 
-Kolory z Excela przechodzą do systemu bez zmian. Kolor obejmuje **cały wiersz** i zmienia się **automatycznie** przy zmianie statusu.
+Kolor obejmuje **cały wiersz** i zmienia się **automatycznie** przy zmianie statusu. Na warsztacie ustalono paletę trójbarwną (czerwony/zielony/fioletowy). **2026-09-04 klient rozszerzył ją do pięciu stanów** [D-123].
 
-| Kolor | Status |
-|---|---|
-| Czerwony jasny | Decyzja negatywna |
-| Zielony | Decyzja pozytywna |
-| Fioletowy | Rozliczone kompletnie |
-| Zielony (osobny kontekst) | Klient z aktywnym naborem w widoku "Niezłożone" |
+### Paleta obowiązująca (5 stanów)
+
+| Status | Kolor | Tło (hex) | Tekst (hex) | Wariant alternatywny |
+|---|---|---|---|---|
+| **Czekamy** (oczekuje na decyzję) | biały | `#ffffff` | `#334155` | - |
+| **Pozytywny** (decyzja pozytywna) | zielony delikatny | `#dcf3e3` | `#166534` | - |
+| **Negatywny** (decyzja negatywna) | pomarańczowy intensywny | `#f6a94a` | `#5c2c00` | jasny czerwony `#f4b4b4` |
+| **Rezygnacja** | żółty | `#fce98a` | `#6b5900` | - |
+| **Rozliczone** (kompletnie) | granatowy z delikatnym fioletem | `#3a3f72` | `#ffffff` | granatowy z szarym `#39435a` |
+
+Osobny kontekst: klient z aktywnym naborem w widoku "Baza klientów" (dawniej "Niezłożone") wyróżniany jest zielonym akcentem na krawędzi wiersza, niezależnie od statusu decyzji.
 
 > **Bartek (0:14):** "w przypadku negatywnej odpowiedzi używamy po całym wierszu koloru czerwonego, takiego jasnego, w przypadku pozytywnej używamy zielonego, w przypadku już rozliczenia kompletnego całego projektu używamy fioletowego koloru, więc żebyśmy te kolory też utrzymali. Czyli jeżeli zmienimy status wniosku z pozytywnej na rozliczony, żeby kolor się po całej długości ustawił."
 
-**Uwaga dostępnościowa:** kolor jest dodatkiem do statusu tekstowego, nie jego zamiennikiem. Nazwane statusy muszą być widoczne obok kolorów.
+> **Aktualizacja 2026-09-04 (D-123).** Klient doprecyzował kolory: negatywny zmienia się z czerwonego na bardziej intensywny pomarańczowy (ewentualnie jasny czerwony), dochodzi żółty dla rezygnacji i biały dla stanu "czekamy", a rozliczone przechodzi z fioletu na granatowy z domieszką delikatnego fioletu (albo granatowy z szarym).
+
+**Uwaga dostępnościowa:** kolor jest dodatkiem do statusu tekstowego, nie jego zamiennikiem. Nazwane statusy muszą być widoczne obok kolorów. Wiersz "rozliczone" ma ciemne tło, więc tekst na nim jest jasny, a nazwany status pozostaje czytelny.
 
 ---
 

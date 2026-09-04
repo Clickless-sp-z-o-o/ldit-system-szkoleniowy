@@ -217,6 +217,9 @@ Dokumentacja przedwarsztatowa: "rozważane jest zlecenie zewnętrznego audytu fi
 ### P-41. Czy ten sam uczestnik może być obsługiwany przez dwie instytucje
 Pytanie z dokumentacji przedwarsztatowej, nierozstrzygnięte. Ma wpływ na model danych i separację.
 
+### P-54. Zakres zdarzeń w logu akcji (kliknięć)
+Klient określił, że logi mają obejmować "wszystkie akcje", w tym kliknięcia [D-122]. Do doprecyzowania **lista zdarzeń**, które faktycznie trafiają do logu akcji. Logowanie dosłownie każdego kliknięcia generuje ogromny wolumen i szum, więc rekomendacja wykonawcy to lista istotnych akcji (otwarcie karty, eksport, wejście w moduł finansowy, uruchomienie wysyłki), a nie każde zdarzenie interfejsu. Ma wpływ na wolumen danych i retencję [P-26].
+
 ---
 
 ## Proces i nazewnictwo
@@ -286,10 +289,10 @@ Nie ustalono daty, tylko sekwencję (po makiecie, w tym tygodniu).
 | Zakres i uprawnienia | 7 |
 | Integracje i dane | 6 |
 | Certyfikaty i dokumenty | 4 |
-| Bezpieczeństwo i RODO | 3 |
+| Bezpieczeństwo i RODO | 4 |
 | Proces i nazewnictwo | 8 |
 | Handlowe i formalne | 6 |
-| **Razem** | **53** |
+| **Razem** | **54** |
 
 **Uwaga procesowa.** Wykonawca zadeklarował po warsztacie:
 > **Paweł (2:57:33):** "myślę, że po dzisiejszym warsztacie to ja już nie będę musiał się do ciebie za dużo odzywać."
