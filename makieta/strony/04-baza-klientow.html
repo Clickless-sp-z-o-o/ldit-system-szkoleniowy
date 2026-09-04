@@ -24,7 +24,7 @@
     </div>
     <div class="ph-actions">
       <button class="btn">Eksport</button>
-      <button class="btn primary">+ Nowy klient</button>
+      <button class="btn primary" id="btnNowyKlient">+ Nowy klient</button>
     </div>
   </div>
 
@@ -81,6 +81,8 @@
         <span class="sp"></span>
         <span class="small muted">Kolejność wierszy wynika z daty zakończenia naboru, nie z numeru klienta.</span>
       </div>
+
+      <div id="klientForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
 
       <div class="tbl-wrap" style="max-height:calc(100vh - 420px);overflow-y:auto">
         <table class="tbl">
@@ -179,42 +181,46 @@
   });
 
   /* Wzbogacenie listy klientow o kontekst naboru i klucz sortowania */
-  var K = DB.KLIENCI.map(function (kl) {
-    var n = naborKlienta(kl);
-    var st = n ? n.status : "Bez informacji";
-    var koniec = n && n.do ? n.do : "";
-    var klucz;
-    if (st === "Nabór ogłoszony") klucz = 1000 + (dniDo(koniec) || 0);
-    else if (st === "W trakcie kontaktu") klucz = 20000;
-    else if (st === "Brak naboru") klucz = 30000;
-    else klucz = 40000;
-    return {
-      kl: kl, nab: n, status: st, koniec: koniec,
-      dni: koniec ? dniDo(koniec) : null,
-      projekty: PROJ[kl.id] || 0,
-      isNazwa: nazwaIS(kl.is),
-      pupNazwa: (DB.PUPY.filter(function (p) { return p.id === kl.pup; })[0] || {}).nazwa || "-",
-      klucz: klucz
-    };
-  }).sort(function (a, b) { return a.klucz - b.klucz || a.kl.nr - b.kl.nr; });
-
-  /* Liczniki nad tabela */
-  var aktywne = K.filter(function (r) { return r.status === "Nabór ogłoszony"; });
-  var prognoza = K.filter(function (r) { return r.status === "W trakcie kontaktu" || r.status === "Brak naboru"; });
-  var bez = K.filter(function (r) { return r.status === "Po naborze" || r.status === "Bez informacji"; });
+  function budujK() {
+    return DB.KLIENCI.map(function (kl) {
+      var n = naborKlienta(kl);
+      var st = n ? n.status : "Bez informacji";
+      var koniec = n && n.do ? n.do : "";
+      var klucz;
+      if (st === "Nabór ogłoszony") klucz = 1000 + (dniDo(koniec) || 0);
+      else if (st === "W trakcie kontaktu") klucz = 20000;
+      else if (st === "Brak naboru") klucz = 30000;
+      else klucz = 40000;
+      return {
+        kl: kl, nab: n, status: st, koniec: koniec,
+        dni: koniec ? dniDo(koniec) : null,
+        projekty: PROJ[kl.id] || 0,
+        isNazwa: nazwaIS(kl.is),
+        pupNazwa: (DB.PUPY.filter(function (p) { return p.id === kl.pup; })[0] || {}).nazwa || "-",
+        klucz: klucz
+      };
+    }).sort(function (a, b) { return a.klucz - b.klucz || a.kl.nr - b.kl.nr; });
+  }
+  var K = budujK();
 
   function kpi(label, val, foot) {
     return '<div class="kpi"><div class="k-label">' + label + '</div>' +
       '<div class="k-value">' + val + '</div>' +
       '<div class="k-foot">' + foot + '</div></div>';
   }
-  var najblizszy = aktywne.length ? aktywne[0] : null;
-  document.getElementById("kpi").innerHTML =
-    kpi("Klienci z otwartym naborem", DB.fmtNum(aktywne.length),
-        najblizszy ? '<span class="tag pos dot">koniec ' + najblizszy.koniec + ', za ' + najblizszy.dni + ' dni</span>' : "brak") +
-    kpi("Czekają na nabór prognozowany", DB.fmtNum(prognoza.length), "urzędy w kontakcie lub z prognozą daty") +
-    kpi("Bez naboru w tym momencie", DB.fmtNum(bez.length), "nabór zakończony lub brak danych z aplikacji") +
-    kpi("Klienci w bazie łącznie", DB.fmtNum(K.length), "wraz z tymi, którzy wnioskują kilka razy w roku");
+  function renderKPI() {
+    var aktywne = K.filter(function (r) { return r.status === "Nabór ogłoszony"; });
+    var prognoza = K.filter(function (r) { return r.status === "W trakcie kontaktu" || r.status === "Brak naboru"; });
+    var bez = K.filter(function (r) { return r.status === "Po naborze" || r.status === "Bez informacji"; });
+    var najblizszy = aktywne.length ? aktywne[0] : null;
+    document.getElementById("kpi").innerHTML =
+      kpi("Klienci z otwartym naborem", DB.fmtNum(aktywne.length),
+          najblizszy ? '<span class="tag pos dot">koniec ' + najblizszy.koniec + ', za ' + najblizszy.dni + ' dni</span>' : "brak") +
+      kpi("Czekają na nabór prognozowany", DB.fmtNum(prognoza.length), "urzędy w kontakcie lub z prognozą daty") +
+      kpi("Bez naboru w tym momencie", DB.fmtNum(bez.length), "nabór zakończony lub brak danych z aplikacji") +
+      kpi("Klienci w bazie łącznie", DB.fmtNum(K.length), "wraz z tymi, którzy wnioskują kilka razy w roku");
+  }
+  renderKPI();
 
   /* Filtry */
   var selIS = document.getElementById("fIS");
@@ -282,7 +288,11 @@
         '<td class="c">' + tagDni(r) + '</td>' +
         '<td class="c">' + (r.projekty ? '<b>' + r.projekty + '</b>' : '<span class="muted">0</span>') + '</td>' +
         '<td class="nowrap small">' + r.kl.osoba + '<div class="muted">' + r.kl.tel + '</div></td>' +
-        '<td class="right"><button class="btn xs">Otwórz</button></td>' +
+        '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
+          '<button class="btn xs">Otwórz</button>' +
+          '<button class="btn xs" onclick="edytujKlient(\'' + r.kl.id + '\')">Edytuj</button>' +
+          '<button class="btn xs" onclick="usunKlient(\'' + r.kl.id + '\')">Usuń</button>' +
+        '</div></td>' +
         '</tr>';
     }).join("");
 
@@ -340,6 +350,101 @@
       document.getElementById(t.dataset.t).classList.add("on");
     });
   });
+
+  /* ================================================================
+     Inline CRUD bazy klientów. Zapis do wspólnego JSON przez Store,
+     odświeżanie przez db:changed. Nowy klient dostaje kolejny numer
+     roczny (numer_klienta) i trafia na fakturę (D-112).
+     ================================================================ */
+
+  function val(id) { return document.getElementById(id).value; }
+  function escAttr(v) { return String(v == null ? "" : v).replace(/"/g, "&quot;"); }
+  var edytowanyKlient = null;
+
+  function klientFormHTML(kl, tytul) {
+    function inp(id, label, v, type) {
+      return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
+        '<span class="muted">' + label + '</span>' +
+        '<input class="inp" id="kf_' + id + '" ' + (type ? 'type="' + type + '" ' : "") + 'value="' + escAttr(v) + '"></label>';
+    }
+    function sel(id, label, opts, v) {
+      return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
+        '<span class="muted">' + label + '</span>' +
+        '<select class="inp" id="kf_' + id + '">' +
+        opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === v ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
+        '</select></label>';
+    }
+    var instOpts = DB.INSTYTUCJE.map(function (i) { return [i.id, i.nazwa]; });
+    var pupOpts = DB.PUPY.map(function (p) { return [p.id, p.nazwa]; });
+    var wielkOpts = ["mikro", "mały", "średni", "duży"].map(function (w) { return [w, w]; });
+    return '<div class="card mb0"><div class="card-body">' +
+      '<div class="small strong" style="margin-bottom:10px">' + tytul + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">' +
+        inp("nazwa", "Nazwa firmy", kl ? kl.nazwa : "") +
+        inp("nip", "NIP", kl ? kl.nip : "") +
+        inp("miasto", "Miasto", kl ? kl.miasto : "") +
+        sel("wielkosc", "Wielkość", wielkOpts, kl ? kl.wielkosc : "mikro") +
+        inp("zatrudnienie", "Zatrudnienie (os.)", kl ? kl.zatrudnienie : "", "number") +
+        sel("is", "Instytucja", instOpts, kl ? kl.is : (instOpts[0] || [])[0]) +
+        sel("pup", "Urząd pracy", pupOpts, kl ? kl.pup : (pupOpts[0] || [])[0]) +
+        inp("osoba", "Osoba kontaktowa", kl ? kl.osoba : "") +
+        inp("tel", "Telefon", kl ? kl.tel : "") +
+        inp("mail", "E-mail", kl ? kl.mail : "") +
+      '</div>' +
+      '<div class="btn-row" style="margin-top:12px">' +
+        '<button class="btn primary sm" onclick="zapiszKlient()">Zapisz</button>' +
+        '<button class="btn sm" onclick="zamknijKlientForm()">Anuluj</button>' +
+      '</div></div></div>';
+  }
+  function zbierzKlient() {
+    return {
+      nazwa: val("kf_nazwa"), nip: val("kf_nip"), miasto: val("kf_miasto"),
+      wielkosc_przedsiebiorstwa: val("kf_wielkosc"),
+      liczba_zatrudnionych: parseInt(val("kf_zatrudnienie"), 10) || 0,
+      instytucja_id: val("kf_is"), pup_id: val("kf_pup"),
+      osoba_kontaktowa: val("kf_osoba"), telefon: val("kf_tel"), email: val("kf_mail")
+    };
+  }
+  function otworzKlientForm(kl, tytul) {
+    var el = document.getElementById("klientForm");
+    el.innerHTML = klientFormHTML(kl, tytul);
+    el.style.display = "block";
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  window.zamknijKlientForm = function () {
+    var el = document.getElementById("klientForm");
+    el.style.display = "none"; el.innerHTML = ""; edytowanyKlient = null;
+  };
+  window.edytujKlient = function (id) {
+    edytowanyKlient = id;
+    var kl = DB.KLIENCI.filter(function (x) { return x.id === id; })[0];
+    otworzKlientForm(kl, "Edycja klienta: " + (kl ? kl.nazwa : id));
+  };
+  window.zapiszKlient = function () {
+    var o = zbierzKlient();
+    if (!o.nazwa.trim()) { document.getElementById("kf_nazwa").focus(); return; }
+    if (edytowanyKlient) {
+      Store.update("klienci", edytowanyKlient, o);
+    } else {
+      var maxNr = DB.KLIENCI.reduce(function (m, k) { return Math.max(m, k.nr || 0); }, 0);
+      o.numer_klienta = maxNr + 1;
+      document.getElementById("q").value = o.nazwa;   /* pokaz nowego klienta w liscie */
+      Store.insert("klienci", o, "KL-");
+    }
+    zamknijKlientForm();
+  };
+  window.usunKlient = function (id) {
+    var kl = DB.KLIENCI.filter(function (x) { return x.id === id; })[0];
+    if (window.confirm("Usunąć klienta " + (kl ? kl.nazwa : id) + "? Operacja dotyczy tylko danych makiety.")) {
+      Store.remove("klienci", id);
+    }
+  };
+  document.getElementById("btnNowyKlient").addEventListener("click", function () {
+    otworzKlientForm(null, "Nowy klient");
+  });
+
+  /* Odświeżanie po zmianie danych */
+  window.addEventListener("db:changed", function () { K = budujK(); renderKPI(); render(); });
 })();
 </script>
 </body>

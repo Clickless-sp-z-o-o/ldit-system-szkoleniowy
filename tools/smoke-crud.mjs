@@ -97,6 +97,20 @@ ok(win.DB.INSTYTUCJE.filter((x) => x.id === nowaIS.id)[0].nazwa === "Test IS 2",
 win.Store.remove("instytucje", nowaIS.id);
 ok(win.DB.INSTYTUCJE.length === startIS, "remove instytucji przywraca liczbe");
 
+/* KLIENCI (04-baza-klientow) */
+const startKl = win.DB.KLIENCI.length;
+const nowyKl = win.Store.insert("klienci",
+  { numer_klienta: 9999, nazwa: "Test Klient", nip: "9990001112", wielkosc_przedsiebiorstwa: "mikro",
+    liczba_zatrudnionych: 5, osoba_kontaktowa: "Ala Test", telefon: "600 111 222", email: "k@k.pl",
+    instytucja_id: "IS-01", pup_id: "PUP-01", miasto: "Poznań" }, "KL-");
+ok(win.DB.KLIENCI.length === startKl + 1, "insert klienta");
+const vKl = win.DB.KLIENCI.filter((k) => k.id === nowyKl.id)[0];
+ok(vKl && vKl.nr === 9999 && vKl.wielkosc === "mikro" && vKl.is === "IS-01", "adapter mapuje klienta (nr/wielkosc/is)");
+win.Store.update("klienci", nowyKl.id, { telefon: "601 999 999" });
+ok(win.DB.KLIENCI.filter((k) => k.id === nowyKl.id)[0].tel === "601 999 999", "update telefonu klienta");
+win.Store.remove("klienci", nowyKl.id);
+ok(win.DB.KLIENCI.length === startKl, "remove klienta przywraca liczbe");
+
 /* Trwalosc: zmiana zapisala sie do localStorage */
 ok(win.localStorage.getItem(win.Store.KEY) != null, "stan zapisany w localStorage");
 
