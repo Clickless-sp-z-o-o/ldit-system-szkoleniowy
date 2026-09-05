@@ -32,7 +32,7 @@
 
   <div class="note warn">
     <b>Moduł wyłącznie dla administratora <span class="ref">D-34</span>.</b>
-    Zyski firmy, prowizje instytucji i faktury są niewidoczne dla pracownika LDIT, dla instytucji
+    Prowizje, faktury i statystyki finansowe są niewidoczne dla pracownika LDIT, dla instytucji
     szkoleniowej i dla klienta końcowego. Instytucja nie widzi ani swojej stawki, ani cudzej.
     Przy roli innej niż administrator ta pozycja nie pojawia się w menu, a bezpośrednie wejście
     pod adres kończy się odmową na poziomie danych, nie tylko interfejsu.
@@ -40,10 +40,20 @@
     dostanie część danych finansowych, ale nie określił których.
   </div>
 
+  <div class="note">
+    <b>Administracja to podsumowanie, nie miejsce edycji stawek <span class="ref">D-138</span>.</b>
+    Prowizja per instytucja to widok zbiorczy: dashboard miesięczny i narastająco plus podstawa
+    do fakturowania. <b>Nadpisanie prowizji robi się na karcie wniosku</b>, jako procent albo kwota
+    <span class="ref">D-136</span>, a stawka indywidualna wlicza się do puli progowej instytucji
+    <span class="ref">D-137</span>. Rozwinięcie w pojedyncze wnioski poniżej służy tylko podglądowi
+    podstawy, samego nadpisania tu nie ma.
+  </div>
+
   <div class="card" style="margin-bottom:16px">
     <div class="tabs">
       <div class="tab on" data-t="t-prowizje">Prowizje</div>
       <div class="tab" data-t="t-faktury">Faktury</div>
+      <div class="tab" data-t="t-statystyki">Statystyki</div>
       <div class="tab" data-t="t-wewnetrzne">Prowizje wewnętrzne</div>
     </div>
   </div>
@@ -69,14 +79,14 @@
           <thead>
             <tr>
               <th>Instytucja</th>
-              <th class="c">Model</th>
-              <th>Kumulacja</th>
-              <th class="num">Projekty</th>
-              <th class="num">Obrót narastająco</th>
-              <th class="num">Stawka efekt.</th>
-              <th class="num">Prowizja naliczona</th>
-              <th class="num">Prowizja rozliczona</th>
-              <th class="num">Do zafakturowania</th>
+              <th class="c">Model<span class="tip-mark" data-tip="Sposób naliczania prowizji: A i D przestawiają lub trzymają jedną stawkę, B i C liczą od nadwyżki nad progiem. Konfigurowany per instytucja, widoczny tylko dla administratora (D-34).">i</span></th>
+              <th>Kumulacja<span class="tip-mark" data-tip="Okres, w którym sumuje się obrót do sprawdzenia progu: miesięczny, roczny albo bez kumulacji (stawka stała).">i</span></th>
+              <th class="num">Projekty<span class="tip-mark" data-tip="Liczba projektów z decyzją pozytywną wchodzących do podstawy prowizji w wybranym okresie.">i</span></th>
+              <th class="num">Obrót narastająco<span class="tip-mark" data-tip="Suma kosztu całkowitego z dopłatą (D-64), nie kwoty przyznanej przez urząd. Tylko projekty z decyzją pozytywną. To podstawa naliczenia prowizji.">i</span></th>
+              <th class="num">Stawka efekt.<span class="tip-mark" data-tip="Prowizja naliczona podzielona przez obrót. W modelach progowych zależy od tego, ile obrotu przekroczyło kolejne progi.">i</span></th>
+              <th class="num">Prowizja naliczona<span class="tip-mark" data-tip="Prowizja LDIT policzona silnikiem progowym na całym okresie. Uwzględnia stawki indywidualne nadpisane na kartach wniosków (D-137).">i</span></th>
+              <th class="num">Prowizja rozliczona<span class="tip-mark" data-tip="Część prowizji już objęta fakturą prowizyjną, ze statusem Rozliczone.">i</span></th>
+              <th class="num">Do zafakturowania<span class="tip-mark" data-tip="Prowizja naliczona pomniejszona o rozliczoną. Kwota czekająca na wystawienie faktury prowizyjnej.">i</span></th>
               <th></th>
             </tr>
           </thead>
@@ -101,8 +111,35 @@
 
     <div class="card">
       <div class="card-head">
+        <h3>Dashboard prowizji <span class="ref">D-138</span></h3>
+        <span class="sub">widok miesięczny per instytucja oraz wartość narastająco dla progu rocznego</span>
+        <div class="ch-actions"><span class="tag info">rok 2026</span></div>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap" style="overflow-x:auto">
+          <table class="tbl" id="tabDash">
+            <thead>
+              <tr id="dashHead"></tr>
+            </thead>
+            <tbody id="dashBody"></tbody>
+            <tfoot id="dashFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="small muted">
+          Kolumny to kolejne miesiące roku, ostatnia kolumna sumuje obrót narastająco od początku roku.
+          W modelach z kumulacją roczną (B) to właśnie narastająco decyduje, który próg jest aktywny,
+          więc miesięczny słupek bez sumy rocznej wprowadzałby w błąd. Wartości pokazują obrót objęty
+          prowizją, czyli koszt całkowity z dopłatą projektów z decyzją pozytywną.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
         <h3 id="naglProjekty">Rozwinięcie instytucji</h3>
-        <span class="sub">projekty wchodzące do podstawy prowizji</span>
+        <span class="sub">podgląd projektów w podstawie prowizji, nadpisanie na karcie wniosku <span class="ref">D-138</span></span>
         <div class="ch-actions"><span class="tag mute" id="tagOkresProj"></span></div>
       </div>
       <div class="card-body tight">
@@ -237,19 +274,69 @@
         <table class="tbl">
           <thead>
             <tr>
-              <th>Numer</th>
-              <th>Instytucja</th>
-              <th class="num">Kwota</th>
-              <th class="c">VAT</th>
-              <th>Wystawiona</th>
-              <th>Termin płatności</th>
-              <th>Status</th>
-              <th class="num">Projekty</th>
+              <th>Numer<span class="tip-mark" data-tip="Numer faktury z systemu księgowego. Ten sam numer pokazywany jest przy powiązanym wniosku, żeby odnaleźć fakturę bez logowania do księgowości (D-139).">i</span></th>
+              <th>Instytucja<span class="tip-mark" data-tip="Kontrahent faktury dopasowany do instytucji po NIP przy imporcie CSV.">i</span></th>
+              <th class="num">Kwota<span class="tip-mark" data-tip="Kwota brutto z faktury zaimportowanej z systemu księgowego.">i</span></th>
+              <th class="c">VAT<span class="tip-mark" data-tip="Stawka VAT z faktury. Wchodzi do statystyk kwotowych jako przychód i VAT (D-141).">i</span></th>
+              <th>Wystawiona<span class="tip-mark" data-tip="Data wystawienia faktury. Jest okresem rozliczeniowym prowizji rzeczywistej (P-01).">i</span></th>
+              <th>Termin płatności<span class="tip-mark" data-tip="Główny powód importu faktur: sprawdzenie terminu płatności bez logowania do systemu księgowego.">i</span></th>
+              <th>Status<span class="tip-mark" data-tip="Status płatności zaczytany z systemu księgowego: Opłacona, Oczekuje, Po terminie.">i</span></th>
+              <th class="num">Projekty<span class="tip-mark" data-tip="Liczba projektów objętych tą fakturą.">i</span></th>
               <th></th>
             </tr>
           </thead>
           <tbody id="tabFakt"></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= STATYSTYKI ============================= -->
+  <div class="tab-pane" id="t-statystyki">
+
+    <div class="note">
+      <b>Statystyki ilościowe i kwotowe per instytucja oraz zbiorczo <span class="ref">D-141</span>.</b>
+      Zestawienie pokazuje, ile wniosków przeszło, ile odrzucono i ile rezygnacji przypada na każdą
+      instytucję, a niżej sumę wszystkich instytucji. Kwotowo: koszt całkowity zsumowany, przychód
+      LDIT i VAT. Widok wyłącznie dla administratora <span class="ref">D-34</span>.
+    </div>
+
+    <div class="grid g4" style="margin-bottom:18px" id="kpiStat"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Statystyki per instytucja szkoleniowa</h3>
+        <span class="sub">ilościowo i kwotowo, sortowane po przychodzie LDIT</span>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap" style="overflow-x:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Instytucja</th>
+                <th class="num">Wnioski<span class="tip-mark" data-tip="Liczba wszystkich wniosków instytucji w 2026, niezależnie od decyzji i statusu składania.">i</span></th>
+                <th class="num">Przeszło<span class="tip-mark" data-tip="Wnioski z decyzją pozytywną urzędu. Tylko te wchodzą do podstawy prowizji.">i</span></th>
+                <th class="num">Odrzucono<span class="tip-mark" data-tip="Wnioski z decyzją negatywną urzędu.">i</span></th>
+                <th class="num">Rezygnacje<span class="tip-mark" data-tip="Wnioski ze statusem składania Rezygnacja, czyli wycofane przed rozstrzygnięciem.">i</span></th>
+                <th class="num">Skuteczność<span class="tip-mark" data-tip="Udział wniosków, które przeszły, w liczbie wniosków rozstrzygniętych (przeszło plus odrzucono).">i</span></th>
+                <th class="num">Koszt całkowity<span class="tip-mark" data-tip="Suma kosztu całkowitego z dopłatą projektów z decyzją pozytywną. Podstawa naliczenia prowizji.">i</span></th>
+                <th class="num">Przychód LDIT<span class="tip-mark" data-tip="Prowizja LDIT naliczona silnikiem progowym, czyli przychód firmy od tej instytucji.">i</span></th>
+                <th class="num">VAT<span class="tip-mark" data-tip="Szacunkowy VAT 23% od przychodu prowizyjnego LDIT. Wartość demonstracyjna w makiecie.">i</span></th>
+                <th class="c">Nagroda<span class="tip-mark" data-tip="System nagród dla instytucji (D-141). W makiecie wyróżniona instytucja z najwyższym przychodem, top 1.">i</span></th>
+              </tr>
+            </thead>
+            <tbody id="tabStat"></tbody>
+            <tfoot id="stopkaStat"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="small muted">
+          <b>System nagród dla instytucji <span class="ref">D-141</span>.</b>
+          Klient chce wyróżniać najlepiej współpracujące instytucje, na przykład top 1 po przychodzie.
+          Konkretny mechanizm nagrody (rabat na prowizji, wyróżnienie, benefit) nie został jeszcze
+          ustalony, tu pokazany jest tylko sposób wyłonienia lidera.
+        </div>
       </div>
     </div>
   </div>
@@ -390,6 +477,7 @@
     return okres ? MIES[parseInt(okres.slice(5, 7), 10) - 1] + " 2026" : "cały rok 2026";
   }
   function pct2(n) { return DB.fmtPct(Math.round(n * 100) / 100); }
+  function tip(txt) { return '<span class="tip-mark" data-tip="' + txt.replace(/"/g, "&quot;") + '">i</span>'; }
 
   /* ---------- Silnik: prowizja rzeczywista per projekt ---------- */
   function okresKey(w, kum) {
@@ -499,12 +587,16 @@
     });
 
     document.getElementById("kpiProw").innerHTML =
-      kpi("Obrót objęty prowizją", DB.fmtPLN(sObrot), "koszt całkowity z dopłatą, " + nazwaOkresu(okres), true) +
-      kpi("Prowizja naliczona", DB.fmtPLN(sProw), sN + " projektów w " + wiersze.length + " instytucjach", true) +
-      kpi("Prowizja rozliczona", DB.fmtPLN(sRozl),
+      kpi('Obrót objęty prowizją' + tip("Suma kosztu całkowitego z dopłatą projektów z decyzją pozytywną w wybranym okresie. Podstawa naliczenia prowizji, nie kwota przyznana przez urząd."),
+          DB.fmtPLN(sObrot), "koszt całkowity z dopłatą, " + nazwaOkresu(okres), true) +
+      kpi('Prowizja naliczona' + tip("Prowizja LDIT policzona silnikiem progowym na całym okresie, po wszystkich instytucjach."),
+          DB.fmtPLN(sProw), sN + " projektów w " + wiersze.length + " instytucjach", true) +
+      kpi('Prowizja rozliczona' + tip("Część prowizji już objęta fakturą prowizyjną. Pasek pokazuje udział rozliczonej w naliczonej."),
+          DB.fmtPLN(sRozl),
           '<div class="progress" style="flex:1"><i style="width:' +
           (sProw ? Math.round(sRozl / sProw * 100) : 0) + '%"></i></div>', true) +
-      kpi("Do zafakturowania", DB.fmtPLN(sProw - sRozl), "pozycje bez faktury prowizyjnej", true);
+      kpi('Do zafakturowania' + tip("Prowizja naliczona pomniejszona o rozliczoną, czyli kwota czekająca na fakturę prowizyjną."),
+          DB.fmtPLN(sProw - sRozl), "pozycje bez faktury prowizyjnej", true);
   }
 
   function tagRozl(w) {
@@ -569,6 +661,141 @@
         }
       });
     });
+  }
+
+  /* ---------- Dashboard prowizji: miesiecznie + narastajaco (D-138) ---------- */
+  function renderDashboard() {
+    /* obrot objety prowizja per instytucja per miesiac */
+    var perInst = {};
+    POZ.forEach(function (w) {
+      var mc = parseInt(w.dataFaktury.slice(5, 7), 10) - 1;
+      if (!perInst[w.is]) perInst[w.is] = { inst: mapInst[w.is], mies: new Array(12).fill(0), suma: 0 };
+      perInst[w.is].mies[mc] += w.kosztZDoplata;
+      perInst[w.is].suma += w.kosztZDoplata;
+    });
+    var wiersze = Object.keys(perInst).map(function (k) { return perInst[k]; })
+      .filter(function (r) { return r.suma > 0; })
+      .sort(function (a, b) { return b.suma - a.suma; });
+
+    /* zakres miesiecy z danymi, zeby tabela nie mnozyla pustych kolumn */
+    var minM = 11, maxM = 0;
+    wiersze.forEach(function (r) {
+      r.mies.forEach(function (v, i) { if (v > 0) { if (i < minM) minM = i; if (i > maxM) maxM = i; } });
+    });
+    if (minM > maxM) { minM = 0; maxM = 0; }
+
+    var head = '<th>Instytucja</th>';
+    for (var m = minM; m <= maxM; m++) {
+      head += '<th class="num">' + MIES[m].slice(0, 3) + '</th>';
+    }
+    head += '<th class="num">Narastająco' +
+      tip("Suma obrotu od początku roku. W modelach z kumulacją roczną to narastająco decyduje, który próg jest aktywny, dlatego pokazujemy je obok słupków miesięcznych.") + '</th>';
+    document.getElementById("dashHead").innerHTML = head;
+
+    document.getElementById("dashBody").innerHTML = wiersze.map(function (r) {
+      var kum = r.inst.prowizja.kumulacja === "roczny";
+      var row = '<td class="strong nowrap">' + r.inst.nazwa +
+        ' ' + pillModel(r.inst.prowizja.model) + '</td>';
+      for (var m = minM; m <= maxM; m++) {
+        row += '<td class="num' + (r.mies[m] ? "" : " muted") + '">' +
+          (r.mies[m] ? DB.fmtPLN(r.mies[m]) : "&middot;") + '</td>';
+      }
+      row += '<td class="num strong">' + DB.fmtPLN(r.suma) +
+        (kum ? '<div class="small muted">próg roczny</div>' : "") + '</td>';
+      return '<tr>' + row + '</tr>';
+    }).join("");
+
+    var sumMies = new Array(12).fill(0), sumTot = 0;
+    wiersze.forEach(function (r) {
+      r.mies.forEach(function (v, i) { sumMies[i] += v; });
+      sumTot += r.suma;
+    });
+    var foot = '<td class="strong">Razem</td>';
+    for (var mm = minM; mm <= maxM; mm++) {
+      foot += '<td class="num strong">' + (sumMies[mm] ? DB.fmtPLN(sumMies[mm]) : "&middot;") + '</td>';
+    }
+    foot += '<td class="num strong">' + DB.fmtPLN(sumTot) + '</td>';
+    document.getElementById("dashFoot").innerHTML = '<tr>' + foot + '</tr>';
+  }
+
+  /* ---------- Statystyki per instytucja i zbiorczo (D-141) ---------- */
+  var VAT_STAT = 0.23;
+
+  function statystykiWg() {
+    var perInst = {};
+    INST8.forEach(function (i) {
+      perInst[i.id] = { inst: i, wnioski: 0, przeszlo: 0, odrzucono: 0, rezygnacje: 0, koszt: 0, przychod: 0 };
+    });
+    DB.WNIOSKI.forEach(function (w) {
+      var r = perInst[w.is];
+      if (!r) return;
+      r.wnioski++;
+      if (w.statusSkl === "Rezygnacja") r.rezygnacje++;
+      if (w.statusDec === "Pozytywna") r.przeszlo++;
+      if (w.statusDec === "Negatywna") r.odrzucono++;
+    });
+    POZ.forEach(function (w) {
+      var r = perInst[w.is];
+      if (!r) return;
+      r.koszt += w.kosztZDoplata;
+      r.przychod += WYNIK[w.id].kwota;
+    });
+    return Object.keys(perInst).map(function (k) { return perInst[k]; })
+      .filter(function (r) { return r.wnioski > 0; })
+      .sort(function (a, b) { return b.przychod - a.przychod; });
+  }
+
+  function renderStat() {
+    var wiersze = statystykiWg();
+    var lider = wiersze.length ? wiersze[0].inst.id : null;
+
+    document.getElementById("tabStat").innerHTML = wiersze.map(function (r) {
+      var rozstrzygniete = r.przeszlo + r.odrzucono;
+      var skut = rozstrzygniete ? Math.round(r.przeszlo / rozstrzygniete * 100) : 0;
+      var vat = r.przychod * VAT_STAT;
+      return '<tr class="' + (r.inst.id === lider ? "sel" : "") + '">' +
+        '<td class="strong nowrap">' + r.inst.nazwa +
+          '<div class="small muted">' + r.inst.miasto + '</div></td>' +
+        '<td class="num">' + r.wnioski + '</td>' +
+        '<td class="num"><span class="tag pos">' + r.przeszlo + '</span></td>' +
+        '<td class="num">' + (r.odrzucono ? '<span class="tag neg">' + r.odrzucono + '</span>' : '<span class="muted">0</span>') + '</td>' +
+        '<td class="num">' + (r.rezygnacje ? '<span class="tag warn">' + r.rezygnacje + '</span>' : '<span class="muted">0</span>') + '</td>' +
+        '<td class="num">' + skut + '%</td>' +
+        '<td class="num">' + DB.fmtPLN(r.koszt) + '</td>' +
+        '<td class="num strong">' + DB.fmtPLN(r.przychod) + '</td>' +
+        '<td class="num muted">' + DB.fmtPLN(vat) + '</td>' +
+        '<td class="c">' + (r.inst.id === lider ? '<span class="tag pos dot">top 1</span>' : "") + '</td></tr>';
+    }).join("");
+
+    var s = { wnioski: 0, przeszlo: 0, odrzucono: 0, rezygnacje: 0, koszt: 0, przychod: 0 };
+    wiersze.forEach(function (r) {
+      s.wnioski += r.wnioski; s.przeszlo += r.przeszlo; s.odrzucono += r.odrzucono;
+      s.rezygnacje += r.rezygnacje; s.koszt += r.koszt; s.przychod += r.przychod;
+    });
+    var sRozstrz = s.przeszlo + s.odrzucono;
+    var sSkut = sRozstrz ? Math.round(s.przeszlo / sRozstrz * 100) : 0;
+
+    document.getElementById("stopkaStat").innerHTML =
+      '<tr><td class="strong">Zbiorczo, ' + wiersze.length + ' instytucji</td>' +
+      '<td class="num strong">' + s.wnioski + '</td>' +
+      '<td class="num strong">' + s.przeszlo + '</td>' +
+      '<td class="num strong">' + s.odrzucono + '</td>' +
+      '<td class="num strong">' + s.rezygnacje + '</td>' +
+      '<td class="num strong">' + sSkut + '%</td>' +
+      '<td class="num strong">' + DB.fmtPLN(s.koszt) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(s.przychod) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(s.przychod * VAT_STAT) + '</td>' +
+      '<td></td></tr>';
+
+    document.getElementById("kpiStat").innerHTML =
+      kpi('Wnioski łącznie' + tip("Wszystkie wnioski 2026 po wszystkich instytucjach, niezależnie od decyzji."),
+          DB.fmtNum(s.wnioski), s.przeszlo + " przeszło, " + s.odrzucono + " odrzucono, " + s.rezygnacje + " rezygnacji", true) +
+      kpi('Skuteczność zbiorcza' + tip("Udział wniosków, które przeszły, w liczbie wniosków rozstrzygniętych, po wszystkich instytucjach."),
+          sSkut + "%", "z " + sRozstrz + " rozstrzygniętych", true) +
+      kpi('Koszt całkowity' + tip("Suma kosztu całkowitego z dopłatą projektów z decyzją pozytywną. Podstawa naliczenia prowizji."),
+          DB.fmtPLN(s.koszt), "zsumowany po instytucjach", true) +
+      kpi('Przychód i VAT' + tip("Prowizja LDIT jako przychód firmy oraz szacunkowy VAT 23% od niej."),
+          DB.fmtPLN(s.przychod), "VAT 23% " + DB.fmtPLN(s.przychod * VAT_STAT), true);
   }
 
   /* ---------- Przewidywana prowizja ---------- */
@@ -708,11 +935,15 @@
     var wsz = wg(null), opl = wg("Opłacona"), ocz = wg("Oczekuje"), pt = wg("Po terminie");
 
     document.getElementById("kpiFakt").innerHTML =
-      kpi("Wystawione w 2026", DB.fmtNum(wsz.length), "na kwotę " + DB.fmtPLN(kw(wsz)), true) +
-      kpi("Opłacone", DB.fmtNum(opl.length),
+      kpi('Wystawione w 2026' + tip("Wszystkie faktury zaimportowane z systemu księgowego w 2026, wraz z łączną kwotą."),
+          DB.fmtNum(wsz.length), "na kwotę " + DB.fmtPLN(kw(wsz)), true) +
+      kpi('Opłacone' + tip("Faktury ze statusem Opłacona zaczytanym z systemu księgowego, z udziałem w całości wolumenu."),
+          DB.fmtNum(opl.length),
           DB.fmtPLN(kw(opl)) + " &middot; " + Math.round(opl.length / wsz.length * 100) + "% wolumenu", true) +
-      kpi("Oczekujące", DB.fmtNum(ocz.length), "na kwotę " + DB.fmtPLN(kw(ocz)), true) +
-      kpi("Po terminie", DB.fmtNum(pt.length), '<span class="tag neg dot">' + DB.fmtPLN(kw(pt)) + '</span>', true);
+      kpi('Oczekujące' + tip("Faktury czekające na płatność, przed upływem terminu."),
+          DB.fmtNum(ocz.length), "na kwotę " + DB.fmtPLN(kw(ocz)), true) +
+      kpi('Po terminie' + tip("Faktury z przekroczonym terminem płatności. Główny powód sprawdzania terminów w tym module."),
+          DB.fmtNum(pt.length), '<span class="tag neg dot">' + DB.fmtPLN(kw(pt)) + '</span>', true);
   }
 
   document.getElementById("btnCsv").addEventListener("click", function () {
@@ -811,10 +1042,13 @@
 
   renderProwizje();
   renderProjekty();
+  renderDashboard();
+  renderStat();
   renderPrognoza();
   renderFaktury();
   renderWewnetrzne();
 })();
 </script>
+<script src="../assets/tips.js"></script>
 </body>
 </html>

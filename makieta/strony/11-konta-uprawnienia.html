@@ -26,7 +26,7 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Konta i uprawnienia</h1>
+      <h1 class="page-title">Konta i uprawnienia<span class="tip-mark" data-tip="Modul zarzadzania dostepem: lista kont, konfigurator rol, macierz widocznosci i przypisanie pracownikow do instytucji. Uprawnienia sa nadawane per rola, nie per osoba (D-35). Admin LDIT ma pelna kontrole (usuwanie i blokowanie kont, filtrowanie po instytucji), a administrator instytucji zarzadza wlasnymi pracownikami w granicach swoich uprawnien (D-126). Progi dofinansowania sa konfigurowalne (D-131).">i</span></h1>
       <p class="page-desc">
         Moduł wyłącznie dla administratora. Uprawnienia nadawane <b>per rola, nie per pracownik</b>
         <span class="ref">D-35</span>, konfigurator ról obsługiwany samodzielnie przez klienta
@@ -74,11 +74,11 @@
         <table class="tbl">
           <thead>
             <tr>
-              <th>Użytkownik</th>
-              <th>Rola</th>
-              <th>Przypisane instytucje</th>
-              <th class="c">2FA</th>
-              <th>Ostatnie logowanie</th>
+              <th>Użytkownik<span class="tip-mark" data-tip="Imie i nazwisko oraz login (e-mail) konta. Login sluzy do logowania i nie zmienia sie po utworzeniu konta.">i</span></th>
+              <th>Rola<span class="tip-mark" data-tip="Rola okresla, ktore zakladki (moduly) uzytkownik widzi. Uprawnienia nadawane sa per rola, nie per osoba (D-35).">i</span></th>
+              <th>Przypisane instytucje<span class="tip-mark" data-tip="Drugi, niezalezny wymiar uprawnien (D-113): czyje dane widzi pracownik. Admin LDIT moze filtrowac i przypisywac pracownikow do konkretnych instytucji (D-126). Wartosc wszystkie instytucje ma tylko administrator.">i</span></th>
+              <th class="c">2FA<span class="tip-mark" data-tip="Dwuskladnikowe uwierzytelnianie. Wymaganie MUST z warsztatu mowi o 2FA wymuszonym. Konta bez 2FA sa wyroznione zoltym tlem.">i</span></th>
+              <th>Ostatnie logowanie<span class="tip-mark" data-tip="Data ostatniej aktywnosci konta. Pomaga wykryc nieuzywane konta do zablokowania.">i</span></th>
               <th></th>
             </tr>
           </thead>
@@ -92,6 +92,14 @@
           pracownika działa natychmiast i unieważnia otwartą sesję. Wymagane: 2FA, reset hasła,
           automatyczne wylogowanie po bezczynności. Każda operacja na koncie trafia do
           <a href="12-rejestr-aktywnosci.html">rejestru aktywności</a> <span class="ref">D-116</span>.
+        </div>
+        <div class="note" style="margin-top:12px">
+          <b>Podział zarządzania kontami</b> <span class="ref">D-126</span>
+          <span class="tip-mark" data-tip="Administrator instytucji moze samodzielnie dodawac i zarzadzac wlasnymi pracownikami, ale wylacznie w granicach wlasnych uprawnien (nie nada pracownikowi wiecej niz ma sam). Usuwanie i blokowanie kont oraz filtrowanie listy po instytucji pozostaje po stronie administratora LDIT (D-126).">i</span>.
+          Administrator instytucji może dodawać i zarządzać <b>własnymi pracownikami</b>, maksymalnie
+          w granicach własnych uprawnień. <b>Usuwanie i blokowanie kont</b> oraz filtrowanie listy po
+          instytucji pozostaje po stronie <b>administratora LDIT</b>.
+          Progi dofinansowania są konfigurowalne <span class="ref">D-131</span>.
         </div>
       </div>
     </div>
@@ -113,7 +121,7 @@
           <div>
             <div class="card mb0">
               <div class="card-head">
-                <h3>Role</h3>
+                <h3>Role<span class="tip-mark" data-tip="Lista rol w systemie. Piec rol bazowych dostarczanych z systemem plus role wlasne, ktore administrator tworzy sam bez udzialu wykonawcy. Licznik przy roli pokazuje, ile modulow ta rola widzi.">i</span></h3>
                 <span class="sub" id="liczR"></span>
               </div>
               <div class="card-body">
@@ -127,7 +135,7 @@
             </div>
 
             <div class="card mt16 mb0">
-              <div class="card-head"><h3>Podgląd menu bocznego</h3></div>
+              <div class="card-head"><h3>Podgląd menu bocznego<span class="tip-mark" data-tip="Podglad nawigacji, jaka zobaczy uzytkownik z ta rola po zalogowaniu. Menu renderuje sie dynamicznie na podstawie uprawnien roli (D-36).">i</span></h3></div>
               <div class="card-body">
                 <div class="menu-prev" id="podgladMenu"></div>
                 <div class="small muted" style="margin-top:9px;line-height:1.5">
@@ -142,7 +150,7 @@
           <div>
             <div class="card mb0">
               <div class="card-head">
-                <h3>Uprawnienia roli: <span id="nazwaRoli"></span></h3>
+                <h3>Uprawnienia roli: <span id="nazwaRoli"></span><span class="tip-mark" data-tip="Zestaw modulow widocznych i edytowalnych dla wybranej roli. Model jest plaski, bez hierarchii: dopuszczalna jest dowolna kombinacja, nawet gdy pracownik widzi wiecej niz menedzer.">i</span></h3>
                 <div class="ch-actions">
                   <button class="btn xs" onclick="zaznaczWszystko(true)">Zaznacz wszystko</button>
                   <button class="btn xs" onclick="zaznaczWszystko(false)">Wyczyść</button>
@@ -153,10 +161,10 @@
                 <table class="tbl">
                   <thead>
                     <tr>
-                      <th>Moduł</th>
-                      <th class="c" style="width:110px">Podgląd</th>
-                      <th class="c" style="width:110px">Edycja</th>
-                      <th style="width:150px">Efekt</th>
+                      <th>Moduł<span class="tip-mark" data-tip="Zakladka z lewej nawigacji. Jednostka uprawnienia jest wlasnie modul, nie pojedyncze pole.">i</span></th>
+                      <th class="c" style="width:110px">Podgląd<span class="tip-mark" data-tip="Prawo do zobaczenia modulu. Bez podgladu modul nie pojawia sie w menu i nie da sie go otworzyc nawet z adresu URL.">i</span></th>
+                      <th class="c" style="width:110px">Edycja<span class="tip-mark" data-tip="Prawo do zmian w module. Zaznaczenie edycji wlacza podglad automatycznie, bo nie da sie edytowac czegos, czego sie nie widzi.">i</span></th>
+                      <th style="width:150px">Efekt<span class="tip-mark" data-tip="Wynikowy poziom dostepu roli do modulu: podglad i edycja, tylko odczyt albo modul ukryty.">i</span></th>
                     </tr>
                   </thead>
                   <tbody id="bodyPerm"></tbody>
@@ -204,12 +212,12 @@
         <table class="tbl matrix">
           <thead>
             <tr>
-              <th>Moduł</th>
-              <th class="c">Administrator</th>
-              <th class="c">Pracownik LDIT</th>
-              <th class="c">Instytucja szkoleniowa</th>
-              <th class="c">Pracownik IS</th>
-              <th class="c">Klient końcowy</th>
+              <th>Moduł<span class="tip-mark" data-tip="Zakladka systemu, dla ktorej okreslamy poziom dostepu poszczegolnych rol.">i</span></th>
+              <th class="c">Administrator<span class="tip-mark" data-tip="Bartek. Pelny dostep do wszystkiego, w tym finansow i prowizji. Zachowuje usuwanie i blokowanie kont oraz filtrowanie po instytucji (D-126).">i</span></th>
+              <th class="c">Pracownik LDIT<span class="tip-mark" data-tip="Zespol LDIT. Widzi tylko przydzielone instytucje, bez zyskow firmy i stawek prowizji.">i</span></th>
+              <th class="c">Instytucja szkoleniowa<span class="tip-mark" data-tip="Administrator instytucji. Widzi wylacznie wlasna zakladke i wlasnych klientow, moze zarzadzac wlasnymi pracownikami w granicach swoich uprawnien (D-126).">i</span></th>
+              <th class="c">Pracownik IS<span class="tip-mark" data-tip="Handlowiec instytucji. Widzi wylacznie wlasnych, przefiltrowanych klientow. Rola dodana na warsztacie (D-72).">i</span></th>
+              <th class="c">Klient końcowy<span class="tip-mark" data-tip="Uczestnik. Zakres panelu klienta jest jeszcze nierozstrzygniety.">i</span></th>
             </tr>
           </thead>
           <tbody id="bodyMx"></tbody>
@@ -279,6 +287,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 /* ================= ZAKLADKI ================= */
 document.querySelectorAll(".tab").forEach(function (t) {

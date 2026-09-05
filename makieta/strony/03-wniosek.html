@@ -16,7 +16,9 @@
       <h1 class="page-title" id="tytul">Projekt</h1>
       <p class="page-desc">
         Jeden projekt = jeden wniosek <span class="ref">D-53</span>.
-        Dane klienta i korespondencja są wspólne dla wszystkich jego projektów <span class="ref">D-54</span>.
+        Dane klienta wspólne dla projektów <span class="ref">D-54</span>, ale kontakt i wielkość edytowalne per wniosek
+        <span class="ref">D-132</span> <span class="ref">D-133</span>. Po warsztacie 04.09: koszt z dopłatą ręczny,
+        koszt całkowity wyliczany <span class="ref">D-134</span>; „Przyznano" edytowalne <span class="ref">D-135</span>.
       </p>
     </div>
     <div class="ph-actions">
@@ -33,22 +35,34 @@
       <div class="card">
         <div class="card-head">
           <h3>Model finansowy</h3>
-          <span class="sub">wskaźnik dofinansowania zależny od wielkości przedsiębiorstwa</span>
-          <div class="ch-actions"><span class="tag mute" id="tagWielkosc"></span></div>
+          <span class="sub">progi dofinansowania konfigurowalne per wielkość i rok <span class="ref">D-131</span></span>
+          <div class="ch-actions" style="align-items:center;gap:8px">
+            <label class="small muted" style="font-weight:600">Wielkość
+              <span class="tip-mark" data-tip="Wielkosc wyznacza wskaznik dofinansowania (mikro 90% / pozostali 70%). NIE wynika tylko z liczby zatrudnionych: firma do 9 osob z obrotem powyzej 2 mln EUR to juz maly, nie mikro. Dlatego edytowalna per wniosek. D-132.">i</span>
+            </label>
+            <select class="inp" id="selWielkosc" style="height:30px;width:auto;font-size:12.5px">
+              <option value="mikro">mikro (90/10)</option>
+              <option value="mały">mały (70/30)</option>
+              <option value="średni">średni (70/30)</option>
+              <option value="duży">duży (70/30)</option>
+              <option value="inny">inny (70/30)</option>
+            </select>
+            <span class="tag mute" id="tagWielkosc"></span>
+          </div>
         </div>
         <div class="card-body">
 
           <div class="grid g3">
             <div class="field calc-field">
-              <label>Całkowita wartość szkolenia <span class="calc-badge">wyliczane</span></label>
+              <label>Całkowita wartość szkolenia <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Suma kwot uczestnikow ZAKWALIFIKOWANYCH. Niezakwalifikowani maja kwote 0 i ida na odrebna fakture komercyjna. D-79, D-84.">i</span></label>
               <input class="inp num" id="fWartosc" readonly>
               <div class="hint">Suma kwot uczestników <b>zakwalifikowanych</b> <span class="ref">D-79</span></div>
             </div>
 
-            <div class="field">
-              <label>Koszt całkowity <span class="calc-badge manual">ręczne</span></label>
-              <input class="inp num" id="fKoszt">
-              <div class="hint">Wartość uznana przez urząd. Nazwa sporna <span class="ref p">P-13</span></div>
+            <div class="field calc-field">
+              <label>Koszt całkowity <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Po warsztacie 04.09 kierunek odwrocony (D-134): koszt calkowity WYLICZA sie jako koszt z doplata minus doplata dodatkowa. Wczesniej byl wpisywany recznie (D-64). To wartosc uznana przez urzad, podstawa dofinansowania.">i</span></label>
+              <input class="inp num" id="fKoszt" readonly>
+              <div class="hint">Wyliczane: koszt z dopłatą &minus; dopłata <span class="ref">D-134</span> (odwraca D-64)</div>
             </div>
 
             <div class="field calc-field" id="wrapPrzyznano">
@@ -70,15 +84,15 @@
             </div>
 
             <div class="field">
-              <label>Kwota dopłaty dodatkowej <span class="calc-badge manual">ręczne</span></label>
+              <label>Kwota dopłaty dodatkowej <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Dodatkowa kwota, ktora doplaca klient (gdy urzad przyznal za malo albo instytucja nie schodzi z ceny). Domyslnie 0. Nie wchodzi do podstawy Przyznano. D-63.">i</span></label>
               <input class="inp num" id="fDoplata">
               <div class="hint">Domyślnie 0. Nie wchodzi do podstawy „Przyznano” <span class="ref">D-63</span></div>
             </div>
 
-            <div class="field calc-field">
-              <label>Koszt całkowity z dopłatą <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Koszt całkowity + dopłata dodatkowa. To podstawa naliczania prowizji LDIT (D-64), nie kwota przyznana.">i</span></label>
-              <input class="inp num" id="fKosztDop" readonly>
-              <div class="hint"><b>Podstawa naliczania prowizji</b> <span class="ref">D-64</span></div>
+            <div class="field">
+              <label>Koszt całkowity z dopłatą <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Wpisywana RECZNIE (D-134, odwrocenie). To wartosc, na jaka realnie umawiamy szkolenie, i PODSTAWA naliczania prowizji LDIT, nie kwota przyznana. Koszt calkowity liczy sie z niej minus doplata dodatkowa.">i</span></label>
+              <input class="inp num" id="fKosztDop">
+              <div class="hint"><b>Ręczne. Podstawa naliczania prowizji</b> <span class="ref">D-134</span></div>
             </div>
           </div>
 
@@ -127,9 +141,32 @@
     <!-- PRAWA KOLUMNA -->
     <div>
       <div class="card">
-        <div class="card-head"><h3>Dane projektu</h3></div>
+        <div class="card-head"><h3>Dane projektu</h3>
+          <span class="tip-mark" data-tip="Dane firmy (nazwa, NIP, numer klienta) sa stale i wspolne dla wszystkich wnioskow klienta. Numer klienta trafia na fakture. D-53, D-54.">i</span>
+        </div>
         <div class="card-body">
           <dl class="dl" id="dane"></dl>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Dane kontaktowe wniosku</h3>
+          <span class="tip-mark" data-tip="Osoba do kontaktu moze byc INNA dla kazdego wniosku (np. raz wlasciciel, raz sekretarka). Dlatego edytowalne per wniosek, niezaleznie od stalych danych firmy. Dane stale klienta sa w osobnej zakladce. D-133.">i</span>
+          <span class="sub" style="margin-left:auto">edytowalne per wniosek</span>
+        </div>
+        <div class="card-body">
+          <div class="field" style="margin-bottom:8px">
+            <label>Osoba do kontaktu</label>
+            <input class="inp" id="fkOsoba">
+          </div>
+          <div class="grid g2" style="gap:10px">
+            <div class="field mb0"><label>E-mail</label><input class="inp" id="fkMail"></div>
+            <div class="field mb0"><label>Telefon</label><input class="inp" id="fkTel"></div>
+          </div>
+          <div class="note mb0" style="margin-top:10px;font-size:12px">
+            Dane kontaktowe mogą różnić się per wniosek. Dane stałe firmy są wspólne dla wszystkich jej projektów <span class="ref">D-133</span>.
+          </div>
         </div>
       </div>
 
@@ -142,9 +179,12 @@
       </div>
 
       <div class="card">
-        <div class="card-head"><h3>Przebieg</h3></div>
+        <div class="card-head"><h3>Przebieg</h3>
+          <span class="tip-mark" data-tip="Os czasu budowana automatycznie z logow zmian statusu (D-145). Status zmienia sie przyciskiem ponizej z komentarzem, nie z listy. Etapy wg procesu Dzialu Dotacji (D-146).">i</span>
+        </div>
         <div class="card-body">
           <div class="timeline" id="przebieg"></div>
+          <button class="btn sm primary" style="margin-top:12px" onclick="alert('Zmiana statusu na nastepny etap wraz z komentarzem. Zapisuje sie w rejestrze aktywnosci i buduje przebieg (D-145).')">Przejdź do następnego etapu</button>
         </div>
       </div>
     </div>
@@ -169,16 +209,32 @@ var regulaAktywna = true;
 /* Nadpisanie prowizji per wniosek (D-93 zaktualizowane, wyłącznie administrator).
    regula aktywna -> licz wg warunkow IS; wylaczona -> uzyj stawki indywidualnej. */
 var prowizjaRegula = w.prowizjaRegula !== false;
+var typIndywid = "procent";           /* "procent" albo "kwota" - indywidualne nadpisanie (D-136) */
 var stawkaIndywid = w.prowizjaProcent != null ? w.prowizjaProcent : null;
+var kwotaIndywid = null;
 var ostatniaPodstawa = 0;
 /* Karte prowizji widzi wylacznie administrator (D-07 separacja, D-34 pracownik bez stawek) */
 if (!isAdmin) { var cardProw = document.getElementById("cardProwizja"); if (cardProw) cardProw.style.display = "none"; }
 
 document.getElementById("tytul").textContent = w.id + " · " + w.klNazwa;
-document.getElementById("tagWielkosc").textContent =
-  w.wielkosc + " · " + Math.round(wsk * 100) + "% dofinansowania / " + Math.round((1 - wsk) * 100) + "% wkładu";
-document.getElementById("hintPrzyznano").innerHTML =
-  "koszt całkowity &times; " + wsk + " (" + w.wielkosc + ")";
+
+/* Wielkosc edytowalna per wniosek (D-132). Zmiana przelicza wskaznik i cale wyliczenia.
+   Progi (90/10, 70/30) sa domyslne, ale konfigurowalne i wersjonowane rokiem (D-131). */
+var selW = document.getElementById("selWielkosc");
+if (selW.querySelector('option[value="' + w.wielkosc + '"]')) selW.value = w.wielkosc;
+function odswiezWielkosc() {
+  wsk = DB.wskaznik(w.wielkosc);
+  document.getElementById("tagWielkosc").textContent =
+    Math.round(wsk * 100) + "% dof. / " + Math.round((1 - wsk) * 100) + "% wkład";
+  document.getElementById("hintPrzyznano").innerHTML =
+    "koszt całkowity &times; " + wsk + " (" + w.wielkosc + ")";
+}
+selW.addEventListener("change", function () {
+  w.wielkosc = this.value;
+  odswiezWielkosc();
+  przelicz();
+});
+odswiezWielkosc();
 
 /* ---------- Model finansowy ---------- */
 function num(el) { return parseFloat(String(el.value).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0; }
@@ -189,8 +245,11 @@ function przelicz() {
                             .reduce(function (s, u) { return s + u.kwota; }, 0);
   set(document.getElementById("fWartosc"), wartosc);
 
-  var koszt = num(document.getElementById("fKoszt"));
+  /* D-134 (odwrocenie kierunku): koszt z doplata jest RECZNY, koszt calkowity WYLICZANY */
+  var kosztDop = num(document.getElementById("fKosztDop"));
   var doplata = num(document.getElementById("fDoplata"));
+  var koszt = Math.round((kosztDop - doplata) * 100) / 100;
+  set(document.getElementById("fKoszt"), koszt);
 
   if (regulaAktywna) {
     set(document.getElementById("fPrzyznano"), Math.round(koszt * wsk * 100) / 100);
@@ -198,20 +257,20 @@ function przelicz() {
   var przyznano = num(document.getElementById("fPrzyznano"));
 
   /* Wklad wlasny jako reszta, zeby rownanie sie domykalo (P-51) */
-  set(document.getElementById("fWklad"), Math.round((koszt - przyznano) * 100) / 100);
-  set(document.getElementById("fKosztDop"), Math.round((koszt + doplata) * 100) / 100);
+  var wklad = Math.round((koszt - przyznano) * 100) / 100;
+  set(document.getElementById("fWklad"), wklad);
 
-  /* Rownanie kontrolne */
-  var wklad = koszt - przyznano;
+  /* Rownanie kontrolne: przyznano + wklad = koszt calkowity. Przyznano edytowalne (D-135). */
   var ok = Math.abs((przyznano + wklad) - koszt) < 0.005;
   document.getElementById("kontrola").innerHTML =
     '<div class="note ' + (ok ? "" : "warn") + '" style="margin:6px 0 0">' +
     '<b>Równanie kontrolne:</b> ' + DB.fmtPLN2(przyznano) + ' + ' + DB.fmtPLN2(wklad) +
-    ' = ' + DB.fmtPLN2(koszt) + ' &nbsp; ' +
+    ' = ' + DB.fmtPLN2(koszt) + ' <span class="small muted">(przyznano + wkład = koszt całkowity)</span> &nbsp; ' +
     (ok ? '<span class="tag pos">domyka się</span>' : '<span class="tag neg">rozjazd</span>') +
-    ' <span class="ref">D-58</span></div>';
+    ' <span class="ref">D-135</span></div>';
 
-  liczProwizjeWidok(koszt + doplata);
+  /* Podstawa prowizji = koszt calkowity z doplata (teraz pole reczne, D-134) */
+  liczProwizjeWidok(kosztDop);
 }
 
 function przywrocRegule() {
@@ -225,12 +284,15 @@ document.getElementById("fPrzyznano").addEventListener("input", function () {
   document.getElementById("wrapPrzyznano").classList.add("overridden");
   przelicz();
 });
-["fKoszt", "fDoplata"].forEach(function (idf) {
+["fKosztDop", "fDoplata"].forEach(function (idf) {
   document.getElementById(idf).addEventListener("input", przelicz);
 });
 
-set(document.getElementById("fKoszt"), w.kosztCalkowity != null ? w.kosztCalkowity : w.calkowita);
-set(document.getElementById("fDoplata"), w.doplata || 0);
+/* Inicjalizacja: pole reczne to koszt z doplata (D-134) = koszt calkowity + doplata dodatkowa */
+var _koszt0 = w.kosztCalkowity != null ? w.kosztCalkowity : w.calkowita;
+var _doplata0 = w.doplata || 0;
+set(document.getElementById("fDoplata"), _doplata0);
+set(document.getElementById("fKosztDop"), _koszt0 + _doplata0);
 
 /* ---------- Uczestnicy ---------- */
 function renderUcz() {
@@ -277,6 +339,11 @@ document.getElementById("dane").innerHTML =
    ["Status decyzji", w.statusDec || "brak"]
   ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
 
+/* Dane kontaktowe per wniosek (D-133), domyslnie zaciagniete z danych klienta */
+document.getElementById("fkOsoba").value = (kl && kl.osoba) || w.klNazwa;
+document.getElementById("fkMail").value = (kl && kl.mail) || "";
+document.getElementById("fkTel").value = (kl && kl.tel) || "";
+
 /* ---------- Prowizja (wyłącznie administrator, D-07/D-34) ---------- */
 function liczProwizjeWidok(podstawa) {
   if (!inst || !isAdmin) return;
@@ -290,10 +357,18 @@ function liczProwizjeWidok(podstawa) {
     D: "stała stawka"
   }[inst.prowizja.model];
 
-  var uzyjIndywid = !prowizjaRegula && stawkaIndywid != null;
-  var kwota = uzyjIndywid ? podstawa * stawkaIndywid / 100 : baza.kwota;
-  var stawkaEfekt = uzyjIndywid ? stawkaIndywid : baza.stawka;
-  var poleStawka = stawkaIndywid != null ? stawkaIndywid : Math.round(baza.stawka * 100) / 100;
+  /* Trzy tryby (D-136): regula wg instytucji, indywidualny procent albo indywidualna kwota. */
+  var uzyjIndywid = !prowizjaRegula;
+  var kwota, stawkaEfekt;
+  if (!uzyjIndywid) {
+    kwota = baza.kwota; stawkaEfekt = baza.stawka;
+  } else if (typIndywid === "kwota") {
+    if (kwotaIndywid == null) kwotaIndywid = Math.round(baza.kwota * 100) / 100;
+    kwota = kwotaIndywid; stawkaEfekt = podstawa ? kwota / podstawa * 100 : 0;
+  } else {
+    if (stawkaIndywid == null) stawkaIndywid = Math.round(baza.stawka * 100) / 100;
+    kwota = podstawa * stawkaIndywid / 100; stawkaEfekt = stawkaIndywid;
+  }
 
   document.getElementById("prowizja").innerHTML =
     '<div class="kpi" style="border:0;padding:0;box-shadow:none;margin-bottom:12px">' +
@@ -304,17 +379,20 @@ function liczProwizjeWidok(podstawa) {
 
     '<div class="field" style="margin-bottom:10px">' +
       '<label>Tryb prowizji <span class="calc-badge manual">admin</span>' +
-      '<span class="tip-mark" data-tip="Zgodnie z zasadami = licz wg warunków instytucji. Indywidualna stawka = nadpisanie per wniosek, wpisywane z ręki. Zmienia wyłącznie administrator (D-93).">i</span></label>' +
+      '<span class="tip-mark" data-tip="Zgodnie z zasadami = licz wg warunkow instytucji (model A/B/C/D). Indywidualne nadpisanie per wniosek jako PROCENT albo KWOTA (D-136). Zmienia wylacznie administrator (D-93).">i</span></label>' +
       '<select class="inp" onchange="ustawTrybProwizji(this.value)">' +
-        '<option value="regula"' + (uzyjIndywid ? '' : ' selected') + '>Zgodnie z zasadami instytucji</option>' +
-        '<option value="indywid"' + (uzyjIndywid ? ' selected' : '') + '>Indywidualna stawka (nadpisanie)</option>' +
+        '<option value="regula"' + (!uzyjIndywid ? ' selected' : '') + '>Zgodnie z zasadami instytucji</option>' +
+        '<option value="procent"' + (uzyjIndywid && typIndywid === "procent" ? ' selected' : '') + '>Indywidualny procent (nadpisanie)</option>' +
+        '<option value="kwota"' + (uzyjIndywid && typIndywid === "kwota" ? ' selected' : '') + '>Indywidualna kwota (nadpisanie)</option>' +
       '</select>' +
     '</div>' +
 
     (uzyjIndywid
       ? '<div class="field calc-field overridden" style="margin-bottom:10px">' +
-          '<label>Stawka indywidualna</label>' +
-          '<input class="inp num" value="' + poleStawka + '" onchange="zmienStawkeIndywid(this.value)">' +
+          '<label>' + (typIndywid === "kwota" ? "Kwota prowizji (zł)" : "Stawka indywidualna (%)") + '</label>' +
+          (typIndywid === "kwota"
+            ? '<input class="inp num" value="' + kwotaIndywid + '" onchange="zmienKwoteIndywid(this.value)">'
+            : '<input class="inp num" value="' + stawkaIndywid + '" onchange="zmienStawkeIndywid(this.value)">') +
           '<div class="restore-rule"><span>&#9888; reguła wyłączona</span>' +
           '<button onclick="przywrocReguleProwizji()">Przywróć regułę</button></div>' +
         '</div>'
@@ -334,26 +412,30 @@ function liczProwizjeWidok(podstawa) {
 
     '<div class="note" style="margin:12px 0 0;font-size:12px">' +
     'Nadpisanie działa <b>per wniosek</b> i ustawia je <b>wyłącznie administrator</b>, tu na karcie wniosku lub w module Administracja <span class="ref">D-93</span>. Instytucja nie widzi żadnej stawki <span class="ref">D-07</span>.' +
-    (uzyjIndywid ? '<div style="margin-top:6px">Czy nadpisany wniosek wlicza się do progów pozostałych wniosków instytucji, pozostaje otwarte <span class="ref p">P-03</span>.</div>' : '') +
+    (uzyjIndywid ? '<div style="margin-top:6px">Nadpisany wniosek <b>wlicza się do puli progowej</b> pozostałych wniosków instytucji <span class="ref">D-137</span> (rozstrzygnięte na warsztacie, wcześniej P-03).</div>' : '') +
     '</div>';
 }
 
 /* Przelaczniki trybu prowizji. Globalne, bo karta jest przerysowywana przy kazdej zmianie. */
 function ustawTrybProwizji(tryb) {
-  if (tryb === "indywid") {
-    prowizjaRegula = false;
-    if (stawkaIndywid == null) {
-      stawkaIndywid = Math.round(liczProwizje(inst.prowizja, 0, ostatniaPodstawa).stawka * 100) / 100;
-    }
-  } else {
+  if (tryb === "regula") {
     prowizjaRegula = true;
+  } else {
+    prowizjaRegula = false;
+    typIndywid = tryb;   /* "procent" albo "kwota" (D-136) */
   }
   liczProwizjeWidok(ostatniaPodstawa);
 }
 function zmienStawkeIndywid(val) {
   var v = parseFloat(String(val).replace(",", "."));
   stawkaIndywid = isNaN(v) ? null : v;
-  prowizjaRegula = false;
+  prowizjaRegula = false; typIndywid = "procent";
+  liczProwizjeWidok(ostatniaPodstawa);
+}
+function zmienKwoteIndywid(val) {
+  var v = parseFloat(String(val).replace(/[^\d,.-]/g, "").replace(",", "."));
+  kwotaIndywid = isNaN(v) ? null : v;
+  prowizjaRegula = false; typIndywid = "kwota";
   liczProwizjeWidok(ostatniaPodstawa);
 }
 function przywrocReguleProwizji() {
@@ -362,6 +444,7 @@ function przywrocReguleProwizji() {
 }
 window.ustawTrybProwizji = ustawTrybProwizji;
 window.zmienStawkeIndywid = zmienStawkeIndywid;
+window.zmienKwoteIndywid = zmienKwoteIndywid;
 window.przywrocReguleProwizji = przywrocReguleProwizji;
 
 /* ---------- Korespondencja ---------- */

@@ -15,7 +15,7 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Nabory</h1>
+      <h1 class="page-title">Nabory<span class="tip-mark" data-tip="Lista naborow z urzedow pracy: aktualnie ogloszonych, prognozowanych i zakonczonych, w jednym miejscu (D-109). Sluzy do planowania kontaktu z klientami, ktorych urzad wlasnie otwiera nabor. Uwaga: system jest tylko odbiorca prognoz z zewnetrznej aplikacji LDIT, sam nie liczy terminow naborow.">i</span></h1>
       <p class="page-desc">
         Nabory aktualne, prognozowane i zakończone w jednym miejscu, bez osobnego linku
         <span class="ref">D-109</span>. Nabór jest przypisany do urzędu pracy, rodzaj naboru jest osobnym
@@ -33,7 +33,7 @@
 
   <div class="card">
     <div class="card-head">
-      <h3>Nabory według pilności</h3>
+      <h3>Nabory według pilności<span class="tip-mark" data-tip="Glowna tabela naborow uporzadkowana od najpilniejszych. Kolory wierszy odpowiadaja stanowi naboru zgodnie z legenda po prawej.">i</span></h3>
       <span class="sub">stan na 29.08.2026</span>
       <div class="ch-actions">
         <div class="legend">
@@ -67,15 +67,15 @@
       <table class="tbl">
         <thead>
           <tr>
-            <th>Urząd pracy</th>
-            <th>Województwo</th>
-            <th>Rodzaj</th>
-            <th>Status</th>
-            <th class="nowrap">Termin od</th>
-            <th class="nowrap">Termin do</th>
-            <th class="c">Zostało</th>
-            <th>Prognoza</th>
-            <th class="num">Klientów czeka</th>
+            <th>Urząd pracy<span class="tip-mark" data-tip="Powiatowy urzad pracy (PUP), do ktorego przypisany jest nabor. Nabor zawsze nalezy do konkretnego urzedu.">i</span></th>
+            <th>Województwo<span class="tip-mark" data-tip="Wojewodztwo, w ktorym lezy urzad. Ulatwia filtrowanie regionalne.">i</span></th>
+            <th>Rodzaj<span class="tip-mark" data-tip="Program dofinansowania. Dzis wylacznie KFS, ale model dopuszcza takze nabory powiatowe i inne programy jako osobny wymiar.">i</span></th>
+            <th>Status<span class="tip-mark" data-tip="Stan naboru: Nabor ogloszony (termin znany), W trakcie kontaktu (czekamy na potwierdzenie z urzedu), Brak naboru (tylko prognoza), Po naborze (zakonczony).">i</span></th>
+            <th class="nowrap">Termin od<span class="tip-mark" data-tip="Data otwarcia naboru w urzedzie. Pusta, gdy nabor jest jeszcze tylko prognozowany.">i</span></th>
+            <th class="nowrap">Termin do<span class="tip-mark" data-tip="Data zamkniecia naboru, czyli ostatni dzien na zlozenie wniosku. Lista jest sortowana po tej dacie rosnaco, najpilniejsze na gorze (D-90).">i</span></th>
+            <th class="c">Zostało<span class="tip-mark" data-tip="Liczba dni do zamkniecia naboru. Czerwony do 3 dni, zolty do 10 dni, niebieski powyzej. Zakonczone nabory maja oznaczenie zakonczony.">i</span></th>
+            <th>Prognoza<span class="tip-mark" data-tip="Przewidywany miesiac otwarcia naboru z zewnetrznej aplikacji prognozujacej LDIT. System jej nie liczy, tylko wyswietla (D-109).">i</span></th>
+            <th class="num">Klientów czeka<span class="tip-mark" data-tip="Liczba klientow LDIT przypisanych do tego urzedu, ktorzy czekaja na otwarcie naboru. Wysoka wartosc to przyszly szczyt pracy.">i</span></th>
             <th></th>
           </tr>
         </thead>
@@ -96,7 +96,7 @@
   <div class="grid g2">
     <div class="card">
       <div class="card-head">
-        <h3>Prognozy na kolejne miesiące</h3>
+        <h3>Prognozy na kolejne miesiące<span class="tip-mark" data-tip="Liczba urzedow z przewidywanym naborem w danym miesiacu. Dane pochodza z zewnetrznej aplikacji prognozujacej LDIT, system ich nie wylicza (D-109).">i</span></h3>
         <span class="sub">liczba urzędów z przewidywanym naborem</span>
       </div>
       <div class="card-body">
@@ -110,7 +110,7 @@
 
     <div class="card">
       <div class="card-head">
-        <h3>Klienci czekający według miesiąca prognozy</h3>
+        <h3>Klienci czekający według miesiąca prognozy<span class="tip-mark" data-tip="Suma klientow przypisanych do urzedow, ktore maja prognozowany nabor w danym miesiacu. Pokazuje przyszle obciazenie praca, gdy nabory sie otworza.">i</span></h3>
         <span class="sub">na ilu klientów przełoży się otwarcie naboru</span>
       </div>
       <div class="card-body">
@@ -125,7 +125,7 @@
 
   <div class="card">
     <div class="card-head">
-      <h3>Nabory kończące się w najbliższych 14 dniach</h3>
+      <h3>Nabory kończące się w najbliższych 14 dniach<span class="tip-mark" data-tip="Os czasu naborow, ktore zamykaja sie w ciagu dwoch tygodni. To lista do dzialania w systemie, nie alert wysylany mailem.">i</span></h3>
       <span class="sub">lista do działania, nie alert mailowy</span>
     </div>
     <div class="card-body">
@@ -152,6 +152,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 (function () {
   var DZIS = new Date("2026-08-29");
@@ -175,19 +176,24 @@
   var czekaLacznie = N.reduce(function (s, n) { return s + n.klientow; }, 0);
   var czekaOtwarte = ogl.reduce(function (s, n) { return s + n.klientow; }, 0);
 
-  function kpi(label, val, foot) {
-    return '<div class="kpi"><div class="k-label">' + label + '</div>' +
+  function kpi(label, val, foot, tip) {
+    var mark = tip ? '<span class="tip-mark" data-tip="' + tip + '">i</span>' : "";
+    return '<div class="kpi"><div class="k-label">' + label + mark + '</div>' +
       '<div class="k-value">' + val + '</div>' +
       '<div class="k-foot">' + foot + '</div></div>';
   }
   document.getElementById("kpi").innerHTML =
     kpi("Nabory ogłoszone teraz", ogl.length,
-        '<span class="tag pos dot">' + czekaOtwarte + ' klientów do obsłużenia</span>') +
-    kpi("Urzędy w trakcie kontaktu", kont.length, "data jeszcze niepotwierdzona przez urząd") +
+        '<span class="tag pos dot">' + czekaOtwarte + ' klientów do obsłużenia</span>',
+        "Liczba naborow z aktualnie otwartym terminem skladania wnioskow. Obok liczba klientow LDIT w tych urzedach.") +
+    kpi("Urzędy w trakcie kontaktu", kont.length, "data jeszcze niepotwierdzona przez urząd",
+        "Urzedy, z ktorymi LDIT juz rozmawia, ale ktore nie potwierdzily jeszcze dokladnej daty naboru.") +
     kpi("Nabory prognozowane", (kont.length + prog.length),
-        "najbliższe: wrzesień 2026, najdalsze: styczeń 2027") +
+        "najbliższe: wrzesień 2026, najdalsze: styczeń 2027",
+        "Laczna liczba naborow z przewidywanym terminem (w trakcie kontaktu plus sama prognoza), bez ogloszonego jeszcze terminu.") +
     kpi("Klientów oczekujących łącznie", DB.fmtNum(czekaLacznie),
-        "z " + N.length + " urzędów, w bazie jest ich 340");
+        "z " + N.length + " urzędów, w bazie jest ich 340",
+        "Suma klientow przypisanych do wszystkich pokazanych urzedow. Baza obejmuje 340 urzedow, tu widocznych jest 12 najaktywniejszych.");
 
   function tagStat(n) {
     if (n.status === "Nabór ogłoszony") return '<span class="tag pos dot">Nabór ogłoszony</span>';

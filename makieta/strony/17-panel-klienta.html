@@ -11,7 +11,7 @@
   <div class="page-head">
     <div class="ph-text">
       <div class="small muted" style="margin-bottom:4px">Zalogowano jako klient końcowy &rsaquo; dostęp wyłącznie do odczytu</div>
-      <h1 class="page-title" id="tytul">Panel klienta</h1>
+      <h1 class="page-title" id="tytul" data-tip="Panel klienta koncowego: wylacznie ODCZYT wlasnego wniosku, statusu, dokumentow i szkolen. Status modulu otwarty, wejscie do etapu I nierozstrzygniete. P-33.">Panel klienta</h1>
       <p class="page-desc">
         Podgląd etapu wniosku, dokumentów, szkolenia i najbliższych naborów.
         Klient <b>niczego nie edytuje</b>, wszystkie dane prowadzi LDIT.
@@ -175,6 +175,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 (function () {
   /* Panel dziala w kontekscie JEDNEGO klienta. Wszystko ponizej filtruje sie po jego id. */

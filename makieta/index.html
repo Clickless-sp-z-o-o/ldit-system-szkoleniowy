@@ -49,7 +49,7 @@
       </div>
 
       <div class="topbar-right">
-        <div class="role-switch">
+        <div class="role-switch" data-tip="W makiecie rola jest przelaczana recznie, zeby pokazac rozne widoki. W systemie rola wynika z zalogowanego konta (bedzie panel logowania), nie z przelacznika. D-125.">
           <label for="role">Rola</label>
           <select id="role">
             <option value="admin">Administrator (Bartek)</option>
@@ -74,9 +74,11 @@
   <span id="hintText"></span>
 </div>
 
+<script src="assets/tips.js"></script>
 <script>
 /* ================================================================
    Powloka makiety: nawigacja zalezna od roli (D-36, D-112, D-113)
+   Kazda pozycja ma tooltip (data-tip) z wyjasnieniem, co w niej jest.
    ================================================================ */
 
 var INSTYTUCJE_MENU = [
@@ -93,36 +95,52 @@ var PRZYDZIAL = {
   klient: []
 };
 
+/* Kazda pozycja ma tip: krotkie wyjasnienie co jest w zakladce i dlaczego istnieje.
+   Renderowane jako data-tip (dymek z assets/tips.js). */
 var NAV = [
   { grupa: "Praca operacyjna" },
   { id: "dash",   ikona: "&#9632;", label: "Dashboard",              plik: "01-dashboard.html",
-    role: ["admin","pracownik","is"] },
+    role: ["admin","pracownik","is"],
+    tip: "Statystyki i wskazniki, bez rozpiski klientow. Dwa warianty: administratora (z zyskami i prowizjami) oraz pracownika (bez finansow firmy). D-114, D-30." },
   { id: "dofin",  ikona: "&#9673;", label: "Dofinansowania",         plik: "02-zestawienia.html",
-    role: ["admin","pracownik"], deti: true },
+    role: ["admin","pracownik"], deti: true,
+    tip: "Glowne miejsce pracy. Rozwija liste instytucji. W srodku dwie tabele: Baza danych (wszyscy klienci, klient = jeden wiersz) i Wnioski (projekty od etapu 3), z podzialem na lata. D-127, D-128, D-129." },
   { id: "nabory", ikona: "&#9200;", label: "Nabory",                 plik: "05-nabory.html",
-    role: ["admin","pracownik","is"] },
+    role: ["admin","pracownik","is"],
+    tip: "Nabory PUP: aktualne, prognozowane i zakonczone (340 urzedow). System jest odbiorca prognoz, nie liczy ich sam. D-109." },
+  { id: "zadania",ikona: "&#9745;", label: "Zadania i powiadomienia",plik: "18-zadania.html",
+    role: ["admin","pracownik"], badge: "nowe",
+    tip: "Plan dnia: zadania reczne i automatyczne (przypiete do wniosku i statusu), alerty na date, licznik wnioskow do akceptacji. Modul wrocil do zakresu po warsztacie 04.09. D-140." },
 
   { grupa: "Konfiguracja" },
   { id: "inst",   ikona: "&#9638;", label: "Instytucje szkoleniowe", plik: "06-instytucje.html",
-    role: ["admin","pracownik"] },
+    role: ["admin","pracownik"],
+    tip: "Karty instytucji, katalog szkolen, dane do faktur, siedziba (zrodlo miejscowosci na certyfikacie). Jeden klient moze byc u wielu instytucji. D-42, D-99, D-144." },
   { id: "komun",  ikona: "&#9993;", label: "Komunikacja",            plik: "09-wysylka-maili.html",
-    role: ["admin","pracownik"] },
+    role: ["admin","pracownik"],
+    tip: "Wysylka maili z biblioteki szablonow, z potwierdzeniem przed wyslaniem (ochrona przed przypadkowym klliknieciem). D-106." },
 
   { grupa: "Zarządzanie" },
   { id: "admin",  ikona: "&#9878;", label: "Administracja",          plik: "08-administracja.html",
-    role: ["admin"], admin: true },
+    role: ["admin"], admin: true,
+    tip: "Prowizje szczegolowe (podstawa fakturowania), dashboard prowizji miesieczny i narastajaco, lista i import faktur, statystyki per instytucja i zbiorczo. Tylko administrator. D-138, D-139, D-141." },
   { id: "zglo",   ikona: "&#9888;", label: "Zgłoszenia",             plik: "10-zgloszenia.html",
-    role: ["admin","pracownik"] },
+    role: ["admin","pracownik"],
+    tip: "Wewnetrzna baza incydentow krytycznych (oszustwo, zanizanie prowizji). Autor domyslnie zalogowany. Tylko admin i pracownicy LDIT. D-107, D-121." },
   { id: "ustaw",  ikona: "&#9787;", label: "Ustawienia",             plik: "11-konta-uprawnienia.html",
-    role: ["admin"], admin: true },
+    role: ["admin"], admin: true,
+    tip: "Konta i role (konfigurator uprawnien per zakladka), przypisanie pracownikow do instytucji, progi dofinansowania konfigurowalne, rejestr aktywnosci. Tylko administrator. D-36, D-131." },
 
   { grupa: "Panel zewnętrzny" },
   { id: "panelIS", ikona: "&#9707;", label: "Moja instytucja",       plik: "16-panel-is.html",
-    role: ["is","pracownikIS"] },
+    role: ["is","pracownikIS"],
+    tip: "Panel instytucji szkoleniowej: wylacznie wlasni klienci. Instytucja nie widzi swojej stawki prowizji. D-76." },
   { id: "terminy", ikona: "&#9635;", label: "Terminy szkoleń",       plik: "13-terminy.html",
-    role: ["is"] },
+    role: ["is"],
+    tip: "Kalendarz per instytucja: instytucja wystawia terminy i przypisuje je do wniosku, po klliknieciu widac liste uczestnikow. D-142." },
   { id: "panelKL", ikona: "&#9708;", label: "Mój wniosek",           plik: "17-panel-klienta.html",
-    role: ["klient"] }
+    role: ["klient"],
+    tip: "Panel klienta koncowego, wylacznie odczyt wlasnego wniosku i szkolen. Status modulu otwarty. P-33." }
 ];
 
 var HINTY = {
@@ -171,15 +189,21 @@ function render() {
       chev = '<span class="chev">&#9654;</span>';
     }
 
-    html += '<div class="' + cls + '" data-id="' + it.id + '" data-plik="' + it.plik + '" data-label="' + label + '">' +
+    html += '<div class="' + cls + '" data-id="' + it.id + '" data-plik="' + it.plik + '" data-label="' + label + '"' +
+            (it.tip ? ' data-tip="' + it.tip + '"' : '') + '>' +
             '<span class="ico">' + it.ikona + '</span><span>' + label + '</span>' + badge + chev + '</div>';
 
-    /* Rozwijana lista instytucji pod "Dofinansowania" (D-112) */
+    /* Rozwijana lista instytucji pod "Dofinansowania" (D-112).
+       Pierwsza pozycja to jawny zbiorczy widok "Wszystkie instytucje" (D-127). */
     if (it.deti && stan.rola !== "is" && stan.rola !== "pracownikIS") {
       html += '<div class="nav-sub" id="sub-dofin">';
+      html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html" data-label="Wszystkie instytucje"' +
+              ' data-tip="Zbiorczy widok wszystkich instytucji naraz. Osobna, jawna pozycja, zeby nie trzeba bylo sie domyslac. D-127.">' +
+              '<span>Wszystkie instytucje</span></div>';
       PRZYDZIAL[stan.rola].forEach(function (nazwa) {
         /* Wejscie w konkretna instytucje filtruje zestawienie tylko do jej danych (separacja, D-35) */
-        html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html?is=' + encodeURIComponent(nazwa) + '" data-label="' + nazwa + '">' +
+        html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html?is=' + encodeURIComponent(nazwa) + '" data-label="' + nazwa + '"' +
+                ' data-tip="Tylko klienci i wnioski instytucji ' + nazwa + ' (separacja danych, D-35).">' +
                 '<span>' + nazwa + '</span></div>';
       });
       html += '</div>';

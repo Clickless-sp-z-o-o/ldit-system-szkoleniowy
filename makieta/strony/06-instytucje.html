@@ -19,7 +19,7 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Instytucje szkoleniowe</h1>
+      <h1 class="page-title">Instytucje szkoleniowe<span class="tip-mark" data-tip="Katalog instytucji szkoleniowych wspolpracujacych z LDIT: karta firmy, oferta szkolen, osoby kontaktowe i korespondencja. Kazda instytucja widzi wylacznie wlasnych klientow i projekty, separacja jest egzekwowana na poziomie danych. Warunki prowizyjne nie sa tu widoczne, sa tylko w konfiguratorze dla administratora.">i</span></h1>
       <p class="page-desc">
         Karta instytucji, katalog szkoleń, osoby kontaktowe i korespondencja.
         Instytucja sama wprowadza informacje o szkoleniach, administrator też może nimi zarządzać
@@ -125,12 +125,12 @@
         <table class="tbl">
           <thead>
             <tr>
-              <th>Nazwa szkolenia</th>
-              <th class="num">Godziny</th>
-              <th class="num">Dni</th>
-              <th>Tryb</th>
-              <th class="num">Cena aktualna</th>
-              <th class="num">Realizacje 2026</th>
+              <th>Nazwa szkolenia<span class="tip-mark" data-tip="Nazwa pozycji z katalogu. Trafia do formularza zgloszeniowego jako pozycja listy wyboru, dlatego musi byc spojna z juz zlozonymi wnioskami. Instytucja swobodnie dodaje nowe plany, edycja istniejacych idzie przez administratora (D-43).">i</span></th>
+              <th class="num">Godziny<span class="tip-mark" data-tip="Liczba godzin szkoleniowych. Element standardu godzinowego instytucji.">i</span></th>
+              <th class="num">Dni<span class="tip-mark" data-tip="Liczba dni realizacji szkolenia zgodnie ze standardem godzinowym instytucji.">i</span></th>
+              <th>Tryb<span class="tip-mark" data-tip="Forma prowadzenia: Online, Stacjonarne lub Mieszane.">i</span></th>
+              <th class="num">Cena aktualna<span class="tip-mark" data-tip="Cena obowiazujaca dzis. Uwaga: do projektu wchodzi cena z daty wnioskowania, nie biezaca. System przechowuje historie cen, zmiana cennika nie przelicza wczesniejszych wnioskow.">i</span></th>
+              <th class="num">Realizacje 2026<span class="tip-mark" data-tip="Liczba wnioskow lub projektow w 2026 roku, ktore dotycza tego szkolenia. Pokazuje popularnosc pozycji.">i</span></th>
               <th></th>
             </tr>
           </thead>
@@ -167,7 +167,7 @@
       <div class="card-body tight">
         <table class="tbl">
           <thead>
-            <tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Ostatnie logowanie</th><th class="c">2FA</th><th></th></tr>
+            <tr><th>Imię i nazwisko<span class="tip-mark" data-tip="Osoba z konto w systemie po stronie instytucji szkoleniowej.">i</span></th><th>Login<span class="tip-mark" data-tip="Adres e-mail sluzacy do logowania konta.">i</span></th><th>Rola<span class="tip-mark" data-tip="Poziom uprawnien: administrator instytucji (Instytucja szkoleniowa) lub Pracownik IS z wezszym zakresem.">i</span></th><th>Ostatnie logowanie<span class="tip-mark" data-tip="Data ostatniego zalogowania. Pomaga wykryc nieaktywne konta.">i</span></th><th class="c">2FA<span class="tip-mark" data-tip="Czy konto ma wlaczone dwuskladnikowe uwierzytelnianie. Zielone tak, zolte nie.">i</span></th><th></th></tr>
           </thead>
           <tbody id="konta"></tbody>
         </table>
@@ -177,6 +177,12 @@
           Konta instytucji widzą <b>wyłącznie własnych klientów i własne projekty</b>. Separacja jest
           egzekwowana na poziomie danych, nie na poziomie interfejsu. Instytucje są wobec siebie
           konkurencyjne, więc wyciek do niewłaściwego katalogu jest scenariuszem krytycznym.
+        </div>
+        <div class="note" style="margin-top:12px">
+          <b>Jeden klient może być przypisany do wielu instytucji</b> <span class="ref">D-144</span>
+          <span class="tip-mark" data-tip="Ten sam klient koncowy moze wspolpracowac z kilkoma instytucjami szkoleniowymi. Powiazanie realizowane jest przez znaczniki (przypisania do wielu instytucji). Kazda instytucja widzi tego klienta wylacznie w swoim wlasnym kontekscie, nie widzi ani nie wie o powiazaniach z konkurencyjnymi instytucjami.">i</span>.
+          Powiązanie działa przez <b>znaczniki</b>, a każda instytucja widzi takiego klienta tylko w swoim
+          kontekście. Instytucja nie wie, że klient współpracuje też z inną instytucją, i nie widzi jej danych.
         </div>
       </div>
     </div>
@@ -194,7 +200,7 @@
       </div>
       <div class="card-body tight">
         <table class="tbl">
-          <thead><tr><th style="width:38px"></th><th>Temat</th><th>Nadawca</th><th>Skrzynka</th><th>Data</th><th class="c">Zał.</th></tr></thead>
+          <thead><tr><th style="width:38px"></th><th>Temat<span class="tip-mark" data-tip="Temat wiadomosci. Watki sa przypisywane do klienta po numerze klienta w temacie oraz po adresie nadawcy.">i</span></th><th>Nadawca<span class="tip-mark" data-tip="Adres e-mail osoby, ktora wyslala wiadomosc. Sluzy do dopasowania korespondencji do wlasciwej instytucji i klienta.">i</span></th><th>Skrzynka<span class="tip-mark" data-tip="Skrzynka, na ktora trafila lub z ktorej wyszla wiadomosc.">i</span></th><th>Data<span class="tip-mark" data-tip="Data wiadomosci.">i</span></th><th class="c">Zał.<span class="tip-mark" data-tip="Liczba zalacznikow przy wiadomosci.">i</span></th></tr></thead>
           <tbody id="maile"></tbody>
         </table>
       </div>

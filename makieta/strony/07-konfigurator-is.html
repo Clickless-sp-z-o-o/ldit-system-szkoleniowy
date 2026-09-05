@@ -42,9 +42,18 @@
     <a href="07-konfigurator-is.html" class="on">Konfigurator warunków <span class="n">admin</span></a>
   </nav>
 
+  <div class="note">
+    <b>Co to za zakładka.</b> Jedno miejsce, w którym administrator ustawia parametry współpracy
+    z konkretną instytucją szkoleniową: warunki prowizyjne, progi dofinansowania KFS, wzór certyfikatu,
+    szablon danych do faktury i formularz zgłoszeniowy. Zakładka istnieje, żeby wszystkie te ustawienia
+    były self-service po stronie LDIT <span class="ref">D-14</span>, wersjonowane datą i widoczne
+    w jednym widoku, zamiast rozproszone po Excelu, mailach i uzgodnieniach z wykonawcą.
+  </div>
 
   <div class="note warn">
-    <b>Moduł wyłącznie dla administratora</b> <span class="ref">D-07</span>.
+    <b>Moduł wyłącznie dla administratora</b>
+    <span class="tip-mark" data-tip="Konfigurator, w tym stawki prowizji i progi dofinansowania, widzi wyłącznie administrator LDIT (D-07). Instytucja szkoleniowa nie widzi tej zakładki ani żadnej stawki, ponieważ instytucje są wobec siebie konkurencyjne, a wyciek warunków do niewłaściwego katalogu to scenariusz krytyczny.">i</span>
+    <span class="ref">D-07</span>.
     Instytucja szkoleniowa nie widzi tej zakładki i nie widzi ani swojej, ani cudzej stawki prowizji.
     Pracownik LDIT również nie ma tu dostępu, dopóki administrator mu go nie nada.
     Każde wejście i każda zmiana są zapisywane w rejestrze aktywności.
@@ -73,7 +82,7 @@
           <div>
             <div class="card mb0">
               <div class="card-head">
-                <h3>Warunki obowiązujące dziś</h3>
+                <h3>Warunki obowiązujące dziś<span class="tip-mark" data-tip="Warunki prowizyjne opisują, jak LDIT nalicza swoją prowizję od współpracy z tą instytucją. Wybrany model (A, B, C lub D) decyduje o sposobie liczenia: A - próg miesięczny od całości obrotu, B - skala roczna narastająco od nadwyżki, C - próg miesięczny od nadwyżki, D - stała stawka bez kumulacji. Prowizja jest zawsze procentowa (D-21), a podstawą jest koszt całkowity z dopłatą (D-18).">i</span></h3>
                 <span class="sub" id="obowOd"></span>
                 <div class="ch-actions">
                   <a href="15-konfigurator-prowizji.html" class="btn primary">Otwórz kalkulator</a>
@@ -140,6 +149,71 @@
             </table>
           </div>
         </div>
+
+        <div class="sep"></div>
+
+        <div class="card mb0">
+          <div class="card-head">
+            <h3>Progi dofinansowania KFS<span class="tip-mark" data-tip="Progi dofinansowania KFS są konfigurowalne i datowane (D-131), a nie zaszyte na sztywno. Reguły KFS zmieniają się co roku, na przykład w przyszłym roku może obowiązywać 80/20 zamiast 90/10. Dlatego każdy wskaźnik ma datę 'obowiązuje od', a system dobiera zestaw progów po dacie projektu. Koryguje D-59, gdzie procenty były wpisane na stałe.">i</span></h3>
+            <span class="sub">konfigurowalne, wersjonowane datą <span class="ref">D-131</span> <span class="ref">D-59</span></span>
+            <div class="ch-actions">
+              <button class="btn sm" onclick="alert('Demo makiety.\nTworzy nową wersję progów z datą obowiązywania od 1 stycznia kolejnego roku, edytowalną do dnia wejścia w życie. Projekty rozliczone na starych progach zostają na nich (analogicznie do warunków prowizyjnych, D-23).')">Dodaj wersję od kolejnego roku</button>
+            </div>
+          </div>
+          <div class="card-body tight">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Wielkość przedsiębiorstwa</th>
+                  <th class="num">Procent dofinansowania</th>
+                  <th class="num">Procent wkładu własnego</th>
+                  <th>Obowiązuje od</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="strong">Mikro <span class="muted small">(do 9 osób na umowie o pracę)</span></td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="90"> %</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="10"> %</td>
+                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
+                </tr>
+                <tr>
+                  <td class="strong">Mały</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
+                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
+                </tr>
+                <tr>
+                  <td class="strong">Średni</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
+                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
+                </tr>
+                <tr>
+                  <td class="strong">Duży</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
+                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
+                </tr>
+                <tr>
+                  <td class="strong">Inny</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
+                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
+                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="note warn" style="margin-top:16px;margin-bottom:0">
+              <b>Progi KFS zmieniają się co roku, dlatego są konfigurowalne i datowane</b>
+              <span class="ref">D-131</span>. Dziś mikroprzedsiębiorca (do 9 osób na umowie o pracę) ma
+              90% dofinansowania i 10% wkładu własnego, pozostali 70% i 30%. Gdyby w kolejnym roku KFS
+              wprowadził na przykład 80/20, administrator dodaje nową wersję z datą obowiązywania,
+              a stare projekty zostają na progach z dnia rozliczenia. Wartości nie są zaszyte na sztywno
+              w kodzie <span class="ref">D-59</span>.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -150,7 +224,7 @@
 
           <div>
             <div class="card mb0">
-              <div class="card-head"><h3>Wzór certyfikatu</h3><span class="sub" id="certSub"></span></div>
+              <div class="card-head"><h3>Wzór certyfikatu<span class="tip-mark" data-tip="Tu administrator wgrywa wzór certyfikatu przypisany do jednej instytucji (D-98). Przy generowaniu system podstawia placeholdery (imię uczestnika, nazwa szkolenia, termin, data, miejscowość). Miejscowość to zawsze siedziba instytucji, nigdy miejsce realizacji szkolenia (D-99). Sekcja istnieje, żeby każda instytucja mogła mieć własny wzór dokumentu przy wsadowym generowaniu certyfikatów.">i</span></h3><span class="sub" id="certSub"></span></div>
               <div class="card-body">
                 <div class="field">
                   <label>Plik wzoru</label>
@@ -242,7 +316,7 @@
           <div>
             <div class="card mb0">
               <div class="card-head">
-                <h3>Szablon maila „dane do faktury”</h3>
+                <h3>Szablon maila „dane do faktury”<span class="tip-mark" data-tip="Sekcja definiuje gotowy szablon maila z danymi firmy do wystawienia faktury: nazwa klienta, adres, NIP, odbiorca FV, szkolenie, liczba osób, ceny i termin płatności. Pola są uzupełniane automatycznie z karty klienta i projektu. Akcja jest uruchamiana na żądanie z karty projektu (D-104), a mail wymaga zatwierdzenia przed wysłaniem. Sekcja istnieje, żeby ujednolicić treść i uniknąć ręcznego przepisywania danych firmy.">i</span></h3>
                 <span class="sub">akcja na żądanie z karty projektu <span class="ref">D-104</span></span>
                 <div class="ch-actions"><button class="btn sm">Edytuj szablon</button></div>
               </div>
@@ -659,5 +733,6 @@
   render();
 })();
 </script>
+<script src="../assets/tips.js"></script>
 </body>
 </html>

@@ -28,7 +28,7 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Wysyłka maili</h1>
+      <h1 class="page-title">Wysyłka maili<span class="tip-mark" data-tip="Modul komunikacji z klientami i instytucjami: biblioteka szablonow, kreator wysylki oraz automatyzacje i alerty. Cala korespondencja wychodzi z domeny LDIT. Kazda wysylka wymaga potwierdzenia na osobnym ekranie (D-106) i trafia do logu wysylek w rejestrze aktywnosci (D-122).">i</span></h1>
       <p class="page-desc">
         Biblioteka szablonów dostępna z karty klienta i z karty projektu, z obowiązkowym
         ekranem potwierdzenia przed wysyłką <span class="ref">D-106</span>.
@@ -67,14 +67,14 @@
           <div>
             <div class="card mb0">
               <div class="card-head">
-                <h3>Szablony</h3>
+                <h3>Szablony<span class="tip-mark" data-tip="Biblioteka gotowych tresci wiadomosci. Szablon ma placeholdery w nawiasach klamrowych, ktore w chwili wysylki podstawiaja sie danymi klienta, projektu i terminu.">i</span></h3>
                 <span class="sub" id="subSzab"></span>
               </div>
               <div class="card-body tight">
                 <div class="tbl-wrap">
                   <table class="tbl">
                     <thead>
-                      <tr><th>Nazwa</th><th>Odbiorca</th><th>Autor</th><th class="num">Użyć</th><th></th></tr>
+                      <tr><th>Nazwa<span class="tip-mark" data-tip="Nazwa szablonu wiadomosci. Pod nazwa widoczny jest jego identyfikator (SZB-..).">i</span></th><th>Odbiorca<span class="tip-mark" data-tip="Typ adresata, do ktorego kierowany jest szablon: klient koncowy, instytucja, uczestnik lub zespol LDIT.">i</span></th><th>Autor<span class="tip-mark" data-tip="Kto jest autorem tresci: LDIT lub instytucja szkoleniowa (IS). Niezaleznie od autora wiadomosc wychodzi z domeny LDIT (D-87).">i</span></th><th class="num">Użyć<span class="tip-mark" data-tip="Ile razy szablon zostal uzyty do wysylki. Pokazuje popularnosc szablonu.">i</span></th><th></th></tr>
                     </thead>
                     <tbody id="tbSzablony"></tbody>
                   </table>
@@ -114,7 +114,7 @@
 
         <div class="step-bar">
           <div class="step on" id="st1"><span class="n">1</span> Wybór szablonu i adresatów</div>
-          <div class="step" id="st2"><span class="n">2</span> Potwierdzenie wysyłki</div>
+          <div class="step" id="st2"><span class="n">2</span> Potwierdzenie wysyłki<span class="tip-mark" data-tip="Krok obowiazkowy. Nic nie wychodzi z systemu, dopoki wysylka nie zostanie tu recznie zatwierdzona (D-106). Zabezpiecza przed przypadkowym klknieciem. Po zatwierdzeniu wpis z lista adresatow i osoba zatwierdzajaca trafia do logu wysylek (D-122).">i</span></div>
         </div>
 
         <!-- KROK 1 -->
@@ -169,10 +169,12 @@
                 <div class="card-body">
                   <div id="wyPodglad"></div>
                   <div class="note warn mt16 mb0">
-                    <b>Wysyłka wymaga zatwierdzenia</b> <span class="ref">D-106</span>.
+                    <b>Wysyłka wymaga zatwierdzenia</b> <span class="ref">D-106</span>
+                    <span class="tip-mark" data-tip="Wysylka nie rusza po jednym kliknieciu. Zawsze poprzedza ja osobny ekran potwierdzenia (D-106), a po zatwierdzeniu kazda wysylka jest zapisywana w logu wysylek (D-122).">i</span>.
                     Klient uzasadnił to wprost: <i>„chciałbym, żebyśmy to zatwierdzili, tak jak masz
                     napisane, w celu uniknięcia przypadkowego kliknięcia”</i>.
                     Przycisk poniżej nie wysyła nic, tylko przenosi na ekran potwierdzenia.
+                    Każda potwierdzona wysyłka trafia do logu wysyłek <span class="ref">D-122</span>.
                   </div>
                   <div class="btn-row mt16">
                     <button class="btn primary" onclick="doKroku2()">Dalej, ekran potwierdzenia</button>
@@ -190,13 +192,13 @@
             <div>
               <div class="card mb0">
                 <div class="card-head">
-                  <h3>Potwierdzenie wysyłki</h3>
+                  <h3>Potwierdzenie wysyłki<span class="tip-mark" data-tip="Ostatni ekran przed wyjsciem maili z systemu. Lista dokladnie tych adresatow, ktorzy dostana wiadomosc. Wysylka rusza dopiero po recznym potwierdzeniu (D-106).">i</span></h3>
                   <span class="sub">ostatni ekran przed wyjściem maili z systemu</span>
                   <div class="ch-actions"><span class="tag warn dot">wymaga zatwierdzenia</span></div>
                 </div>
                 <div class="card-body tight">
                   <table class="tbl">
-                    <thead><tr><th>Adresat</th><th>Adres e-mail</th><th>Projekt</th><th>Instytucja</th></tr></thead>
+                    <thead><tr><th>Adresat<span class="tip-mark" data-tip="Nazwa klienta koncowego, do ktorego trafi wiadomosc.">i</span></th><th>Adres e-mail<span class="tip-mark" data-tip="Konkretny adres e-mail odbiorcy podstawiony z danych klienta.">i</span></th><th>Projekt<span class="tip-mark" data-tip="Numer projektu, w kontekscie ktorego wysylana jest wiadomosc.">i</span></th><th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa powiazana z projektem tego adresata.">i</span></th></tr></thead>
                     <tbody id="tbPotw"></tbody>
                   </table>
                 </div>
@@ -209,8 +211,9 @@
                 <div class="card-body">
                   <dl class="dl" id="potwPodsum"></dl>
                   <div class="note mt16">
-                    Wysyłka trafi do rejestru aktywności razem z listą adresatów i osobą,
-                    która ją zatwierdziła <span class="ref">D-55</span>.
+                    Wysyłka trafi do <b>logu wysyłek</b> <span class="ref">D-122</span> w rejestrze aktywności
+                    <span class="ref">D-55</span>, razem z listą adresatów i osobą, która ją zatwierdziła.
+                    Potwierdzenie jest wymagane przed wysłaniem <span class="ref">D-106</span>.
                   </div>
                   <div class="btn-row mt16">
                     <button class="btn primary" onclick="potwierdz()">Potwierdzam wysyłkę</button>
@@ -232,7 +235,7 @@
 
         <div class="card">
           <div class="card-head">
-            <h3>Automatyzacje systemowe</h3>
+            <h3>Automatyzacje systemowe<span class="tip-mark" data-tip="Katalog powiadomien wywolywanych zdarzeniem w systemie lub przyciskiem. Powiadomienia automatyczne wychodza same po spelnieniu warunku, reczne wymagaja kliknicia. Kazde wyslane powiadomienie trafia do logu wysylek (D-122).">i</span></h3>
             <span class="sub">katalog powiadomień z warsztatu</span>
             <div class="ch-actions"><span class="tag mute" id="tagAuto"></span></div>
           </div>
@@ -240,7 +243,7 @@
             <div class="tbl-wrap">
               <table class="tbl">
                 <thead>
-                  <tr><th>Wyzwalacz</th><th>Powiadomienie</th><th>Odbiorca</th><th>Kiedy</th><th class="c">Tryb</th><th class="c">Stan</th></tr>
+                  <tr><th>Wyzwalacz<span class="tip-mark" data-tip="Zdarzenie, ktore uruchamia powiadomienie: zmiana statusu, klkniecie przycisku lub zblizajacy sie termin.">i</span></th><th>Powiadomienie<span class="tip-mark" data-tip="Tresc lub szablon, ktory zostanie wyslany po wyzwoleniu.">i</span></th><th>Odbiorca<span class="tip-mark" data-tip="Kto dostanie powiadomienie: klient, instytucja, uczestnicy lub zespol LDIT.">i</span></th><th>Kiedy<span class="tip-mark" data-tip="Moment wyslania: natychmiast, na zadanie albo okreslona liczba dni przed terminem.">i</span></th><th class="c">Tryb<span class="tip-mark" data-tip="Auto oznacza wysylke automatyczna po wyzwoleniu, Reczny wymaga potwierdzenia przez uzytkownika (D-106).">i</span></th><th class="c">Stan<span class="tip-mark" data-tip="Czy automatyzacja jest wlaczona. Wylaczona nie wysyla powiadomien.">i</span></th></tr>
                 </thead>
                 <tbody id="tbAuto"></tbody>
               </table>
@@ -359,7 +362,7 @@
                 <div class="small strong" style="margin-bottom:6px">Najbliższe wyzwolenia</div>
                 <div class="tbl-wrap">
                   <table class="tbl">
-                    <thead><tr><th>Termin szkolenia</th><th>Instytucja</th><th>Alert</th></tr></thead>
+                    <thead><tr><th>Termin szkolenia<span class="tip-mark" data-tip="Data rozpoczecia zaplanowanego szkolenia.">i</span></th><th>Instytucja<span class="tip-mark" data-tip="Instytucja realizujaca to szkolenie.">i</span></th><th>Alert<span class="tip-mark" data-tip="Data wyslania alertu, wyliczona jako 8 dni przed rozpoczeciem szkolenia. Alert idzie do zespolu LDIT.">i</span></th></tr></thead>
                     <tbody id="tbAlert8"></tbody>
                   </table>
                 </div>
@@ -401,6 +404,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 /* ---------- Treści szablonów (docs/08-powiadomienia-i-automatyzacje.md) ---------- */
 var TRESCI = {

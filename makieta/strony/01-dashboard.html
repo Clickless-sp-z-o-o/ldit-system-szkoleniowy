@@ -10,7 +10,7 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Dashboard</h1>
+      <h1 class="page-title">Dashboard<span class="tip-mark" data-tip="Ekran startowy z syntetycznym przegladem calego biznesu: liczby operacyjne (klienci, wnioski, decyzje) i finansowe (wartosc wnioskow, prowizja). Sama statystyka, bez rozpiski konkretnych klientow (D-114). Wystepuje w dwoch wariantach: pelny dla administratora i ograniczony dla pracownika, ktory nie widzi kafelkow finansowych firmy (D-30).">i</span></h1>
       <p class="page-desc">
         Wyłącznie wskaźniki, bez rozpisek klientów <span class="ref">D-114</span>. Statystyki szczegółowe w sekcji obok, zgodnie ze strukturą z dokumentu klienta, gdzie statystyka jest częścią dashboardu, nie osobnym modułem.
         To jedyne miejsce z przekrojem przez wszystkie instytucje <span class="ref">D-112</span>.
@@ -33,6 +33,8 @@
   <div class="note">
     Widok administratora. <b>Pracownik LDIT nie widzi</b> kafelków oznaczonych żółtą ramką:
     zysków firmy, marżowości i prowizji <span class="ref">D-34</span>.
+    Dashboard ma dwa warianty: pełny dla administratora i ograniczony dla pracownika <span class="ref">D-30</span>,
+    a w obu pokazuje wyłącznie statystyki, bez rozpiski konkretnych klientów <span class="ref">D-114</span>.
   </div>
 
   <!-- KPI operacyjne -->
@@ -45,7 +47,7 @@
     <div>
       <div class="card">
         <div class="card-head">
-          <h3>Wnioskowane kwoty według miesiąca złożenia</h3>
+          <h3>Wnioskowane kwoty według miesiąca złożenia<span class="tip-mark" data-tip="Suma wartosci wnioskow zsumowana po miesiacu daty zlozenia wniosku. Pokazuje sezonowosc: szczyt przypada na okresy otwartych naborow. Slupki jasniejsze to druga polowa roku.">i</span></h3>
           <span class="sub">rok 2026</span>
           <div class="ch-actions"><span class="tag mute">wszystkie instytucje</span></div>
         </div>
@@ -56,7 +58,7 @@
 
       <div class="card">
         <div class="card-head">
-          <h3>Lejek: od formularza do rozliczenia</h3>
+          <h3>Lejek: od formularza do rozliczenia<span class="tip-mark" data-tip="Konwersja krok po kroku: ile formularzy przyjeto, ilu klientow zarejestrowano w BUR, ile wnioskow zlozono, ile decyzji pozytywnych, ile szkolen odbyto i ile rozliczono. Zwezenie miedzy etapami pokazuje gdzie tracimy klientow.">i</span></h3>
           <span class="sub">wszystkie instytucje, 2026</span>
         </div>
         <div class="card-body">
@@ -67,7 +69,7 @@
 
     <div>
       <div class="card">
-        <div class="card-head"><h3>Statusy wniosków</h3></div>
+        <div class="card-head"><h3>Statusy wniosków<span class="tip-mark" data-tip="Rozklad wnioskow wg statusu: decyzja pozytywna lub negatywna, oczekujace na decyzje, niezlozone, NW (status do przemianowania) oraz rezygnacje. Liczby po prawej to liczba wnioskow w danym statusie.">i</span></h3></div>
         <div class="card-body">
           <div id="statusy"></div>
         </div>
@@ -75,7 +77,7 @@
 
       <div class="card">
         <div class="card-head">
-          <h3>Cele zespołu</h3>
+          <h3>Cele zespołu<span class="tip-mark" data-tip="Cele ustawiane przez administratora (np. liczba zlozonych wnioskow, wartosc dofinansowan). Pasek pokazuje realizacje wobec celu, a pod nim widnieje przypisana premia. Konfiguracja celow jest po stronie administratora.">i</span></h3>
           <span class="sub">ustawia administrator</span>
         </div>
         <div class="card-body" id="cele"></div>
@@ -86,12 +88,12 @@
   <div class="grid g-2-1">
     <div class="card">
       <div class="card-head">
-        <h3>Wymaga działania</h3>
+        <h3>Wymaga działania<span class="tip-mark" data-tip="Lista zadan i kolejek wymagajacych reakcji: zgloszenia do akceptacji, konczace sie nabory, szkolenia z nadchodzacymi terminami, faktury po terminie oraz projekty gotowe do rozliczenia. To skrot do najpilniejszych spraw z calego systemu.">i</span></h3>
         <span class="sub">najbliższe terminy i kolejki</span>
       </div>
       <div class="card-body tight">
         <table class="tbl">
-          <thead><tr><th>Co</th><th>Kontekst</th><th class="num">Ile</th><th>Termin</th><th></th></tr></thead>
+          <thead><tr><th>Co<span class="tip-mark" data-tip="Rodzaj sprawy do obsluzenia, np. zgloszenie z formularza, konczacy sie nabor, projekt do rozliczenia.">i</span></th><th>Kontekst<span class="tip-mark" data-tip="Skad pochodzi sprawa lub czego dotyczy: konkretny urzad, modul systemu albo typ alertu.">i</span></th><th class="num">Ile<span class="tip-mark" data-tip="Liczba pozycji czekajacych w danej kolejce.">i</span></th><th>Termin<span class="tip-mark" data-tip="Data graniczna lub pilnosc sprawy. Czerwony znacznik oznacza zaleglosc lub bliski deadline.">i</span></th><th></th></tr></thead>
           <tbody>
             <tr><td class="strong">Zgłoszenia z formularza do akceptacji</td><td class="muted">bramka anty-spam</td><td class="num">5</td><td><span class="tag warn dot">dziś</span></td><td class="right"><button class="btn xs">Otwórz</button></td></tr>
             <tr><td class="strong">Nabory kończące się w tym tygodniu</td><td class="muted">PUP Poznań, Gdańsk, Kartuzy</td><td class="num">27</td><td><span class="tag neg dot">do 04.09</span></td><td class="right"><button class="btn xs">Otwórz</button></td></tr>
@@ -104,10 +106,10 @@
     </div>
 
     <div class="card">
-      <div class="card-head"><h3>Skuteczność per instytucja</h3></div>
+      <div class="card-head"><h3>Skuteczność per instytucja<span class="tip-mark" data-tip="Ranking instytucji szkoleniowych wg liczby wnioskow i odsetka decyzji pozytywnych. Pozwala porownac, ktora instytucja dostarcza najlepiej przygotowane wnioski.">i</span></h3></div>
       <div class="card-body tight">
         <table class="tbl">
-          <thead><tr><th>Instytucja</th><th class="num">Wnioski</th><th class="num">Skuteczność</th></tr></thead>
+          <thead><tr><th>Instytucja<span class="tip-mark" data-tip="Nazwa instytucji szkoleniowej wspolpracujacej z LDIT.">i</span></th><th class="num">Wnioski<span class="tip-mark" data-tip="Laczna liczba wnioskow zlozonych dla klientow tej instytucji w wybranym okresie.">i</span></th><th class="num">Skuteczność<span class="tip-mark" data-tip="Udzial decyzji pozytywnych w liczbie wnioskow tej instytucji. Zielony powyzej 60 procent, zolty 40 do 60, czerwony ponizej 40.">i</span></th></tr></thead>
           <tbody id="skutecznosc"></tbody>
         </table>
       </div>
@@ -119,6 +121,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 (function () {
   var W = DB.WNIOSKI;
@@ -157,9 +160,10 @@
     if (w.statusDec === "Pozytywna") perIS[w.is].poz++;
   });
 
-  function kpi(label, val, foot, admin) {
+  function kpi(label, val, foot, admin, tip) {
+    var mark = tip ? '<span class="tip-mark" data-tip="' + tip + '">i</span>' : "";
     return '<div class="kpi' + (admin ? " admin" : "") + '">' +
-      '<div class="k-label">' + label + '</div>' +
+      '<div class="k-label">' + label + mark + '</div>' +
       '<div class="k-value">' + val + '</div>' +
       (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
   }
@@ -175,18 +179,26 @@
 
   document.getElementById("kpi").innerHTML =
     kpi("Klienci do obdzwonienia", DB.fmtNum(doObdzwonienia),
-        '<span class="tag neg dot">nabór trwa</span> ' + pupZNaborem.length + " urzędy") +
-    kpi("Wnioski złożone", DB.fmtNum(zlozone.length), '<span class="delta up">&#9650; 18%</span> wobec 2025') +
+        '<span class="tag neg dot">nabór trwa</span> ' + pupZNaborem.length + " urzędy", false,
+        "Liczba klientow z bazy, ktorych urzad pracy (PUP) ma wlasnie ogloszony nabor. To lista do kontaktu, dzis w Excelu prowadzona recznie w arkuszu Niezlozone.") +
+    kpi("Wnioski złożone", DB.fmtNum(zlozone.length), '<span class="delta up">&#9650; 18%</span> wobec 2025', false,
+        "Liczba wnioskow o status Zlozony w wybranym okresie. Delta porownuje z analogicznym okresem roku poprzedniego.") +
     kpi("Decyzje pozytywne", DB.fmtNum(poz.length),
-        '<span class="tag pos dot">' + Math.round(poz.length / (poz.length + neg.length) * 100) + '% skuteczności</span>') +
-    kpi("Oczekuje na rozpatrzenie", DB.fmtNum(oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek));
+        '<span class="tag pos dot">' + Math.round(poz.length / (poz.length + neg.length) * 100) + '% skuteczności</span>', false,
+        "Liczba wnioskow z decyzja pozytywna. Skutecznosc to udzial decyzji pozytywnych wsrod wszystkich rozpatrzonych (pozytywne plus negatywne).") +
+    kpi("Oczekuje na rozpatrzenie", DB.fmtNum(oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek), false,
+        "Wnioski zlozone, dla ktorych urzad nie wydal jeszcze decyzji. Kwota to suma wartosci tych wnioskow.");
 
   document.getElementById("kpiFin").innerHTML =
-    kpi("Wartość wniosków", DB.fmtPLN(sumaWnioskowana), "suma wnioskowana 2026", true) +
-    kpi("Przyznane dofinansowania", DB.fmtPLN(sumaPrzyznana), "faktycznie przyznane", true) +
-    kpi("Prowizja naliczona", DB.fmtPLN(prowizjaRazem), "wg warunków per instytucja", true) +
+    kpi("Wartość wniosków", DB.fmtPLN(sumaWnioskowana), "suma wnioskowana 2026", true,
+        "Suma wartosci wszystkich wnioskow w okresie, niezaleznie od decyzji. Kafelek finansowy, widoczny tylko dla administratora.") +
+    kpi("Przyznane dofinansowania", DB.fmtPLN(sumaPrzyznana), "faktycznie przyznane", true,
+        "Suma kwot faktycznie przyznanych w decyzjach pozytywnych. Moze byc nizsza od wnioskowanej, gdy urzad przyznal mniej.") +
+    kpi("Prowizja naliczona", DB.fmtPLN(prowizjaRazem), "wg warunków per instytucja", true,
+        "Prowizja LDIT policzona silnikiem dla calego okresu, osobno dla kazdej instytucji wg jej warunkow. Podstawa to koszt calkowity z doplata, nie kwota przyznana.") +
     kpi("Prowizja rozliczona", DB.fmtPLN(prowizjaRozliczona),
-        '<div class="progress" style="flex:1"><i style="width:' + Math.round(prowizjaRozliczona / prowizjaRazem * 100) + '%"></i></div>', true);
+        '<div class="progress" style="flex:1"><i style="width:' + Math.round(prowizjaRozliczona / prowizjaRazem * 100) + '%"></i></div>', true,
+        "Czesc prowizji naliczonej, ktora dotyczy juz rozliczonych projektow. Pasek pokazuje udzial prowizji rozliczonej w naliczonej.");
 
   /* Wykres miesieczny */
   var mies = ["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"];

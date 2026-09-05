@@ -14,12 +14,13 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Terminy szkoleń</h1>
+      <h1 class="page-title">Terminy szkoleń<span class="tip-mark" data-tip="Po co ta zakładka: jedno źródło prawdy o realizacji szkoleń. Kalendarz per instytucja, termin przypisany do projektu, LDIT widzi terminy wszystkich instytucji, a każda instytucja tylko swoje (D-142).">i</span></h1>
       <p class="page-desc">
-        Instytucja wystawia wolne terminy, każdy powiązany z pozycją z katalogu szkoleń. Do terminu
-        przypisuje się uczestników. Widok w dwóch formach, kalendarz i tabela, żeby przy pierwszej rozmowie
-        z klientem od razu było widać wolne terminy. Moduł musi obsłużyć oba modele operacyjne ustalania
-        terminu, opisane niżej.
+        Kalendarz jest prowadzony <b>per instytucja</b>. Instytucja wystawia wolne terminy, każdy powiązany
+        z pozycją z katalogu szkoleń i przypisany do projektu, a do terminu przypisuje się uczestników.
+        <b>LDIT ma wgląd we wszystkie kalendarze</b> instytucji, każda instytucja widzi wyłącznie swoje.
+        Widok w dwóch formach, kalendarz i tabela, żeby przy pierwszej rozmowie z klientem od razu było
+        widać wolne terminy. Moduł musi obsłużyć oba modele operacyjne ustalania terminu, opisane niżej.
       </p>
     </div>
     <div class="ph-actions">
@@ -63,6 +64,16 @@
         <div class="small muted mt16">
           Termin wielodniowy pokazywany jest w każdym dniu swojego trwania, dlatego kursy długie
           (na przykład spawanie MAG, 15 dni) zajmują ciągły blok w kalendarzu.
+          Kafelek terminu opisuje <b>rodzaj szkolenia</b>, a po najechaniu pokazuje instytucję,
+          obłożenie i miejsce realizacji.
+        </div>
+
+        <div class="note">
+          <b>Kalendarz per instytucja <span class="ref">D-142</span>.</b> Terminy wystawia instytucja
+          szkoleniowa i przypisuje je do projektu. LDIT ma wgląd we wszystkie kalendarze, każda instytucja
+          widzi wyłącznie swój. Po <b>kliknięciu terminu</b> widać <b>listę uczestników</b> na niego zapisanych:
+          nazwa po rodzaju szkolenia, pod spodem klienci, plus miejsce szkolenia. Pełna lista uczestników jest
+          w zakładce <b>Lista terminów</b> (rozwijana w wierszu terminu).
         </div>
       </div>
     </div>
@@ -89,13 +100,13 @@
           <thead>
             <tr>
               <th>Id</th>
-              <th>Szkolenie</th>
-              <th>Instytucja</th>
+              <th>Szkolenie<span class="tip-mark" data-tip="Nazwa po rodzaju szkolenia (pozycja z katalogu), pod spodem identyfikator szkolenia. Kliknięcie terminu (przycisk Zapisani) rozwija listę klientów przypisanych do tego terminu.">i</span></th>
+              <th>Instytucja<span class="tip-mark" data-tip="Instytucja, która wystawiła termin. Kalendarz jest prowadzony per instytucja; LDIT widzi wszystkie, instytucja tylko swoje (D-142).">i</span></th>
               <th class="nowrap">Od</th>
               <th class="nowrap">Do</th>
-              <th>Miejsce</th>
-              <th>Status</th>
-              <th style="width:170px">Zapisani</th>
+              <th>Miejsce<span class="tip-mark" data-tip="Miejsce realizacji szkolenia (online lub adres). Pokazywane też na kafelku w kalendarzu po najechaniu.">i</span></th>
+              <th>Status<span class="tip-mark" data-tip="Etap realizacji terminu: Wolny (można dopisywać), Zaplanowany (są zapisani), Odbyty.">i</span></th>
+              <th style="width:170px">Zapisani<span class="tip-mark" data-tip="Obłożenie terminu. Kliknij, aby zobaczyć listę uczestników przypisanych do tego terminu: klienci wraz z projektem, z którego pochodzą (D-142).">i</span></th>
               <th></th>
             </tr>
           </thead>
@@ -113,7 +124,14 @@
     </div>
   </div>
 
-  <h3 style="font-size:15px;margin:24px 0 12px">Dwa modele operacyjne ustalania terminu</h3>
+  <h3 style="font-size:15px;margin:24px 0 12px">Dwa modele operacyjne ustalania terminu<span class="tip-mark" data-tip="System musi obsłużyć oba warianty naraz, bo klient wprost powiedział, że jednego standardu nie ma. Od modelu zależy kto wystawia termin i w którą stronę idzie powiadomienie (D-12).">i</span></h3>
+
+  <div class="note">
+    <b>Powiadomienia terminowe zależą od modelu <span class="ref">D-12</span>.</b>
+    <b>Model A:</b> termin ustala LDIT z kalendarza instytucji, powiadomienie idzie do instytucji (odbiorcy).
+    <b>Model B:</b> instytucja ustala termin telefonicznie z klientem i przekazuje go do systemu, a powiadomienie
+    o zmianie trafia do LDIT, które składa pismo do urzędu pracy. Przykłady modeli poniżej.
+  </div>
 
   <div class="grid g2">
     <div class="card">
@@ -280,7 +298,8 @@
         '<div class="dn">' + dzien + '</div>' +
         ev.slice(0, 3).map(function (t) {
           return '<div class="ev ' + klasaEv(t.status) + '" title="' + t.nazwa + ', ' +
-            nazwaIS(t.is) + ', ' + t.zapisani + ' z ' + t.limit + ' miejsc">' + t.nazwa + '</div>';
+            nazwaIS(t.is) + ', ' + t.miejsce + ', ' + t.zapisani + ' z ' + t.limit +
+            ' miejsc. Kliknij termin, aby zobaczyć listę uczestników.">' + t.nazwa + '</div>';
         }).join("") +
         (ev.length > 3 ? '<div class="ev">+ ' + (ev.length - 3) + ' więcej</div>' : "") +
         '</div>';
@@ -350,7 +369,9 @@
           '</div></td>' +
         '</tr>' +
         '<tr class="osoby" id="os' + idx + '" style="display:none"><td colspan="9">' +
-          '<div class="small strong" style="margin-bottom:6px">Uczestnicy zapisani na ' + t.id + '</div>' +
+          '<div class="small strong" style="margin-bottom:2px">' + t.nazwa + '</div>' +
+          '<div class="small muted" style="margin-bottom:6px">Uczestnicy zapisani na termin ' + t.id +
+          ' &middot; ' + t.miejsce + '</div>' +
           (t.zapisani
             ? '<div class="btn-row">' + osobyTerminu(t, idx).map(function (o) {
                 return '<span class="pill">' + o + '</span>';
@@ -498,5 +519,6 @@
   });
 })();
 </script>
+<script src="../assets/tips.js"></script>
 </body>
 </html>

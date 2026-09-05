@@ -54,6 +54,14 @@
     <div class="tab-pane on" id="t1">
 
       <div class="card-body" style="padding-bottom:0">
+        <div class="note">
+          <b>Baza danych, jeden klient to jeden wiersz.</b> Zakładka pokazuje wszystkich klientów niezależnie
+          od tego, czy wniosek już poszedł. Klienta nigdy nie usuwamy z bazy, zostaje historia współpracy
+          <span class="ref">D-128</span>. Priorytet kontaktu wyznacza <b>ostatni dzień naboru</b> w urzędzie
+          klienta, dlatego lista jest posortowana po kolumnie „Koniec naboru” rosnąco, najpilniejsi na górze
+          <span class="ref">D-130</span>. Daty naboru edytuje się <b>bezpośrednio w komórce, jak w Excelu</b>
+          (bez klikania „Edytuj”, kliknięcie w datę od razu ją zmienia) <span class="ref">D-130</span>.
+        </div>
         <div class="grid g4" id="kpi"></div>
       </div>
 
@@ -88,16 +96,17 @@
         <table class="tbl">
           <thead>
             <tr>
-              <th style="width:44px">Nr</th>
-              <th>Klient</th>
+              <th style="width:44px">Nr<span class="tip-mark" data-tip="Numer klienta nadawany kolejno. To identyfikator porządkowy, a nie kolejność na liście: kolejność wyznacza koniec naboru, nie numer klienta.">i</span></th>
+              <th>Klient<span class="tip-mark" data-tip="Nazwa firmy klienta końcowego. Jeden klient to jeden wiersz w bazie. Klienta nigdy nie usuwamy, zostaje pełna historia współpracy (D-128).">i</span></th>
               <th>NIP</th>
-              <th>Wielkość</th>
-              <th>Instytucja</th>
-              <th>Urząd pracy</th>
-              <th>Status naboru</th>
-              <th class="nowrap">Koniec naboru</th>
-              <th class="c">Zostało</th>
-              <th class="c">Projekty</th>
+              <th>Wielkość<span class="tip-mark" data-tip="Wielkość przedsiębiorstwa decyduje o poziomie dofinansowania KFS: mikro (do 9 osób na umowie o pracę) to 90 procent, powyżej mikro to 70 procent.">i</span></th>
+              <th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa obsługująca klienta. Instytucje są wobec siebie konkurencyjne, dane są rozdzielone na poziomie danych, nie interfejsu.">i</span></th>
+              <th>Urząd pracy<span class="tip-mark" data-tip="Powiatowy urząd pracy właściwy dla klienta. To urząd ogłasza nabór KFS, więc od niego zależą daty i priorytet kontaktu.">i</span></th>
+              <th>Status naboru<span class="tip-mark" data-tip="Stan naboru w urzędzie klienta: nabór ogłoszony, w trakcie kontaktu z urzędem, brak naboru z prognozą daty albo po naborze. Widok jest powiązany także z naborami prognozowanymi (D-90).">i</span></th>
+              <th class="nowrap"><b>Koniec naboru</b><span class="tip-mark" data-tip="Ostatni dzień naboru w urzędzie klienta. To ta data wyznacza priorytet: lista jest sortowana po niej rosnąco, najpilniejsi na górze (D-130). Data naboru od-do edytowana jest inline w komórce, jak w Excelu, bez klikania Edytuj.">i</span></th>
+              <th class="c">Kolejny nabór<span class="tip-mark" data-tip="Flaga tak/nie: czy klient jest zainteresowany kolejnym naborem (D-130). Odznaczenie na biało wypisuje klienta z bieżącego filtra naboru, przestaje się pokazywać jako aktywny kandydat do kontaktu.">i</span></th>
+              <th class="c">Zostało<span class="tip-mark" data-tip="Ile dni do końca naboru licząc od dzisiaj. Poniżej lub równo 3 dni oznaczone na czerwono, do 10 dni na żółto. Wartość ujemna oznacza nabór już zakończony.">i</span></th>
+              <th class="c">Projekty<span class="tip-mark" data-tip="Liczba projektów (wniosków) klienta w bazie, łącznie z rokiem bieżącym i poprzednim. Klient może wnioskować kilka razy w roku.">i</span></th>
               <th>Kontakt</th>
               <th></th>
             </tr>
@@ -153,6 +162,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 (function () {
   var DZIS = new Date("2026-08-29");
@@ -203,8 +213,9 @@
   }
   var K = budujK();
 
-  function kpi(label, val, foot) {
-    return '<div class="kpi"><div class="k-label">' + label + '</div>' +
+  function kpi(label, val, foot, tip) {
+    var mark = tip ? '<span class="tip-mark" data-tip="' + tip + '">i</span>' : "";
+    return '<div class="kpi"><div class="k-label">' + label + mark + '</div>' +
       '<div class="k-value">' + val + '</div>' +
       '<div class="k-foot">' + foot + '</div></div>';
   }
@@ -215,10 +226,14 @@
     var najblizszy = aktywne.length ? aktywne[0] : null;
     document.getElementById("kpi").innerHTML =
       kpi("Klienci z otwartym naborem", DB.fmtNum(aktywne.length),
-          najblizszy ? '<span class="tag pos dot">koniec ' + najblizszy.koniec + ', za ' + najblizszy.dni + ' dni</span>' : "brak") +
-      kpi("Czekają na nabór prognozowany", DB.fmtNum(prognoza.length), "urzędy w kontakcie lub z prognozą daty") +
-      kpi("Bez naboru w tym momencie", DB.fmtNum(bez.length), "nabór zakończony lub brak danych z aplikacji") +
-      kpi("Klienci w bazie łącznie", DB.fmtNum(K.length), "wraz z tymi, którzy wnioskują kilka razy w roku");
+          najblizszy ? '<span class="tag pos dot">koniec ' + najblizszy.koniec + ', za ' + najblizszy.dni + ' dni</span>' : "brak",
+          "Klienci, których urząd pracy ma właśnie ogłoszony nabór KFS. To oni są priorytetem, sortowani po najbliższym końcu naboru (D-130).") +
+      kpi("Czekają na nabór prognozowany", DB.fmtNum(prognoza.length), "urzędy w kontakcie lub z prognozą daty",
+          "Klienci bez otwartego naboru, ale w urzędzie w kontakcie albo z prognozowaną datą naboru (D-90).") +
+      kpi("Bez naboru w tym momencie", DB.fmtNum(bez.length), "nabór zakończony lub brak danych z aplikacji",
+          "Klienci, których urząd zakończył nabór albo brak danych o naborze. Zostają w bazie, nie są aktywnym priorytetem.") +
+      kpi("Klienci w bazie łącznie", DB.fmtNum(K.length), "wraz z tymi, którzy wnioskują kilka razy w roku",
+          "Wszyscy klienci w bazie danych, jeden klient to jeden wiersz. Klienta nigdy nie usuwamy (D-128).");
   }
   renderKPI();
 
@@ -250,6 +265,15 @@
     return w === "mikro"
       ? '<span class="pill k">mikro, 90%</span>'
       : '<span class="pill w">' + w + ', 70%</span>';
+  }
+  /* D-130: znacznik zainteresowania kolejnym naborem. W makiecie wyliczany
+     deterministycznie z numeru klienta, zeby byl stabilny miedzy renderami.
+     Odznaczenie (biala flaga) wypisuje klienta z biezacego filtra naboru. */
+  function zainteresowanyKolejnym(r) { return (r.kl.nr % 4) !== 0; }
+  function flagaKolejny(r) {
+    return zainteresowanyKolejnym(r)
+      ? '<span class="tag pos" data-tip="Zainteresowany kolejnym naborem. Klient zostaje w bieżącym filtrze naboru jako kandydat do kontaktu (D-130).">tak</span>'
+      : '<span class="tag mute" data-tip="Nie zainteresowany kolejnym naborem. Odznaczenie na biało wypisuje klienta z bieżącego filtra naboru (D-130).">nie</span>';
   }
 
   function render() {
@@ -284,7 +308,9 @@
         '<td class="nowrap">' + r.isNazwa + '</td>' +
         '<td class="nowrap muted">' + r.pupNazwa + '</td>' +
         '<td class="nowrap">' + tagNaboru(r) + '</td>' +
-        '<td class="mono nowrap">' + (r.koniec || '<span class="muted">&mdash;</span>') + '</td>' +
+        '<td class="mono nowrap"><b data-tip="Koniec naboru wyznacza priorytet kontaktu. Edycja inline: kliknij datę i wpisz nową, jak w Excelu (D-130).">' +
+          (r.koniec || '<span class="muted">&mdash;</span>') + '</b></td>' +
+        '<td class="c">' + flagaKolejny(r) + '</td>' +
         '<td class="c">' + tagDni(r) + '</td>' +
         '<td class="c">' + (r.projekty ? '<b>' + r.projekty + '</b>' : '<span class="muted">0</span>') + '</td>' +
         '<td class="nowrap small">' + r.kl.osoba + '<div class="muted">' + r.kl.tel + '</div></td>' +
@@ -297,12 +323,12 @@
     }).join("");
 
     if (lista.length > 120) {
-      html += '<tr><td colspan="12" class="c muted small" style="padding:14px">Pokazano 120 z ' +
+      html += '<tr><td colspan="13" class="c muted small" style="padding:14px">Pokazano 120 z ' +
         lista.length + ' wierszy, pominięto ' + (lista.length - 120) +
         '. W systemie docelowym: wirtualizacja listy lub stronicowanie.</td></tr>';
     }
     if (!lista.length) {
-      html = '<tr><td colspan="12"><div class="empty"><div class="ei">&#9788;</div>' +
+      html = '<tr><td colspan="13"><div class="empty"><div class="ei">&#9788;</div>' +
         '<div class="et">Brak klientów dla tych filtrów</div>Zmień kryteria wyszukiwania.</div></td></tr>';
     }
     document.getElementById("body").innerHTML = html;

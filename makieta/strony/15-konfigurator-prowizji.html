@@ -22,7 +22,9 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Konfigurator prowizji &middot; prototyp obliczeniowy</h1>
+      <h1 class="page-title">Konfigurator prowizji &middot; prototyp obliczeniowy
+        <span class="tip-mark" data-tip="Jak liczy sie prowizja LDIT: podstawa = koszt calkowity z doplata (D-18), stawka wg modelu instytucji (A/B/C/D). A = prog miesieczny, nowa stawka od CALOSCI obrotu. B = skala roczna narastajaco, stawka od NADWYZKI nad progiem. C = prog miesieczny od nadwyzki. D = stala stawka. Prowizja zawsze procentowa (D-21), a nadpisanie per wniosek moze byc procentem albo kwota (D-136).">i</span>
+      </h1>
       <p class="page-desc">
         To jest realizacja warunku wstępnego z warsztatu <span class="ref">D-20</span>:
         <i>„żebyśmy nie kodowali aplikacji, zanim nie zostanie to ustalone. Taki prosty konfigurator w HTML,
@@ -75,7 +77,7 @@
           </div>
 
           <div class="field" id="wrapSposob">
-            <label>Sposób liczenia</label>
+            <label>Sposób liczenia <span class="tip-mark" data-tip="OD CALOSCI: po przekroczeniu progu nowa stawka obejmuje CALY obrot okresu (przyklad 10/12: 49 000 -> 10%, 50 000 -> 12% od calosci). OD NADWYZKI: wyzsza stawka tylko dla czesci powyzej progu (przyklad 18/14: 100 000 po 18%, kolejne 2 000 po 14%). To rozroznienie klient wskazal jako kluczowe (D-16).">i</span></label>
             <select class="inp" id="sposob">
               <option value="od_calosci">Od całości &middot; nowa stawka obejmuje cały obrót okresu</option>
               <option value="od_nadwyzki">Od nadwyżki &middot; stawka progowa tylko powyżej progu</option>
@@ -121,10 +123,10 @@
               Zastosuj poniżej w wierszu faktury.
             </div>
           </div>
-          <div class="note open" style="margin:0;font-size:12px">
-            <b>Nierozstrzygnięte <span class="ref p">P-03</span>:</b> czy projekt z nadpisaną stawką
-            wlicza się do sumy narastającej wypełniającej progi pozostałych projektów tej instytucji.
-            Kalkulator obecnie <b>wlicza</b> go do obrotu.
+          <div class="note" style="margin:0;font-size:12px;border-left-color:var(--pos-ink);background:var(--pos-bg)">
+            <b>Rozstrzygnięte na warsztacie 04.09 <span class="ref">D-137</span>:</b> projekt z nadpisaną stawką
+            <b>wlicza się</b> do sumy narastającej wypełniającej progi pozostałych projektów tej instytucji
+            (wcześniej P-03). Kalkulator liczy to zgodnie z tym ustaleniem. Nadpisanie może być procentem albo kwotą <span class="ref">D-136</span>.
           </div>
         </div>
       </div>
@@ -145,7 +147,8 @@
           <table class="tbl">
             <thead>
               <tr><th style="width:36px">#</th><th>Opis</th><th class="num">Kwota netto</th>
-                  <th class="num">Obrót narastająco</th><th class="num">Stawka</th>
+                  <th class="num">Obrót narastająco<span class="tip-mark" data-tip="Suma obrotu od poczatku okresu (miesiac albo rok). Decyduje, ktora faktura wyczerpala prog, dlatego kolejnosc faktur ma znaczenie.">i</span></th>
+                  <th class="num">Stawka<span class="tip-mark" data-tip="Stawka zastosowana do tej faktury. Zolta = faktura podzielona miedzy progi (srednia wazona). Fioletowa 'recznie' = nadpisanie indywidualne.">i</span></th>
                   <th class="num">Prowizja</th><th></th></tr>
             </thead>
             <tbody id="faktury"></tbody>
@@ -197,6 +200,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 var PRESETY = {
   A: { kumulacja: "miesieczny", sposob: "od_calosci", stala: null, progi: [{ od: 0, st: 10 }, { od: 50000, st: 12 }] },

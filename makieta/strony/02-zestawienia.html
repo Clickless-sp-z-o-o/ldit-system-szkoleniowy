@@ -25,14 +25,19 @@
   </div>
 
   <nav class="mod-tabs">
-    <a href="02-zestawienia.html" class="on">Projekty <span class="n">174</span></a>
-    <a href="04-baza-klientow.html">Oczekujące na nabór</a>
-    <a href="13-terminy.html">Terminy szkoleń</a>
+    <a href="04-baza-klientow.html" data-tip="Baza danych: wszyscy klienci, jeden klient = jeden wiersz, rozwijany plusikiem do wnioskow. Nigdy nie usuwamy. Priorytet po ostatnim dniu naboru. D-128, D-130.">Baza danych</a>
+    <a href="02-zestawienia.html" class="on" data-tip="Wnioski (projekty): wnioski od etapu 3 (przygotowanie dokumentow). Jeden klient moze miec wiele wierszy w roku, numer klienta zachowany. D-128.">Wnioski <span class="n">174</span></a>
+    <a href="13-terminy.html" data-tip="Kalendarz terminow szkolen per instytucja. D-142.">Terminy szkoleń</a>
+    <span class="adm" data-tip="Dofinansowania dziela sie na dwie tabele (Baza danych + Wnioski) oraz osobne lata. Rok 2027 startuje z pusta baza, dane historyczne nie sa migrowane. D-128, D-129.">rozdział widoku &middot; D-128</span>
   </nav>
 
 
   <div class="card">
     <div class="toolbar">
+      <select class="inp" id="fRok" style="width:auto" data-tip="Osobne lata (D-129). Rok 2027 startuje z pusta baza wnioskow, dane historyczne nie sa migrowane, na dashboard trafiaja tylko podsumowania liczbowe.">
+        <option value="2026">Dofinansowania 2026</option>
+        <option value="2027">Dofinansowania 2027</option>
+      </select>
       <input class="inp search" id="q" placeholder="Szukaj: NIP, nazwa klienta, urząd...">
       <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
       <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
@@ -61,6 +66,10 @@
     </div>
 
     <div id="projForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
+
+    <div class="card-body" id="notaRok" style="display:none;border-bottom:1px solid var(--line)">
+      <div class="note mb0"><b>Rok 2027 startuje z pustą bazą.</b> Dane historyczne nie są migrowane do systemu, na dashboard trafiają wyłącznie podsumowania liczbowe jako wsad <span class="ref">D-129</span>. Pierwszy wniosek roku dostanie numer klienta 1.</div>
+    </div>
 
     <div class="tbl-wrap" style="max-height:calc(100vh - 330px);overflow-y:auto">
       <table class="tbl" id="tab">
@@ -108,7 +117,10 @@ var forcedNazwa = new URLSearchParams(location.search).get("is");
 var forcedInst = forcedNazwa ? DB.INSTYTUCJE.filter(function (i) { return i.nazwa === forcedNazwa; })[0] : null;
 
 function budujW() {
-  var lista = DB.WNIOSKI.slice();
+  /* Osobne lata (D-129). DB.WNIOSKI to rocznik 2026; rok 2027 startuje pusty. */
+  var rokEl = document.getElementById("fRok");
+  var rok = rokEl ? rokEl.value : "2026";
+  var lista = DB.WNIOSKI.filter(function (w) { return String(w.rok) === rok; });
   return forcedInst ? lista.filter(function (w) { return w.is === forcedInst.id; }) : lista;
 }
 var W = budujW();
@@ -118,7 +130,8 @@ if (forcedInst) {
   document.querySelector(".page-title").textContent = "Zestawienie 2026 · " + forcedInst.nazwa;
   var pd = document.querySelector(".page-desc");
   if (pd) pd.innerHTML = "Widok ograniczony do jednej instytucji. Wyszukiwarka, filtry i eksport zwracają " +
-    "wyłącznie wiersze tej instytucji, separacja na poziomie danych <span class=\"ref\">D-35</span>.";
+    "wyłącznie wiersze tej instytucji, separacja na poziomie danych <span class=\"ref\">D-35</span>. " +
+    "Docelowo osobne mini-bazy per instytucja pod spodem <span class=\"ref\">D-143</span>.";
   var notaZbiorcza = document.querySelector(".note.open");
   if (notaZbiorcza) notaZbiorcza.style.display = "none";
 }
@@ -249,6 +262,17 @@ document.getElementById("all").addEventListener("change", function () {
   document.getElementById(id).addEventListener("input", render);
   document.getElementById(id).addEventListener("change", render);
 });
+
+/* Przelaczanie lat (D-129): 2027 startuje pusty, dane historyczne nie migrowane */
+function odswiezRok() {
+  var rok = document.getElementById("fRok").value;
+  var tytul = document.querySelector(".page-title");
+  if (tytul && !forcedInst) tytul.textContent = "Zestawienie " + rok + " · wszystkie instytucje";
+  document.getElementById("notaRok").style.display = (rok === "2027") ? "block" : "none";
+  W = budujW(); render();
+  var tp = document.querySelector(".mod-tabs a.on .n"); if (tp) tp.textContent = W.length;
+}
+document.getElementById("fRok").addEventListener("change", odswiezRok);
 
 /* ================================================================
    Inline CRUD wniosków. Zapis do wspólnego JSON przez Store.

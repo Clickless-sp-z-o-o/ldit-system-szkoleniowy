@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Zadania i powiadomienia</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  .zad-row { display:flex; align-items:flex-start; gap:11px; padding:11px 0; border-top:1px solid var(--line); }
+  .zad-row:first-child { border-top:0; }
+  .zad-row .chk { margin-top:2px; }
+  .zad-row.done .zt { text-decoration: line-through; color: var(--ink-4); }
+  .zad-row .zt { font-weight:650; font-size:13.5px; }
+  .zad-row .zm { font-size:12px; color:var(--ink-3); margin-top:2px; }
+  .zad-row .zmeta { margin-left:auto; text-align:right; flex:0 0 auto; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Zadania i powiadomienia
+        <span class="tip-mark" data-tip="Modul wrocil do systemu po warsztacie 04.09 (D-140), odwracajac wczesniejsze wykluczenie do Projectly (D-118). Laczy plan dnia, zadania automatyczne i alerty. To ostatni modul w kolejnosci prac.">i</span>
+      </h1>
+      <p class="page-desc">
+        Plan dnia zamiast papierowego zeszytu. Zadania <b>ręczne</b> (dopisywane z ręki, per wniosek
+        lub pracownik) i <b>automatyczne</b> (wyzwalane statusem lub datą), plus <b>alerty</b> na
+        wskazaną datę. Powrót modułu do zakresu <span class="ref">D-140</span> (odwraca D-118).
+      </p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn primary" onclick="alert('Dodaje reczne zadanie do planu dnia, opcjonalnie przypiete do wniosku i pracownika (D-140).')">+ Nowe zadanie</button>
+      <button class="btn" onclick="alert('Ustawia alert na wskazana date, np. za 2 miesiace rozliczenie. Alert mozna odwolac recznie (D-140).')">+ Alert</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Zadania to jedno, powiadomienia to drugie</b> <span class="ref p">P-55</span>.
+    Zadanie to pozycja do zrobienia (plan dnia). Powiadomienie/alert to przypomnienie na datę.
+    Nie rozstrzygnięto jeszcze, czy to jeden moduł, czy dwa. Tu pokazane razem dla poglądu.
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="grid g-2-1">
+    <div>
+
+      <!-- ZADANIA -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Zadania na dziś i najbliższe
+            <span class="tip-mark" data-tip="Zrodlo 'auto' = zadanie wygenerowane z reguly (status wniosku lub data, np. przygotowanie rozliczenia z daty ostatniego dnia szkolenia). Zrodlo 'reczne' = dopisane z reki. Zadania patrza na terminy: przesuniecie terminu przesuwa zadanie. D-140, P-57.">i</span>
+          </h3>
+          <span class="sub" id="subZad"></span>
+        </div>
+        <div class="card-body" id="listaZad"></div>
+      </div>
+
+      <!-- ALERTY -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Alerty i powiadomienia
+            <span class="tip-mark" data-tip="Alerty na wskazana date, reczne i automatyczne. Mozna je odwolac recznie i sa usuwane automatycznie po wykonaniu. Kanal: wylacznie e-mail (D-04). D-140.">i</span>
+          </h3>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr>
+              <th>Alert</th><th>Data</th>
+              <th>Źródło <span class="tip-mark" data-tip="Automatyczny = z reguly systemowej. Reczny = ustawiony przez pracownika.">i</span></th>
+              <th></th>
+            </tr></thead>
+            <tbody id="listaAlert"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div>
+
+      <!-- WNIOSKI DO AKCEPTACJI -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Wnioski oczekujące na akceptację
+            <span class="tip-mark" data-tip="Bramka anty-spam (D-105): formularz (preferencyjnie Google Forms) wplywa najpierw tutaj. Administrator akceptuje albo odrzuca, dopiero potem rekord wchodzi do bazy klientow. LDIT moze tez dodawac klientow recznie i importem starej bazy (D-147). Licznik pokazywany tez jako kolko w prawym gornym rogu.">i</span>
+          </h3>
+          <div class="ch-actions"><span class="tag neg" id="badgeAkc"></span></div>
+        </div>
+        <div class="card-body" id="listaAkc"></div>
+      </div>
+
+      <!-- JAK DZIALAJA ZADANIA -->
+      <div class="card">
+        <div class="card-head"><h3>Jak działają zadania</h3></div>
+        <div class="card-body">
+          <dl class="dl">
+            <dt>Ręczne</dt><dd>Dopisywane z ręki, np. „kontakt za 4 dni" po rozmowie z klientem. Przypięte do wniosku i pracownika.</dd>
+            <dt>Automatyczne</dt><dd>Wyzwalane statusem lub datą. Przykład: przygotowanie rozliczenia z daty ostatniego dnia szkolenia, wysłanie danych do faktury. Które są automatyczne, pozostaje do rozpisania <span class="ref p">P-57</span>.</dd>
+            <dt>Reagują na terminy</dt><dd>Przesunięcie terminu szkolenia przesuwa powiązane zadanie.</dd>
+            <dt>Widoczność</dt><dd>Pracownik widzi swoje zadania (plan dnia), administrator ma wgląd we wszystkie i w to, co wykonano <span class="ref">D-140</span>.</dd>
+          </dl>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="../assets/db.seed.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
+<script>
+var rola = new URLSearchParams(location.search).get("rola") || "admin";
+
+/* Dane demonstracyjne. W systemie docelowym zadania i alerty leza w bazie,
+   automatyczne generuja sie z regul statusow i dat (D-140). */
+var ZADANIA = [
+  { t:"Kontakt telefoniczny z klientem", m:"PR-26-0141 · Metal Maniak · klient prosił o kontakt za 4 dni", termin:"dziś", zrodlo:"ręczne", kto:"Martyna Kowal", done:false, pilne:true },
+  { t:"Przygotuj rozliczenie", m:"PR-26-0139 · Dron Fortech · auto z daty ostatniego dnia szkolenia", termin:"dziś", zrodlo:"auto", kto:"Asia Nowak", done:false, pilne:true },
+  { t:"Wyślij dane do faktury do IS", m:"PR-26-0132 · auto po statusie 'pozytywna'", termin:"jutro", zrodlo:"auto", kto:"Łucja Dąbek", done:false, pilne:false },
+  { t:"Przygotuj harmonogram do PUP", m:"PR-26-0141 · 8 dni przed szkoleniem", termin:"za 2 dni", zrodlo:"auto", kto:"Martyna Kowal", done:false, pilne:false },
+  { t:"Potwierdź termin z klientem (Metal Maniak)", m:"telefonicznie, tydzień przed szkoleniem", termin:"za 3 dni", zrodlo:"ręczne", kto:"Martyna Kowal", done:false, pilne:false },
+  { t:"Sprawdź komplet podpisanych dokumentów", m:"PR-26-0138 · przed złożeniem", termin:"wczoraj", zrodlo:"ręczne", kto:"Asia Nowak", done:true, pilne:false }
+];
+
+var ALERTY = [
+  { t:"Rozliczenie za 2 miesiące", data:"2026-11-04", zrodlo:"ręczny" },
+  { t:"Nabór w Poznaniu startuje", data:"2026-09-11", zrodlo:"automatyczny" },
+  { t:"8 dni przed szkoleniem: komplet dokumentów", data:"2026-09-01", zrodlo:"automatyczny" },
+  { t:"Prośba o opinię w Google (po szkoleniu)", data:"2026-09-15", zrodlo:"ręczny" }
+];
+
+var AKCEPTACJE = [
+  { nazwa:"Elmax sp. z o.o.", nip:"527-11-22-333", is:"Metal Maniak", data:"2026-08-29" },
+  { nazwa:"Zenit sp.j.", nip:"778-99-00-111", is:"Dron Fortech", data:"2026-08-29" },
+  { nazwa:"Termpol S.A.", nip:"113-44-55-666", is:"Termex Serwis", data:"2026-08-28" }
+];
+
+/* ---------- KPI ---------- */
+var dzis = ZADANIA.filter(function (z) { return !z.done && (z.termin === "dziś" || z.termin === "wczoraj"); }).length;
+var zalegle = ZADANIA.filter(function (z) { return !z.done && z.termin === "wczoraj"; }).length;
+document.getElementById("kpi").innerHTML =
+  kpi("Zadania na dziś", dzis, "plan dnia zalogowanego pracownika") +
+  kpi("Zaległe", zalegle, zalegle ? '<span class="tag neg dot">do nadrobienia</span>' : "brak") +
+  kpi("Aktywne alerty", ALERTY.length, "przypomnienia na datę") +
+  kpi("Wnioski do akceptacji", AKCEPTACJE.length, '<span class="tag warn dot">bramka anty-spam D-105</span>');
+
+function kpi(label, val, foot) {
+  return '<div class="kpi"><div class="k-label">' + label + '</div>' +
+    '<div class="k-value">' + val + '</div>' +
+    (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
+}
+
+/* ---------- Zadania ---------- */
+document.getElementById("subZad").textContent =
+  ZADANIA.filter(function (z) { return !z.done; }).length + " otwartych, " +
+  ZADANIA.filter(function (z) { return z.done; }).length + " zrobionych dzisiaj";
+
+document.getElementById("listaZad").innerHTML = ZADANIA.map(function (z, i) {
+  var zrodloTag = z.zrodlo === "auto"
+    ? '<span class="tag info dot">automatyczne</span>'
+    : '<span class="tag mute dot">ręczne</span>';
+  var terminTag = z.pilne && !z.done
+    ? '<span class="tag neg">' + z.termin + '</span>'
+    : '<span class="tag mute">' + z.termin + '</span>';
+  return '<div class="zad-row' + (z.done ? " done" : "") + '">' +
+    '<input type="checkbox" class="chk"' + (z.done ? " checked" : "") + ' onchange="alert(\'W systemie: zaznaczenie zamyka zadanie i zapisuje wpis w rejestrze aktywnosci (D-122).\')">' +
+    '<div style="flex:1 1 auto;min-width:0">' +
+      '<div class="zt">' + z.t + '</div>' +
+      '<div class="zm">' + z.m + ' · ' + z.kto + '</div>' +
+    '</div>' +
+    '<div class="zmeta">' + terminTag + '<div style="margin-top:5px">' + zrodloTag + '</div></div>' +
+  '</div>';
+}).join("");
+
+/* ---------- Alerty ---------- */
+document.getElementById("listaAlert").innerHTML = ALERTY.map(function (a) {
+  return '<tr>' +
+    '<td class="strong">' + a.t + '</td>' +
+    '<td class="mono nowrap">' + a.data + '</td>' +
+    '<td>' + (a.zrodlo === "automatyczny" ? '<span class="tag info">automatyczny</span>' : '<span class="tag mute">ręczny</span>') + '</td>' +
+    '<td class="right"><button class="btn xs" onclick="alert(\'Odwolanie alertu (usuwanie reczne). Alerty automatyczne znikaja po wykonaniu (D-140).\')">Odwołaj</button></td>' +
+    '</tr>';
+}).join("");
+
+/* ---------- Akceptacje ---------- */
+document.getElementById("badgeAkc").textContent = AKCEPTACJE.length + " oczekuje";
+document.getElementById("listaAkc").innerHTML = AKCEPTACJE.map(function (a) {
+  return '<div class="zad-row">' +
+    '<div style="flex:1 1 auto;min-width:0">' +
+      '<div class="zt">' + a.nazwa + '</div>' +
+      '<div class="zm"><span class="mono">' + a.nip + '</span> · ' + a.is + ' · formularz z ' + a.data + '</div>' +
+    '</div>' +
+    '<div class="zmeta btn-row" style="flex-wrap:nowrap">' +
+      '<button class="btn xs primary" onclick="alert(\'Akceptacja: rekord wchodzi do bazy klientow (D-105).\')">Akceptuj</button>' +
+      '<button class="btn xs danger" onclick="alert(\'Odrzucenie: rekord nie wchodzi do bazy (np. randomowe dane w formularzu).\')">Odrzuć</button>' +
+    '</div>' +
+  '</div>';
+}).join("");
+</script>
+</body>
+</html>
