@@ -2,11 +2,17 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<title>Baza klientów</title>
+<title>Baza danych</title>
 <link rel="stylesheet" href="../assets/style.css">
 <style>
-  /* Drobny wyjatek: wiersze klientow bez naboru wygaszone, brak gotowej klasy */
+  /* Wiersze klientow bez naboru wygaszone */
   tr.dim td { color: var(--ink-3); }
+  /* Rozwiniete wnioski klienta */
+  td.exp-cell { text-align:center; }
+  .exp-btn { width:22px; height:22px; padding:0; font-weight:700; line-height:1; }
+  tr.wn-detail > td { background: var(--surface-2); padding: 0 0 0 40px; }
+  tr.wn-detail table.tbl { margin: 10px 40px 14px 0; background:#fff; border:1px solid var(--line); border-radius:var(--radius); }
+  tr.wn-detail table.tbl th { background: var(--surface-3); }
 </style>
 </head>
 <body>
@@ -14,11 +20,13 @@
 
   <div class="page-head">
     <div class="ph-text">
-      <h1 class="page-title">Baza klientów</h1>
+      <h1 class="page-title">Baza danych
+        <span class="tip-mark" data-tip="Wszyscy klienci koncowi, jeden klient to jeden wiersz. Klienta nigdy nie usuwamy (D-128). Rozwin klienta plusem, zeby zobaczyc jego konkretne wnioski. Widok powiazany z naborami, priorytet po ostatnim dniu naboru (D-130).">i</span>
+      </h1>
       <p class="page-desc">
-        Wszyscy klienci końcowi niezależnie od tego, czy wniosek już poszedł. Widok powiązany z modułem
-        naborów, także prognozowanych <span class="ref">D-90</span>. Sortowanie po dacie zakończenia naboru
-        rosnąco, najpilniejsi na górze. Data wpłynięcia formularza rejestrowana automatycznie
+        Wszyscy klienci niezależnie od tego, czy wniosek już poszedł. Rozwiń klienta plusem, żeby zobaczyć
+        jego wnioski <span class="ref">D-128</span>. Sortowanie po dacie zakończenia naboru rosnąco, najpilniejsi
+        na górze <span class="ref">D-130</span>. Data wpłynięcia formularza rejestrowana automatycznie
         <span class="ref">D-94</span>.
       </p>
     </div>
@@ -29,132 +37,92 @@
   </div>
 
   <nav class="mod-tabs">
-    <a href="02-zestawienia.html">Projekty <span class="n">174</span></a>
-    <a href="04-baza-klientow.html" class="on">Oczekujące na nabór</a>
-    <a href="13-terminy.html">Terminy szkoleń</a>
+    <a href="04-baza-klientow.html" class="on" data-tip="Baza danych: wszyscy klienci, klient = jeden wiersz, rozwijany plusem do wnioskow. Wszystkie wnioski, domyslnie bez rozliczonych. D-128.">Baza danych</a>
+    <a href="02-zestawienia.html" data-tip="Wnioski (projekty): tylko wnioski od etapu 3, kolorowane statusem. D-128.">Wnioski <span class="n">174</span></a>
+    <a href="13-terminy.html" data-tip="Kalendarz terminow szkolen per instytucja. D-142.">Terminy szkoleń</a>
   </nav>
 
+  <div class="card" style="padding:0">
 
-  <div class="note open">
-    <b>Do rozstrzygnięcia:</b> w Excelu ta zakładka nazywa się „Niezłożone” i nazwa jest myląca,
-    bo zawiera także klientów ze złożonymi wnioskami. Klient sam zaproponował nazwę „Baza klientów”
-    i taka jest tu użyta (<code>docs/16-slownik.md</code>). Osobno nierozstrzygnięta pozostaje docelowa nazwa
-    statusu „NW” <span class="ref p">P-11</span>, klient powiedział tylko „to nazwa do zmienienia”.
-    Nierozstrzygnięte jest też, czy ten widok zobaczy instytucja szkoleniowa
-    <span class="ref p">P-34</span>. Handlowiec IS na pewno nie <span class="ref">D-91</span>.
+    <div class="card-body" style="padding-bottom:0">
+      <div class="note">
+        <b>Baza danych, jeden klient to jeden wiersz.</b> Zakładka pokazuje wszystkich klientów niezależnie
+        od tego, czy wniosek już poszedł. Klienta nigdy nie usuwamy, zostaje historia współpracy
+        <span class="ref">D-128</span>. Priorytet kontaktu wyznacza <b>ostatni dzień naboru</b>, dlatego lista
+        jest posortowana po kolumnie „Koniec naboru" rosnąco <span class="ref">D-130</span>. Rozwiń klienta
+        <b>plusem</b>, żeby zobaczyć jego wnioski. W bazie danych są <b>wszystkie</b> wnioski klienta, także te
+        sprzed etapu 3, których nie ma jeszcze w zakładce Wnioski. Domyślnie ukryte są już rozliczone, jest też
+        filtr po statusie wniosku.
+      </div>
+      <div class="grid g4" id="kpi"></div>
+    </div>
+
+    <div class="toolbar" style="margin-top:16px">
+      <input class="inp search" id="q" placeholder="Szukaj: NIP, nazwa klienta, urząd pracy...">
+      <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
+      <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
+      <select class="inp" id="fNab">
+        <option value="">Nabór: dowolny stan</option>
+        <option>Nabór ogłoszony</option>
+        <option>W trakcie kontaktu</option>
+        <option>Brak naboru</option>
+        <option>Po naborze</option>
+      </select>
+      <select class="inp" id="fStatusWn" data-tip="Filtr po statusie WNIOSKU klienta (widoczny po rozwinieciu plusem). Domyslnie ukryte sa wnioski juz rozliczone. W bazie danych sa wszystkie wnioski, takze przed etapem 3.">
+        <option value="aktywne">Wnioski: aktywne (bez rozliczonych)</option>
+        <option value="wszystkie">Wnioski: wszystkie</option>
+        <option value="Czekamy">Wnioski: czekamy na decyzję</option>
+        <option value="Pozytywna">Wnioski: pozytywna</option>
+        <option value="Negatywna">Wnioski: negatywna</option>
+        <option value="Rezygnacja">Wnioski: rezygnacja</option>
+        <option value="Rozliczone">Wnioski: rozliczone</option>
+      </select>
+      <span class="sp"></span>
+      <span class="small muted" id="licz"></span>
+    </div>
+
+    <div class="toolbar" style="background:#fff;border-bottom:1px solid var(--line)">
+      <div class="legend">
+        <span><i style="background:var(--pos-bg);border-color:#86efac"></i>nabór trwa, kontakt priorytetowy</span>
+        <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>nabór prognozowany</span>
+        <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>brak naboru w tym urzędzie</span>
+      </div>
+      <span class="sp"></span>
+      <span class="small muted">Kolejność wierszy wynika z daty zakończenia naboru, nie z numeru klienta.</span>
+    </div>
+
+    <div id="klientForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
+
+    <div class="tbl-wrap" style="max-height:calc(100vh - 420px);overflow-y:auto">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th style="width:44px">Nr<span class="tip-mark" data-tip="Numer klienta nadawany kolejno. To identyfikator porzadkowy, a nie kolejnosc na liscie: kolejnosc wyznacza koniec naboru, nie numer klienta.">i</span></th>
+            <th>Klient<span class="tip-mark" data-tip="Nazwa firmy klienta koncowego. Jeden klient to jeden wiersz. Klienta nigdy nie usuwamy, zostaje historia wspolpracy (D-128). Rozwin plusem, zeby zobaczyc wnioski.">i</span></th>
+            <th>NIP</th>
+            <th>Wielkość<span class="tip-mark" data-tip="Wielkosc przedsiebiorstwa decyduje o poziomie dofinansowania KFS: mikro (do 9 osob na umowie o prace) to 90 procent, powyzej mikro to 70 procent.">i</span></th>
+            <th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa obslugujaca klienta. Instytucje sa wobec siebie konkurencyjne, dane rozdzielone na poziomie danych.">i</span></th>
+            <th>Urząd pracy<span class="tip-mark" data-tip="Powiatowy urzad pracy wlasciwy dla klienta. To urzad oglasza nabor KFS, wiec od niego zaleza daty i priorytet kontaktu.">i</span></th>
+            <th>Status naboru<span class="tip-mark" data-tip="Stan naboru w urzedzie klienta: naeor ogloszony, w trakcie kontaktu, brak naboru z prognoza daty albo po naborze. Widok powiazany z naborami prognozowanymi (D-90).">i</span></th>
+            <th class="nowrap"><b>Koniec naboru</b><span class="tip-mark" data-tip="Ostatni dzien naboru w urzedzie klienta. Ta data wyznacza priorytet: lista sortowana po niej rosnaco (D-130). Edycja inline w komorce, jak w Excelu.">i</span></th>
+            <th class="c">Kolejny nabór<span class="tip-mark" data-tip="Flaga tak/nie: czy klient jest zainteresowany kolejnym naborem (D-130). Odznaczenie na bialo wypisuje klienta z biezacego filtra naboru.">i</span></th>
+            <th class="c">Zostało<span class="tip-mark" data-tip="Ile dni do konca naboru liczac od dzisiaj. Do 3 dni na czerwono, do 10 dni na zolto. Wartosc ujemna oznacza nabor juz zakonczony.">i</span></th>
+            <th class="c">Wnioski<span class="tip-mark" data-tip="Liczba wnioskow klienta (rok biezacy i poprzedni). Rozwin plusem, zeby zobaczyc je kolorowane statusem. Klient moze wnioskowac kilka razy w roku.">i</span></th>
+            <th>Kontakt</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="card" style="padding:0">
-    <div class="tabs">
-      <button class="tab on" data-t="t1">Baza klientów</button>
-      <button class="tab" data-t="t2">Kolejka zgłoszeń <span class="pill" style="margin-left:6px">5</span></button>
-    </div>
-
-    <!-- ============ ZAKLADKA 1: BAZA KLIENTOW ============ -->
-    <div class="tab-pane on" id="t1">
-
-      <div class="card-body" style="padding-bottom:0">
-        <div class="note">
-          <b>Baza danych, jeden klient to jeden wiersz.</b> Zakładka pokazuje wszystkich klientów niezależnie
-          od tego, czy wniosek już poszedł. Klienta nigdy nie usuwamy z bazy, zostaje historia współpracy
-          <span class="ref">D-128</span>. Priorytet kontaktu wyznacza <b>ostatni dzień naboru</b> w urzędzie
-          klienta, dlatego lista jest posortowana po kolumnie „Koniec naboru” rosnąco, najpilniejsi na górze
-          <span class="ref">D-130</span>. Daty naboru edytuje się <b>bezpośrednio w komórce, jak w Excelu</b>
-          (bez klikania „Edytuj”, kliknięcie w datę od razu ją zmienia) <span class="ref">D-130</span>.
-        </div>
-        <div class="grid g4" id="kpi"></div>
-      </div>
-
-      <div class="toolbar" style="margin-top:16px">
-        <input class="inp search" id="q" placeholder="Szukaj: NIP, nazwa klienta, urząd pracy...">
-        <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
-        <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
-        <select class="inp" id="fNab">
-          <option value="">Nabór: dowolny stan</option>
-          <option>Nabór ogłoszony</option>
-          <option>W trakcie kontaktu</option>
-          <option>Brak naboru</option>
-          <option>Po naborze</option>
-        </select>
-        <span class="sp"></span>
-        <span class="small muted" id="licz"></span>
-      </div>
-
-      <div class="toolbar" style="background:#fff;border-bottom:1px solid var(--line)">
-        <div class="legend">
-          <span><i style="background:var(--pos-bg);border-color:#86efac"></i>nabór trwa, kontakt priorytetowy</span>
-          <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>nabór prognozowany</span>
-          <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>brak naboru w tym urzędzie</span>
-        </div>
-        <span class="sp"></span>
-        <span class="small muted">Kolejność wierszy wynika z daty zakończenia naboru, nie z numeru klienta.</span>
-      </div>
-
-      <div id="klientForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
-
-      <div class="tbl-wrap" style="max-height:calc(100vh - 420px);overflow-y:auto">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th style="width:44px">Nr<span class="tip-mark" data-tip="Numer klienta nadawany kolejno. To identyfikator porządkowy, a nie kolejność na liście: kolejność wyznacza koniec naboru, nie numer klienta.">i</span></th>
-              <th>Klient<span class="tip-mark" data-tip="Nazwa firmy klienta końcowego. Jeden klient to jeden wiersz w bazie. Klienta nigdy nie usuwamy, zostaje pełna historia współpracy (D-128).">i</span></th>
-              <th>NIP</th>
-              <th>Wielkość<span class="tip-mark" data-tip="Wielkość przedsiębiorstwa decyduje o poziomie dofinansowania KFS: mikro (do 9 osób na umowie o pracę) to 90 procent, powyżej mikro to 70 procent.">i</span></th>
-              <th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa obsługująca klienta. Instytucje są wobec siebie konkurencyjne, dane są rozdzielone na poziomie danych, nie interfejsu.">i</span></th>
-              <th>Urząd pracy<span class="tip-mark" data-tip="Powiatowy urząd pracy właściwy dla klienta. To urząd ogłasza nabór KFS, więc od niego zależą daty i priorytet kontaktu.">i</span></th>
-              <th>Status naboru<span class="tip-mark" data-tip="Stan naboru w urzędzie klienta: nabór ogłoszony, w trakcie kontaktu z urzędem, brak naboru z prognozą daty albo po naborze. Widok jest powiązany także z naborami prognozowanymi (D-90).">i</span></th>
-              <th class="nowrap"><b>Koniec naboru</b><span class="tip-mark" data-tip="Ostatni dzień naboru w urzędzie klienta. To ta data wyznacza priorytet: lista jest sortowana po niej rosnąco, najpilniejsi na górze (D-130). Data naboru od-do edytowana jest inline w komórce, jak w Excelu, bez klikania Edytuj.">i</span></th>
-              <th class="c">Kolejny nabór<span class="tip-mark" data-tip="Flaga tak/nie: czy klient jest zainteresowany kolejnym naborem (D-130). Odznaczenie na biało wypisuje klienta z bieżącego filtra naboru, przestaje się pokazywać jako aktywny kandydat do kontaktu.">i</span></th>
-              <th class="c">Zostało<span class="tip-mark" data-tip="Ile dni do końca naboru licząc od dzisiaj. Poniżej lub równo 3 dni oznaczone na czerwono, do 10 dni na żółto. Wartość ujemna oznacza nabór już zakończony.">i</span></th>
-              <th class="c">Projekty<span class="tip-mark" data-tip="Liczba projektów (wniosków) klienta w bazie, łącznie z rokiem bieżącym i poprzednim. Klient może wnioskować kilka razy w roku.">i</span></th>
-              <th>Kontakt</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="body"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ============ ZAKLADKA 2: KOLEJKA ZGLOSZEN ============ -->
-    <div class="tab-pane" id="t2">
-      <div class="card-body">
-        <div class="note">
-          <b>Po co jest ta kolejka.</b> Formularz zgłoszeniowy jest publiczny, więc rekord nie wchodzi do bazy
-          automatycznie. Każde zgłoszenie przechodzi przez <b>ręczną akceptację pracownika LDIT</b>, co jest
-          bramką anty-spamową <span class="ref">D-105</span>. Data i godzina wpłynięcia zapisywane są
-          automatycznie w momencie wysłania formularza <span class="ref">D-94</span> i to one są dowodem,
-          kiedy dokumenty dotarły. Realny incydent z warsztatu: nabór kończył się 5 kwietnia, formularz
-          wpłynął tego samego dnia, wniosku nie dało się złożyć, a pretensje trafiły do LDIT.
-        </div>
-      </div>
-
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th class="nowrap">Wpłynęło</th>
-              <th>Firma</th>
-              <th>NIP</th>
-              <th>Instytucja</th>
-              <th>Szkolenie</th>
-              <th class="c">Osób</th>
-              <th>Osoba kontaktowa</th>
-              <th class="right">Decyzja</th>
-            </tr>
-          </thead>
-          <tbody id="kolejka"></tbody>
-        </table>
-      </div>
-
-      <div class="card-body">
-        <div class="note warn">
-          <b>Po akceptacji:</b> rekord trafia do bazy klientów z zachowaną datą wpłynięcia, zostaje przypisany
-          opiekun po stronie LDIT, a system sprawdza, czy urząd pracy klienta ma otwarty lub prognozowany nabór.
-          Odrzucenie wymaga podania powodu i zostaje w rejestrze aktywności <span class="ref">D-116</span>.
-        </div>
-      </div>
-    </div>
+  <div class="note open">
+    <b>Do rozstrzygnięcia:</b> w Excelu ta zakładka nazywa się „Niezłożone" i nazwa jest myląca,
+    bo zawiera także klientów ze złożonymi wnioskami. Klient sam zaproponował nazwę „Baza danych"
+    (<code>docs/16-slownik.md</code>). Nierozstrzygnięte jest też, czy ten widok zobaczy instytucja szkoleniowa
+    <span class="ref p">P-34</span>. Handlowiec IS na pewno nie <span class="ref">D-91</span>.
   </div>
 
 </div>
@@ -167,7 +135,6 @@
 (function () {
   var DZIS = new Date("2026-08-29");
 
-  /* Nabor przypisany do urzedu. DB.NABORY klucza po nazwie urzedu, nie po id */
   var NAB = {};
   DB.NABORY.forEach(function (n) { NAB[n.pup] = n; });
 
@@ -184,13 +151,11 @@
     return i ? i.nazwa : "-";
   }
 
-  /* Liczba projektow klienta w obu latach */
-  var PROJ = {};
-  DB.WNIOSKI.concat(DB.WNIOSKI_2025).forEach(function (w) {
-    PROJ[w.klient] = (PROJ[w.klient] || 0) + 1;
-  });
+  /* Wnioski klienta z obu lat, pogrupowane po kliencie (D-128: w bazie danych wszystkie wnioski) */
+  var WSZYSTKIE_WN = DB.WNIOSKI.concat(DB.WNIOSKI_2025 || []);
+  var WN_BY_KL = {};
+  WSZYSTKIE_WN.forEach(function (w) { (WN_BY_KL[w.klient] = WN_BY_KL[w.klient] || []).push(w); });
 
-  /* Wzbogacenie listy klientow o kontekst naboru i klucz sortowania */
   function budujK() {
     return DB.KLIENCI.map(function (kl) {
       var n = naborKlienta(kl);
@@ -204,7 +169,7 @@
       return {
         kl: kl, nab: n, status: st, koniec: koniec,
         dni: koniec ? dniDo(koniec) : null,
-        projekty: PROJ[kl.id] || 0,
+        wnioski: WN_BY_KL[kl.id] || [],
         isNazwa: nazwaIS(kl.is),
         pupNazwa: (DB.PUPY.filter(function (p) { return p.id === kl.pup; })[0] || {}).nazwa || "-",
         klucz: klucz
@@ -212,6 +177,46 @@
     }).sort(function (a, b) { return a.klucz - b.klucz || a.kl.nr - b.kl.nr; });
   }
   var K = budujK();
+  var expanded = {};   /* id klienta -> rozwiniete wnioski */
+
+  /* ---------- Status wniosku (spojnie z 02-zestawienia, paleta 5 stanow) ---------- */
+  function statusValue(w) {
+    if (w.statusDec === "Pozytywna") return "Pozytywna";
+    if (w.statusDec === "Negatywna") return "Negatywna";
+    if (w.statusSkl === "Złożony") return "Czekamy";
+    if (w.statusSkl === "NW") return "NW";
+    if (w.statusSkl === "Rezygnacja") return "Rezygnacja";
+    return "Niezłożony";
+  }
+  function klasaWiersza(w) {
+    if (w.rozliczenie === "Rozliczone") return "row-set";
+    if (w.statusDec === "Pozytywna") return "row-pos";
+    if (w.statusDec === "Negatywna") return "row-neg";
+    if (w.statusSkl === "Rezygnacja") return "row-rez";
+    if (w.statusSkl === "Złożony") return "row-czekamy";
+    return "";
+  }
+  function tagStatusWn(w) {
+    var v = statusValue(w);
+    var map = { Pozytywna: "st-poz", Negatywna: "st-neg", Czekamy: "st-czekamy", NW: "warn", Rezygnacja: "st-rez", Niezłożony: "mute" };
+    return '<span class="tag ' + map[v] + ' dot">' + v + '</span>';
+  }
+  function tagRozl(w) {
+    if (w.rozliczenie === "Rozliczone") return '<span class="tag st-set">Rozliczone</span>';
+    if (w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
+    if (w.rozliczenie === "Oczekuje") return '<span class="tag mute">Oczekuje</span>';
+    return '<span class="muted small">&mdash;</span>';
+  }
+  /* Filtr statusu wniosku, domyslnie ukrywa rozliczone */
+  function filtrujWnioski(list) {
+    var f = document.getElementById("fStatusWn").value;
+    return list.filter(function (w) {
+      if (f === "aktywne") return w.rozliczenie !== "Rozliczone";
+      if (f === "wszystkie") return true;
+      if (f === "Rozliczone") return w.rozliczenie === "Rozliczone";
+      return statusValue(w) === f;
+    });
+  }
 
   function kpi(label, val, foot, tip) {
     var mark = tip ? '<span class="tip-mark" data-tip="' + tip + '">i</span>' : "";
@@ -227,12 +232,12 @@
     document.getElementById("kpi").innerHTML =
       kpi("Klienci z otwartym naborem", DB.fmtNum(aktywne.length),
           najblizszy ? '<span class="tag pos dot">koniec ' + najblizszy.koniec + ', za ' + najblizszy.dni + ' dni</span>' : "brak",
-          "Klienci, których urząd pracy ma właśnie ogłoszony nabór KFS. To oni są priorytetem, sortowani po najbliższym końcu naboru (D-130).") +
+          "Klienci, ktorych urzad pracy ma wlasnie ogloszony nabor KFS. To oni sa priorytetem, sortowani po najblizszym koncu naboru (D-130).") +
       kpi("Czekają na nabór prognozowany", DB.fmtNum(prognoza.length), "urzędy w kontakcie lub z prognozą daty",
-          "Klienci bez otwartego naboru, ale w urzędzie w kontakcie albo z prognozowaną datą naboru (D-90).") +
-      kpi("Bez naboru w tym momencie", DB.fmtNum(bez.length), "nabór zakończony lub brak danych z aplikacji",
-          "Klienci, których urząd zakończył nabór albo brak danych o naborze. Zostają w bazie, nie są aktywnym priorytetem.") +
-      kpi("Klienci w bazie łącznie", DB.fmtNum(K.length), "wraz z tymi, którzy wnioskują kilka razy w roku",
+          "Klienci bez otwartego naboru, ale w urzedzie w kontakcie albo z prognozowana data naboru (D-90).") +
+      kpi("Bez naboru w tym momencie", DB.fmtNum(bez.length), "nabór zakończony lub brak danych",
+          "Klienci, ktorych urzad zakonczyl nabor albo brak danych. Zostaja w bazie, nie sa aktywnym priorytetem.") +
+      kpi("Klienci w bazie łącznie", DB.fmtNum(K.length), "jeden klient to jeden wiersz",
           "Wszyscy klienci w bazie danych, jeden klient to jeden wiersz. Klienta nigdy nie usuwamy (D-128).");
   }
   renderKPI();
@@ -266,14 +271,43 @@
       ? '<span class="pill k">mikro, 90%</span>'
       : '<span class="pill w">' + w + ', 70%</span>';
   }
-  /* D-130: znacznik zainteresowania kolejnym naborem. W makiecie wyliczany
-     deterministycznie z numeru klienta, zeby byl stabilny miedzy renderami.
-     Odznaczenie (biala flaga) wypisuje klienta z biezacego filtra naboru. */
   function zainteresowanyKolejnym(r) { return (r.kl.nr % 4) !== 0; }
   function flagaKolejny(r) {
     return zainteresowanyKolejnym(r)
-      ? '<span class="tag pos" data-tip="Zainteresowany kolejnym naborem. Klient zostaje w bieżącym filtrze naboru jako kandydat do kontaktu (D-130).">tak</span>'
-      : '<span class="tag mute" data-tip="Nie zainteresowany kolejnym naborem. Odznaczenie na biało wypisuje klienta z bieżącego filtra naboru (D-130).">nie</span>';
+      ? '<span class="tag pos" data-tip="Zainteresowany kolejnym naborem. Klient zostaje w biezacym filtrze naboru jako kandydat do kontaktu (D-130).">tak</span>'
+      : '<span class="tag mute" data-tip="Nie zainteresowany kolejnym naborem. Odznaczenie na bialo wypisuje klienta z biezacego filtra naboru (D-130).">nie</span>';
+  }
+
+  /* Zagniezdzona tabela wnioskow klienta (D-128), kolorowana statusem */
+  function detalWnioskow(r) {
+    var lista = filtrujWnioski(r.wnioski.slice().sort(function (a, b) { return (b.rok || "") < (a.rok || "") ? -1 : 1; }));
+    var body;
+    if (!lista.length) {
+      body = '<tr><td colspan="8" class="small muted" style="padding:12px">Brak wniosków w tym filtrze. ' +
+             'Zmień filtr statusu wniosku albo pokaż wszystkie.</td></tr>';
+    } else {
+      body = lista.map(function (w) {
+        return '<tr class="' + klasaWiersza(w) + '">' +
+          '<td class="strong mono nowrap">' + w.id + '</td>' +
+          '<td class="nowrap">' + w.szkolenie + '</td>' +
+          '<td class="num">' + DB.fmtPLN(w.wartosc) + '</td>' +
+          '<td class="num">' + (w.przyznano != null ? DB.fmtPLN(w.przyznano) : '<span class="muted">&mdash;</span>') + '</td>' +
+          '<td class="num">' + (w.kosztCalkowity != null ? DB.fmtPLN(w.kosztCalkowity) : '<span class="muted">&mdash;</span>') + '</td>' +
+          '<td>' + tagStatusWn(w) + '</td>' +
+          '<td>' + tagRozl(w) + '</td>' +
+          '<td class="right"><button class="btn xs" onclick="location.href=\'03-wniosek.html?id=' + w.id + '\'">Otwórz</button></td>' +
+          '</tr>';
+      }).join("");
+    }
+    var ukryte = r.wnioski.length - lista.length;
+    var stopka = ukryte > 0
+      ? '<div class="small muted" style="margin:0 40px 12px 0">Ukryto ' + ukryte + ' wnios(ek/ki), które nie pasują do filtra (np. rozliczone).</div>'
+      : '';
+    return '<tr class="wn-detail"><td colspan="14">' +
+      '<table class="tbl"><thead><tr>' +
+        '<th>Wniosek</th><th>Szkolenie</th><th class="num">Wartość</th><th class="num">Przyznano</th>' +
+        '<th class="num">Koszt całk.</th><th>Status</th><th>Rozliczenie</th><th></th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table>' + stopka + '</td></tr>';
   }
 
   function render() {
@@ -298,7 +332,13 @@
     var html = lista.slice(0, 120).map(function (r) {
       var cls = r.status === "Nabór ogłoszony" ? "row-pos row-nabor"
               : (r.status === "Po naborze" || r.status === "Bez informacji") ? "dim" : "";
-      return '<tr class="' + cls + '">' +
+      var otw = !!expanded[r.kl.id];
+      var maWnioski = r.wnioski.length > 0;
+      var expBtn = maWnioski
+        ? '<button class="btn xs exp-btn" onclick="przelaczWnioski(\'' + r.kl.id + '\')" data-tip="Rozwin, zeby zobaczyc wnioski tego klienta, kolorowane statusem (D-128).">' + (otw ? "&minus;" : "+") + '</button>'
+        : '<span class="muted">&middot;</span>';
+      var row = '<tr class="' + cls + '">' +
+        '<td class="exp-cell">' + expBtn + '</td>' +
         '<td class="strong">' + r.kl.nr + '</td>' +
         '<td class="strong nowrap">' + r.kl.nazwa +
           '<div class="small muted">' + r.kl.id + ' &middot; ' + r.kl.miasto + '</div></td>' +
@@ -308,81 +348,45 @@
         '<td class="nowrap">' + r.isNazwa + '</td>' +
         '<td class="nowrap muted">' + r.pupNazwa + '</td>' +
         '<td class="nowrap">' + tagNaboru(r) + '</td>' +
-        '<td class="mono nowrap"><b data-tip="Koniec naboru wyznacza priorytet kontaktu. Edycja inline: kliknij datę i wpisz nową, jak w Excelu (D-130).">' +
+        '<td class="mono nowrap"><b data-tip="Koniec naboru wyznacza priorytet kontaktu. Edycja inline: kliknij date i wpisz nowa, jak w Excelu (D-130).">' +
           (r.koniec || '<span class="muted">&mdash;</span>') + '</b></td>' +
         '<td class="c">' + flagaKolejny(r) + '</td>' +
         '<td class="c">' + tagDni(r) + '</td>' +
-        '<td class="c">' + (r.projekty ? '<b>' + r.projekty + '</b>' : '<span class="muted">0</span>') + '</td>' +
+        '<td class="c">' + (r.wnioski.length ? '<b>' + r.wnioski.length + '</b>' : '<span class="muted">0</span>') + '</td>' +
         '<td class="nowrap small">' + r.kl.osoba + '<div class="muted">' + r.kl.tel + '</div></td>' +
         '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
-          '<button class="btn xs">Otwórz</button>' +
           '<button class="btn xs" onclick="edytujKlient(\'' + r.kl.id + '\')">Edytuj</button>' +
           '<button class="btn xs" onclick="usunKlient(\'' + r.kl.id + '\')">Usuń</button>' +
         '</div></td>' +
         '</tr>';
+      return row + (otw ? detalWnioskow(r) : "");
     }).join("");
 
     if (lista.length > 120) {
-      html += '<tr><td colspan="13" class="c muted small" style="padding:14px">Pokazano 120 z ' +
-        lista.length + ' wierszy, pominięto ' + (lista.length - 120) +
-        '. W systemie docelowym: wirtualizacja listy lub stronicowanie.</td></tr>';
+      html += '<tr><td colspan="14" class="c muted small" style="padding:14px">Pokazano 120 z ' +
+        lista.length + ' wierszy, pominięto ' + (lista.length - 120) + '.</td></tr>';
     }
     if (!lista.length) {
-      html = '<tr><td colspan="13"><div class="empty"><div class="ei">&#9788;</div>' +
+      html = '<tr><td colspan="14"><div class="empty"><div class="ei">&#9788;</div>' +
         '<div class="et">Brak klientów dla tych filtrów</div>Zmień kryteria wyszukiwania.</div></td></tr>';
     }
     document.getElementById("body").innerHTML = html;
   }
 
-  ["q", "fIS", "fPUP", "fNab"].forEach(function (id) {
+  window.przelaczWnioski = function (id) {
+    expanded[id] = !expanded[id];
+    render();
+  };
+
+  ["q", "fIS", "fPUP", "fNab", "fStatusWn"].forEach(function (id) {
     document.getElementById(id).addEventListener("input", render);
     document.getElementById(id).addEventListener("change", render);
   });
   render();
 
-  /* Kolejka zgloszen z formularza */
-  document.getElementById("kolejka").innerHTML = DB.KOLEJKA.map(function (z, i) {
-    return '<tr id="zg' + i + '">' +
-      '<td class="mono nowrap">' + z.data + '<div class="small muted">rejestracja automatyczna</div></td>' +
-      '<td class="strong nowrap">' + z.firma + '</td>' +
-      '<td class="mono muted">' + z.nip + '</td>' +
-      '<td class="nowrap">' + z.is + '</td>' +
-      '<td class="nowrap">' + z.szkolenie + '</td>' +
-      '<td class="c strong">' + z.osob + '</td>' +
-      '<td class="nowrap">' + z.kontakt + '</td>' +
-      '<td class="right nowrap"><div class="btn-row" style="justify-content:flex-end">' +
-        '<button class="btn xs" onclick="odrzuc(' + i + ')">Odrzuć</button>' +
-        '<button class="btn xs primary" onclick="akceptuj(' + i + ')">Akceptuj</button>' +
-      '</div></td></tr>';
-  }).join("");
-
-  window.akceptuj = function (i) {
-    var tr = document.getElementById("zg" + i);
-    tr.className = "row-pos";
-    tr.lastElementChild.innerHTML = '<span class="tag pos dot">Dodano do bazy klientów</span>';
-  };
-  window.odrzuc = function (i) {
-    var tr = document.getElementById("zg" + i);
-    tr.className = "row-neg";
-    tr.lastElementChild.innerHTML = '<span class="tag neg dot">Odrzucone, powód wymagany</span>';
-  };
-
-  /* Zakladki */
-  document.querySelectorAll(".tab").forEach(function (t) {
-    t.addEventListener("click", function () {
-      document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
-      document.querySelectorAll(".tab-pane").forEach(function (x) { x.classList.remove("on"); });
-      t.classList.add("on");
-      document.getElementById(t.dataset.t).classList.add("on");
-    });
-  });
-
   /* ================================================================
-     Inline CRUD bazy klientów. Zapis do wspólnego JSON przez Store,
-     odświeżanie przez db:changed. Nowy klient dostaje kolejny numer
-     roczny (numer_klienta) i trafia na fakturę (D-112).
+     Inline CRUD bazy klientow. Zapis do wspolnego JSON przez Store.
      ================================================================ */
-
   function val(id) { return document.getElementById(id).value; }
   function escAttr(v) { return String(v == null ? "" : v).replace(/"/g, "&quot;"); }
   var edytowanyKlient = null;
@@ -454,7 +458,7 @@
     } else {
       var maxNr = DB.KLIENCI.reduce(function (m, k) { return Math.max(m, k.nr || 0); }, 0);
       o.numer_klienta = maxNr + 1;
-      document.getElementById("q").value = o.nazwa;   /* pokaz nowego klienta w liscie */
+      document.getElementById("q").value = o.nazwa;
       Store.insert("klienci", o, "KL-");
     }
     zamknijKlientForm();
@@ -469,8 +473,14 @@
     otworzKlientForm(null, "Nowy klient");
   });
 
-  /* Odświeżanie po zmianie danych */
-  window.addEventListener("db:changed", function () { K = budujK(); renderKPI(); render(); });
+  /* Odswiezanie po zmianie danych */
+  window.addEventListener("db:changed", function () {
+    K = budujK();
+    WN_BY_KL = {};
+    DB.WNIOSKI.concat(DB.WNIOSKI_2025 || []).forEach(function (w) { (WN_BY_KL[w.klient] = WN_BY_KL[w.klient] || []).push(w); });
+    K.forEach(function (r) { r.wnioski = WN_BY_KL[r.kl.id] || []; });
+    renderKPI(); render();
+  });
 })();
 </script>
 </body>
