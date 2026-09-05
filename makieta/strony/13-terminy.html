@@ -415,7 +415,7 @@
     return DB.SZKOLENIA.map(function (s) {
       var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === s.is; })[0];
       return '<option value="' + s.id + '"' + (sel === s.id ? " selected" : "") + '>' +
-             (inst ? inst.nazwa : "-") + " — " + s.nazwa + '</option>';
+             (inst ? inst.nazwa : "-") + " - " + s.nazwa + '</option>';
     }).join("");
   }
   function opcjeStatus(sel) {

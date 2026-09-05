@@ -346,7 +346,7 @@ function pokazProjForm() {
   var klOpts = DB.KLIENCI.map(function (k) { return '<option value="' + k.id + '">' + k.nazwa + " (" + k.id + ")</option>"; }).join("");
   var szkOpts = DB.SZKOLENIA.map(function (s) {
     var i = DB.INSTYTUCJE.filter(function (x) { return x.id === s.is; })[0];
-    return '<option value="' + s.id + '">' + (i ? i.nazwa : "") + " — " + s.nazwa + " (" + DB.fmtPLN(s.cena) + ")</option>";
+    return '<option value="' + s.id + '">' + (i ? i.nazwa : "") + " - " + s.nazwa + " (" + DB.fmtPLN(s.cena) + ")</option>";
   }).join("");
   var stOpts = STATUSY.map(function (o) { return "<option>" + o + "</option>"; }).join("");
   el.innerHTML =
