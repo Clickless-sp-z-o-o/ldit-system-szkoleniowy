@@ -212,6 +212,7 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 (function () {
   "use strict";
@@ -252,9 +253,9 @@
             '<b>Opiekun LDIT:</b> ' + i.opiekun +
           '</div>' +
           '<div class="miniset">' +
-            '<div class="mini"><div class="mv">' + DB.fmtNum(klienciIS(i.id).length) + '</div><div class="ml">klientów</div></div>' +
-            '<div class="mini"><div class="mv">' + szkoleniaIS(i.id).length + '</div><div class="ml">w katalogu</div></div>' +
-            '<div class="mini"><div class="mv">' + aktywneIS(i.id).length + '</div><div class="ml">projektów</div></div>' +
+            '<div class="mini" data-tip="Liczba klientów końcowych przypisanych do tej instytucji w 2026."><div class="mv">' + DB.fmtNum(klienciIS(i.id).length) + '</div><div class="ml">klientów</div></div>' +
+            '<div class="mini" data-tip="Pozycje w katalogu szkoleń tej instytucji. Ceny obowiązują wg daty wnioskowania."><div class="mv">' + szkoleniaIS(i.id).length + '</div><div class="ml">w katalogu</div></div>' +
+            '<div class="mini" data-tip="Projekty aktywne: złożone bez decyzji lub z decyzją pozytywną, jeszcze nierozliczone."><div class="mv">' + aktywneIS(i.id).length + '</div><div class="ml">projektów</div></div>' +
           '</div>' +
         '</div>' +
       '</div>';

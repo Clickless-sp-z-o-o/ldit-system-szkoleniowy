@@ -138,6 +138,10 @@
         kosztZDoplata: pozytywna && kosztCalk != null ? kosztCalk + doplata : null,
         statusSkl: w.status_skladania, statusDec: w.status_decyzji, rozliczenie: w.status_finansowy,
         dataWniosku: w.data_wniosku, dataFormularza: w.data_wplyniecia_formularza, dataFaktury: w.data_wystawienia_faktury,
+        /* Nadpisanie prowizji per wniosek (D-93 zaktualizowane, tylko admin z karty wniosku).
+           regula aktywna = licz wg warunkow IS; wylaczona = uzyj stawki indywidualnej. */
+        prowizjaProcent: w.prowizja_procent != null ? w.prowizja_procent : null,
+        prowizjaRegula: w.prowizja_regula_aktywna !== false,
         opiekun: inst.opiekun_ldit || "-"
       };
     });

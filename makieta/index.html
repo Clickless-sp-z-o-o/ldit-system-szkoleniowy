@@ -178,7 +178,8 @@ function render() {
     if (it.deti && stan.rola !== "is" && stan.rola !== "pracownikIS") {
       html += '<div class="nav-sub" id="sub-dofin">';
       PRZYDZIAL[stan.rola].forEach(function (nazwa) {
-        html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html" data-label="' + nazwa + '">' +
+        /* Wejscie w konkretna instytucje filtruje zestawienie tylko do jej danych (separacja, D-35) */
+        html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html?is=' + encodeURIComponent(nazwa) + '" data-label="' + nazwa + '">' +
                 '<span>' + nazwa + '</span></div>';
       });
       html += '</div>';
@@ -221,7 +222,8 @@ function render() {
 
       var label = el.getAttribute("data-label") || el.textContent.trim();
       document.getElementById("crumb").innerHTML = "<b>" + label + "</b>";
-      document.getElementById("view").src = "strony/" + plik + "?rola=" + stan.rola;
+      var sep = plik.indexOf("?") >= 0 ? "&" : "?";
+      document.getElementById("view").src = "strony/" + plik + sep + "rola=" + stan.rola;
     });
   });
 }

@@ -22,7 +22,7 @@
     <div class="ph-actions">
       <button class="btn" onclick="alert('Generuje maila do instytucji szkoleniowej z uzupełnionymi danymi klienta.\\nWymaga zatwierdzenia przed wysyłką (D-104).')">Dane do faktury</button>
       <button class="btn" onclick="alert('Generuje po jednym PDF na uczestnika zakwalifikowanego,\\npakuje w ZIP: certyfikat_imie_nazwisko (D-100).')">Generuj certyfikaty</button>
-      <button class="btn primary">Zapisz</button>
+      <button class="btn primary" id="btnZapisz">Zapisz</button>
     </div>
   </div>
 
@@ -52,7 +52,7 @@
             </div>
 
             <div class="field calc-field" id="wrapPrzyznano">
-              <label>Przyznano <span class="calc-badge">wyliczane</span></label>
+              <label>Przyznano <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Kwota dofinansowania z urzędu: koszt całkowity × wskaźnik wielkości firmy (90% mikro / 70% pozostali). Ręczna edycja kasuje regułę, przycisk poniżej ją przywraca.">i</span></label>
               <input class="inp num" id="fPrzyznano">
               <div class="hint" id="hintPrzyznano"></div>
               <div class="restore-rule">
@@ -64,7 +64,7 @@
 
           <div class="grid g3">
             <div class="field calc-field">
-              <label>Wkład własny <span class="calc-badge">wyliczane</span></label>
+              <label>Wkład własny <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Część kosztu pokrywana przez firmę (10% mikro / 30% pozostali). Liczony jako reszta, żeby równanie przyznano + wkład = koszt się domykało.">i</span></label>
               <input class="inp num" id="fWklad" readonly>
               <div class="hint">Liczony jako reszta, żeby równanie się domykało <span class="ref p">P-51</span></div>
             </div>
@@ -76,7 +76,7 @@
             </div>
 
             <div class="field calc-field">
-              <label>Koszt całkowity z dopłatą <span class="calc-badge">wyliczane</span></label>
+              <label>Koszt całkowity z dopłatą <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Koszt całkowity + dopłata dodatkowa. To podstawa naliczania prowizji LDIT (D-64), nie kwota przyznana.">i</span></label>
               <input class="inp num" id="fKosztDop" readonly>
               <div class="hint"><b>Podstawa naliczania prowizji</b> <span class="ref">D-64</span></div>
             </div>
@@ -91,7 +91,7 @@
         <div class="card-head">
           <h3>Uczestnicy</h3>
           <span class="sub" id="subUcz"></span>
-          <div class="ch-actions"><button class="btn sm">+ Dodaj uczestnika</button></div>
+          <div class="ch-actions"><button class="btn sm" id="btnDodajUcz">+ Dodaj uczestnika</button></div>
         </div>
         <div class="card-body tight">
           <table class="tbl">
@@ -155,13 +155,24 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
 var id = new URLSearchParams(location.search).get("id");
+var rola = new URLSearchParams(location.search).get("rola") || "admin";
+var isAdmin = rola === "admin";
 var w = DB.WNIOSKI.filter(function (x) { return x.id === id; })[0] || DB.WNIOSKI[0];
 var kl = DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0];
 var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0];
 var wsk = DB.wskaznik(w.wielkosc);
 var regulaAktywna = true;
+
+/* Nadpisanie prowizji per wniosek (D-93 zaktualizowane, wyłącznie administrator).
+   regula aktywna -> licz wg warunkow IS; wylaczona -> uzyj stawki indywidualnej. */
+var prowizjaRegula = w.prowizjaRegula !== false;
+var stawkaIndywid = w.prowizjaProcent != null ? w.prowizjaProcent : null;
+var ostatniaPodstawa = 0;
+/* Karte prowizji widzi wylacznie administrator (D-07 separacja, D-34 pracownik bez stawek) */
+if (!isAdmin) { var cardProw = document.getElementById("cardProwizja"); if (cardProw) cardProw.style.display = "none"; }
 
 document.getElementById("tytul").textContent = w.id + " · " + w.klNazwa;
 document.getElementById("tagWielkosc").textContent =
@@ -266,10 +277,12 @@ document.getElementById("dane").innerHTML =
    ["Status decyzji", w.statusDec || "brak"]
   ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
 
-/* ---------- Prowizja ---------- */
+/* ---------- Prowizja (wyłącznie administrator, D-07/D-34) ---------- */
 function liczProwizjeWidok(podstawa) {
-  if (!inst) return;
-  var r = liczProwizje(inst.prowizja, 0, podstawa);
+  if (!inst || !isAdmin) return;
+  ostatniaPodstawa = podstawa;
+
+  var baza = liczProwizje(inst.prowizja, 0, podstawa);
   var opisModelu = {
     A: "próg miesięczny, stawka od całości",
     B: "skala roczna YTD, stawka od nadwyżki",
@@ -277,25 +290,79 @@ function liczProwizjeWidok(podstawa) {
     D: "stała stawka"
   }[inst.prowizja.model];
 
+  var uzyjIndywid = !prowizjaRegula && stawkaIndywid != null;
+  var kwota = uzyjIndywid ? podstawa * stawkaIndywid / 100 : baza.kwota;
+  var stawkaEfekt = uzyjIndywid ? stawkaIndywid : baza.stawka;
+  var poleStawka = stawkaIndywid != null ? stawkaIndywid : Math.round(baza.stawka * 100) / 100;
+
   document.getElementById("prowizja").innerHTML =
     '<div class="kpi" style="border:0;padding:0;box-shadow:none;margin-bottom:12px">' +
     '<div class="k-label">Prowizja od tego projektu</div>' +
-    '<div class="k-value">' + DB.fmtPLN2(r.kwota) + '</div>' +
-    '<div class="k-foot">stawka efektywna <b>' + DB.fmtPct(Math.round(r.stawka * 100) / 100) + '</b></div></div>' +
+    '<div class="k-value">' + DB.fmtPLN2(kwota) + '</div>' +
+    '<div class="k-foot">stawka efektywna <b>' + DB.fmtPct(Math.round(stawkaEfekt * 100) / 100) + '</b>' +
+      (uzyjIndywid ? ' <span class="tag set dot">ręcznie</span>' : '') + '</div></div>' +
+
+    '<div class="field" style="margin-bottom:10px">' +
+      '<label>Tryb prowizji <span class="calc-badge manual">admin</span>' +
+      '<span class="tip-mark" data-tip="Zgodnie z zasadami = licz wg warunków instytucji. Indywidualna stawka = nadpisanie per wniosek, wpisywane z ręki. Zmienia wyłącznie administrator (D-93).">i</span></label>' +
+      '<select class="inp" onchange="ustawTrybProwizji(this.value)">' +
+        '<option value="regula"' + (uzyjIndywid ? '' : ' selected') + '>Zgodnie z zasadami instytucji</option>' +
+        '<option value="indywid"' + (uzyjIndywid ? ' selected' : '') + '>Indywidualna stawka (nadpisanie)</option>' +
+      '</select>' +
+    '</div>' +
+
+    (uzyjIndywid
+      ? '<div class="field calc-field overridden" style="margin-bottom:10px">' +
+          '<label>Stawka indywidualna</label>' +
+          '<input class="inp num" value="' + poleStawka + '" onchange="zmienStawkeIndywid(this.value)">' +
+          '<div class="restore-rule"><span>&#9888; reguła wyłączona</span>' +
+          '<button onclick="przywrocReguleProwizji()">Przywróć regułę</button></div>' +
+        '</div>'
+      : '') +
+
     '<dl class="dl">' +
     '<dt>Podstawa</dt><dd>' + DB.fmtPLN2(podstawa) + '<div class="small muted">koszt całkowity z dopłatą</div></dd>' +
     '<dt>Model</dt><dd><span class="pill k">' + inst.prowizja.model + '</span> ' + opisModelu + '</dd>' +
-    (r.rozbicie.length > 1
-      ? '<dt>Rozbicie</dt><dd>' + r.rozbicie.map(function (x) {
-          return DB.fmtPLN(x.kwota) + " &times; " + x.st + "%";
-        }).join("<br>") + "</dd>"
-      : '<dt>Stawka</dt><dd>' + DB.fmtPct(inst.prowizja.stala || r.stawka) + "</dd>") +
+    (uzyjIndywid
+      ? '<dt>Stawka</dt><dd><b>' + DB.fmtPct(Math.round(stawkaEfekt * 100) / 100) + '</b> <span class="small muted">nadpisana ręcznie</span></dd>'
+      : (baza.rozbicie.length > 1
+          ? '<dt>Rozbicie</dt><dd>' + baza.rozbicie.map(function (x) {
+              return DB.fmtPLN(x.kwota) + " &times; " + x.st + "%";
+            }).join("<br>") + "</dd>"
+          : '<dt>Stawka</dt><dd>' + DB.fmtPct(inst.prowizja.stala || baza.stawka) + "</dd>")) +
     '</dl>' +
+
     '<div class="note" style="margin:12px 0 0;font-size:12px">' +
-    'Nadpisanie stawki dla tego projektu jest możliwe wyłącznie z modułu ' +
-    '<b>Administracja</b> <span class="ref">D-93</span>. Kto dokładnie ma takie prawo, ' +
-    'pozostaje nieustalone <span class="ref p">P-06</span>.</div>';
+    'Nadpisanie działa <b>per wniosek</b> i ustawia je <b>wyłącznie administrator</b>, tu na karcie wniosku lub w module Administracja <span class="ref">D-93</span>. Instytucja nie widzi żadnej stawki <span class="ref">D-07</span>.' +
+    (uzyjIndywid ? '<div style="margin-top:6px">Czy nadpisany wniosek wlicza się do progów pozostałych wniosków instytucji, pozostaje otwarte <span class="ref p">P-03</span>.</div>' : '') +
+    '</div>';
 }
+
+/* Przelaczniki trybu prowizji. Globalne, bo karta jest przerysowywana przy kazdej zmianie. */
+function ustawTrybProwizji(tryb) {
+  if (tryb === "indywid") {
+    prowizjaRegula = false;
+    if (stawkaIndywid == null) {
+      stawkaIndywid = Math.round(liczProwizje(inst.prowizja, 0, ostatniaPodstawa).stawka * 100) / 100;
+    }
+  } else {
+    prowizjaRegula = true;
+  }
+  liczProwizjeWidok(ostatniaPodstawa);
+}
+function zmienStawkeIndywid(val) {
+  var v = parseFloat(String(val).replace(",", "."));
+  stawkaIndywid = isNaN(v) ? null : v;
+  prowizjaRegula = false;
+  liczProwizjeWidok(ostatniaPodstawa);
+}
+function przywrocReguleProwizji() {
+  prowizjaRegula = true;
+  liczProwizjeWidok(ostatniaPodstawa);
+}
+window.ustawTrybProwizji = ustawTrybProwizji;
+window.zmienStawkeIndywid = zmienStawkeIndywid;
+window.przywrocReguleProwizji = przywrocReguleProwizji;
 
 /* ---------- Korespondencja ---------- */
 document.getElementById("maile").innerHTML = DB.MAILE.map(function (m) {

@@ -67,18 +67,18 @@
         <thead>
           <tr>
             <th style="width:32px"><input type="checkbox" id="all"></th>
-            <th style="width:44px">Nr</th>
+            <th style="width:44px">Nr<span class="tip-mark" data-tip="Numer klienta jest ciągły w ramach roku i trafia na fakturę (D-112).">i</span></th>
             <th>Klient</th>
             <th>NIP</th>
             <th>Instytucja</th>
             <th>Szkolenie</th>
             <th>Urząd</th>
-            <th class="c">Osób</th>
-            <th class="num">Wartość</th>
-            <th class="num">Przyznano</th>
-            <th class="num">Koszt całk.</th>
+            <th class="c">Osób<span class="tip-mark" data-tip="Liczba uczestników zakwalifikowanych; po ukośniku łączna liczba zgłoszonych. Do wyliczeń wchodzą tylko zakwalifikowani (D-79).">i</span></th>
+            <th class="num">Wartość<span class="tip-mark" data-tip="Suma kwot uczestników zakwalifikowanych. Podstawa modelu finansowego wniosku.">i</span></th>
+            <th class="num">Przyznano<span class="tip-mark" data-tip="Kwota dofinansowania z urzędu: koszt całkowity × wskaźnik wielkości firmy (90% mikro / 70% pozostali).">i</span></th>
+            <th class="num">Koszt całk.<span class="tip-mark" data-tip="Wartość szkolenia uznana przez urząd. Po dodaniu dopłaty staje się podstawą naliczania prowizji (D-64).">i</span></th>
             <th>Status</th>
-            <th>Rozliczenie</th>
+            <th>Rozliczenie<span class="tip-mark" data-tip="Etap finansowy projektu: Oczekuje → Zafakturowany → Rozliczone.">i</span></th>
             <th></th>
           </tr>
         </thead>
@@ -99,16 +99,38 @@
 <script src="../assets/db.seed.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/db.js"></script>
+<script src="../assets/tips.js"></script>
 <script>
-function budujW() { return DB.WNIOSKI.slice(); }
+/* Wejscie z listy instytucji w menu (?is=nazwa): pokazuj TYLKO dane tej instytucji.
+   Separacja egzekwowana na poziomie danych, nie interfejsu: obcinamy zrodlowa liste
+   wnioskow w budujW(), a nie tylko widok tabeli (D-35). Zgloszone wprost przez klienta. */
+var forcedNazwa = new URLSearchParams(location.search).get("is");
+var forcedInst = forcedNazwa ? DB.INSTYTUCJE.filter(function (i) { return i.nazwa === forcedNazwa; })[0] : null;
+
+function budujW() {
+  var lista = DB.WNIOSKI.slice();
+  return forcedInst ? lista.filter(function (w) { return w.is === forcedInst.id; }) : lista;
+}
 var W = budujW();
 var _batch = false;   /* wstrzymanie przerysowania przy operacjach masowych */
+
+if (forcedInst) {
+  document.querySelector(".page-title").textContent = "Zestawienie 2026 · " + forcedInst.nazwa;
+  var pd = document.querySelector(".page-desc");
+  if (pd) pd.innerHTML = "Widok ograniczony do jednej instytucji. Wyszukiwarka, filtry i eksport zwracają " +
+    "wyłącznie wiersze tej instytucji, separacja na poziomie danych <span class=\"ref\">D-35</span>.";
+  var notaZbiorcza = document.querySelector(".note.open");
+  if (notaZbiorcza) notaZbiorcza.style.display = "none";
+}
+var tabProjekty = document.querySelector(".mod-tabs a.on .n");
+if (tabProjekty) tabProjekty.textContent = W.length;
 
 /* Filtry */
 var selIS = document.getElementById("fIS");
 DB.INSTYTUCJE.slice(0, 8).forEach(function (i) {
   selIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
 });
+if (forcedInst) { selIS.value = forcedInst.id; selIS.disabled = true; }
 var selPUP = document.getElementById("fPUP");
 DB.PUPY.forEach(function (p) {
   selPUP.innerHTML += '<option value="' + p.id + '">' + p.nazwa + '</option>';
