@@ -1,5 +1,7 @@
 # 12. Zakres i etapowanie
 
+> **Aktualizacja po warsztacie 2026-09-04.** **Moduł zadań i powiadomień wraca do zakresu** [D-140], odwracając wykluczenie D-118 (zadania nie idą już do Projectly). Ma być ostatnim modułem w kolejności prac. Szczegóły i pozostałe zmiany: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
+
 ## Stan po warsztacie
 
 | | |

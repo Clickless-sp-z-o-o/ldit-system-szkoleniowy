@@ -49,6 +49,11 @@ Dokumentacja jest podzielona na sekcje tematyczne. Każdy plik jest samodzielny,
 | [15. Ryzyka](15-ryzyka.md) | Rejestr ryzyk z oceną i mitygacją |
 | [16. Słownik](16-slownik.md) | Pojęcia domenowe KFS i terminologia projektu |
 
+### Warsztaty
+| Plik | Zawartość |
+|---|---|
+| [17. Warsztat doprecyzowujący (2026-09-04)](17-warsztat-2026-09-04.md) | Drugi warsztat na makiecie v2: konflikty, nowe decyzje D-125 - D-147, proces Działu Dotacji, powrót modułu zadań |
+
 ---
 
 ## Źródła

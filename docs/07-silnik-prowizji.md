@@ -1,5 +1,7 @@
 # 07. Silnik prowizji
 
+> **Aktualizacja po warsztacie 2026-09-04.** Indywidualne nadpisanie per wniosek jako **procent albo kwota** [D-136] (koryguje D-21). Indywidualna stawka **wlicza się do puli progowej** miesięcznej lub rocznej [D-137] (rozstrzyga P-03). Nadpisanie robi się **z karty wniosku**; Administracja to podsumowanie po instytucjach plus dashboard prowizji miesięczny i narastająco [D-138]. Szczegóły: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
+
 > **Paweł (24:28):** "dzisiaj udało nam się przejść przez ten system prowizji, bo to jest chyba jedna z takich rzeczy trudniejszych."
 
 To jest **najtrudniejszy element projektu**. Jeden fragment warsztatu (26:14 - 51:14, 25 minut) był poświęcony wyłącznie temu tematowi.

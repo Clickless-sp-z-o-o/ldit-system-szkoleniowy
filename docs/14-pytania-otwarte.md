@@ -45,14 +45,18 @@ Wykonawca dwukrotnie sygnalizował "osobne bazy pod spodem" (2:20:19, 3:12:16). 
 
 **Odpowiada:** wykonawca (decyzja techniczna). **Pilność:** przed implementacją.
 
+> **Aktualizacja 2026-09-04.** Na warsztacie doprecyzowującym wykonawca skłonił się ku **osobnym mini-bazom per instytucja pod spodem** [D-143], argumentując bezpieczeństwem (żeby IS nie odsłoniła cudzych danych przez narzędzia deweloperskie). Napięcie z wymaganiami zbiorczych widoków pozostaje. Nowy wątek: [P-56]. Blokada nadal otwarta.
+
 ---
 
 ## Model finansowy i prowizje
 
-### P-03. Czy wniosek z nadpisaną stawką wlicza się do progów
+### P-03. Czy wniosek z nadpisaną stawką wlicza się do progów - ZAMKNIĘTE (2026-09-04)
 Nie ustalono, czy wartość wniosku rozliczanego indywidualnie (np. 15% zamiast 20%) wlicza się do sumy narastającej wypełniającej progi pozostałych wniosków tej instytucji.
 
 Ma bezpośredni wpływ na testy jednostkowe silnika prowizji.
+
+**Rozstrzygnięte 2026-09-04:** tak, wlicza się do puli progowej (miesięcznej lub rocznej) [D-137]. Bartek (35:40): "raczej to będzie doliczone po prostu do całości".
 
 ### P-04. Faktury niechronologiczne i korekty
 Ustalono, że kolejność wystawiania faktur ma znaczenie dla wypełniania progów (33:45), ale nie ustalono reguły dla faktur wystawianych poza kolejnością ani dla korekt faktur.
@@ -79,10 +83,12 @@ Klient zakwestionował nazwę (2:06:02), proponował "dofinansowanie ze wkładem
 ### P-14. Od jakiej podstawy liczy się wkład własny
 W przykładzie z warsztatu "dopłata standard" została policzona od 200 000 (wartość wnioskowana), a "przyznano" od 180 000 (koszt uznany). Nie ustalono, która podstawa jest właściwa.
 
-### P-30. Czy "Przyznano" ma być całkowicie nieedytowalne
+### P-30. Czy "Przyznano" ma być całkowicie nieedytowalne - ZAMKNIĘTE (2026-09-04)
 Dokument klienta sprzed warsztatu zakładał ręczne nadpisanie z wyłączeniem reguły. Wykonawca na warsztacie zadeklarował "przyznano nie edytuję" (2:00:52), klient nie zaprotestował, ale też nie potwierdził wprost.
 
 Sprzeczne z zasadą ogólną z D-19 (każda wyliczana wartość edytowalna, reguła kasowana i przywracalna).
+
+**Rozstrzygnięte 2026-09-04:** "Przyznano" ma być **edytowalne** ręcznie (odblokowanie komórki) z akcją "Przywróć regułę" [D-135]. Odwraca D-58. Bartek (17:01): "jeszcze przyznano musi być do edycji. Ja o tym cały czas mówię."
 
 ### P-31. Ile jest wariantów modeli prowizyjnych łącznie
 Wykonawca pytał wprost dwukrotnie (33:45, 38:48). Klient podał cztery modele plus negocjacje indywidualne, ale sam przyznał: "tych przypadków jest przeróżnie" (35:32).
@@ -131,8 +137,10 @@ Wykonawca stwierdził, że "instytucja szkoleniowa też powinna to widzieć" (2:
 
 Zdanie urwane.
 
-### P-10. Czy zostaje kalendarz terminów szkoleń w systemie
+### P-10. Czy zostaje kalendarz terminów szkoleń w systemie - ZAMKNIĘTE (2026-09-04)
 Wykluczono zadania i integrację Outlook, ale **nie potwierdzono wprost**, czy zostaje jakikolwiek kalendarz terminów wewnątrz systemu. Z wcześniejszej części warsztatu i dokumentacji przedwarsztatowej wynika, że powinien.
+
+**Rozstrzygnięte 2026-09-04:** tak, **kalendarz per instytucja w systemie** [D-142]. IS wystawia terminy, przypisuje do wniosku, LDIT ma wgląd we wszystkie. Uwaga: sam moduł zadań, wykluczony w D-118, **również wraca** [D-140].
 
 ### P-08. Zbiorcze zestawienie: dashboard czy widok operacyjny
 Klient powiedział, że zbiorczy widok wszystkich instytucji ma być tylko na dashboardzie ("po co wyświetlać 2 razy"), ale wcześniej opisywał go jako widok operacyjny do masowej zmiany statusów po filtrze PUP. Dashboard ma być "tylko statystyki, żadnej rozpiski klientów".
@@ -214,11 +222,31 @@ Dokumentacja przedwarsztatowa: "rozważane jest zlecenie zewnętrznego audytu fi
 
 **Warsztat nie wrócił do tego tematu.**
 
-### P-41. Czy ten sam uczestnik może być obsługiwany przez dwie instytucje
+### P-41. Czy ten sam uczestnik może być obsługiwany przez dwie instytucje - ZAMKNIĘTE (2026-09-04)
 Pytanie z dokumentacji przedwarsztatowej, nierozstrzygnięte. Ma wpływ na model danych i separację.
+
+**Rozstrzygnięte 2026-09-04:** tak, jeden klient może być przypisany do **wielu instytucji** (znaczniki), każda widzi go tylko w swoim kontekście [D-144]. Realny przypadek: ten sam klient u Metal Maniak i Dron Fortech.
 
 ### P-54. Zakres zdarzeń w logu akcji (kliknięć)
 Klient określił, że logi mają obejmować "wszystkie akcje", w tym kliknięcia [D-122]. Do doprecyzowania **lista zdarzeń**, które faktycznie trafiają do logu akcji. Logowanie dosłownie każdego kliknięcia generuje ogromny wolumen i szum, więc rekomendacja wykonawcy to lista istotnych akcji (otwarcie karty, eksport, wejście w moduł finansowy, uruchomienie wysyłki), a nie każde zdarzenie interfejsu. Ma wpływ na wolumen danych i retencję [P-26].
+
+---
+
+## Nowe pytania po warsztacie doprecyzowującym (2026-09-04)
+
+Kontekst i decyzje w [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
+
+### P-55. Zadania kontra powiadomienia: jeden moduł czy dwa
+Moduł zadań wraca do systemu [D-140]. Klient rozróżnia zadania (plan dnia, do zrobienia) od powiadomień/alertów (przypomnienia na datę). Nie ustalono, czy to jeden moduł, czy dwa.
+
+### P-56. Osobne bazy per instytucja kontra zbiorcze widoki
+Wykonawca skłania się ku osobnym mini-bazom per instytucja [D-143], co stoi w napięciu z wymaganiami zbiorczego dashboardu, ciągłej numeracji klientów i zestawienia wszystkich instytucji. Powiązane z blokadą [P-25]. Wymaga domknięcia architektury.
+
+### P-57. Które zadania są automatyczne, a które ręczne
+Część zadań da się wyzwalać ze statusu i daty (np. przygotowanie rozliczenia z daty ostatniego dnia szkolenia), ale klient podkreśla, że 342 urzędy mają różne zasady i "nie ma jednego standardu". Do rozpisania, które zadania wskakują automatycznie, a które zostają ręczne.
+
+### P-58. Zakres i forma bota
+Plik "Makieta + Bot" sugeruje istnienie bota, ale jego demonstracja odbyła się poza nagraniem. Zakres, cel i technologia bota do udokumentowania na podstawie odrębnego materiału.
 
 ---
 
@@ -292,7 +320,10 @@ Nie ustalono daty, tylko sekwencję (po makiecie, w tym tygodniu).
 | Bezpieczeństwo i RODO | 4 |
 | Proces i nazewnictwo | 8 |
 | Handlowe i formalne | 6 |
-| **Razem** | **54** |
+| Warsztat 2026-09-04 (nowe P-55 - P-58) | 4 |
+| **Razem (wszystkie kiedykolwiek)** | **58** |
+
+**Stan po warsztacie doprecyzowującym (2026-09-04):** zamknięto 5 pytań (P-03, P-06, P-10, P-30, P-41), otwarto 4 nowe (P-55 - P-58). Realnie **ok. 53 pytań otwartych**, w tym **4 blokady** (P-01, P-02, P-09, P-25, przy czym P-25 zyskała nowy wątek P-56).
 
 **Uwaga procesowa.** Wykonawca zadeklarował po warsztacie:
 > **Paweł (2:57:33):** "myślę, że po dzisiejszym warsztacie to ja już nie będę musiał się do ciebie za dużo odzywać."

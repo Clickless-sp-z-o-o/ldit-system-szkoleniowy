@@ -30,6 +30,9 @@ var SECTIONS = [
     { id: "12-pytania-ryzyka", ikona: "&#9873;", label: "Pytania otwarte i ryzyka" },
     { id: "13-decyzje",        ikona: "&#9878;", label: "Rejestr decyzji" },
     { id: "14-slownik",        ikona: "&#9906;", label: "Słownik" }
+  ] },
+  { grupa: "Warsztaty", items: [
+    { id: "15-warsztat-0904",  ikona: "&#9998;", label: "Warsztat 04.09.2026" }
   ] }
 ];
 

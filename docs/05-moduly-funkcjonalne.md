@@ -1,5 +1,7 @@
 # 05. Moduły funkcjonalne
 
+> **Aktualizacja po warsztacie 2026-09-04.** **Moduł zadań i powiadomień wraca do systemu** [D-140] (odwraca D-118). Dofinansowania rozdzielone na dwie tabele: **Baza danych** i **Wnioski** [D-128]. Administracja dostaje statystyki per instytucja i zbiorczo [D-141]. Terminy: kalendarz per instytucja w systemie [D-142]. Szczegóły: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
+
 Lista modułów po warsztacie. Nazewnictwo zakładek odzwierciedla **żądanie klienta o zachowanie obecnych nazw** [D-55], nie nazwy z dokumentacji przedwarsztatowej.
 
 > **Bartek (1:47:16):** "Chciałbym trochę zachować też nazewnictwo (...) żeby to tak jak już teraz działamy, jesteśmy przyzwyczajeni, żeby też te nazwy pozostawały."

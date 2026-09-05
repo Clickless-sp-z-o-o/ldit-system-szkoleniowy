@@ -1,5 +1,7 @@
 # 06. Model finansowy KFS
 
+> **Aktualizacja po warsztacie 2026-09-04.** Progi dofinansowania są **konfigurowalne i wersjonowane datą** [D-131] (koryguje D-59, nie są już sztywne). Wielkość przedsiębiorstwa **edytowalna per wniosek**, z kryterium obrotu >2 mln EUR [D-132] (koryguje D-68). **"Koszt całkowity z dopłatą" ręczny, "koszt całkowity" wyliczany** [D-134] (odwraca D-64). **"Przyznano" edytowalne** z przywracaniem reguły [D-135] (odwraca D-58, zamyka P-30). Konflikty i pełny kontekst: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
+
 Ten rozdział opisuje kwoty **po stronie klienta końcowego i urzędu**. Prowizja LDIT jest opisana osobno w [07. Silnik prowizji](07-silnik-prowizji.md).
 
 ---

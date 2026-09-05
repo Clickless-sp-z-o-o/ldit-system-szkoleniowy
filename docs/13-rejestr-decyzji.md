@@ -201,6 +201,38 @@ Cztery ustalenia dopisane po warsztacie, na podstawie dodatkowych notatek klient
 
 ---
 
+## Warsztat doprecyzowujący (2026-09-04): D-125 - D-147
+
+Drugi warsztat na makiecie v2 (2 h 16 min). Pełny kontekst, cytaty, proces i **osobna sekcja konfliktów** w [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
+
+| ID | Decyzja | Siła | Kto | Typ |
+|---|---|---|---|---|
+| **D-125** | Rola wynika z konta zalogowanego użytkownika (panel logowania). Przełącznik ról w makiecie tylko demonstracyjny | TWARDA | [W] | uszczegółowia D-02, D-36 |
+| **D-126** | Administrator instytucji zarządza własnymi pracownikami (max własne uprawnienia). Admin LDIT zachowuje usuwanie, blokowanie i filtrowanie kont po instytucji | TWARDA | [K] | rozszerza D-72 |
+| **D-127** | Zakładka "Dofinansowania" statyczna, obok jawna pozycja "Wszystkie instytucje". Lista instytucji rozwijana | TWARDA | [K] | aktualizuje D-112 |
+| **D-128** | Widok rozdzielony na dwie tabele: **Baza danych** (klient = 1 wiersz, wnioski zagnieżdżone) i **Wnioski** (od etapu 3, klient może się powielać). Synchronizowane | TWARDA | [K] potrzeba, [W] kompromis | NOWE |
+| **D-129** | Osobne zakładki roczne. Dane historyczne **nie migrowane** (2027 start pusty), tylko podsumowania liczbowe jako wsad na dashboard | TWARDA | [K] | aktualizuje D-24 |
+| **D-130** | Priorytet w Bazie klientów = **ostatni dzień naboru** (sortowanie rosnąco). Flaga zainteresowania kolejnym naborem. Edycja inline dat naboru | TWARDA | [K] | rozszerza D-90 |
+| **D-131** | Progi dofinansowania per wielkość (mikro/mały/średni/inny) **konfigurowalne i wersjonowane datą** | TWARDA | [K] | **koryguje D-59** |
+| **D-132** | Wielkość przedsiębiorstwa **edytowalna per wniosek**, nie tylko z liczby zatrudnionych (kryterium obrotu >2 mln EUR) | TWARDA | [K] | **koryguje D-68** |
+| **D-133** | Dane klienta edytowalne **per wniosek** (w tym kontaktowe). Osobna zakładka danych stałych + podsumowanie zmian statusów | TWARDA | [K] | rozszerza D-53, D-54 |
+| **D-134** | **"Koszt całkowity z dopłatą" ręczny, "koszt całkowity" wyliczany** (z dopłatą minus dopłata) | TWARDA | [W] propozycja, [K] potwierdził | **odwraca D-64** |
+| **D-135** | **"Przyznano" edytowalne ręcznie** (odblokowanie komórki) z akcją "Przywróć regułę" | TWARDA | [K] | **odwraca D-58, rozstrzyga P-30** |
+| **D-136** | Indywidualne nadpisanie prowizji per wniosek jako **procent albo kwota** | TWARDA | [K] | **koryguje D-21** |
+| **D-137** | Indywidualna stawka per wniosek **wlicza się do puli progowej** (miesięcznej/rocznej) | TWARDA | [K] | **rozstrzyga P-03** |
+| **D-138** | Nadpisanie prowizji **z karty wniosku**. Administracja = podsumowanie po instytucjach + dashboard prowizji miesięczny i narastająco | TWARDA | [K] | potwierdza D-93 |
+| **D-139** | Numer faktury przy wniosku, import i lista faktur w Administracji | TWARDA | [K] | uszczegółowia D-37, D-38 |
+| **D-140** | **Moduł zadań i powiadomień wraca do systemu** (ręczne + automatyczne zadania per wniosek/status, alerty na datę, plan dnia, licznik akceptacji). Do przemyślenia 1 czy 2 moduły. Ostatni w kolejności | TWARDA | [K] | **odwraca D-118** |
+| **D-141** | Statystyki ilościowe i kwotowe **per instytucja oraz zbiorczo** na zakładce Administracja. System nagród dla instytucji | TWARDA | [K] | rozszerza statystyki |
+| **D-142** | **Kalendarz terminów per instytucja w systemie**, termin przypisany do wniosku, LDIT ma wgląd we wszystkie. Kalendarz + tabela + lista uczestników | TWARDA | [K] potrzeba, [W] rozwiązanie | **rozstrzyga P-10** |
+| **D-143** | Kierunek: **osobne mini-bazy per instytucja pod spodem** dla bezpieczeństwa, framework open source z modułem uprawnień | WSTĘPNA | [W] | dotyczy P-25 |
+| **D-144** | Jeden klient może być przypisany do **wielu instytucji** (znaczniki), z separacją widoku | TWARDA | [K] | **rozstrzyga P-41** |
+| **D-145** | Przebieg wniosku budowany z **logów zmian statusu**. Zmiana statusu przyciskiem "przejdź do następnego etapu" + komentarz. Zadania przypięte do statusów | TWARDA | [W] propozycja, [K] akceptacja | NOWE |
+| **D-146** | Etapy procesu wg pliku **`Etapy_procesu.png`** jako model referencyjny. Klient wchodzi do tabeli Wnioski od **etapu 3** | TWARDA | [K] | NOWE |
+| **D-147** | Formularz preferencyjnie **Google Forms**, zaczytywany z eksportu. LDIT może dodawać klientów ręcznie i importem starej bazy | WSTĘPNA | [W] propozycja, [K] potrzeba | uszczegółowia D-66, D-70 |
+
+---
+
 ## Decyzje unieważnione w trakcie warsztatu
 
 | Wcześniejsza decyzja | Czas | Unieważniona przez | Czas |
@@ -210,20 +242,31 @@ Cztery ustalenia dopisane po warsztacie, na podstawie dodatkowych notatek klient
 | Makieta z przełącznikiem instytucji w prawym górnym rogu | makieta v1 | D-112 (lista w lewym menu) | 3:12:21 |
 | Reguła "Przyznano" wyłącza się po ręcznej edycji | dok. klienta | D-58 ("przyznano nie edytuję") | 2:00:52 |
 
+### Odwrócone na warsztacie doprecyzowującym (2026-09-04)
+
+| Wcześniejsza decyzja | Odwrócona / skorygowana przez |
+|---|---|
+| D-118 (zadania wykluczone, do Projectly) | **D-140** (moduł zadań wraca do systemu) |
+| D-58 (przyznano nieedytowalne) | **D-135** (przyznano edytowalne z przywracaniem reguły) |
+| D-64 (koszt całkowity ręczny, z dopłatą wyliczany) | **D-134** (odwrócony kierunek: z dopłatą ręczny, koszt całkowity wyliczany) |
+| D-59 (progi 90/10 i 70/30 sztywne) | **D-131** (progi konfigurowalne i wersjonowane datą) |
+| D-68 (wielkość auto z liczby zatrudnionych) | **D-132** (wielkość edytowalna per wniosek, kryterium obrotu) |
+| D-21 (prowizja zawsze procentowo) | **D-136** (indywidualne nadpisanie: procent albo kwota) |
+
 ---
 
 ## Statystyka decyzji
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 96 |
-| WSTĘPNA | 19 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 117 |
+| WSTĘPNA | 21 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **124** |
+| **Razem** | **147** |
 
-Potrzebę zgłosił klient: **82** decyzji. Rozwiązanie zaproponował wykonawca: **42**.
+Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 47**.
 
-Liczby obejmują 4 uzupełnienia po warsztacie (D-121 - D-124, wszystkie TWARDE, wszystkie z potrzeby klienta).
+Liczby obejmują 4 uzupełnienia po pierwszym warsztacie (D-121 - D-124) oraz 23 decyzje z warsztatu doprecyzowującego 2026-09-04 (D-125 - D-147, w tym 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md)).
 
 > **Uwaga o interpretacji.** Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde ustalenia w wąskim zakresie, obok których stoi 50 pytań otwartych, w tym 4 blokady. Decyzje z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu stron i wymagają potwierdzenia.

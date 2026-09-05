@@ -1,5 +1,7 @@
 # 03. Model danych
 
+> **Aktualizacja po warsztacie 2026-09-04.** Widok rozdzielony na **Bazę danych** (klient = jeden wiersz, wnioski zagnieżdżone) i **Wnioski** (od etapu 3) [D-128]. Odwrócenie wyliczania: **koszt całkowity z dopłatą ręczny, koszt całkowity wyliczany** [D-134]. **"Przyznano" edytowalne** [D-135]. Wielkość przedsiębiorstwa i dane kontaktowe **edytowalne per wniosek** [D-132, D-133]. Brak migracji danych historycznych, roczne zakładki [D-129]. Jeden klient może być u wielu instytucji [D-144]. Pełny kontekst i konflikty: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
+
 Model wypracowany na warsztacie, w kilku miejscach na żywo skorygowany. Wykonawca odkrył w trakcie ćwiczenia brakującą tabelę:
 
 > **Paweł (1:52:56):** "Bo ja tu widzę w bazie jeszcze jedną tabelę, o której nie myślałem wcześniej."

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Warsztat 04.09.2026</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Warsztaty</div>
+    <h1 class="doc-title">Warsztat doprecyzowujący (04.09.2026)</h1>
+    <p class="doc-lead">
+      Drugi warsztat, przeprowadzony na żywo na makiecie v2 (2 h 16 min). Wykonawca przechodził ekran
+      po ekranie, sprawdzając, co jest zaopiekowane, co wymaga zmiany i co urodziło się od pierwszego
+      warsztatu. Warsztat przyniósł kilka <b>odwróceń wcześniejszych decyzji</b>. Poniżej najpierw
+      osobna sekcja konfliktów, potem nowe decyzje, proces i szczegóły.
+    </p>
+  </div>
+
+  <div class="q">
+    „zobaczymy jakie punkty stąd mamy już zaopiekowane, jakie potrzebują zmiany (...) I czy nie
+    urodziło nam się przez ten okres coś jeszcze? Bo oboje podczas tego ostatniego spotkania byliśmy
+    już na samym końcu dosyć zmęczeni.”
+    <span class="who">Paweł, 0:41</span>
+  </div>
+
+  <div class="callout warn">
+    <span class="ct">Uwaga o bocie</span>
+    Plik nosi tytuł "Makieta + Bot", ale demonstracja bota nastąpiła <b>po zatrzymaniu nagrania</b>.
+    W transkrypcji nie ma treści o bocie, więc nie jest tu opisany. Wymaga osobnego udokumentowania
+    <span class="ref p">P-58</span>.
+  </div>
+
+  <h2>Konflikty i nowe ustalenia</h2>
+  <p>To jest osobna sekcja z wszystkim, co <b>zmienia lub unieważnia</b> wcześniejsze ustalenia.</p>
+
+  <div class="callout danger">
+    <span class="ct">Konflikty z wcześniejszymi decyzjami (odwrócenia i korekty)</span>
+    Sześć ustaleń z 04.09.2026 zmienia to, co ustalono wcześniej. Tabela poniżej.
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Nowe ustalenie (04.09.2026)</th><th>Koliduje z</th><th>Rozstrzygnięcie</th></tr></thead>
+      <tbody>
+        <tr><td><b>Moduł zadań i powiadomień wraca do systemu</b></td><td><span class="ref">D-118</span> (zadania wykluczone, do Projectly)</td><td>Odwrócone <span class="ref new">D-140</span></td></tr>
+        <tr><td><b>"Przyznano" edytowalne ręcznie</b> z przywracaniem reguły</td><td><span class="ref">D-58</span>, pytanie <span class="ref p">P-30</span></td><td>Odwrócone <span class="ref new">D-135</span></td></tr>
+        <tr><td><b>"Koszt całkowity z dopłatą" ręczny, "koszt całkowity" wyliczany</b></td><td><span class="ref">D-64</span> (odwrotnie)</td><td>Odwrócony kierunek <span class="ref new">D-134</span></td></tr>
+        <tr><td><b>Progi dofinansowania konfigurowalne</b> i datowane</td><td><span class="ref">D-59</span> (sztywne 90/10, 70/30)</td><td>Skorygowane <span class="ref new">D-131</span></td></tr>
+        <tr><td><b>Wielkość przedsiębiorstwa edytowalna per wniosek</b> (kryterium obrotu)</td><td><span class="ref">D-68</span> (auto z liczby zatrudnionych)</td><td>Skorygowane <span class="ref new">D-132</span></td></tr>
+        <tr><td><b>Indywidualna prowizja: procent LUB kwota</b></td><td><span class="ref">D-21</span> (zawsze procentowo)</td><td>Skorygowane <span class="ref new">D-136</span></td></tr>
+        <tr><td><b>Osobne mini-bazy per instytucja pod spodem</b></td><td>Wymagania zbiorczych widoków, blokada <span class="ref p">P-25</span></td><td>Napięcie otwarte <span class="ref new">D-143</span>, <span class="ref p">P-56</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Rozstrzygnięte pytania otwarte</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pytanie</th><th>Rozstrzygnięcie 04.09.2026</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref p">P-03</span> Czy nadpisana stawka wlicza się do progów</td><td>Tak, wlicza się do puli progowej <span class="ref new">D-137</span></td></tr>
+        <tr><td><span class="ref p">P-10</span> Czy zostaje kalendarz terminów</td><td>Tak, kalendarz per instytucja <span class="ref new">D-142</span></td></tr>
+        <tr><td><span class="ref p">P-30</span> Czy "Przyznano" nieedytowalne</td><td>Nie, ma być edytowalne <span class="ref new">D-135</span></td></tr>
+        <tr><td><span class="ref p">P-41</span> Ten sam klient u dwóch instytucji</td><td>Tak, wiele znaczników, separacja widoku <span class="ref new">D-144</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Nowe decyzje D-125 - D-147</h2>
+  <details class="acc" open>
+    <summary>Pełna tabela 23 nowych decyzji</summary>
+    <div class="acc-body">
+      <div class="tbl-wrap">
+        <table class="t">
+          <thead><tr><th>ID</th><th>Decyzja</th><th>Typ</th></tr></thead>
+          <tbody>
+            <tr><td><span class="ref new">D-125</span></td><td>Rola wynika z konta zalogowanego (panel logowania); przełącznik ról w makiecie tylko demonstracyjny</td><td>uszczegółowia D-02, D-36</td></tr>
+            <tr><td><span class="ref new">D-126</span></td><td>Administrator instytucji zarządza własnymi pracownikami; admin LDIT zachowuje usuwanie, blokowanie i filtrowanie kont</td><td>rozszerza D-72</td></tr>
+            <tr><td><span class="ref new">D-127</span></td><td>Zakładka "Dofinansowania" statyczna + jawna "Wszystkie instytucje"; lista rozwijana</td><td>aktualizuje D-112</td></tr>
+            <tr><td><span class="ref new">D-128</span></td><td>Dwie tabele: Baza danych (klient = 1 wiersz) i Wnioski (od etapu 3, powielanie klienta)</td><td>NOWE</td></tr>
+            <tr><td><span class="ref new">D-129</span></td><td>Osobne zakładki roczne; brak migracji danych historycznych; podsumowania jako wsad</td><td>aktualizuje D-24</td></tr>
+            <tr><td><span class="ref new">D-130</span></td><td>Priorytet w Bazie = ostatni dzień naboru; flaga zainteresowania; edycja inline dat</td><td>rozszerza D-90</td></tr>
+            <tr><td><span class="ref new">D-131</span></td><td>Progi dofinansowania per wielkość konfigurowalne i wersjonowane datą</td><td>koryguje D-59</td></tr>
+            <tr><td><span class="ref new">D-132</span></td><td>Wielkość przedsiębiorstwa edytowalna per wniosek (kryterium obrotu >2 mln EUR)</td><td>koryguje D-68</td></tr>
+            <tr><td><span class="ref new">D-133</span></td><td>Dane klienta i kontaktowe edytowalne per wniosek; osobna zakładka danych stałych</td><td>rozszerza D-53, D-54</td></tr>
+            <tr><td><span class="ref new">D-134</span></td><td>"Koszt całkowity z dopłatą" ręczny, "koszt całkowity" wyliczany</td><td>odwraca D-64</td></tr>
+            <tr><td><span class="ref new">D-135</span></td><td>"Przyznano" edytowalne ręcznie z przywracaniem reguły</td><td>odwraca D-58, rozstrzyga P-30</td></tr>
+            <tr><td><span class="ref new">D-136</span></td><td>Indywidualne nadpisanie prowizji: procent albo kwota</td><td>koryguje D-21</td></tr>
+            <tr><td><span class="ref new">D-137</span></td><td>Indywidualna stawka wlicza się do puli progowej</td><td>rozstrzyga P-03</td></tr>
+            <tr><td><span class="ref new">D-138</span></td><td>Nadpisanie prowizji z karty wniosku; Administracja = podsumowanie + dashboard miesięczny i narastająco</td><td>potwierdza D-93</td></tr>
+            <tr><td><span class="ref new">D-139</span></td><td>Numer faktury przy wniosku, import i lista faktur</td><td>uszczegółowia D-37, D-38</td></tr>
+            <tr><td><span class="ref new">D-140</span></td><td>Moduł zadań i powiadomień wraca do systemu (ręczne + automatyczne, alerty, plan dnia)</td><td>odwraca D-118</td></tr>
+            <tr><td><span class="ref new">D-141</span></td><td>Statystyki per instytucja i zbiorczo na Administracji; system nagród</td><td>rozszerza statystyki</td></tr>
+            <tr><td><span class="ref new">D-142</span></td><td>Kalendarz terminów per instytucja w systemie; termin przypisany do wniosku</td><td>rozstrzyga P-10</td></tr>
+            <tr><td><span class="ref new">D-143</span></td><td>Kierunek: osobne mini-bazy per instytucja; framework open source z modułem uprawnień</td><td>dotyczy P-25</td></tr>
+            <tr><td><span class="ref new">D-144</span></td><td>Jeden klient może być przypisany do wielu instytucji (znaczniki)</td><td>rozstrzyga P-41</td></tr>
+            <tr><td><span class="ref new">D-145</span></td><td>Przebieg wniosku z logów zmian statusu; zmiana przyciskiem "przejdź do następnego etapu" + komentarz</td><td>NOWE</td></tr>
+            <tr><td><span class="ref new">D-146</span></td><td>Etapy procesu wg Etapy_procesu.png; wejście do tabeli Wnioski od etapu 3</td><td>NOWE</td></tr>
+            <tr><td><span class="ref new">D-147</span></td><td>Formularz preferencyjnie Google Forms, zaczytywany z eksportu; import starej bazy przez LDIT</td><td>uszczegółowia D-66, D-70</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <h2>Proces obsługi klienta przez Dział Dotacji</h2>
+  <p>
+    Klient dostarczył diagram procesu. Ma trafić do dokumentacji, a docelowo makieta ma być budowana
+    na jego podstawie <span class="ref new">D-146</span>.
+  </p>
+  <p><img src="../assets/etapy-procesu.png" alt="Schemat obsługi klienta przez Dział Dotacji" style="max-width:100%;border:1px solid var(--line);border-radius:8px"></p>
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Etap</th><th>Nazwa</th><th>Co się dzieje</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Przekazanie klienta</td><td>IS/handlowiec przekazuje klienta przez formularz; Dział Dotacji weryfikuje dane</td></tr>
+        <tr><td>2</td><td>Akceptacja formularza</td><td>Bramka anty-spam, rejestracja w systemie (folder + baza klientów)</td></tr>
+        <tr><td>3</td><td>Przygotowanie wniosku i dokumentów</td><td>Profil praca.gov.pl, weryfikacja konta, dodanie przedstawiciela, wniosek elektroniczny, załączniki, dokumenty do podpisu. <b>Od tego etapu klient wchodzi do tabeli Wnioski</b></td></tr>
+        <tr><td>4</td><td>Złożenie wniosku</td><td>Wniosek złożony w PUP</td></tr>
+        <tr><td>5</td><td>Oczekiwanie na decyzję</td><td>Wniosek w rozpatrywaniu</td></tr>
+        <tr><td>6</td><td>Decyzja urzędu</td><td>Pozytywna lub negatywna. Negatywna: klient zostaje w bazie, czeka na kolejny nabór</td></tr>
+        <tr><td>7</td><td>Ustalenie terminu</td><td>Model A (LDIT z kalendarza IS) lub B (IS ustala). Powiadomienia do IS i do LDIT</td></tr>
+        <tr><td>8</td><td>Realizacja szkolenia</td><td>Szkolenie się odbywa</td></tr>
+        <tr><td>9</td><td>Rozliczenie</td><td>Dokumenty rozliczeniowe (zadanie auto z daty ostatniego dnia), dane do faktury, certyfikaty</td></tr>
+        <tr><td>10</td><td>Proces zakończony</td><td>Dofinansowanie rozliczone</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="ct">Kluczowa zmiana procesu</span>
+    Konsultacje telefoniczne prawie zniknęły. Większość klientów dostaje gotową instrukcję i radzi
+    sobie sama. Klient wchodzi do tabeli Wnioski dopiero od etapu 3, wcześniej figuruje tylko w Bazie klientów.
+  </div>
+
+  <h2>Szczegóły tematyczne</h2>
+
+  <details class="acc">
+    <summary>Widok Dofinansowania: Baza danych i Wnioski</summary>
+    <div class="acc-body">
+      <p>Zakładka "Dofinansowania" + jawna pozycja "Wszystkie instytucje" <span class="ref new">D-127</span>. Po wejściu w instytucję dwie tabele: <b>Baza danych</b> (po lewej, wszyscy klienci, klient = 1 wiersz, wnioski rozwijane) i <b>Wnioski</b> (po prawej, od etapu 3) <span class="ref new">D-128</span>.</p>
+      <p>Baza klientów zawiera wszystkich, których nigdy się nie usuwa. Priorytet: ostatni dzień naboru <span class="ref new">D-130</span>. Flaga zainteresowania kolejnym naborem. Osobne zakładki roczne, bez migracji danych <span class="ref new">D-129</span>.</p>
+      <div class="q">„priorytet musi wyznaczać ostatni dzień naboru (...) Nieważne, czy jest przyjemny czy nieprzyjemny wniosek." <span class="who">Bartek, 1:20:36</span></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Model finansowy: konfigurowalne progi, odwrócone wyliczenia, edytowalne "Przyznano"</summary>
+    <div class="acc-body">
+      <p>Progi dofinansowania per wielkość konfigurowalne i datowane <span class="ref new">D-131</span>. Wielkość edytowalna per wniosek, z uwzględnieniem obrotu <span class="ref new">D-132</span>. Odwrócenie: koszt całkowity z dopłatą ręczny, koszt całkowity wyliczany <span class="ref new">D-134</span>. "Przyznano" edytowalne z przywracaniem reguły <span class="ref new">D-135</span>. Dane klienta i kontaktowe per wniosek <span class="ref new">D-133</span>.</p>
+      <div class="q">„jeszcze przyznano musi być do edycji. Ja o tym cały czas mówię." <span class="who">Bartek, 17:01</span></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Prowizja</summary>
+    <div class="acc-body">
+      <p>Nadpisanie z karty wniosku; Administracja jako podsumowanie po instytucjach + dashboard miesięczny i narastająco <span class="ref new">D-138</span>. Indywidualne nadpisanie jako procent albo kwota <span class="ref new">D-136</span>. Indywidualna stawka wlicza się do puli progowej <span class="ref new">D-137</span>. Prowizja widoczna tylko dla administratora. Silnik: <a href="07-prowizja.html" onclick="if(parent!==window){parent.docNav('07-prowizja');return false}">Silnik prowizji</a>.</p>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Zadania i powiadomienia (powrót modułu)</summary>
+    <div class="acc-body">
+      <p>Moduł zadań wraca <span class="ref new">D-140</span>. Zadania ręczne (per wniosek, plan dnia) i automatyczne (przypięte do statusów i dat, np. przygotowanie rozliczenia z daty ostatniego dnia szkolenia). Powiadomienia i alerty jako osobny wątek: ręczne alerty na datę, automatyczne, usuwalne. Panel z lewej, poranna lista priorytetów, licznik wniosków oczekujących na akceptację. Do przemyślenia: 1 czy 2 moduły <span class="ref p">P-55</span>.</p>
+      <div class="q">„zadanie to jedno, powiadomienia to drugie." <span class="who">Bartek, 46:11</span></div>
+    </div>
+  </details>
+
+  <details class="acc">
+    <summary>Terminy, statystyki, bezpieczeństwo, formularz</summary>
+    <div class="acc-body">
+      <p><b>Terminy:</b> kalendarz per instytucja w systemie, termin przypisany do wniosku, LDIT ma wgląd we wszystkie; kalendarz + tabela + lista uczestników <span class="ref new">D-142</span>.</p>
+      <p><b>Statystyki:</b> ilościowe i kwotowe per instytucja i zbiorczo na Administracji; system nagród dla instytucji <span class="ref new">D-141</span>.</p>
+      <p><b>Bezpieczeństwo:</b> skłonność ku osobnym mini-bazom per instytucja pod spodem <span class="ref new">D-143</span> (napięcie z blokadą <span class="ref p">P-25</span>, nowy wątek <span class="ref p">P-56</span>). Jeden klient może być u wielu instytucji <span class="ref new">D-144</span>.</p>
+      <p><b>Formularz i przebieg:</b> preferencyjnie Google Forms, zaczytywany z eksportu; LDIT może dodawać klientów i importować starą bazę <span class="ref new">D-147</span>. Przebieg wniosku budowany z logów zmian statusu <span class="ref new">D-145</span>.</p>
+      <p><b>Drobne wizualne:</b> usunąć zbędne informacje z widoków, kanał ogłoszeń za obszerny, filtry w osobnych oknach, listy bez paginacji.</p>
+    </div>
+  </details>
+
+  <h2>Do domknięcia (nowe pytania)</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Pytanie</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref p">P-55</span></td><td>Zadania kontra powiadomienia: jeden moduł czy dwa</td></tr>
+        <tr><td><span class="ref p">P-56</span></td><td>Osobne mini-bazy per instytucja kontra zbiorcze widoki (powiązane z P-25)</td></tr>
+        <tr><td><span class="ref p">P-57</span></td><td>Które zadania są automatyczne, a które ręczne</td></tr>
+        <tr><td><span class="ref p">P-58</span></td><td>Zakres i forma bota ("Makieta + Bot")</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/17-warsztat-2026-09-04.md">17-warsztat-2026-09-04.md</a>,
+    transkrypcja <code>Warsztaty LDIT - 20260904/</code>. Powiązane:
+    <a href="13-decyzje.html" onclick="if(parent!==window){parent.docNav('13-decyzje');return false}">Rejestr decyzji</a>,
+    <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">Pytania otwarte</a>.
+  </div>
+
+</div>
+</body>
+</html>
