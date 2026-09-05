@@ -63,10 +63,10 @@ Klient chce prowizji od dopłaty **tylko gdy figuruje ona na wspólnej fakturze 
 Wątek urwany, obie strony zmęczone. Pytanie wykonawcy bez odpowiedzi:
 > **Paweł (2:33:12):** "Skąd bierzesz tę wartość 10000 jako dopłata?"
 
-### P-06. Kto może nadpisać prowizję per wniosek
-Wykonawca zapytał: "Tylko ty możesz to zmienić czy pracownik twój też? I z poziomu admina, czy z poziomu wniosków?" Klient odpowiedział "Administracja", czyli tylko na drugą część pytania.
+### P-06. Kto może nadpisać prowizję per wniosek — ZAMKNIĘTE (2026-09-04)
+Wykonawca zapytał: "Tylko ty możesz to zmienić czy pracownik twój też? I z poziomu admina, czy z poziomu wniosków?" Na warsztacie klient odpowiedział tylko "Administracja".
 
-**Uprawnienie pozostaje nieokreślone.**
+**Rozstrzygnięte w rundzie feedbacku po makiecie v2:** nadpisanie robi **wyłącznie administrator**, bezpośrednio na **karcie wniosku** (Dofinansowania → instytucja → wniosek), a nie tylko w module Administracja. Szczegóły i cytat w [07. Silnik prowizji](07-silnik-prowizji.md#miejsce-nadpisania-karta-wniosku-oraz-moduł-administracja-d-93-zaktualizowane-2026-09-04), decyzja [D-93] w [rejestrze](13-rejestr-decyzji.md).
 
 ### P-07. Wymiar prezentacji prowizji
 Per uczestnik, per firma czy per wniosek. Pytanie wykonawcy (2:51:05) bez precyzyjnej odpowiedzi. Kontekst wskazuje na **per wniosek**, bo prowizja jest podstawą fakturowania.

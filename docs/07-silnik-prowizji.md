@@ -220,12 +220,18 @@ Przykład: wniosek na 160 000 zł rozliczany po 15% zamiast 20%, wynegocjowany m
 
 Umowa z jednym klientem dopuszcza zmianę warunków **w formie dokumentowej (mailowej)** przy dużych wnioskach.
 
-### Miejsce nadpisania: moduł Administracja [D-93]
+### Miejsce nadpisania: karta wniosku oraz moduł Administracja [D-93, zaktualizowane 2026-09-04]
 
 > **Paweł (2:51:59):** "chodzi mi o tę prowizję ustaloną ręcznie per wniosek. Tylko ty możesz to zmienić czy pracownik twój też? I z poziomu admina, czy z poziomu wniosków?"
 > **Bartek (2:52:18):** "Administracja."
 
-**Pytanie otwarte [P-06]:** klient odpowiedział tylko na pytanie o miejsce w UI, nie na pytanie o uprawnienie. Nie wiadomo, czy pracownik LDIT może nadpisać prowizję.
+**Aktualizacja po makiecie v2 (runda feedbacku 2026-09-04).** Klient doprecyzował oba pytania z 2:51:59:
+
+> "on to zmienia normalnie we wnioskach. Czyli po wklikaniu się w dofinansowania i instytucje, tam może to zmienić. Ale tylko administrator."
+
+- **Miejsce:** nadpisanie dostępne z **karty wniosku** (Dofinansowania → instytucja → wniosek), nie tylko z modułu Administracja. Mechanika: przełącznik "Zgodnie z zasadami / Indywidualna stawka", stawka wpisywana ręcznie, wzorzec kasowania i przywracania reguły [D-16].
+- **Uprawnienie:** wyłącznie **administrator**. Instytucja nadal nie widzi żadnej stawki [D-07]. To domyka **P-06**.
+- **Pozostaje otwarte [P-03]:** czy wniosek z nadpisaną stawką wlicza się do sumy narastającej wypełniającej progi pozostałych wniosków instytucji.
 
 ### Kasowanie i przywracanie reguły [D-16, TWARDA]
 

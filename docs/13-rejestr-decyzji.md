@@ -148,7 +148,7 @@ Wszystkie decyzje podjęte na warsztacie 25.08.2026, w kolejności chronologiczn
 | **D-90** | Widok "Niezłożone" (baza klientów) **powiązany z modułem naborów**, w tym prognozowanych. Sortowanie po dacie zakończenia naboru rosnąco | TWARDA | [W] propozycja, [K] akceptacja | 2:48:42 |
 | **D-91** | **Handlowiec IS nie dostaje informacji o zbliżającym się naborze.** Propozycja wykonawcy odrzucona | ODRZUCONA | [K] | 2:49:28 |
 | **D-92** | Prowizja: **prosty wykres na dashboardzie, szczegóły w module Administracja** jako podstawa fakturowania | TWARDA | [K] | 2:51:18 |
-| **D-93** | **Ręczne nadpisanie prowizji per wniosek wyłącznie z modułu Administracja** | TWARDA (miejsce), OTWARTA (kto) | [K] | 2:52:18 |
+| **D-93** | **Ręczne nadpisanie prowizji per wniosek: z karty wniosku ORAZ z modułu Administracja, wyłącznie administrator** (zaktualizowane 2026-09-04, domyka P-06) | TWARDA | [K] | 2:52:18 |
 | **D-94** | **Data wpłynięcia formularza rejestrowana automatycznie**, plus data aktualizacji | TWARDA | [W] propozycja, [K] potrzeba | 2:53:07 |
 | **D-95** | Zakres danych dla IS ograniczony do **prostych informacji o statusie klienta** | WSTĘPNA, klient odroczył wprost | [K] | 2:54:45 |
 | **D-96** | **Wersja premium dla IS odłożona poza etap I** | WSTĘPNA | [K] | 2:55:45 |

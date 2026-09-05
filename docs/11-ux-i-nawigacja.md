@@ -109,6 +109,14 @@ W makiecie przyjęto: **pola wprowadzane ręcznie oznaczone na żółto**, pola 
 
 To konwencja prototypu. W systemie docelowym warto rozważyć czytelniejsze rozróżnienie, bo żółte tło koliduje z kolorowaniem wierszy wg statusu.
 
+## Tooltipy wyjaśniające (feedback klienta 2026-09-04)
+
+Klient poprosił, żeby wyjaśnienia z makiety były czytelniejsze, zamiast długich notek pod tabelą:
+
+> "zróbmy tooltipy. Czyli po najechaniu wyświetla się taka większa informacja, co to znaczy, co dany wskaźnik znaczy, czy kolumna. Szczególnie na panelu instytucji, w dofinansowaniach."
+
+**Zasada:** każda kolumna finansowa i każdy wskaźnik, którego znaczenie nie jest oczywiste z nazwy, dostaje krótkie wyjaśnienie dostępne po najechaniu. W makiecie realizuje to `assets/tips.js` plus atrybut `data-tip` na nagłówku lub etykiecie (marker "i"). Dymek dopinany jest do `body`, więc nie jest przycinany przez przewijane tabele. Priorytet: karta wniosku (Przyznano, Koszt całkowity z dopłatą, Wkład własny), lista dofinansowań (Wartość, Przyznano, Rozliczenie) i wskaźniki instytucji.
+
 ---
 
 ## Kolorowanie wierszy [D-01]

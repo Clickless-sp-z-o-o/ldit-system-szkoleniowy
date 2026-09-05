@@ -188,8 +188,9 @@ Kompletna specyfikacja pól finansowych w [06. Model finansowy KFS](06-model-fin
 | data_wplyniecia_formularza | data | **Rejestrowana automatycznie** [D-94] |
 | data_aktualizacji | data | Automatyczna |
 | **data_wystawienia_faktury** | data | Domyślnie ostatni dzień szkolenia, edytowalna. **Wyznacza okres rozliczeniowy prowizji** [D-13] |
-| prowizja_procent | procent | Wyliczane z warunków IS, nadpisywalne ręcznie z modułu Administracja [D-17, D-93] |
-| prowizja_kwota | kwota | Wyliczane |
+| prowizja_procent | procent | Wyliczane z warunków IS, nadpisywalne ręcznie na karcie wniosku lub w module Administracja, **wyłącznie administrator** [D-17, D-93] |
+| **prowizja_regula_aktywna** | flaga | Domyślnie `true` (licz wg warunków IS). Przełączenie na indywidualną stawkę kasuje regułę, przycisk "Przywróć regułę" ją odtwarza [D-16] |
+| prowizja_kwota | kwota | Wyliczane: podstawa prowizji x prowizja_procent |
 
 ### UCZESTNIK_WNIOSKU
 
