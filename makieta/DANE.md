@@ -1,86 +1,167 @@
-# Warstwa danych makiety (baza w JSON)
+# Warstwa danych makiety: SQLite w przeglądarce
 
-Cała makieta czyta dane wejściowe z jednego, edytowalnego JSON-a. To jest zalążek
-docelowej bazy danych, ułożony według `docs/03-model-danych.md`.
+Makieta nie trzyma już danych w JSON-ie. Pod spodem działa **prawdziwa baza SQLite**,
+uruchamiana w przeglądarce przez [sql.js](https://github.com/sql-js/sql.js) (SQLite
+skompilowany do WebAssembly, licencja MIT).
+
+Powód jest praktyczny: model danych, który dziś obsługuje makietę, jest tym samym modelem,
+który pojedzie do aplikacji. `schema.sql` przenosi się na Postgresa praktycznie bez zmian,
+a reguły wyliczeń z `views.sql` stają się warstwą domenową. Makieta przestaje być rysunkiem
+i staje się dowodem, że model się spina.
+
+---
 
 ## Pliki
 
 ```
 makieta/
-  data/
-    db.json            czysty JSON: znormalizowana baza, "plan bazy" do wglądu
+  db/
+    schema.sql          struktura: 30 tabel, klucze obce, CHECK, indeksy
+    views.sql           reguły biznesowe jako widoki SQL
+    seed.sql            dane startowe do czytania (generowane)
+    seed-db.js          ta sama baza jako binarium base64 (generowane)
+    sql-wasm.js         silnik sql.js
+    sql-wasm-data.js    binarium WebAssembly wklejone jako base64
   assets/
-    db.seed.js         ten sam obiekt jako window.DB_SEED (ładuje się z file://)
-    store.js           warstwa danych: localStorage, CRUD, eksport/import, reset
-    db.js              adapter: buduje window.DB (widok) z danych znormalizowanych
+    sqlite.js           start silnika, zapis stanu, eksport pliku .sqlite
+    store.js            dostęp do danych: get / query / insert / update / remove
+    auth.js             sesja, role, uprawnienia
+    zakres.js           separacja danych, filtr wierszy i pól
+    prowizja.js         silnik prowizji
+    db.js               adapter: składa window.DB dla stron
+    boot.js             start strony, brama dostępu
 tools/
-    legacy-data-gen.js  stary, deterministyczny generator (źródło reprodukcji)
-    build-db.mjs        generuje db.json + db.seed.js ze stałym RNG (parytet liczb)
-    wire-pages.mjs      podmienia include danych w 17 stronach
+    build-sqlite.mjs    buduje bazę ze schema.sql, views.sql i db.json
+    sqlite-migracja.mjs mapowanie starych danych na nowy schemat
 ```
 
-Każda strona ładuje łańcuch: `db.seed.js` → `store.js` → `db.js`.
-
-## Jak to działa
-
-1. `db.seed.js` ustawia `window.DB_SEED` (dane bazowe = zawartość `data/db.json`).
-2. `store.js` bierze seed albo, jeśli istnieje, roboczą kopię z `localStorage`
-   (klucz `kfs_db_v1`). Każda zmiana (dodanie wiersza, edycja pola) zapisuje się
-   z powrotem do `localStorage`, więc **edycje są trwałe między odświeżeniami**.
-3. `db.js` odtwarza `window.DB.*` w kształcie, którego oczekują strony, i przelicza
-   pola wyliczane wniosku (przyznano, całkowita wartość, koszt z dopłatą, wkład %).
-
-## Edycja danych
-
-- **W makiecie:** przez `window.Store` (docelowo inline na stronach).
-  - `Store.get("klienci")` — tabela
-  - `Store.insert("klienci", { nazwa: "...", ... })` — nowy wiersz (id nadawane automatycznie)
-  - `Store.update("klienci", "KL-0001", { telefon: "..." })` — edycja
-  - `Store.remove("klienci", "KL-0001")` — usunięcie
-- **Ręcznie w pliku:** edytuj `data/db.json`, a potem, żeby zmiana trafiła do
-  makiety na file://, przegeneruj seed z pliku albo podmień `db.seed.js`
-  (w tej wersji `db.seed.js` powstaje z buildu, patrz niżej).
-- **Eksport/Import/Reset:**
-  - `Store.download("db.json")` — pobiera aktualny stan (z edycjami) do pliku
-  - `Store.import(text)` — wczytuje inny plik JSON
-  - `Store.reset()` — kasuje edycje, wraca do wersji bazowej z seeda
-
-## Regeneracja danych bazowych
+Każda strona ładuje ten łańcuch:
 
 ```
-node tools/build-db.mjs     # db.json + db.seed.js, identyczne liczby (stały RNG)
-node tools/wire-pages.mjs   # podmiana includu w stronach (idempotentne)
+sql-wasm.js → sql-wasm-data.js → seed-db.js → sqlite.js → store.js
+→ auth.js → zakres.js → prowizja.js → db.js → tips.js → boot.js
 ```
 
-## Schemat wg docs/03
+---
 
-Encje kluczowe mają pola `snake_case`, referencje przez `_id`:
+## Dlaczego działa z dwukliku
 
-| Tabela JSON | Encja z docs/03 |
-|---|---|
-| `urzedy_pracy` | URZĄD_PRACY (PUP) |
-| `instytucje` | INSTYTUCJA_SZKOLENIOWA |
-| `warunki_prowizyjne` | WARUNKI_PROWIZYJNE (wersjonowane, D-22) |
-| `katalog_szkolen` | KATALOG_SZKOLEŃ (szablon) |
-| `terminy` | TERMIN_SZKOLENIA |
-| `klienci` | KLIENT (firma końcowa) |
-| `wnioski` | WNIOSEK / PROJEKT |
-| `uczestnicy` | UCZESTNIK_WNIOSKU |
-| `nabory` | NABÓR |
-| `faktury` | FAKTURA |
-| `uzytkownicy` | UŻYTKOWNIK |
-| `zgloszenia` | ZGŁOSZENIE (incydent) |
-| `korespondencja` | KORESPONDENCJA |
+Przeglądarka na protokole `file://` blokuje `fetch()` plików lokalnych, więc standardowe
+ładowanie `.wasm` by nie zadziałało. Dlatego binarium WebAssembly jest wklejone jako base64
+do `db/sql-wasm-data.js`, a baza startowa do `db/seed-db.js`. Nie ma żadnego serwera,
+`index.html` otwiera się dwuklikiem, wszystko działa offline.
 
-Tabele pomocnicze (`rejestr_aktywnosci`, `logowania`, `szablony_maili`,
-`kolejka_zgloszen`, `cele`, `moduly`) zachowują na razie nazwy pól widoku,
-bo są czytane wprost i nie mają jeszcze docelowej normalizacji.
+Koszt: około 1,9 MB dwóch wygenerowanych plików w repozytorium.
 
-## Pola wyliczane (docs/03, zasada regula_aktywna)
+---
 
-We wniosku przechowujemy tylko dane wejściowe i ręczne:
-`koszt_calkowity` (ręczne, D-58), `kwota_doplaty_dodatkowej` (ręczne, D-63),
-`prowizja_procent_reczna` (null = obowiązuje reguła z warunków IS).
-Wartości wyliczane (`przyznano`, `calkowita_wartosc_szkolenia`,
-`koszt_calkowity_z_doplata`, `wklad_wlasny_procent`) odtwarza adapter z danych
-wejściowych, więc reguła i wartość zawsze się zgadzają.
+## Jak działa start i zapis
+
+1. `sqlite.js` uruchamia silnik i wczytuje bazę: jeśli w `localStorage` leży zapisany stan
+   roboczy (klucz `kfs_sqlite_v2`), bierze jego, w przeciwnym razie bazę startową.
+2. Każdy zapis przez `Store` odkłada binarium bazy z powrotem do `localStorage`, więc
+   **zmiany przeżywają odświeżenie strony**.
+3. `KFS.reset()` kasuje stan roboczy i wraca do bazy startowej.
+4. `KFS.pobierzPlik("kfs.sqlite")` pobiera bieżącą bazę jako plik, który otworzysz w DB Browser
+   for SQLite albo dowolnym innym narzędziu.
+
+Baza jest asynchroniczna (WebAssembly), a kod stron pisany tak, jakby dane były od razu.
+Rozwiązuje to `boot.js`: skrypt strony siedzi w bloku `<script type="text/kfs-strona">`
+i uruchamia się dopiero po wstaniu bazy.
+
+---
+
+## Czytanie danych
+
+```js
+Store.get("klienci")                              // cała tabela
+Store.find("wnioski", "WN-2026-001")              // po id
+Store.query("SELECT * FROM wnioski WHERE rok = ?", ["2026"])
+Store.one("SELECT COUNT(*) AS n FROM uczestnicy")
+```
+
+Strony nadal czytają `window.DB.*` (gotowe widoki, formatery), ale pod spodem każdy z nich
+powstaje z zapytania SQL. Adapter `db.js` jest jedynym miejscem, które tłumaczy tabele na
+kształt oczekiwany przez ekrany.
+
+## Zapis danych
+
+```js
+Store.insert("terminy", { instytucja_id: "IS-01", ... }, "TR-")
+Store.update("wnioski", "WN-2026-001", { koszt_calkowity_z_doplata: 120000 })
+Store.remove("klienci", "KL-0001")
+```
+
+`Store` przepuszcza wyłącznie kolumny, które istnieją w tabeli, a baza egzekwuje klucze obce
+i wartości słownikowe. Próba zapisania wniosku do nieistniejącej instytucji albo wielkości
+przedsiębiorstwa spoza słownika kończy się błędem, nie cichym zapisem śmiecia.
+
+---
+
+## Reguły biznesowe w SQL
+
+Widok `v_wniosek_finanse` liczy wszystko, co dokumentacja nazywa polem wyliczanym:
+
+| Pole | Reguła | Decyzja |
+|---|---|---|
+| wielkość przedsiębiorstwa | nadpisanie per wniosek, w razie braku z klienta | D-132 |
+| procent dofinansowania | z tabeli progów, wersja ważna w dniu wniosku | D-131 |
+| koszt całkowity | koszt z dopłatą minus dopłata dodatkowa | D-134 |
+| przyznano | koszt całkowity razy procent dofinansowania | D-135 |
+| całkowita wartość szkolenia | suma po uczestnikach zakwalifikowanych | D-61, D-79 |
+| podstawa prowizji | koszt całkowity **z dopłatą** | D-64 |
+
+Każde pole wyliczane występuje w dwóch wariantach: `*_wyliczony` (zawsze z reguły, nawet gdy
+reguła jest wyłączona) i `*_efektywny` (to, co widzi użytkownik). Dzięki temu przycisk
+**Przywróć regułę** ma do czego wracać [D-19].
+
+---
+
+## Separacja danych
+
+Filtr zakładany jest w `zakres.js`, na wyniku adaptera, **zanim jakakolwiek strona zobaczy dane**.
+Ukrycie kolumny w HTML nie jest zabezpieczeniem, bo dane i tak leżą w pamięci strony i widać je
+w narzędziach deweloperskich. Po zalogowaniu na konto pracownika LDIT stawki prowizji nie są
+w ogóle wczytane, nie tylko schowane.
+
+Trzy poziomy kontroli:
+
+| Poziom | Pytanie | Źródło |
+|---|---|---|
+| moduł | czy rola widzi zakładkę | tabela `uprawnienia` |
+| pole | czy widzi prowizję, PESEL, zysk firmy | tabela `uprawnienia_pol` |
+| wiersz | czyje instytucje i czyich klientów | tabela `uzytkownik_instytucja`, widok `v_zakres_uzytkownika` |
+
+---
+
+## Konta demonstracyjne
+
+Hasło do wszystkich kont: **`demo`** (kolumna `uzytkownicy.haslo_demo`, jawnie, bo to makieta).
+Lista kont jest na ekranie logowania, klikasz i formularz się wypełnia.
+
+| Konto | Rola | Co widzi |
+|---|---|---|
+| bartek@ldit.pl | Administrator | wszystko, w tym prowizje i rejestry |
+| martyna@ldit.pl | Pracownik LDIT | 3 instytucje z 20, bez prowizji i faktur |
+| biuro@odczarujpowerbi.pl | Instytucja szkoleniowa | wyłącznie własnych klientów |
+| mirka@dronfortech.pl | Pracownik IS | dane kontaktowe, bez kwot i numerów PESEL |
+| kontakt@stalmetspzoospk.pl | Klient końcowy | wyłącznie własny wniosek |
+
+---
+
+## Przebudowa bazy
+
+```
+node tools/build-db.mjs        # dane demonstracyjne do makieta/data/db.json
+node tools/build-sqlite.mjs    # db.json + schema.sql + views.sql -> seed.sql i seed-db.js
+node tools/wire-pages.mjs      # łańcuch skryptów w 18 stronach (idempotentne)
+```
+
+## Testy
+
+```
+node tools/verify-parity.mjs      # migracja nie zmieniła żadnej liczby w makiecie
+node tools/smoke-crud.mjs         # CRUD, ograniczenia schematu, pola wyliczane
+node tools/test-uprawnienia.mjs   # role, uprawnienia, separacja danych
+node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
+```

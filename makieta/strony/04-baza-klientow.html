@@ -459,16 +459,31 @@
     var kl = DB.KLIENCI.filter(function (x) { return x.id === id; })[0];
     otworzKlientForm(kl, "Edycja klienta: " + (kl ? kl.nazwa : id));
   };
+  /* Klient moze byc u wielu instytucji (D-144). Powiazanie trzyma osobna tabela,
+     bo to ona decyduje, kto zobaczy tego klienta na swojej liscie. */
+  function przypiszDoInstytucji(klientId, instytucjaId) {
+    if (!instytucjaId) return;
+    var juz = Store.query(
+      "SELECT 1 AS x FROM klient_instytucja WHERE klient_id = ? AND instytucja_id = ?",
+      [klientId, instytucjaId]);
+    if (juz.length) return;
+    Store.insert("klient_instytucja", { klient_id: klientId, instytucja_id: instytucjaId });
+  }
+
   window.zapiszKlient = function () {
     var o = zbierzKlient();
     if (!o.nazwa.trim()) { document.getElementById("kf_nazwa").focus(); return; }
     if (edytowanyKlient) {
       Store.update("klienci", edytowanyKlient, o);
+      przypiszDoInstytucji(edytowanyKlient, o.instytucja_id);
     } else {
-      var maxNr = DB.KLIENCI.reduce(function (m, k) { return Math.max(m, k.nr || 0); }, 0);
+      /* Numer klienta jest ciagly w roku i trafia na fakture (D-112), wiec
+         liczymy go z calej tabeli, a nie z przefiltrowanego widoku. */
+      var maxNr = Store.one("SELECT COALESCE(MAX(numer_klienta), 0) AS n FROM klienci").n;
       o.numer_klienta = maxNr + 1;
       document.getElementById("q").value = o.nazwa;
-      Store.insert("klienci", o, "KL-");
+      var nowy = Store.insert("klienci", o, "KL-");
+      przypiszDoInstytucji(nowy.id, o.instytucja_id);
     }
     zamknijKlientForm();
   };

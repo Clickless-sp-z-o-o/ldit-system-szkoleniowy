@@ -394,7 +394,10 @@ renderU();
    (D-116). Zapis do wspólnego JSON przez Store, odświeżanie przez
    db:changed. Blokada konta (unieważnienie sesji) to osobny koncept.
    ================================================================ */
-var POLA_ROLE = ["Administrator", "Pracownik LDIT", "Instytucja szkoleniowa", "Pracownik IS", "Klient końcowy"];
+/* Role pochodza z tabeli role, nie z listy przepisanej do kodu (D-36) */
+var POLA_ROLE = DB.ROLE.map(function (r) { return r.nazwa; });
+var ROLA_PO_NAZWIE = {};
+DB.ROLE.forEach(function (r) { ROLA_PO_NAZWIE[r.nazwa] = r.id; });
 var edytowanyUser = null;
 
 function userFormHTML(u, tytul) {
@@ -438,23 +441,55 @@ window.edytujUsera = function (login) {
 function zbierzUsera() {
   return {
     imie_nazwisko: document.getElementById("uf_imie").value.trim(),
-    rola: document.getElementById("uf_rola").value,
-    instytucje: document.getElementById("uf_inst").value.trim() || "-",
-    dwa_fa: document.getElementById("uf_2fa").checked
+    rola_id: ROLA_PO_NAZWIE[document.getElementById("uf_rola").value],
+    instytucje: document.getElementById("uf_inst").value.trim(),
+    dwa_fa: document.getElementById("uf_2fa").checked ? 1 : 0
   };
+}
+
+/* Przydzial do instytucji jest relacja, nie tekstem w kolumnie (D-113).
+   Pole formularza przyjmuje nazwy po przecinku albo slowo "wszystkie". */
+function zapiszPrzydzial(uzytkownikId, tekst) {
+  Store.exec("DELETE FROM uzytkownik_instytucja WHERE uzytkownik_id = ?", [uzytkownikId]);
+  var wszystkie = /^wszystkie$/i.test(tekst.trim());
+  var pierwsza = null;
+
+  if (!wszystkie) {
+    tekst.split(",").map(function (n) { return n.trim(); }).filter(Boolean).forEach(function (nazwa) {
+      var inst = Store.one("SELECT id FROM instytucje WHERE nazwa = ?", [nazwa]);
+      if (!inst) return;
+      if (!pierwsza) pierwsza = inst.id;
+      Store.insert("uzytkownik_instytucja", { uzytkownik_id: uzytkownikId, instytucja_id: inst.id });
+    });
+  }
+
+  var rola = Store.one("SELECT r.zakres FROM uzytkownicy u JOIN role r ON r.id = u.rola_id WHERE u.id = ?",
+                       [uzytkownikId]);
+  Store.update("uzytkownicy", uzytkownikId, {
+    wszystkie_instytucje: wszystkie ? 1 : 0,
+    instytucja_id: (rola && rola.zakres === "instytucja") ? pierwsza : null
+  });
 }
 window.zapiszUsera = function () {
   var dane = zbierzUsera();
   if (!dane.imie_nazwisko) { document.getElementById("uf_imie").focus(); return; }
   if (edytowanyUser) {
     Store.update("uzytkownicy", edytowanyUser, dane);
+    zapiszPrzydzial(edytowanyUser, dane.instytucje);
   } else {
     var login = document.getElementById("uf_login").value.trim();
     if (!login) { document.getElementById("uf_login").focus(); return; }
+    if (Store.find("uzytkownicy", login)) {
+      window.alert("Konto o tym adresie juz istnieje.");
+      return;
+    }
+    var haslo = Store.one("SELECT wartosc FROM meta WHERE klucz = 'haslo_demo'");
     Store.insert("uzytkownicy", {
-      id: login, login: login, imie_nazwisko: dane.imie_nazwisko, rola: dane.rola,
-      instytucje: dane.instytucje, ostatnie_logowanie: "nowe konto", dwa_fa: dane.dwa_fa
+      id: login, login: login, haslo_demo: haslo ? haslo.wartosc : "demo",
+      imie_nazwisko: dane.imie_nazwisko, rola_id: dane.rola_id,
+      ostatnie_logowanie: null, dwa_fa: dane.dwa_fa, zablokowane: 0
     });
+    zapiszPrzydzial(login, dane.instytucje);
   }
   zamknijUserForm();
 };

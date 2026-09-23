@@ -494,7 +494,7 @@
       miejsce: document.getElementById("nfMiejsce").value || "-",
       status_realizacji: document.getElementById("nfStatus").value,
       zapisani: 0,
-      limit: parseInt(document.getElementById("nfLimit").value, 10) || 12
+      limit_miejsc: parseInt(document.getElementById("nfLimit").value, 10) || 12
     }, "TR-");
     ukryjForm();   /* przerysowanie nastapi przez zdarzenie db:changed */
   };
@@ -509,7 +509,7 @@
       miejsce: document.getElementById("edMiejsce").value || "-",
       status_realizacji: document.getElementById("edStatus").value,
       zapisani: parseInt(document.getElementById("edZap").value, 10) || 0,
-      limit: parseInt(document.getElementById("edLimit").value, 10) || 1
+      limit_miejsc: parseInt(document.getElementById("edLimit").value, 10) || 1
     };
     edytowany = null;   /* wyczysc przed zapisem, by db:changed odrysowal normalny wiersz */
     Store.update("terminy", id, patch);

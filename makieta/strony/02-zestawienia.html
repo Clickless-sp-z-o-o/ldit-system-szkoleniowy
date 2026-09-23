@@ -393,7 +393,9 @@ function zapiszNowyProjekt() {
   Store.insert("wnioski", {
     id: id, numer: numer, rok: "2026",
     klient_id: kl.id, instytucja_id: kl.is, pup_id: kl.pup, szkolenie_glowne_id: szk.id,
-    koszt_calkowity: koszt, kwota_doplaty_dodatkowej: doplata, prowizja_procent_reczna: null,
+    /* Recznie wpisujemy koszt Z DOPLATA, koszt calkowity jest roznica (D-134).
+       Nowy projekt wchodzi do tabeli Wnioski od etapu 3 (D-146). */
+    koszt_calkowity_z_doplata: koszt + doplata, kwota_doplaty_dodatkowej: doplata, etap: 3,
     status_skladania: st.status_skladania, status_decyzji: st.status_decyzji,
     status_finansowy: st.status_decyzji === "Pozytywna" ? "Oczekuje" : "Brak",
     data_wplyniecia_formularza: dzis, data_wniosku: dzis, data_wystawienia_faktury: dzis
