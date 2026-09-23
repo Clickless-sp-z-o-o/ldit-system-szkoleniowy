@@ -164,4 +164,5 @@ node tools/verify-parity.mjs      # migracja nie zmieniła żadnej liczby w maki
 node tools/smoke-crud.mjs         # CRUD, ograniczenia schematu, pola wyliczane
 node tools/test-uprawnienia.mjs   # role, uprawnienia, separacja danych
 node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
+node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus korekty
 ```

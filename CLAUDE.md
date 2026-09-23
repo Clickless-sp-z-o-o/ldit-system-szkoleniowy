@@ -3,15 +3,19 @@
 Platforma dla firmy pozyskującej dofinansowania KFS, współpracujących instytucji szkoleniowych i klientów końcowych. Zastępuje pracę na Excelu, mailach i telefonie.
 
 **Klient:** Bartłomiej Olejnik (LDIT) | **Wykonawca:** Paweł Czapiewski (Odczaruj Low Code)
-**Warsztat wymagań:** 25.08.2026 | **Termin:** ok. 2 miesiące, gotowe przed styczniem 2027
+**Warsztaty:** 25.08.2026 (wymagania) i 04.09.2026 (doprecyzowujący) | **Termin:** ok. 2 miesiące, gotowe przed styczniem 2027
 
 ---
 
 ## Zanim zaczniesz cokolwiek robić
 
-Przeczytaj `docs/README.md`. To spis treści dokumentacji podzielonej na 16 sekcji.
+Przeczytaj `docs/README.md`. To spis treści dokumentacji podzielonej na 18 sekcji.
 
-**Dokumentacja jest źródłem prawdy.** Nie zgaduj wymagań, nie wnioskuj z makiety. Wszystko zostało spisane z 3-godzinnego warsztatu z klientem, z cytatami i znacznikami czasu.
+**Dokumentacja jest źródłem prawdy o wymaganiach.** Nie zgaduj, nie wnioskuj z makiety. Wszystko zostało spisane z dwóch warsztatów z klientem, z cytatami i znacznikami czasu.
+
+**Wyjątek: struktura danych.** Tu źródłem prawdy jest `makieta/db/schema.sql`, a reguły wyliczeń siedzą w `makieta/db/views.sql` [D-151]. Przy rozjeździe z dokumentacją wygrywa schemat, a dokumentacja jest poprawiana.
+
+Jeśli masz cokolwiek implementować, przeczytaj też `docs/18-od-makiety-do-aplikacji.md`. Tam jest napisane, co jest gotowe, co trzeba napisać od nowa i czego brakuje.
 
 ---
 
@@ -65,7 +69,7 @@ Nie zaczynaj implementacji silnika prowizji bez tego.
 
 **Podstawa prowizji LDIT:** koszt całkowity **z dopłatą**, nie kwota przyznana.
 
-**Separacja danych:** instytucje szkoleniowe są wobec siebie konkurencyjne. Wyciek do niewłaściwego katalogu to scenariusz krytyczny. Separacja egzekwowana **na poziomie danych, nie interfejsu**.
+**Separacja danych:** instytucje szkoleniowe są wobec siebie konkurencyjne. Wyciek do niewłaściwego katalogu to scenariusz krytyczny. Separacja egzekwowana **na poziomie danych, nie interfejsu** [D-148]. Trzy poziomy kontroli: moduł (tabela `uprawnienia`), pole (tabela `uprawnienia_pol`), wiersz (tabela `uzytkownik_instytucja`) [D-149]. Ukrycie kolumny w widoku nie jest zabezpieczeniem.
 
 **Konfigurator prowizji widoczny wyłącznie dla administratora.** Instytucja nie widzi ani swojej, ani cudzej stawki.
 
@@ -109,12 +113,37 @@ Ręczna edycja kasuje regułę, ale musi być odwracalna. To wymóg klienta uzas
 ## Struktura repozytorium
 
 ```
-docs/                          dokumentacja projektu (16 sekcji)
+docs/                          dokumentacja projektu (18 sekcji)
+dokumentacja/                  ta sama treść jako klikalna strona HTML
+makieta/                       makieta v2: 18 ekranów na bazie SQLite
+  db/schema.sql                źródło prawdy o strukturze danych
+  db/views.sql                 reguły pól wyliczanych jako widoki SQL
+  assets/zakres.js             separacja danych, egzekwowana na danych
+tools/                         budowa bazy i testy
 .claude/agents/                agenci projektowi
 00. Poczatkowe założenia/      dokumentacja przedwarsztatowa, makieta v1
 Warsztat LDIT - 20260825/      transkrypcja warsztatu, spis funkcji klienta
+Warsztaty LDIT - 20260904/     transkrypcja warsztatu doprecyzowującego, diagram procesu
 Prowizja liczenie.xlsx         realne warianty naliczania prowizji
 ```
+
+## Makieta
+
+Otwiera się dwuklikiem na `makieta/index.html`, bez serwera. Wita ekranem logowania, hasło do
+wszystkich kont demonstracyjnych to `demo`, lista kont jest na ekranie.
+
+Po zmianie czegokolwiek w makiecie uruchom komplet testów:
+
+```
+node tools/verify-parity.mjs      # migracja nie zmieniła żadnej liczby
+node tools/smoke-crud.mjs         # CRUD, ograniczenia schematu, pola wyliczane
+node tools/test-uprawnienia.mjs   # role, uprawnienia, separacja danych
+node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
+node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus korekty
+```
+
+Po zmianie schematu bazy przebuduj ją: `node tools/build-sqlite.mjs`.
+Po dodaniu strony podłącz skrypty: `node tools/wire-pages.mjs`.
 
 ---
 

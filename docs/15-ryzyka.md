@@ -177,7 +177,7 @@ Podczas dema agent AI zaczął spamować mailami, a zadanie do niego nie dotarł
 
 Klient warunkuje uruchomienie marketingu istnieniem "bota albo nowego pracownika". Jeśli bot ma być tym rozwiązaniem, jego niedojrzałość jest ryzykiem biznesowym klienta.
 
-**Mitygacja:** zadania i agent AI zostały wykluczone z zakresu tego systemu [D-118]. Trzymać ten podział.
+**Mitygacja:** agent AI pozostaje poza zakresem tego systemu. Zadania wróciły [D-140], ale jako ostatni moduł i w wąskim zakresie: zadania przypięte do wniosku i statusu, nie ogólny menedżer zadań. Trzymać tę granicę.
 
 ### R-16. Retencja danych osobowych nieustalona
 **W:4 P:2 = 8**

@@ -10,6 +10,49 @@ Lista modułów po warsztacie. Nazewnictwo zakładek odzwierciedla **żądanie k
 
 ## Mapa modułów
 
+```mermaid
+flowchart TD
+  subgraph OP["Praca operacyjna"]
+    M1["Dashboard<br/>MUST"]
+    M2["Dofinansowania<br/>Baza danych + Wnioski<br/>MUST"]
+    M5["Nabory<br/>MUST"]
+    M15["Zadania i powiadomienia<br/>SHOULD, wrocilo D-140"]
+  end
+
+  subgraph KONF["Konfiguracja"]
+    M6["Instytucje szkoleniowe<br/>+ katalog szkolen<br/>MUST"]
+    M7["Konfigurator instytucji<br/>prowizje, certyfikat<br/>MUST, tylko admin"]
+    M9["Wysylka maili<br/>MUST"]
+  end
+
+  subgraph ZARZ["Zarzadzanie"]
+    M8["Administracja<br/>prowizje, faktury, statystyki<br/>MUST, tylko admin"]
+    M10["Zgloszenia<br/>SHOULD"]
+    M11["Konta i uprawnienia<br/>MUST, tylko admin"]
+    M12["Rejestr aktywnosci<br/>MUST, tylko admin"]
+  end
+
+  subgraph ZEW["Panele zewnetrzne"]
+    M13["Terminy i kalendarz<br/>SHOULD"]
+    M17["Panel klienta koncowego<br/>OTWARTE, P-33"]
+  end
+
+  M2 --> M6
+  M2 --> M5
+  M6 --> M7
+  M6 --> M13
+  M2 --> M8
+  M8 --> M7
+
+  style M7 fill:#fde68a
+  style M8 fill:#fde68a
+  style M11 fill:#fde68a
+  style M12 fill:#fde68a
+  style M17 fill:#e9d5ff
+```
+
+Żółte moduły widzi wyłącznie administrator. Fioletowy ma nierozstrzygnięty zakres.
+
 | # | Zakładka (nazwa dla użytkownika) | Priorytet | Status specyfikacji |
 |---|---|---|---|
 | 1 | **Dashboard** | MUST | Gotowa |
@@ -26,7 +69,7 @@ Lista modułów po warsztacie. Nazewnictwo zakładek odzwierciedla **żądanie k
 | 12 | **Rejestr aktywności** | MUST | Gotowa |
 | 13 | **Terminy i kalendarz szkoleń** | SHOULD | Niepełna |
 | 14 | **Statystyki** | SHOULD | Zakres dla IS sporny |
-| 15 | ~~Zadania~~ | **WON'T** | Przeniesione do Projectly |
+| 15 | **Zadania i powiadomienia** | SHOULD | Wróciło do zakresu [D-140], ostatnie w kolejności prac |
 | 16 | ~~Kalendarz Outlook~~ | **WON'T** | Wykluczone |
 | 17 | **Panel klienta końcowego** | OTWARTE | Nierozstrzygnięte |
 
@@ -266,16 +309,42 @@ Po ustaleniu lub zmianie terminu trzeba złożyć **pismo do PUP o zmianie termi
 
 ---
 
-## 15-16. Wykluczone z zakresu
+## 15. Zadania i powiadomienia
 
-**Zadania pracowników** i **integracja kalendarza Outlook** zostały wykluczone z systemu na koniec warsztatu [D-118].
+**Moduł wrócił do zakresu** na warsztacie doprecyzowującym [D-140]. To jest odwrócenie decyzji
+z końca pierwszego warsztatu [D-118], która przenosiła zadania do Projectly.
+
+Historia tej decyzji, bo jest pouczająca:
+
+| Kiedy | Ustalenie |
+|---|---|
+| warsztat 25.08, 2:43:48 | zakładka Zadania z panelem admina i widokiem pracownika |
+| warsztat 25.08, 3:16:19 | zadania wykluczone, przechodzą do Projectly [D-118] |
+| warsztat 04.09 | moduł wraca do systemu [D-140] |
 
 > **Paweł (3:16:10):** "system, jeżeli tutaj mówisz głównie o zadaniach, to chyba bym to z tego systemu wykluczał."
 > **Bartek (3:16:19):** "Tak, to możesz to wywalić jak coś."
+>
+> **Bartek (04.09, 46:11):** "zadanie to jedno, powiadomienia to drugie."
 
-Zadania przechodzą do **Projectly**, drugiej aplikacji wykonawcy.
+Zakres po powrocie:
 
-> **Uwaga:** wcześniej w warsztacie (2:43:48) ustalono zakładkę Zadania z panelem admina i widokiem pracownika. Decyzja z 3:16 unieważnia tamto ustalenie. Nie ustalono formy dostępu do Projectly z poziomu systemu.
+- **zadania ręczne**: per wniosek, per pracownik, plan dnia z lewej strony
+- **zadania automatyczne**: przypięte do statusu i daty, na przykład przygotowanie rozliczenia
+  wyliczane z daty ostatniego dnia szkolenia. Reagują na zmiany terminów
+- **alerty na datę**: ręczne (na przykład "za 2 miesiące rozliczenie"), automatyczne, usuwalne
+- **licznik wniosków oczekujących na akceptację** w prawym górnym rogu, spójny z bramką
+  anty-spam [D-105]
+
+Nierozstrzygnięte: czy to jeden moduł czy dwa [P-55], oraz które zadania są na tyle powtarzalne,
+żeby wskakiwać automatycznie [P-57]. Moduł jest **ostatni w kolejności prac**.
+
+---
+
+## 16. Wykluczone z zakresu
+
+**Integracja kalendarza Outlook** pozostaje wykluczona. Nie ustalono też formy dostępu do
+Projectly z poziomu systemu.
 
 ---
 

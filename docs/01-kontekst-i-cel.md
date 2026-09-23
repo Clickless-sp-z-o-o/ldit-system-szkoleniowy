@@ -4,16 +4,26 @@
 
 LDIT (firma Bartłomieja Olejnika) pozyskuje dla firm końcowych dofinansowania szkoleń z **Krajowego Funduszu Szkoleniowego (KFS)** i kieruje te firmy na szkolenia realizowane przez współpracujące **instytucje szkoleniowe (IS)**.
 
+```mermaid
+flowchart LR
+  IS["Instytucja szkoleniowa<br/>handlowiec pozyskuje klienta"]
+  LDIT["LDIT<br/>przejmuje proces,<br/>prowadzi wniosek"]
+  KL["Klient koncowy<br/>firma, wysyla uczestnikow"]
+  PUP["Urzad pracy<br/>PUP"]
+
+  IS -->|"1. przekazuje klienta<br/>przez formularz"| LDIT
+  KL -->|"2. wypelnia formularz"| LDIT
+  LDIT -->|"3. sklada wniosek"| PUP
+  PUP -->|"4. decyzja i dofinansowanie"| KL
+  IS -->|"5. realizuje szkolenie"| KL
+  IS -->|"6. wystawia fakture"| KL
+  IS -.->|"7. placi prowizje<br/>procent od kosztu szkolenia"| LDIT
+
+  style LDIT fill:#dcf3e3
 ```
-Instytucja szkoleniowa (IS)          LDIT                    Klient końcowy (firma)
-        |                              |                              |
-   handlowiec pozyskuje  ---->  przejmuje proces  ---->  wypełnia formularz
-   klienta końcowego            i prowadzi wniosek        wysyła uczestników
-        |                              |                              |
-   realizuje szkolenie  <----  składa wniosek do PUP  ---->  otrzymuje dofinansowanie
-        |                              |
-   wystawia fakturę      ---->  pobiera prowizję (% od kosztu szkolenia)
-```
+
+Strzałka przerywana to **jedyne źródło przychodu LDIT**. Wszystko, co robi silnik prowizji,
+dotyczy tej jednej relacji.
 
 **Źródło przychodu LDIT:** prowizja od instytucji szkoleniowej, liczona procentowo od kosztu całkowitego szkolenia. Standard 20%, ale realne umowy mają skale progowe i wyjątki (patrz [07. Silnik prowizji](07-silnik-prowizji.md)).
 

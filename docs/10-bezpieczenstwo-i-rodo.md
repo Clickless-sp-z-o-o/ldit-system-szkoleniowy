@@ -99,6 +99,50 @@ Stan obecny do wyeliminowania: w Excelu każdy pracownik widzi wszystko.
 
 ---
 
+## Jak te trzy warstwy zostały zrealizowane w makiecie
+
+Makieta v2 egzekwuje separację w warstwie dostępu do danych, a nie w interfejsie [D-148].
+Kod: `makieta/assets/zakres.js`. To jest wzorzec do przeniesienia, nie gotowe rozwiązanie
+produkcyjne, bo w makiecie baza leży po stronie przeglądarki.
+
+```mermaid
+flowchart TD
+  Z["Zapytanie o dane"] --> A["Adapter sklada komplet danych"]
+  A --> F["Warstwa separacji"]
+
+  F --> W1{"Wiersze:<br/>czy instytucja jest<br/>w zakresie konta?"}
+  W1 -->|"nie"| X1["Wiersz nie trafia do wyniku"]
+  W1 -->|"tak"| W2{"Pola:<br/>czy rola ma prawo<br/>do prowizji, PESEL,<br/>zyskow firmy?"}
+  W2 -->|"nie"| X2["Pole wyzerowane<br/>zanim opusci warstwe"]
+  W2 -->|"tak"| OK["Dane trafiaja do ekranu"]
+  X2 --> OK
+
+  E["Ekran"] -.->|"nigdy nie widzi<br/>odsianych danych"| OK
+
+  style F fill:#dcf3e3
+  style X1 fill:#fee2e2
+  style X2 fill:#fee2e2
+```
+
+**Dlaczego to jest ważne przy przenoszeniu do aplikacji.** W makiecie warstwa działa po stronie
+przeglądarki, bo tam jest cała baza. W aplikacji dokładnie to samo rozwiązanie byłoby dziurą:
+wystarczyłoby zapytanie z pominięciem warstwy. Docelowo ograniczenie musi siedzieć w bazie,
+w politykach na wierszach, i obowiązywać niezależnie od tego, kto pyta. Wątek otwarty jako
+[P-59].
+
+**Co pokazała pierwsza próba.** Przed tą rundą osiemnaście ekranów makiety pokazywało wszystkim
+rolom to samo. Warstwa 2 i warstwa 3 nie działały w ogóle, mimo że były opisane w dokumentacji.
+To jest dokładnie ten scenariusz, przed którym ostrzega [R-01]: separacja traktowana jako sprawa
+wyglądu, a nie dostępu. Szczegóły w [13. Rejestr decyzji](13-rejestr-decyzji.md), sekcja decyzji
+wykonawczych.
+
+**Test akceptacyjny, który teraz przechodzi automatycznie.** `tools/test-uprawnienia.mjs`
+sprawdza między innymi, czy po zalogowaniu na konto pracownika LDIT warunki prowizyjne są
+`null`, a nie tylko ukryte, i czy w liście klientów instytucji nie ma ani jednego rekordu
+obcej instytucji.
+
+---
+
 ## Prywatność skrzynek pocztowych
 
 **Skrzynka właściciela firmy wyłączona z pełnej integracji** [D-48].

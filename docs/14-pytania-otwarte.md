@@ -67,7 +67,7 @@ Klient chce prowizji od dopłaty **tylko gdy figuruje ona na wspólnej fakturze 
 Wątek urwany, obie strony zmęczone. Pytanie wykonawcy bez odpowiedzi:
 > **Paweł (2:33:12):** "Skąd bierzesz tę wartość 10000 jako dopłata?"
 
-### P-06. Kto może nadpisać prowizję per wniosek — ZAMKNIĘTE (2026-09-04)
+### P-06. Kto może nadpisać prowizję per wniosek, ZAMKNIĘTE (2026-09-04)
 Wykonawca zapytał: "Tylko ty możesz to zmienić czy pracownik twój też? I z poziomu admina, czy z poziomu wniosków?" Na warsztacie klient odpowiedział tylko "Administracja".
 
 **Rozstrzygnięte w rundzie feedbacku po makiecie v2:** nadpisanie robi **wyłącznie administrator**, bezpośrednio na **karcie wniosku** (Dofinansowania → instytucja → wniosek), a nie tylko w module Administracja. Szczegóły i cytat w [07. Silnik prowizji](07-silnik-prowizji.md#miejsce-nadpisania-karta-wniosku-oraz-moduł-administracja-d-93-zaktualizowane-2026-09-04), decyzja [D-93] w [rejestrze](13-rejestr-decyzji.md).
@@ -151,7 +151,7 @@ Klient powiedział, że zbiorczy widok wszystkich instytucji ma być tylko na da
 Dokumentacja przedwarsztatowa przewidywała serwery MCP zamiast publicznego API, z uprawnieniami dziedziczonymi po użytkowniku. **Warsztat w ogóle tego nie poruszył.**
 
 ### P-37. Czy zakładka Zadania jest natywna czy to okno na Projectly
-Decyzja D-118 wyklucza zadania z systemu, ale nie ustalono formy dostępu do Projectly. Klient pytał wprost (2:39:13), odpowiedź brzmiała "Tak, tak, tak" bez określenia mechanizmu.
+**Zdezaktualizowane po 2026-09-04.** Moduł zadań wrócił do systemu jako natywny [D-140], więc pytanie o formę dostępu do Projectly przestaje mieć znaczenie. Zostaje wątek: czy zadania i powiadomienia to jeden moduł czy dwa [P-55].
 
 ---
 
@@ -275,7 +275,7 @@ Klient opisał alert automatyczny wyzwalany mailem z portalu, ale **sam nie rozs
 
 > Klient: "Chciałbym, żeby alert był jako zadanie? Wykrzyknik przy Kliencie? Do przemyślenia jak zrobić to najlepiej."
 
-Warianty: zadanie, znacznik przy kliencie, wpis w kolejce do obsłużenia. Warsztat tego wątku nie podjął. Komplikacja: zadania zostały wykluczone z systemu [D-118], więc wariant "jako zadanie" wymagałby integracji z Projectly.
+Warianty: zadanie, znacznik przy kliencie, wpis w kolejce do obsłużenia. Warsztat tego wątku nie podjął. Po powrocie modułu zadań [D-140] wariant "jako zadanie" jest znów dostępny bez żadnej integracji.
 
 ### P-17. Czy SMS zostaje dla samych uczestników
 Wykonawca zaproponował (9:51), klient nie odpowiedział wprost, zszedł na inny wątek. Nierozstrzygnięte także, kto ponosiłby koszt.
@@ -308,6 +308,48 @@ Nie ustalono daty, tylko sekwencję (po makiecie, w tym tygodniu).
 
 ---
 
+## Nowe pytania z budowy makiety na bazie danych (2026-09-23)
+
+Powstały przy przenoszeniu makiety na prawdziwą bazę i przy wdrażaniu uprawnień. Nie są to
+pytania o wymagania biznesowe, tylko o rzeczy, których warsztat nie musiał rozstrzygać, a bez
+których nie da się napisać aplikacji.
+
+### P-59. Gdzie egzekwować separację danych w docelowej aplikacji
+W makiecie separacja działa w warstwie dostępu do danych po stronie przeglądarki [D-148], bo
+cała baza leży u klienta. W aplikacji to samo rozwiązanie byłoby dziurą. Do rozstrzygnięcia:
+polityki na wierszach w bazie, filtr w warstwie serwera, czy jedno i drugie.
+
+**Odpowiada:** wykonawca. **Pilność:** przed projektem bazy docelowej. **Powiązane:** [P-25], [P-56], [D-148].
+
+### P-60. Reguły walidacji danych wejściowych
+Dziś walidacje są wyłącznie tam, gdzie wymusza je schemat bazy (klucze obce, słowniki wartości).
+Brakuje reguł dla: NIP z sumą kontrolną, PESEL, zakresów dat (data faktury wobec dat szkolenia),
+kwot nieujemnych, dopuszczalnych przeskoków etapu procesu.
+
+**Odpowiada:** wykonawca, z potwierdzeniem klienta przy regułach biznesowych. **Pilność:** średnia.
+
+### P-61. Zakres specyfikacji ekranów
+Osiemnaście ekranów makiety pokazuje układ i zachowanie, ale nie ma ich spisanych pole po polu.
+Do rozstrzygnięcia: czy powstaje osobny dokument specyfikacji ekranów, czy makieta pozostaje
+jedynym źródłem, a ekrany opisuje się dopiero przy implementacji.
+
+**Odpowiada:** wykonawca. **Pilność:** przed startem implementacji. **Powiązane:** [18. Od makiety do aplikacji](18-od-makiety-do-aplikacji.md).
+
+### P-62. Co się dzieje z kontem klienta końcowego
+Panel klienta wymaga powiązania konta z rekordem klienta [D-154]. Nierozstrzygnięte: kto zakłada
+to konto, czy powstaje automatycznie po akceptacji formularza, i co widzi klient mający wnioski
+u dwóch instytucji.
+
+**Odpowiada:** klient. **Pilność:** niska, moduł jest w etapie IV. **Powiązane:** [P-33], [D-144].
+
+### P-63. Definicja gotowości modułu
+Nie ma ustalonego kryterium, po którym moduł uznaje się za skończony. Propozycja: zgodność liczb
+z Excelem klienta na uzgodnionym zestawie przypadków plus przejście testów z dokumentacji.
+
+**Odpowiada:** obie strony. **Pilność:** przed startem etapu I.
+
+---
+
 ## Podsumowanie
 
 | Kategoria | Liczba pytań |
@@ -321,9 +363,25 @@ Nie ustalono daty, tylko sekwencję (po makiecie, w tym tygodniu).
 | Proces i nazewnictwo | 8 |
 | Handlowe i formalne | 6 |
 | Warsztat 2026-09-04 (nowe P-55 - P-58) | 4 |
-| **Razem (wszystkie kiedykolwiek)** | **58** |
+| Budowa makiety na bazie (nowe P-59 - P-63) | 5 |
+| **Razem (wszystkie kiedykolwiek)** | **63** |
 
-**Stan po warsztacie doprecyzowującym (2026-09-04):** zamknięto 5 pytań (P-03, P-06, P-10, P-30, P-41), otwarto 4 nowe (P-55 - P-58). Realnie **ok. 53 pytań otwartych**, w tym **4 blokady** (P-01, P-02, P-09, P-25, przy czym P-25 zyskała nowy wątek P-56).
+**Stan po warsztacie doprecyzowującym (2026-09-04):** zamknięto 5 pytań (P-03, P-06, P-10, P-30, P-41), otwarto 4 nowe (P-55 - P-58).
+
+**Stan po rundzie budowy makiety (2026-09-23):** otwarto 5 nowych pytań technicznych (P-59 - P-63). Żadne z nich nie jest blokadą, ale [P-59] i [P-61] stoją przed startem implementacji. Realnie **ok. 58 pytań otwartych**, w tym **4 blokady** (P-01, P-02, P-09, P-25, przy czym P-25 zyskała nowe wątki [P-56] i [P-59]).
+
+### Kto komu co jest winien
+
+| Kto | Co ma dostarczyć | Blokuje |
+|---|---|---|
+| Klient | liczby do konfiguratora prowizji [D-20] | start implementacji silnika prowizji |
+| Klient | rozstrzygnięcie okresu rozliczeniowego [P-01] | silnik prowizji |
+| Klient | progi prowizji wewnętrznej [P-02] | moduł prowizji pracowniczych |
+| Klient | odpowiedź o eksport CSV z systemu księgowego [P-09] | moduł faktur |
+| Klient | treści szablonów maili i wzór certyfikatu | moduł komunikacji, certyfikaty |
+| Wykonawca | architektura danych [P-25], [P-56], [P-59] | projekt bazy docelowej |
+| Wykonawca | specyfikacja ekranów [P-61] | implementacja interfejsu |
+| Obie strony | definicja gotowości [P-63] | zamykanie etapów |
 
 **Uwaga procesowa.** Wykonawca zadeklarował po warsztacie:
 > **Paweł (2:57:33):** "myślę, że po dzisiejszym warsztacie to ja już nie będę musiał się do ciebie za dużo odzywać."

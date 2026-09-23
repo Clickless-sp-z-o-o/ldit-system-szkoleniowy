@@ -127,7 +127,7 @@ Klient zażądał zachowania obecnych nazw [D-55]. Ta tabela zapobiega rozjazdow
 | **Microsoft 365** | Środowisko klienta. Podstawa integracji poczty |
 | **Outlook** | Klient poczty. Integracja kalendarza **wykluczona** |
 | **OneDrive / SharePoint** | Repozytorium plików. **Zostaje poza systemem** |
-| **Projectly** | Druga aplikacja wykonawcy. Docelowe miejsce na zadania |
+| **Projectly** | Druga aplikacja wykonawcy. Miała przejąć zadania [D-118], ale moduł wrócił do systemu [D-140] |
 | **Zoho CRM** | System wykonawcy, demonstrowany na warsztacie jako wzorzec integracji poczty |
 | **Fakturownia** | Poprzedni system fakturowy klienta |
 | **inFakt** | System fakturowy wykonawcy, referencja dla eksportu |

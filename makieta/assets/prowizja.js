@@ -53,6 +53,7 @@
 
     /* Model C: kazdy kawalek obrotu rozliczany stawka swojego progu */
     var pozycja = obrotPrzed, zostalo = kwotaFaktury, suma = 0, rozbicie = [];
+
     while (zostalo > 0.005) {
       var stawka = stawkaDla(progi, pozycja);
       var nastepny = progi.filter(function (p) { return p.od > pozycja; })[0];
@@ -62,6 +63,24 @@
       pozycja += doGranicy;
       zostalo -= doGranicy;
     }
+
+    /* Faktura korygujaca: kwota ujemna zdejmuje obrot warstwa po warstwie, w dol.
+       Bez tego korekta dawalaby zero prowizji zamiast zwrotu, a korekta zlozona
+       z oryginalem nie sumowalaby sie do zera. Do ktorego okresu korekta nalezy,
+       pozostaje pytaniem otwartym (P-04), ale kwota musi sie zgadzac. */
+    while (zostalo < -0.005) {
+      var ponizej = progi.filter(function (p) { return p.od < pozycja; });
+      var poprzedni = ponizej.length ? ponizej[ponizej.length - 1] : null;
+      var dolnaGranica = poprzedni ? poprzedni.od : 0;
+      var stawkaDol = poprzedni ? poprzedni.st : progi[0].st;
+      var doDolu = Math.max(zostalo, dolnaGranica - pozycja);
+      if (doDolu > -0.005) break;           /* obrot zszedl do zera, nie ma co zdejmowac */
+      suma += doDolu * stawkaDol / 100;
+      rozbicie.push({ kwota: doDolu, st: stawkaDol });
+      pozycja += doDolu;
+      zostalo -= doDolu;
+    }
+
     return { kwota: suma, stawka: kwotaFaktury ? (suma / kwotaFaktury * 100) : 0, rozbicie: rozbicie };
   }
 

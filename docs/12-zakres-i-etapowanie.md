@@ -47,6 +47,39 @@ Klient wątpi, czy podział na moduły jest wykonalny. Wykonawca deklaruje, że 
 >
 > **Paweł (3:18:07):** "Dobra, no, moduły na pewno."
 
+```mermaid
+flowchart TD
+  E1["ETAP I: rdzen operacyjny<br/>Konta i role, instytucje, baza klientow,<br/>wnioski i zestawienia, statusy,<br/>model finansowy KFS, maile, rejestr"]
+  E2["ETAP II: finanse<br/>Silnik prowizji, konfigurator warunkow,<br/>przewidywana prowizja, faktury, Administracja"]
+  E3["ETAP III: automatyzacje<br/>Certyfikaty, dane do faktury, szablony maili,<br/>poczta M365, nabory, terminy"]
+  E4["ETAP IV: rozszerzenia<br/>Statystyki rozbudowane, zgloszenia,<br/>prowizja wewnetrzna, cele, panel klienta"]
+
+  B1(["Blokada P-01<br/>okres rozliczeniowy"])
+  B2(["Blokada P-02<br/>progi prowizji wewnetrznej"])
+  B3(["Blokada P-09<br/>eksport CSV z ksiegowosci"])
+  B4(["Blokada P-25<br/>architektura danych"])
+  W(["Warunek wstepny D-20<br/>walidacja konfiguratora<br/>liczbami klienta"])
+
+  B4 --> E1
+  E1 --> E2
+  W --> E2
+  B1 --> E2
+  B3 --> E2
+  E2 --> E3
+  E3 --> E4
+  B2 --> E4
+
+  style B1 fill:#fee2e2
+  style B2 fill:#fee2e2
+  style B3 fill:#fee2e2
+  style B4 fill:#fee2e2
+  style W fill:#fde68a
+```
+
+Czerwone to blokady z [14. Pytania otwarte](14-pytania-otwarte.md), żółte to warunek wstępny
+ustalony na warsztacie [D-20]. Etap, do którego prowadzi strzałka z blokady, nie może ruszyć
+przed jej domknięciem.
+
 ### Etap I: rdzeń operacyjny (MUST)
 
 Cel: zastąpić Excel w codziennej pracy.
@@ -105,8 +138,8 @@ Cel: zastąpić Excel w codziennej pracy.
 
 | Element | Decyzja | Gdzie trafia |
 |---|---|---|
-| **Zadania pracowników** | Wykluczone [D-118] | Projectly |
-| **Integracja kalendarza Outlook** | Wykluczone [D-118] | Projectly |
+| ~~**Zadania pracowników**~~ | **Wróciły do zakresu** [D-140], odwraca [D-118]. Ostatni moduł w kolejności prac | w systemie, etap IV |
+| **Integracja kalendarza Outlook** | Wykluczone [D-118] | poza systemem |
 | **SMS** | Odrzucone w etapie I [D-04] | Furtka na przyszłość |
 | **API systemu księgowego** | Odrzucone (10-15 h vs 1 h) [D-39] | Import CSV |
 | **Foldery i pliki klientów** | Poza zakresem [D-41] | Eksplorator Windows, OneDrive |

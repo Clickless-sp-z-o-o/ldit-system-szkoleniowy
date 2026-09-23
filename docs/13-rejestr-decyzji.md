@@ -233,6 +233,50 @@ Drugi warsztat na makiecie v2 (2 h 16 min). Pełny kontekst, cytaty, proces i **
 
 ---
 
+## Decyzje wykonawcze z budowy makiety na bazie danych (2026-09-23)
+
+Te decyzje nie padły na warsztacie. Powstały przy przenoszeniu makiety z plików JSON na
+prawdziwą bazę SQLite, przy wdrażaniu panelu logowania i przy egzekwowaniu separacji danych.
+Wszystkie są autorstwa wykonawcy i **wymagają potwierdzenia przez klienta wyłącznie tam,
+gdzie zmieniają jego doświadczenie pracy z systemem**. Reszta jest decyzją techniczną.
+
+Powód, dla którego w ogóle powstały: ustalenia z warsztatu opisywały, *co* system ma robić,
+ale nie rozstrzygały, *gdzie* ma być egzekwowane. Przy pierwszym uruchomieniu makiety na
+kontach z ograniczonymi uprawnieniami okazało się, że [D-114] i [D-34] nie działają, bo dane
+finansowe docierały do przeglądarki, a były tylko ukrywane w interfejsie.
+
+| ID | Decyzja | Siła | Kto | Dotyczy |
+|---|---|---|---|---|
+| **D-148** | **Separacja danych egzekwowana w warstwie dostępu do danych, nie w interfejsie.** Warstwa dostępu oddaje ekranowi wyłącznie te wiersze i te pola, które wolno zobaczyć zalogowanemu kontu. Ukrycie kolumny w widoku nie jest zabezpieczeniem, bo rekord i tak jest w pamięci przeglądarki | TWARDA | [W] | realizuje D-35, D-76, D-114, dotyczy blokady P-25 |
+| **D-149** | **Uprawnienia na trzech poziomach: moduł, pole, wiersz.** Moduł mówi, czy rola widzi zakładkę. Pole mówi, czy widzi prowizję, PESEL albo zysk firmy. Wiersz mówi, czyje instytucje i czyich klientów. Każdy poziom ma własną tabelę, żadnego poziomu nie da się obejść ustawieniem innego | TWARDA | [W] | uszczegółowia D-35, D-36 |
+| **D-150** | **Klient wspólny dla wielu instytucji jest prezentowany wyłącznie w kontekście instytucji zalogowanego konta.** Informacja o tym, która instytucja pozyskała klienta, nie może trafić do innej instytucji, bo sama w sobie jest przewagą konkurencyjną | TWARDA | [W] | uszczegółowia D-144 |
+| **D-151** | **Schemat bazy jest źródłem prawdy o strukturze danych.** Plik `makieta/db/schema.sql` definiuje, dokumentacja opisuje. Przy rozjeździe wygrywa schemat, a dokumentacja jest poprawiana | TWARDA | [W] | NOWE |
+| **D-152** | **Reguły pól wyliczanych zapisane jako widoki SQL**, w jednym miejscu, zamiast powielane w kodzie każdego ekranu. Plik `makieta/db/views.sql` | TWARDA | [W] | realizuje D-19 |
+| **D-153** | **Każde pole wyliczane ma dwa warianty: wartość z reguły i wartość efektywną.** Wartość z reguły liczy się zawsze, także gdy reguła jest wyłączona ręczną edycją. Bez tego przycisk "Przywróć regułę" nie miałby do czego wracać | TWARDA | [W] | realizuje D-19, D-135 |
+| **D-154** | **Konto klienta końcowego jest powiązane z konkretnym rekordem klienta.** Bez tego powiązania panel klienta nie ma jak ustalić, czyj wniosek pokazać | WSTĘPNA | [W] | dotyczy P-33 |
+| **D-155** | **Progi dofinansowania i warunki prowizyjne leżą w tabelach konfiguracyjnych, nigdy w kodzie.** Wartości domyślne 90/10 i 70/30 są wierszami w tabeli z datą obowiązywania, a nie liczbami w programie | TWARDA | [W] | realizuje D-131, D-22 |
+| **D-156** | **Konfigurator warunków prowizyjnych jest ekranem administratora**, mimo że wchodzi się do niego z zakładki Instytucje szkoleniowe. Rola bez prawa do prowizji dostaje komunikat o braku dostępu, a nie pusty ekran | TWARDA | [W] | uszczegółowia D-07, D-93 |
+| **D-157** | **Makieta ma panel logowania zamiast przełącznika ról.** Pięć kont demonstracyjnych, jedno na rolę. Klient ogląda system tak, jak będzie go używał, a nie przez przełącznik, którego w systemie nie będzie | TWARDA | [W] | realizuje D-125 |
+
+### Co znalazło się przy pierwszym uruchomieniu na koncie z ograniczeniami
+
+Makieta w wersji sprzed tej rundy pokazywała wszystkim rolom to samo. Konkretne znalezione
+rozbieżności między dokumentacją a stanem faktycznym:
+
+| Co dokumentacja mówiła | Co makieta robiła | Naprawione przez |
+|---|---|---|
+| Pracownik LDIT nie widzi zysków firmy ani stawek prowizji [D-34], [D-114] | Widział wszystko, bo żadna strona nie sprawdzała roli | D-148, D-149 |
+| Instytucja nie widzi swojej stawki prowizji [D-76] | Stawka była w pamięci strony, tylko nieużyta | D-148 |
+| Handlowiec IS kończy rolę na formularzu [D-75] | Miał dostęp do kwot i numerów PESEL | D-149 |
+| Pracownik widzi tylko przypisane instytucje [D-113] | Lista instytucji była zapisana w kodzie powłoki | D-149 |
+| Jeden klient może być u wielu instytucji [D-144] | Każda instytucja widziała, kto jeszcze go obsługuje | D-150 |
+
+Z osiemnastu ekranów makiety **tylko siedem w ogóle czytało informację o roli**, a żaden nie
+pytał o nią warstwy danych. To jest ten sam błąd, przed którym ostrzega [R-01]: separacja
+traktowana jako sprawa wyglądu, a nie dostępu.
+
+---
+
 ## Decyzje unieważnione w trakcie warsztatu
 
 | Wcześniejsza decyzja | Czas | Unieważniona przez | Czas |
@@ -259,14 +303,23 @@ Drugi warsztat na makiecie v2 (2 h 16 min). Pełny kontekst, cytaty, proces i **
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 117 |
-| WSTĘPNA | 21 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 125 |
+| WSTĘPNA | 23 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **147** |
+| **Razem** | **157** |
 
-Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 47**.
+Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**.
 
-Liczby obejmują 4 uzupełnienia po pierwszym warsztacie (D-121 - D-124) oraz 23 decyzje z warsztatu doprecyzowującego 2026-09-04 (D-125 - D-147, w tym 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md)).
+Skąd te liczby:
+
+| Pochodzenie | Zakres | Liczba |
+|---|---|---|
+| Warsztat 25.08.2026 | D-01 - D-120 | 120 |
+| Uzupełnienia po pierwszym warsztacie | D-121 - D-124 | 4 |
+| Warsztat doprecyzowujący 04.09.2026 | D-125 - D-147 | 23 |
+| Budowa makiety na bazie danych 23.09.2026 | D-148 - D-157 | 10 |
+
+Warsztat 04.09 przyniósł 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md). Runda budowy makiety nie odwróciła żadnej decyzji klienta, tylko rozstrzygnęła, gdzie ustalenia mają być egzekwowane.
 
 > **Uwaga o interpretacji.** Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde ustalenia w wąskim zakresie, obok których stoi 50 pytań otwartych, w tym 4 blokady. Decyzje z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu stron i wymagają potwierdzenia.

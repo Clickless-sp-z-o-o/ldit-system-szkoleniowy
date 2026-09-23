@@ -37,20 +37,60 @@
                         LDIT wystawia fakturę prowizyjną instytucji
 ```
 
+### Aktualizacja 2026-09-04: proces Działu Dotacji w 10 etapach [D-146]
+
+Na warsztacie doprecyzowującym klient dostarczył diagram `Etapy_procesu.png` ze szczegółowym procesem obsługi klienta przez Dział Dotacji. Pełny opis etapów, role i cytaty są w [17. Warsztat 2026-09-04](17-warsztat-2026-09-04.md#proces-obsługi-klienta-przez-dział-dotacji). Poniższy diagram porządkuje te same 10 etapów i zaznacza granicę, od której klient wchodzi do tabeli **Wnioski** (wcześniej figuruje wyłącznie w **Bazie klientów**).
+
+```mermaid
+flowchart TD
+    subgraph Baza["Baza klientow (przed Wnioskami)"]
+        E1["1. Przekazanie klienta<br/>IS przekazuje, LDIT weryfikuje dane"]
+        E2["2. Akceptacja formularza<br/>brama anty-spam, wpis do bazy klientow"]
+    end
+
+    subgraph Wnioski["Tabela Wnioski, od etapu 3 [D-146]"]
+        E3["3. Przygotowanie wniosku i dokumentow<br/>profil praca.gov.pl, zalaczniki, podpisy"]
+        E4["4. Zlozenie wniosku<br/>wniosek zlozony w PUP"]
+        E5["5. Oczekiwanie na decyzje<br/>PUP rozpatruje"]
+        E6{"6. Decyzja urzedu"}
+        E7["7. Ustalenie terminu szkolenia<br/>model A: LDIT z kalendarza IS<br/>model B: IS ustala i przekazuje"]
+        E8["8. Realizacja szkolenia"]
+        E9["9. Rozliczenie<br/>dane do faktury, certyfikaty"]
+        E10(["10. Proces zakonczony<br/>dofinansowanie rozliczone"])
+    end
+
+    E1 --> E2 --> E3 --> E4 --> E5 --> E6
+    E6 -- "negatywna" --> Powrot["Klient zostaje w bazie<br/>czeka na kolejny nabor"]
+    E6 -- "pozytywna" --> E7 --> E8 --> E9 --> E10
+```
+
+> Klient wchodzi do tabeli Wnioski dopiero od etapu 3, wcześniej figuruje tylko w Bazie klientów, patrz [17. Warsztat 2026-09-04](17-warsztat-2026-09-04.md).
+
 ---
 
 ## Statusy
 
-W obecnym Excelu funkcjonują **dwa niezależne statusy** na jednym wierszu. Warsztat potwierdził ich istnienie, ale nie ustalił, czy w systemie zostaną dwa pola, czy jeden łańcuch.
+W obecnym Excelu funkcjonują **dwa niezależne statusy** na jednym wierszu. Warsztat potwierdził ich istnienie, ale nie ustalił, czy w systemie zostaną dwa pola, czy jeden łańcuch [P-42].
 
 ### Status składania (dziś: "status lewy")
 
-| Status | Znaczenie |
-|---|---|
-| `Niezłożony` | Klient w bazie, wniosek jeszcze nie poszedł |
-| `NW` | Umówione z klientem, że piszemy wniosek, ale sprawa stoi |
-| `Złożony` | Wniosek trafił do urzędu |
-| `Rezygnacja` | Klient zrezygnował przed złożeniem |
+Cztery stany i przejścia między nimi (znaczenie każdego stanu w opisie węzła):
+
+```mermaid
+stateDiagram-v2
+    [*] --> Niezlozony
+    Niezlozony: Niezlozony (klient w bazie, wniosek jeszcze nie poszedl)
+    NW: NW (umowione z klientem ze piszemy wniosek, ale sprawa stoi)
+    Zlozony: Zlozony (wniosek trafil do urzedu)
+    Rezygnacja: Rezygnacja (klient zrezygnowal przed zlozeniem)
+
+    Niezlozony --> NW: umowiono pisanie wniosku
+    Niezlozony --> Zlozony: wniosek trafil do urzedu
+    NW --> Zlozony: wniosek trafil do urzedu
+    Niezlozony --> Rezygnacja
+    NW --> Rezygnacja
+    Zlozony --> [*]
+```
 
 > **Bartek (1:43:10):** o statusie NW: "w momencie jak już [umówiliśmy się z] klientem, że piszemy wniosek, ale na razie się nic nie dzieje (...) nie wiem od czego to jest skrót, kiedyś wymyśliłem i tak zostało."
 
@@ -71,6 +111,48 @@ W obecnym Excelu funkcjonują **dwa niezależne statusy** na jednym wierszu. War
 | `Oczekuje` (czekamy) | **biały** |
 | `Zafakturowany` | brak |
 | `Rozliczone` | **granatowy** (z delikatnym fioletem) |
+
+### Diagram stanów: trzy wymiary statusu razem
+
+Poniższy diagram łączy wszystkie trzy statusy w jednym widoku, jako trzy równoległe regiony jednego stanu "Wniosek". Nie zakłada to, że w systemie będzie to jeden łańcuch, to wciąż zależy od rozstrzygnięcia [P-42]. Diagram pokazuje tylko przejścia potwierdzone w dokumentacji, bez łączenia strzałkami statusu składania ze statusem decyzji, bo ta zależność nie została jednoznacznie opisana na warsztacie.
+
+```mermaid
+stateDiagram-v2
+    state "Wniosek" as Wniosek {
+        state "Status skladania" as Skladanie {
+            [*] --> Niezlozony2
+            Niezlozony2: Niezlozony
+            NW2: NW
+            Zlozony2: Zlozony
+            RezSkladanie: Rezygnacja
+            Niezlozony2 --> NW2
+            Niezlozony2 --> Zlozony2
+            NW2 --> Zlozony2
+            Niezlozony2 --> RezSkladanie
+            NW2 --> RezSkladanie
+        }
+        --
+        state "Status decyzji" as Decyzja {
+            [*] --> OczekujeDecyzji
+            OczekujeDecyzji: Oczekuje na decyzje
+            Pozytywna: Pozytywna
+            Negatywna: Negatywna
+            RezPoNapisaniu: Rezygnacja po napisaniu
+            OczekujeDecyzji --> Pozytywna: decyzja urzedu pozytywna
+            OczekujeDecyzji --> Negatywna: decyzja urzedu negatywna, np. brak srodkow
+            OczekujeDecyzji --> RezPoNapisaniu: klient rezygnuje po przygotowaniu wniosku
+        }
+        --
+        state "Status finansowy" as Finansowy {
+            [*] --> OczekujeFinansow
+            OczekujeFinansow: Oczekuje (czekamy)
+            Zafakturowany2: Zafakturowany
+            Rozliczone2: Rozliczone
+            OczekujeFinansow --> Zafakturowany2: IS wystawia fakture
+            Zafakturowany2 --> Rozliczone2: LDIT wysyla pakiet rozliczeniowy i fakture prowizyjna
+        }
+    }
+```
 
 ---
 

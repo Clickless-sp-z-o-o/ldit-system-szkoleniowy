@@ -12,6 +12,45 @@ Warsztat rozszerzył model z 4 do **5 ról bazowych**, plus możliwość tworzen
 | **Pracownik IS** (handlowiec) | np. Mirka z Fortech | Tylko dane klientów IS, dodatkowo przefiltrowane (np. tylko najnowszy nabór) |
 | **Klient końcowy** | firma / uczestnik | OTWARTE, patrz niżej |
 
+### Hierarchia ról i zakres widzialności danych
+
+Poniższy diagram pokazuje, jak zakres widoczności zawęża się w dół hierarchii oraz gdzie przebiega granica separacji między instytucjami szkoleniowymi (dwie odrębne gałęzie po prawej stronie nigdy się nie stykają, patrz [Separacja danych](#separacja-danych)).
+
+```mermaid
+flowchart TD
+    LDIT["LDIT<br/>Administrator + Pracownicy LDIT<br/>widzi wszystkie instytucje"]
+
+    LDIT --> IS1["Instytucja szkoleniowa A<br/>np. Odczaruj"]
+    LDIT --> IS2["Instytucja szkoleniowa B<br/>np. Metal Maniak"]
+
+    IS1 --> PR1["Pracownik IS A<br/>handlowiec"]
+    IS2 --> PR2["Pracownik IS B<br/>handlowiec"]
+
+    PR1 --> K1["Klienci instytucji A"]
+    IS1 --> K1
+    PR2 --> K2["Klienci instytucji B"]
+    IS2 --> K2
+
+    K1 --> U1["Uczestnicy szkolen A"]
+    K2 --> U2["Uczestnicy szkolen B"]
+
+    subgraph Granica["Granica separacji [D-35]"]
+        IS1
+        IS2
+        PR1
+        PR2
+        K1
+        K2
+        U1
+        U2
+    end
+
+    style LDIT fill:#dcf3e3
+    style Granica fill:none,stroke:#e84040,stroke-dasharray: 5 5
+```
+
+Administrator (Bartek) i Pracownicy LDIT widzą obie gałęzie, bo działają ponad granicą separacji. Instytucja A i Instytucja B (wraz ze swoimi pracownikami, klientami i uczestnikami) nie mają wzajemnego dostępu, niezależnie od modułu czy widoku.
+
 ### Zasada: własne konto, działanie we własnym imieniu [D-121]
 
 Każdy użytkownik loguje się na **własne, imienne konto** i wykonuje działania w swoim imieniu. Nie ma kont współdzielonych, spójnie z brakiem wspólnej skrzynki firmowej [D-45]. Konsekwencje:
@@ -105,6 +144,25 @@ Wersja robocza do potwierdzenia. Pola oznaczone `?` wymagają rozstrzygnięcia.
 | Konta i uprawnienia | Pełny | Brak | Użytkownicy własnej IS | Brak | Brak |
 | Rejestr aktywności | Pełny | Brak | Brak | Brak | Brak |
 
+Macierz ma 14 modułów i 5 ról, więc zostaje jako tabela, tego zestawienia nie da się czytelnie zamienić na diagram. Sam mechanizm sprawdzania dostępu do pojedynczego rekordu daje się jednak pokazać jako przepływ decyzji, patrz diagram niżej.
+
+### Diagram: czy ten użytkownik zobaczy ten rekord
+
+Kontrola odbywa się w trzech krokach, od najbardziej ogólnego do najbardziej szczegółowego: najpierw moduł, potem pole, potem wiersz. Brak dostępu na wcześniejszym kroku kończy sprawdzanie, dalsze kroki są bez znaczenia.
+
+```mermaid
+flowchart TD
+    Start(("Zadanie: pokazac rekord")) --> Modul{"Czy rola ma dostep<br/>do modulu?"}
+    Modul -- "Nie" --> Brak1["Brak dostepu<br/>modul niewidoczny w menu"]
+    Modul -- "Tak, podglad lub edycja" --> Pole{"Czy rola ma dostep<br/>do tego pola?"}
+    Pole -- "Nie" --> Ukryj["Pole ukryte lub zamaskowane<br/>np. bez kwot i prowizji"]
+    Pole -- "Tak" --> Wiersz{"Czy wiersz miesci sie<br/>w zakresie uzytkownika?"}
+    Wiersz -- "Nie" --> Brak2["Brak dostepu<br/>rekord niewidoczny"]
+    Wiersz -- "Tak" --> Pokaz["Rekord widoczny<br/>z dozwolonymi polami"]
+
+    Ukryj --> Wiersz
+```
+
 ---
 
 ## Separacja danych
@@ -148,6 +206,20 @@ Wykonawca dwukrotnie sygnalizował implementację przez **osobne bazy pod spodem
 - zestawienia roczne na żądanie
 
 Rekomendacja do rozstrzygnięcia w [09. Integracje i architektura](09-integracje-i-architektura.md): **jedna baza z egzekwowaną separacją na poziomie wierszy (Row Level Security)**, a nie osobne bazy. Osobne bazy uniemożliwiają zbiorczy widok bez budowania warstwy agregacji, która i tak łączyłaby dane w jednym miejscu.
+
+### Separacja w makiecie: stan zaimplementowany
+
+W makiecie separacja jest już zaimplementowana i egzekwowana **w warstwie dostępu do danych, nie w interfejsie**. Logika filtrowania siedzi w `makieta/assets/zakres.js`, a nie w poszczególnych stronach czy komponentach. Odpowiada to zasadzie z tabeli macierzy widoczności wyżej i domyka diagram decyzyjny "czy ten użytkownik zobaczy ten rekord".
+
+Trzy poziomy kontroli, każdy w osobnej tabeli lub widoku bazy:
+
+| Poziom | Co ogranicza | Tabela / widok |
+|---|---|---|
+| Moduł | Czy rola w ogóle widzi zakładkę, i czy ma podgląd czy edycję | `uprawnienia` |
+| Pole | Czy rola widzi konkretne pole w module (np. kwoty, prowizję) | `uprawnienia_pol` |
+| Wiersz | Do których instytucji, klientów i wniosków ma dostęp zalogowany użytkownik | `uzytkownik_instytucja` i widok `v_zakres_uzytkownika` |
+
+Rola wynika z zalogowanego konta, nie z ręcznego przełącznika [D-125]. Panel logowania jest w `makieta/login.html`. Przełącznik ról widoczny w samej makiecie ma charakter wyłącznie demonstracyjny, w docelowym systemie go nie ma.
 
 ---
 

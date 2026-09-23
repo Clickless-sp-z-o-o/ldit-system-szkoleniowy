@@ -2,6 +2,31 @@
 
 ## Mapa integracji
 
+```mermaid
+flowchart LR
+  SYS[("System KFS<br/>LDIT")]
+
+  M365["Microsoft 365<br/>skrzynki pracownikow"]
+  FORM["Formularz zgloszeniowy<br/>per instytucja"]
+  KSIEG["System ksiegowy<br/>eSzokBR"]
+  NAB["Aplikacja naborow<br/>340 urzedow"]
+  PROJ["Projectly<br/>zadania wrocily do systemu<br/>D-140"]
+
+  M365 -->|"odczyt korespondencji"| SYS
+  SYS -->|"wysylka powiadomien<br/>z domeny klienta"| M365
+  FORM -->|"dane klienta koncowego<br/>synchronizacja cykliczna"| SYS
+  KSIEG -->|"faktury, import CSV<br/>nie API"| SYS
+  NAB -->|"nabory aktualne<br/>i prognozowane"| SYS
+  SYS -.->|"forma dostepu<br/>nieustalona"| PROJ
+
+  SMS["SMS"]:::odrzucone
+  API["API ksiegowosci"]:::odrzucone
+  classDef odrzucone fill:#f1f5f9,stroke:#94a3b8,stroke-dasharray: 4 4,color:#64748b
+```
+
+Szare pozycje zostały świadomie wykluczone z etapu I. SMS jako kanał powiadomień [D-04],
+API systemu księgowego z powodu kosztu i bezpieczeństwa.
+
 | Integracja | Zakres | Mechanizm | Status |
 |---|---|---|---|
 | **Microsoft 365, wysyłka** | Powiadomienia z domeny klienta | Aplikacja z uprawnieniem Send Mail | Ustalone |
@@ -9,7 +34,7 @@
 | **Formularze zgłoszeniowe** | Dane klienta końcowego | Formularz webowy per instytucja, synchronizacja cykliczna | Kierunek ustalony, technologia otwarta |
 | **System księgowy** | Faktury LDIT | **Import CSV**, nie API | Ustalone, zależne od potwierdzenia eksportu |
 | **Aplikacja naborów** | Nabory aktualne i prognozowane | Osadzenie w systemie | Ustalone |
-| **Projectly** | Zadania (poza zakresem systemu) | Forma dostępu niedoprecyzowana | Otwarte |
+| **Projectly** | Zadania. **Moduł wrócił do systemu** [D-140], więc integracja przestaje być potrzebna | Forma dostępu niedoprecyzowana | Do zamknięcia, patrz [P-37] |
 | ~~SMS~~ | ~~Powiadomienia~~ | Odrzucone w etapie I | Wykluczone |
 | ~~API systemu księgowego~~ | ~~Faktury~~ | Odrzucone (koszt i bezpieczeństwo) | Wykluczone |
 

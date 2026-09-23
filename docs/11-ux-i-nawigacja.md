@@ -16,6 +16,19 @@ Jednocześnie klient krytykuje własny Excel za nadmiar informacji:
 
 ---
 
+## Wejście do systemu
+
+Rola wynika z zalogowanego konta, nie z ustawienia w interfejsie [D-125]. W makiecie v2 jest
+to zrealizowane jako pełny ekran logowania (`makieta/login.html`) z kontami demonstracyjnymi,
+a w pasku górnym jest imię, rola, instytucja i przycisk wylogowania [D-157].
+
+Konsekwencja dla interfejsu: **menu nie jest listą zapisaną w kodzie**. Buduje się z uprawnień
+roli, więc zmiana w konfiguratorze ról od razu zmienia to, co użytkownik widzi w lewym menu
+[D-36]. Rola bez dostępu do modułu nie dostaje pustego ekranu, tylko komunikat, że ten moduł
+nie należy do jej zakresu.
+
+---
+
 ## Nawigacja
 
 ### Lewe menu jako odpowiednik arkuszy Excela [D-108]
