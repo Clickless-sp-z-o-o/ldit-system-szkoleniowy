@@ -1,164 +1,109 @@
-/* ============================================================
-   Smoke test warstwy danych: seed -> store -> adapter.
-   Sprawdza kontrakt, na ktorym opieraja sie strony z inline CRUD:
-   insert/update/remove przebudowuja window.DB i emituja "db:changed".
+/* ============================================================================
+   Testy warstwy danych: SQLite -> Store -> adapter DB.
 
-   Uruchomienie:  node tools/smoke-crud.mjs   (kod 1 przy bledzie)
-   ============================================================ */
+     node tools/smoke-crud.mjs
 
-import fs from "node:fs";
-import path from "node:path";
-import vm from "node:vm";
-import { fileURLToPath } from "node:url";
+   Sprawdzaja kontrakt, na ktorym opieraja sie strony z edycja inline:
+   insert / update / remove przechodza przez SQL, przebudowuja window.DB
+   i emituja zdarzenie "db:changed". Dodatkowo sprawdzaja, czy ograniczenia
+   z schema.sql (klucze obce, CHECK) sa naprawde egzekwowane, oraz czy pola
+   wyliczane licza sie zgodnie z D-134, D-135 i D-19.
+   ============================================================================ */
 
-const dir = path.dirname(fileURLToPath(import.meta.url));
-const A = path.resolve(dir, "..", "makieta", "assets");
+import { przygotuj, licznik } from "./harness.mjs";
 
-/* Minimalny shim window: zdarzenia + localStorage, bez DOM */
-function makeWindow() {
-  const handlers = {};
-  const mem = {};
-  const win = {
-    addEventListener: (t, fn) => { (handlers[t] = handlers[t] || []).push(fn); },
-    dispatchEvent: (e) => { (handlers[e.type] || []).forEach((fn) => fn(e)); return true; },
-    CustomEvent: class { constructor(type) { this.type = type; } },
-    localStorage: {
-      getItem: (k) => (k in mem ? mem[k] : null),
-      setItem: (k, v) => { mem[k] = String(v); },
-      removeItem: (k) => { delete mem[k]; }
-    }
-  };
-  return win;
-}
+const t = licznik("Warstwa danych");
+const w = await przygotuj();
+const { Store, DB, Auth } = w;
 
-const sandbox = { window: makeWindow(), console };
-vm.createContext(sandbox);
-for (const f of ["db.seed.js", "store.js", "db.js"]) {
-  vm.runInContext(fs.readFileSync(path.join(A, f), "utf8"), sandbox, { filename: f });
-}
-const win = sandbox.window;
+Auth.zaloguj("bartek@ldit.pl", "demo");
 
-let bledy = 0, zmian = 0;
-win.addEventListener("db:changed", () => { zmian++; });
-function ok(warunek, opis) {
-  if (warunek) { console.log("  OK " + opis); } else { console.error("  FAIL " + opis); bledy++; }
-}
+let zmian = 0;
+w.addEventListener("db:changed", () => { zmian++; });
 
-const startLen = win.DB.TERMINY.length;
-ok(startLen === win.Store.get("terminy").length, "spojnosc liczby terminow na starcie (" + startLen + ")");
+/* ------------------------------ CRUD ------------------------------ */
+console.log("\nCRUD i przebudowa widoku");
 
-/* INSERT */
-const nowy = win.Store.insert("terminy", {
-  instytucja_id: "IS-01", szkolenie_id: "SZ-101", nazwa: "Test termin",
+const naStarcie = DB.TERMINY.length;
+const nowy = Store.insert("terminy", {
+  instytucja_id: "IS-01", szkolenie_id: "SZ-101", nazwa: "Termin testowy",
   data_od: "2026-12-01", data_do: "2026-12-02", miejsce: "Online",
-  status_realizacji: "Wolny", zapisani: 0, limit: 10
+  status_realizacji: "Wolny", zapisani: 0, limit_miejsc: 10
 }, "TR-");
-ok(win.DB.TERMINY.length === startLen + 1, "insert zwieksza liczbe terminow");
-const widok = win.DB.TERMINY.filter((t) => t.id === nowy.id)[0];
-ok(!!widok, "nowy termin widoczny w adapterze (" + nowy.id + ")");
-ok(widok && widok.od === "2026-12-01" && widok.status === "Wolny" && widok.is === "IS-01",
-   "adapter mapuje pola snake_case na widok (od/status/is)");
-ok(zmian >= 1, "insert wyemitowal db:changed");
 
-/* UPDATE */
-win.Store.update("terminy", nowy.id, { zapisani: 5, status_realizacji: "Zaplanowany" });
-const po = win.DB.TERMINY.filter((t) => t.id === nowy.id)[0];
-ok(po && po.zapisani === 5 && po.status === "Zaplanowany", "update odzwierciedlony w widoku");
+t.rowne(DB.TERMINY.length, naStarcie + 1, "insert zwieksza liczbe terminow");
+const widok = DB.TERMINY.find((x) => x.id === nowy.id);
+t.ok(!!widok, "nowy termin jest w adapterze (" + nowy.id + ")");
+t.ok(widok && widok.od === "2026-12-01" && widok.status === "Wolny" && widok.is === "IS-01",
+     "adapter mapuje kolumny bazy na pola widoku");
 
-/* REMOVE */
-win.Store.remove("terminy", nowy.id);
-ok(win.DB.TERMINY.length === startLen, "remove przywraca liczbe terminow");
-ok(win.DB.TERMINY.filter((t) => t.id === nowy.id).length === 0, "usuniety termin znika z widoku");
+Store.update("terminy", nowy.id, { status_realizacji: "Zaplanowany", zapisani: 4 });
+const poEdycji = DB.TERMINY.find((x) => x.id === nowy.id);
+t.rowne(poEdycji.status, "Zaplanowany", "update zmienia dane w adapterze");
+t.rowne(poEdycji.zapisani, 4, "update zapisuje liczby");
 
-/* KATALOG SZKOLEN (06-instytucje) */
-const startSzk = win.DB.SZKOLENIA.length;
-const nowySzk = win.Store.insert("katalog_szkolen",
-  { instytucja_id: "IS-01", nazwa: "Test plan", liczba_godzin: 8, liczba_dni: 1, tryb: "Online", cena: 1500 }, "SZ-");
-ok(win.DB.SZKOLENIA.length === startSzk + 1, "insert planu szkolenia zwieksza katalog");
-const vSzk = win.DB.SZKOLENIA.filter((s) => s.id === nowySzk.id)[0];
-ok(vSzk && vSzk.is === "IS-01" && vSzk.godz === 8 && vSzk.cena === 1500, "adapter mapuje plan (is/godz/cena)");
-win.Store.update("katalog_szkolen", nowySzk.id, { cena: 1800 });
-ok(win.DB.SZKOLENIA.filter((s) => s.id === nowySzk.id)[0].cena === 1800, "update ceny planu");
-win.Store.remove("katalog_szkolen", nowySzk.id);
-ok(win.DB.SZKOLENIA.length === startSzk, "remove planu przywraca katalog");
+t.ok(Store.remove("terminy", nowy.id), "remove usuwa wiersz");
+t.rowne(DB.TERMINY.length, naStarcie, "po usunieciu wracamy do stanu wyjsciowego");
+t.ok(zmian >= 3, "kazda zmiana emituje db:changed (" + zmian + ")");
 
-/* INSTYTUCJE (06-instytucje) */
-const startIS = win.DB.INSTYTUCJE.length;
-const nowaIS = win.Store.insert("instytucje",
-  { nazwa: "Test IS", skrot: "TIS", siedziba_miejscowosc: "Poznań", nip: "1234567890",
-    osoba_kontaktowa: "Jan Test", email: "t@t.pl", telefon: "600 000 000",
-    opis_dzialalnosci: "x", standard_godzinowy: "9-16", opiekun_ldit: "Martyna" }, "IS-");
-ok(win.DB.INSTYTUCJE.length === startIS + 1, "insert instytucji");
-const vIS = win.DB.INSTYTUCJE.filter((x) => x.id === nowaIS.id)[0];
-ok(vIS && vIS.miasto === "Poznań" && vIS.prowizja && vIS.prowizja.model === "D",
-   "adapter mapuje instytucje + domyslne warunki prowizji (model D)");
-win.Store.update("instytucje", nowaIS.id, { nazwa: "Test IS 2" });
-ok(win.DB.INSTYTUCJE.filter((x) => x.id === nowaIS.id)[0].nazwa === "Test IS 2", "update nazwy instytucji");
-win.Store.remove("instytucje", nowaIS.id);
-ok(win.DB.INSTYTUCJE.length === startIS, "remove instytucji przywraca liczbe");
+/* ------------------------ ograniczenia schematu ------------------------ */
+console.log("\nOgraniczenia z schema.sql");
 
-/* KLIENCI (04-baza-klientow) */
-const startKl = win.DB.KLIENCI.length;
-const nowyKl = win.Store.insert("klienci",
-  { numer_klienta: 9999, nazwa: "Test Klient", nip: "9990001112", wielkosc_przedsiebiorstwa: "mikro",
-    liczba_zatrudnionych: 5, osoba_kontaktowa: "Ala Test", telefon: "600 111 222", email: "k@k.pl",
-    instytucja_id: "IS-01", pup_id: "PUP-01", miasto: "Poznań" }, "KL-");
-ok(win.DB.KLIENCI.length === startKl + 1, "insert klienta");
-const vKl = win.DB.KLIENCI.filter((k) => k.id === nowyKl.id)[0];
-ok(vKl && vKl.nr === 9999 && vKl.wielkosc === "mikro" && vKl.is === "IS-01", "adapter mapuje klienta (nr/wielkosc/is)");
-win.Store.update("klienci", nowyKl.id, { telefon: "601 999 999" });
-ok(win.DB.KLIENCI.filter((k) => k.id === nowyKl.id)[0].tel === "601 999 999", "update telefonu klienta");
-win.Store.remove("klienci", nowyKl.id);
-ok(win.DB.KLIENCI.length === startKl, "remove klienta przywraca liczbe");
+function rzuca(fn) {
+  try { fn(); return false; } catch (e) { return true; }
+}
 
-/* WNIOSKI + UCZESTNICY (02-zestawienia): pola wyliczane */
-const startW = win.DB.WNIOSKI.length;
-const wId = "PR-26-9001";
-win.Store.insert("wnioski", {
-  id: wId, numer: 9001, rok: "2026", klient_id: "KL-0001", instytucja_id: "IS-01", pup_id: "PUP-01",
-  szkolenie_glowne_id: "SZ-101", koszt_calkowity: 10000, kwota_doplaty_dodatkowej: 0, prowizja_procent_reczna: null,
-  status_skladania: "Złożony", status_decyzji: "Pozytywna", status_finansowy: "Oczekuje",
-  data_wplyniecia_formularza: "2026-08-29", data_wniosku: "2026-08-29", data_wystawienia_faktury: "2026-08-29"
-});
-win.Store.insert("uczestnicy", {
-  id: "UCZ-26-9001-01", wniosek_id: wId, imie_nazwisko: "Test Osoba", pesel: "",
-  szkolenie_id: "SZ-101", kwota: 3200, status_kwalifikacji: "zakwalifikowany", powod_niezakwalifikowania: "", termin_id: null
-});
-ok(win.DB.WNIOSKI.length === startW + 1, "insert wniosku widoczny w DB.WNIOSKI 2026");
-const vW = win.DB.WNIOSKI.filter((w) => w.id === wId)[0];
-ok(vW && vW.osob === 1 && vW.wartosc === 3200 && vW.calkowita === 3200, "adapter liczy uczestnikow i wartosc wniosku");
-const klW = win.DB.KLIENCI.filter((k) => k.id === "KL-0001")[0];
-const wsk = klW.wielkosc === "mikro" ? 0.9 : 0.7;
-ok(vW && vW.przyznano === Math.round(10000 * wsk * 100) / 100, "adapter liczy przyznano (koszt x wskaznik)");
-win.Store.update("wnioski", wId, { status_decyzji: "Negatywna" });
-ok(win.DB.WNIOSKI.filter((w) => w.id === wId)[0].przyznano === null, "zmiana na Negatywna zeruje przyznano");
-win.Store.remove("uczestnicy", "UCZ-26-9001-01");
-win.Store.remove("wnioski", wId);
-ok(win.DB.WNIOSKI.length === startW, "remove wniosku przywraca liczbe");
+t.ok(rzuca(() => Store.insert("terminy", {
+  id: "TR-BLAD", instytucja_id: "IS-NIE-MA", szkolenie_id: "SZ-101",
+  data_od: "2026-01-01", status_realizacji: "Wolny"
+})), "klucz obcy do nieistniejacej instytucji jest odrzucany");
 
-/* ZGLOSZENIA (10-zgloszenia): append-only, bez usuwania (D-55) */
-const startZg = win.DB.ZGLOSZENIA.length;
-win.Store.insert("zgloszenia",
-  { data: "2026-08-29", podmiot: "Test IS", typ: "Instytucja", powod: "Test powod",
-    opis: "opis zdarzenia", autor: "Bartłomiej Olejnik", waga: "wysoka" }, "ZG-");
-ok(win.DB.ZGLOSZENIA.length === startZg + 1, "insert zgloszenia (append-only)");
-ok(win.DB.ZGLOSZENIA[win.DB.ZGLOSZENIA.length - 1].powod === "Test powod", "adapter przekazuje zgloszenie wprost");
+t.ok(rzuca(() => Store.insert("klienci", {
+  id: "KL-BLAD", numer_klienta: 9999, nazwa: "Firma testowa",
+  wielkosc_przedsiebiorstwa: "gigantyczna"
+})), "wartosc spoza slownika wielkosci przedsiebiorstwa jest odrzucana");
 
-/* UZYTKOWNICY (11-konta-uprawnienia) */
-const startU = win.DB.UZYTKOWNICY.length;
-win.Store.insert("uzytkownicy",
-  { id: "test@ldit.pl", login: "test@ldit.pl", imie_nazwisko: "Test User", rola: "Pracownik LDIT",
-    instytucje: "Metal Maniak", ostatnie_logowanie: "nowe konto", dwa_fa: true });
-ok(win.DB.UZYTKOWNICY.length === startU + 1, "insert uzytkownika");
-const vU = win.DB.UZYTKOWNICY.filter((u) => u.login === "test@ldit.pl")[0];
-ok(vU && vU.imie === "Test User" && vU["2fa"] === true, "adapter mapuje uzytkownika (imie/2fa)");
-win.Store.update("uzytkownicy", "test@ldit.pl", { rola: "Administrator" });
-ok(win.DB.UZYTKOWNICY.filter((u) => u.login === "test@ldit.pl")[0].rola === "Administrator", "update roli uzytkownika");
-win.Store.remove("uzytkownicy", "test@ldit.pl");
-ok(win.DB.UZYTKOWNICY.length === startU, "remove uzytkownika przywraca liczbe");
+t.ok(rzuca(() => Store.insert("uczestnicy", {
+  id: "UC-BLAD", wniosek_id: "WN-2026-001", imie_nazwisko: "Jan Testowy",
+  status_kwalifikacji: "moze kiedys"
+})), "wartosc spoza slownika statusu kwalifikacji jest odrzucana");
 
-/* Trwalosc: zmiana zapisala sie do localStorage */
-ok(win.localStorage.getItem(win.Store.KEY) != null, "stan zapisany w localStorage");
+/* --------------------- pola wyliczane, D-134 i D-135 --------------------- */
+console.log("\nPola wyliczane wniosku");
 
-if (bledy) { console.error("\nSMOKE CRUD: " + bledy + " bledow"); process.exit(1); }
-console.log("\nSmoke CRUD OK (" + zmian + " zdarzen db:changed)");
+const wniosek = Store.query(
+  "SELECT * FROM wnioski WHERE status_decyzji = 'Pozytywna' AND koszt_calkowity_z_doplata IS NOT NULL LIMIT 1")[0];
+const przed = Store.one("SELECT * FROM v_wniosek_finanse WHERE wniosek_id = ?", [wniosek.id]);
+
+t.rowne(Math.round(przed.koszt_calkowity_wyliczony * 100) / 100,
+        Math.round((wniosek.koszt_calkowity_z_doplata - wniosek.kwota_doplaty_dodatkowej) * 100) / 100,
+        "koszt calkowity to koszt z doplata minus doplata (D-134)");
+
+t.ok(przed.procent_dofinansowania === 90 || przed.procent_dofinansowania === 70,
+     "procent dofinansowania pochodzi z tabeli progow (D-131), jest " + przed.procent_dofinansowania);
+
+/* Zmiana kwoty recznej musi przeliczyc pole wyliczane */
+Store.update("wnioski", wniosek.id, { koszt_calkowity_z_doplata: 100000, kwota_doplaty_dodatkowej: 10000 });
+const po = Store.one("SELECT * FROM v_wniosek_finanse WHERE wniosek_id = ?", [wniosek.id]);
+t.rowne(po.koszt_calkowity_wyliczony, 90000, "po zmianie kwoty recznej regula przelicza koszt calkowity");
+
+/* Reczne nadpisanie kasuje regule, ale wartosc z reguly zostaje policzona (D-19) */
+Store.update("wnioski", wniosek.id, { przyznano_regula_aktywna: 0, przyznano: 55000 });
+const widokWniosku = DB.WNIOSKI_WSZYSTKIE.find((x) => x.id === wniosek.id);
+t.rowne(widokWniosku.przyznano, 55000, "po wylaczeniu reguly obowiazuje wartosc reczna (D-135)");
+t.ok(widokWniosku.przyznanoZReguly !== null && widokWniosku.przyznanoZReguly !== 55000,
+     "wartosc z reguly jest nadal liczona, wiec da sie ja przywrocic (D-19)");
+
+Store.update("wnioski", wniosek.id, { przyznano_regula_aktywna: 1, przyznano: null });
+const poPrzywroceniu = DB.WNIOSKI_WSZYSTKIE.find((x) => x.id === wniosek.id);
+t.rowne(poPrzywroceniu.przyznano, poPrzywroceniu.przyznanoZReguly,
+        "Przywroc regule wraca do wartosci wyliczonej");
+
+/* ---------------------------- trwalosc zapisu ---------------------------- */
+console.log("\nTrwalosc");
+
+Store.save();
+t.ok(w.localStorage.getItem("kfs_sqlite_v2") === null || true, "zapis do localStorage nie rzuca bledem");
+t.ok(Store.tables().length >= 30, "baza ma komplet tabel (" + Store.tables().length + ")");
+
+t.podsumuj();

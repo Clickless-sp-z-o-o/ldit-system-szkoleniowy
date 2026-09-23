@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Panel klienta</title>
 <link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
 </head>
 <body>
 <div class="page">
@@ -172,25 +173,46 @@
 
 </div>
 
-<script src="../assets/db.seed.js"></script>
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/tips.js"></script>
-<script>
+<script src="../assets/boot.js" data-modul="panelKL"></script>
+<script type="text/kfs-strona">
 (function () {
-  /* Panel dziala w kontekscie JEDNEGO klienta. Wszystko ponizej filtruje sie po jego id. */
-  var kandydaci = DB.KLIENCI.filter(function (k) { return k.nazwa.indexOf("Stalmet") === 0; });
-  var kl = null, w = null;
-  kandydaci.forEach(function (k) {
-    if (w) return;
-    var wn = DB.WNIOSKI.filter(function (x) { return x.klient === k.id && x.statusDec === "Pozytywna"; })[0];
-    if (wn) { kl = k; w = wn; }
-  });
-  if (!w) {
-    kl = kandydaci[0] || DB.KLIENCI[0];
-    w = DB.WNIOSKI.filter(function (x) { return x.klient === kl.id; })[0] || DB.WNIOSKI[0];
+  /* Panel dziala w kontekscie JEDNEGO klienta: tego, ktory jest przypiety do
+     zalogowanego konta. Konto LDIT ogladajace panel podglada pierwszego klienta
+     ze swojego zakresu. Warstwa separacji i tak nie wpuscila tu nikogo wiecej. */
+  var sesja = Auth.sesja();
+  var kl = (sesja && sesja.klient_id)
+    ? DB.KLIENCI.filter(function (k) { return k.id === sesja.klient_id; })[0]
+    : DB.KLIENCI[0];
+
+  if (!kl) {
+    Auth.pokazBlokade("Brak danych",
+      "To konto nie jest powiazane z zadnym klientem. Zakres panelu klienta " +
+      "pozostaje nierozstrzygniety (P-33).");
+    return;
   }
-  var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0];
+
+  var wnioskiKlienta = DB.WNIOSKI_WSZYSTKIE.filter(function (x) { return x.klient === kl.id; });
+  var w = wnioskiKlienta.filter(function (x) { return x.statusDec === "Pozytywna"; })[0] ||
+          wnioskiKlienta[0];
+
+  if (!w) {
+    Auth.pokazBlokade("Brak wniosku",
+      "Ten klient nie ma jeszcze zadnego projektu w systemie.");
+    return;
+  }
+
+  var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0] || {};
   var termin = DB.TERMINY.filter(function (t) { return t.szk === w.szkId; })[0];
   var szk = DB.SZKOLENIA.filter(function (s) { return s.id === w.szkId; })[0];
 

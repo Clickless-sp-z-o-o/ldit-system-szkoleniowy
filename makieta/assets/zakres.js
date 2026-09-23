@@ -1,0 +1,180 @@
+/* ============================================================================
+   Separacja danych. Jedno miejsce, w ktorym z kompletu danych zostaje to,
+   co wolno zobaczyc zalogowanemu kontu.
+
+   Dlaczego tutaj, a nie na stronach: instytucje szkoleniowe sa wobec siebie
+   konkurencyjne, a wyciek do niewlasciwego katalogu to scenariusz krytyczny.
+   Ukrycie kolumny w HTML nie jest zabezpieczeniem, bo dane i tak sa w pamieci
+   strony. Dlatego filtr zaklada sie na wynik adaptera, zanim jakakolwiek
+   strona go zobaczy (D-35, D-76, D-114, D-144).
+
+   Filtr dziala na dwoch poziomach:
+     wiersze  ktore instytucje, ktorzy klienci, ktore wnioski
+     pola     prowizja, zysk firmy, PESEL uczestnika
+
+   Zastosowanie:  Zakres.zastosuj(DB)  na koncu przebudowy DB.
+   ============================================================================ */
+
+(function (global) {
+  "use strict";
+
+  function nalezy(lista, wartosc) {
+    return lista === null || lista.indexOf(wartosc) >= 0;
+  }
+
+  function filtruj(tablica, lista, pole) {
+    if (lista === null) return tablica;
+    return tablica.filter(function (r) { return lista.indexOf(r[pole]) >= 0; });
+  }
+
+  var Zakres = {
+
+    zastosuj: function (DB) {
+      var Auth = global.Auth;
+      if (!Auth || !Auth.zalogowany()) {
+        this.wyczysc(DB);
+        return DB;
+      }
+
+      if (Auth.tylkoWlasnyWniosek()) return this.zakresKlienta(DB, Auth.sesja());
+
+      var instytucje = Auth.instytucje();          /* null = brak ograniczenia */
+      var klienci = Auth.klienciWZakresie();
+      var nazwyInst = null;
+
+      DB.INSTYTUCJE = filtruj(DB.INSTYTUCJE, instytucje, "id");
+      if (instytucje !== null) {
+        nazwyInst = DB.INSTYTUCJE.map(function (i) { return i.nazwa; });
+      }
+
+      DB.KLIENCI = filtruj(DB.KLIENCI, klienci, "id");
+      DB.KLIENCI = this.wlasnyKontekstKlienta(DB.KLIENCI, instytucje);
+      DB.SZKOLENIA = filtruj(DB.SZKOLENIA, instytucje, "is");
+      DB.TERMINY = filtruj(DB.TERMINY, instytucje, "is");
+      DB.FAKTURY = filtruj(DB.FAKTURY, instytucje, "isId");
+      DB.WNIOSKI_WSZYSTKIE = filtruj(DB.WNIOSKI_WSZYSTKIE, instytucje, "is");
+      DB.WNIOSKI_2026 = filtruj(DB.WNIOSKI_2026, instytucje, "is");
+      DB.WNIOSKI_2025 = filtruj(DB.WNIOSKI_2025, instytucje, "is");
+      DB.WNIOSKI = DB.WNIOSKI_2026;
+
+      if (nazwyInst !== null) {
+        DB.KOLEJKA = DB.KOLEJKA.filter(function (k) { return nazwyInst.indexOf(k.is) >= 0; });
+      }
+
+      /* Stawki prowizji widzi wylacznie administrator (D-07). Instytucja nie widzi
+         nawet wlasnej (D-76), pracownik LDIT nie widzi zadnej (D-34, D-114). */
+      if (!Auth.moze("finanse.prowizja")) {
+        DB.INSTYTUCJE = DB.INSTYTUCJE.map(function (i) {
+          var kopia = {};
+          for (var k in i) if (k !== "prowizja") kopia[k] = i[k];
+          kopia.prowizja = null;
+          return kopia;
+        });
+        [DB.WNIOSKI_WSZYSTKIE, DB.WNIOSKI_2026, DB.WNIOSKI_2025].forEach(function (lista) {
+          lista.forEach(function (w) {
+            w.prowizjaProcent = null;
+            w.prowizjaKwota = null;
+            w.prowizjaTyp = null;
+          });
+        });
+      }
+
+      /* PESEL uczestnika to dane wrazliwe. Handlowiec instytucji ich nie widzi,
+         bo jego rola konczy sie na wypelnieniu formularza (D-75). */
+      if (!Auth.moze("klient.pesel")) {
+        DB.WNIOSKI_WSZYSTKIE.forEach(function (w) {
+          w.uczestnicy.forEach(function (u) { u.pesel = null; });
+        });
+      }
+
+      /* Kwoty wniosku: role bez tego uprawnienia dostaja wnioski bez finansow. */
+      if (!Auth.moze("finanse.kwoty_wniosku")) {
+        DB.WNIOSKI_WSZYSTKIE.forEach(function (w) {
+          w.kosztCalkowity = null; w.przyznano = null; w.kosztZDoplata = null;
+          w.calkowita = null; w.wartosc = null; w.doplata = null;
+        });
+      }
+
+      if (!Auth.moze("finanse.faktury")) DB.FAKTURY = [];
+      if (!Auth.moze("zgloszenia.dostep")) DB.ZGLOSZENIA = [];
+      if (!Auth.moze("admin.rejestr")) { DB.AKTYWNOSC = []; DB.LOGOWANIA = []; }
+      if (!Auth.moze("statystyki.zbiorcze")) DB.CELE = [];
+
+      /* Liste kont widzi administrator LDIT. Administrator instytucji widzi
+         wylacznie wlasnych pracownikow (D-126). */
+      if (!Auth.moze("admin.konta")) {
+        var s = Auth.sesja();
+        var mojeInst = s.instytucja_nazwa;
+        DB.UZYTKOWNICY = mojeInst
+          ? DB.UZYTKOWNICY.filter(function (u) { return u.inst === mojeInst; })
+          : [];
+      }
+
+      return DB;
+    },
+
+    /* Klient koncowy widzi wylacznie wlasny rekord i wlasne wnioski. Instytucje
+       zostaja tylko te, ktore prowadza jego wnioski, zeby dalo sie pokazac nazwe
+       szkoleniowca. Bez prowizji, bez faktur, bez kogokolwiek innego. P-33. */
+    zakresKlienta: function (DB, sesja) {
+      var id = sesja.klient_id;
+      DB.KLIENCI = DB.KLIENCI.filter(function (k) { return k.id === id; });
+      DB.WNIOSKI_WSZYSTKIE = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.klient === id; });
+      DB.WNIOSKI_2026 = DB.WNIOSKI_2026.filter(function (w) { return w.klient === id; });
+      DB.WNIOSKI_2025 = DB.WNIOSKI_2025.filter(function (w) { return w.klient === id; });
+      DB.WNIOSKI = DB.WNIOSKI_2026;
+
+      var moje = DB.WNIOSKI_WSZYSTKIE.map(function (w) { return w.is; });
+      DB.INSTYTUCJE = DB.INSTYTUCJE
+        .filter(function (i) { return moje.indexOf(i.id) >= 0; })
+        .map(function (i) {
+          var kopia = {};
+          for (var k in i) if (Object.prototype.hasOwnProperty.call(i, k)) kopia[k] = i[k];
+          kopia.prowizja = null;
+          return kopia;
+        });
+      DB.TERMINY = DB.TERMINY.filter(function (t) { return moje.indexOf(t.is) >= 0; });
+      DB.SZKOLENIA = DB.SZKOLENIA.filter(function (s) { return moje.indexOf(s.is) >= 0; });
+
+      ["FAKTURY", "KOLEJKA", "MAILE", "UZYTKOWNICY", "ZGLOSZENIA",
+       "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA"].forEach(function (k) { DB[k] = []; });
+      return DB;
+    },
+
+    /* Jeden klient moze byc u kilku instytucji (D-144), ale kazda ma widziec go
+       wylacznie we wlasnym kontekscie. Pole "is" niesie instytucje pozyskujaca,
+       wiec bez podmiany instytucja dowiaduje sie, u kogo jeszcze jest jej klient.
+       Dlatego dla konta o ograniczonym zakresie podmieniamy je na instytucje
+       z zakresu tego konta. */
+    wlasnyKontekstKlienta: function (klienci, instytucje) {
+      if (instytucje === null || !instytucje.length) return klienci;
+      var puste = instytucje.map(function () { return "?"; }).join(", ");
+      var mapa = {};
+      global.Store.query(
+        "SELECT klient_id, instytucja_id FROM klient_instytucja WHERE instytucja_id IN (" +
+        puste + ")", instytucje
+      ).forEach(function (r) {
+        if (!mapa[r.klient_id]) mapa[r.klient_id] = r.instytucja_id;
+      });
+      return klienci.map(function (k) {
+        var kopia = {};
+        for (var p in k) if (Object.prototype.hasOwnProperty.call(k, p)) kopia[p] = k[p];
+        kopia.is = mapa[k.id] || k.is;
+        return kopia;
+      });
+    },
+
+    /* Brak sesji: zero danych. Strona i tak pokaze komunikat o wygasnieciu. */
+    wyczysc: function (DB) {
+      ["INSTYTUCJE", "KLIENCI", "SZKOLENIA", "TERMINY", "FAKTURY", "WNIOSKI",
+       "WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "KOLEJKA", "MAILE",
+       "UZYTKOWNICY", "ZGLOSZENIA", "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA"
+      ].forEach(function (k) { DB[k] = []; });
+      return DB;
+    },
+
+    nalezy: nalezy
+  };
+
+  global.Zakres = Zakres;
+})(window);

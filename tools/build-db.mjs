@@ -1,5 +1,5 @@
 /* ============================================================
-   Generator znormalizowanej bazy makiety (db.json + db.seed.js)
+   Generator znormalizowanej bazy makiety (makieta/data/db.json)
 
    Uruchamia stary, deterministyczny generator (legacy-data-gen.js),
    a nastepnie przeksztalca jego wynik do schematu z docs/03-model-danych.md.
@@ -8,7 +8,8 @@
    Uruchomienie:  node tools/build-db.mjs
    Wynik:
      makieta/data/db.json      czysty JSON, "plan bazy", zrodlo do wgladu
-     makieta/assets/db.seed.js  ten sam obiekt jako window.DB_SEED (dziala z file://)
+   Plik db.json jest wejsciem dla tools/build-sqlite.mjs, ktory buduje z niego
+   wlasciwa baze SQLite makiety (makieta/db/).
    ============================================================ */
 
 import fs from "node:fs";
@@ -20,7 +21,6 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(dir, "..");
 const legacyPath = path.join(dir, "legacy-data-gen.js");
 const outJson = path.join(root, "makieta", "data", "db.json");
-const outSeed = path.join(root, "makieta", "assets", "db.seed.js");
 
 /* ---------- 1. Uruchom stary generator w izolowanym kontekscie ---------- */
 function loadLegacyDB() {
@@ -266,16 +266,6 @@ function build() {
   const json = JSON.stringify(seed, null, 2);
   fs.writeFileSync(outJson, json + "\n", "utf8");
 
-  const header =
-    "/* ============================================================\n" +
-    "   Seed bazy makiety KFS/LDIT. NIE EDYTUJ RECZNIE tego pliku,\n" +
-    "   jest generowany: node tools/build-db.mjs\n" +
-    "   Zrodlo prawdy schematu: docs/03-model-danych.md\n" +
-    "   Tresc jest identyczna z makieta/data/db.json.\n" +
-    "   ============================================================ */\n" +
-    "window.DB_SEED = ";
-  fs.writeFileSync(outSeed, header + json + ";\n", "utf8");
-
   /* Podsumowanie liczb do weryfikacji parytetu z README */
   const licz = {
     instytucje: seed.instytucje.length,
@@ -291,7 +281,7 @@ function build() {
   };
   console.log("Zbudowano seed:");
   console.log(JSON.stringify(licz, null, 2));
-  console.log("Zapisano:\n  " + outJson + "\n  " + outSeed);
+  console.log("Zapisano: " + outJson);
 }
 
 build();

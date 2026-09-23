@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Dashboard</title>
 <link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
 </head>
 <body>
 <div class="page">
@@ -31,9 +32,10 @@
 
 
   <div class="note">
-    Widok administratora. <b>Pracownik LDIT nie widzi</b> kafelków oznaczonych żółtą ramką:
-    zysków firmy, marżowości i prowizji <span class="ref">D-34</span>.
-    Dashboard ma dwa warianty: pełny dla administratora i ograniczony dla pracownika <span class="ref">D-30</span>,
+    Dashboard ma dwa warianty: pełny dla administratora i ograniczony dla pracownika <span class="ref">D-30</span>.
+    Kafelki w żółtej ramce, czyli zyski firmy, marżowość i prowizje, widzi
+    <b>wyłącznie administrator</b> <span class="ref">D-34</span>.
+    Po zalogowaniu na konto pracownika ten wiersz kafelków w ogóle się nie renderuje,
     a w obu pokazuje wyłącznie statystyki, bez rozpiski konkretnych klientów <span class="ref">D-114</span>.
   </div>
 
@@ -118,13 +120,27 @@
 
 </div>
 
-<script src="../assets/db.seed.js"></script>
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/tips.js"></script>
-<script>
+<script src="../assets/boot.js" data-modul="dash"></script>
+<script type="text/kfs-strona">
 (function () {
   var W = DB.WNIOSKI;
+
+  /* Drugie sito uprawnien. Dane finansowe i tak nie dojechaly do strony,
+     bo odsial je assets/zakres.js, ale ekran nie ma nawet rysowac kafelkow,
+     ktorych ta rola nie powinna znac (D-34, D-114). */
+  var widziProwizje = Auth.moze("finanse.prowizja");
+  var widziFinanse = Auth.moze("finanse.zysk_ldit");
   var zlozone = W.filter(function (w) { return w.statusSkl === "Złożony"; });
   var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
   var neg = W.filter(function (w) { return w.statusDec === "Negatywna"; });
@@ -144,7 +160,7 @@
   var perIS = {};
   DB.INSTYTUCJE.slice(0, 8).forEach(function (inst) {
     var pozIS = poz.filter(function (w) { return w.is === inst.id; });
-    if (!pozIS.length) return;
+    if (!pozIS.length || !widziProwizje || !inst.prowizja) return;
     var wynik = liczOkres(inst.prowizja, pozIS.map(function (w) { return { kwota: w.kosztZDoplata || 0 }; }));
     perIS[inst.id] = {
       nazwa: inst.nazwa, obrot: wynik.obrot, prowizja: wynik.suma, wnioski: 0, poz: 0
@@ -189,7 +205,8 @@
     kpi("Oczekuje na rozpatrzenie", DB.fmtNum(oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek), false,
         "Wnioski zlozone, dla ktorych urzad nie wydal jeszcze decyzji. Kwota to suma wartosci tych wnioskow.");
 
-  document.getElementById("kpiFin").innerHTML =
+  if (!widziFinanse) document.getElementById("kpiFin").remove();
+  else document.getElementById("kpiFin").innerHTML =
     kpi("Wartość wniosków", DB.fmtPLN(sumaWnioskowana), "suma wnioskowana 2026", true,
         "Suma wartosci wszystkich wnioskow w okresie, niezaleznie od decyzji. Kafelek finansowy, widoczny tylko dla administratora.") +
     kpi("Przyznane dofinansowania", DB.fmtPLN(sumaPrzyznana), "faktycznie przyznane", true,

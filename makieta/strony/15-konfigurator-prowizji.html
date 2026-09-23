@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Konfigurator prowizji</title>
 <link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
 <style>
   .prog-row { display: flex; gap: 8px; align-items: center; margin-bottom: 7px; }
   .prog-row .inp { width: 150px; }
@@ -197,11 +198,19 @@
 
 </div>
 
-<script src="../assets/db.seed.js"></script>
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/tips.js"></script>
-<script>
+<script src="../assets/boot.js" data-modul="admin"></script>
+<script type="text/kfs-strona">
 var PRESETY = {
   A: { kumulacja: "miesieczny", sposob: "od_calosci", stala: null, progi: [{ od: 0, st: 10 }, { od: 50000, st: 12 }] },
   A2: { kumulacja: "miesieczny", sposob: "od_calosci", stala: null, progi: [{ od: 0, st: 12 }, { od: 60000, st: 10 }] },
