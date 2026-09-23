@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Panel decyzyjny</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/panel-decyzji.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Rejestry</div>
+    <h1 class="doc-title">Panel decyzyjny</h1>
+    <p class="doc-lead">
+      Wszystko, co zostało do rozstrzygnięcia, w jednym miejscu. Każde pytanie ma warianty,
+      a każdy wariant ma wypisane konsekwencje: co daje, czym za to płacimy, co wymusza
+      i czym grozi. Wybierasz wariant, panel zapamiętuje wybór i składa z niego podsumowanie,
+      które możesz skopiować albo pobrać i wysłać klientowi.
+    </p>
+  </div>
+
+  <div class="callout">
+    <span class="ct">Skąd to pochodzi</span>
+    Pytania pochodzą z <a href="12-pytania-ryzyka.html" onclick="if(parent!==window){parent.docNav('12-pytania-ryzyka');return false}">rejestru pytań otwartych</a>
+    i z <a href="../../docs/14-pytania-otwarte.md">docs/14-pytania-otwarte.md</a>.
+    <b>Warianty i konsekwencje są analizą wykonawcy</b>, nie ustaleniem z warsztatu. Wybór
+    w tym panelu niczego nie przesądza, dopóki nie trafi do rejestru decyzji jako wpis D-xx.
+  </div>
+
+  <div class="pd-pasek">
+    <div class="pd-liczniki">
+      <div class="pd-licznik zrobione"><div class="l">Rozstrzygnięte</div><div class="w" id="lZrobione">0</div></div>
+      <div class="pd-licznik"><div class="l">Pozostało</div><div class="w" id="lZostalo">0</div></div>
+      <div class="pd-licznik blokady"><div class="l">Blokady</div><div class="w" id="lBlokady">0</div></div>
+      <div class="pd-licznik"><div class="l">Czeka na klienta</div><div class="w" id="lKlient">0</div></div>
+      <div class="pd-licznik"><div class="l">Czeka na Ciebie</div><div class="w" id="lWykonawca">0</div></div>
+    </div>
+    <div class="pd-postep"><i id="pasek"></i></div>
+
+    <div class="pd-filtry">
+      <div class="pd-filtr">
+        <span>Obszar</span>
+        <div class="pd-chipy" id="fObszar"></div>
+      </div>
+      <div class="pd-filtr">
+        <span>Waga</span>
+        <div class="pd-chipy" id="fWaga"></div>
+      </div>
+      <div class="pd-filtr">
+        <span>Kto odpowiada</span>
+        <div class="pd-chipy" id="fKto"></div>
+      </div>
+      <div class="pd-filtr">
+        <span>Stan</span>
+        <div class="pd-chipy" id="fStan"></div>
+      </div>
+      <div class="pd-akcje">
+        <button class="btn sm" id="bWypelnij">Wstaw rekomendacje</button>
+        <button class="btn sm" id="bKopiuj">Kopiuj podsumowanie</button>
+        <button class="btn sm" id="bPobierz">Pobierz .md</button>
+        <button class="btn sm" id="bWyczysc">Wyczyść</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lista"></div>
+
+  <div class="pd-podsumowanie">
+    <h2>Podsumowanie</h2>
+    <p class="muted small">
+      To samo trafia do schowka i do pobieranego pliku. Pozycje bez wyboru są wypisane na końcu,
+      żeby było widać, co nadal wisi.
+    </p>
+    <div class="pd-wynik" id="wynik"></div>
+  </div>
+
+  <div class="doc-foot">
+    Źródło pytań: <a href="../../docs/14-pytania-otwarte.md">14-pytania-otwarte.md</a>.
+    Dane panelu: <a href="../assets/decyzje.js">assets/decyzje.js</a>.
+    Wybory zapisują się lokalnie w przeglądarce, nie wychodzą poza ten komputer.
+  </div>
+
+</div>
+
+<script src="../assets/decyzje.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var KLUCZ = "kfs_panel_decyzji_v1";
+  var D = window.DECYZJE;
+  var wybory = wczytaj();
+  var filtry = { obszar: "wszystkie", waga: "wszystkie", kto: "wszystkie", stan: "wszystkie" };
+
+  var OPIS_WAGI = { blokada: "blokada", wysoka: "wysoka", srednia: "średnia", niska: "niska" };
+  var OPIS_SKUTKU = { zysk: "zysk", koszt: "koszt", wymusza: "wymusza", ryzyko: "ryzyko" };
+
+  function wczytaj() {
+    try { return JSON.parse(localStorage.getItem(KLUCZ)) || {}; } catch (e) { return {}; }
+  }
+  function zapisz() {
+    try { localStorage.setItem(KLUCZ, JSON.stringify(wybory)); } catch (e) { /* brak pamieci */ }
+  }
+
+  function esc(t) {
+    return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  /* Odwolania [D-xx] i [P-xx] dostaja styl referencji, tak jak w reszcie dokumentacji */
+  function ref(t) {
+    return esc(t).replace(/\[([DPR])-(\d{2,3})\]/g, function (_, typ, nr) {
+      return '<span class="ref' + (typ === "P" ? " p" : "") + '">' + typ + "-" + nr + "</span>";
+    });
+  }
+
+  function unikalne(pole) {
+    var out = [];
+    D.forEach(function (d) { if (out.indexOf(d[pole]) < 0) out.push(d[pole]); });
+    return out;
+  }
+
+  function pasuje(d) {
+    if (filtry.obszar !== "wszystkie" && d.obszar !== filtry.obszar) return false;
+    if (filtry.waga !== "wszystkie" && d.waga !== filtry.waga) return false;
+    if (filtry.kto !== "wszystkie" && d.kto !== filtry.kto) return false;
+    if (filtry.stan === "otwarte" && wybory[d.id]) return false;
+    if (filtry.stan === "rozstrzygniete" && !wybory[d.id]) return false;
+    return true;
+  }
+
+  /* ------------------------------- filtry ------------------------------- */
+
+  function chipy(pojemnik, klucz, wartosci, etykiety) {
+    var el = document.getElementById(pojemnik);
+    el.innerHTML = ["wszystkie"].concat(wartosci).map(function (w) {
+      var etykieta = w === "wszystkie" ? "wszystkie" : (etykiety && etykiety[w]) || w;
+      return '<button class="pd-chip' + (filtry[klucz] === w ? " on" : "") +
+             '" data-w="' + w + '">' + esc(etykieta) + "</button>";
+    }).join("");
+    el.onclick = function (e) {
+      var b = e.target.closest(".pd-chip");
+      if (!b) return;
+      filtry[klucz] = b.getAttribute("data-w");
+      rysuj();
+    };
+  }
+
+  /* -------------------------------- karty -------------------------------- */
+
+  function kartaHtml(d) {
+    var wybrana = wybory[d.id];
+    var klasy = "pd-karta waga-" + d.waga + (wybrana ? " rozstrzygnieta" : "");
+
+    var opcje = d.opcje.map(function (o) {
+      var jest = wybrana === o.id;
+      return '<div class="pd-opcja' + (jest ? " wybrana" : "") + '">' +
+        '<label class="pd-opcja-gl">' +
+          '<input type="radio" name="d_' + d.id + '" value="' + o.id + '"' + (jest ? " checked" : "") + '>' +
+          '<span class="etykieta">' + esc(o.label) +
+            (o.rekomendowana ? ' <span class="tag pos">rekomendowany</span>' : "") +
+          "</span>" +
+        "</label>" +
+        '<ul class="pd-skutki">' +
+          o.skutki.map(function (s) {
+            return '<li class="pd-skutek ' + s.typ + '"><span class="z">' +
+                   OPIS_SKUTKU[s.typ] + "</span><span>" + ref(s.t) + "</span></li>";
+          }).join("") +
+        "</ul></div>";
+    }).join("");
+
+    return '<div class="' + klasy + '" data-id="' + d.id + '">' +
+      '<div class="pd-naglowek">' +
+        '<span class="ref' + (d.id.charAt(0) === "P" ? " p" : "") + '">' + d.id + "</span>" +
+        '<span class="tag ' + (d.waga === "blokada" ? "neg" : d.waga === "wysoka" ? "warn" : "mute") + '">' +
+          OPIS_WAGI[d.waga] + "</span>" +
+        '<span class="tag mute">' + esc(d.obszar) + "</span>" +
+        (wybrana ? '<span class="tag pos dot">wybrano</span>' : "") +
+        "<h3>" + esc(d.pytanie) + "</h3>" +
+        '<div class="pd-meta">odpowiada: <b>' + esc(d.kto) + "</b> &middot; blokuje: " + esc(d.blokuje) + "</div>" +
+      "</div>" +
+      '<p class="pd-kontekst">' + ref(d.kontekst) + "</p>" +
+      (d.cytat
+        ? '<div class="pd-cytat">&bdquo;' + esc(d.cytat.tresc) + '&rdquo;<span class="kto">' +
+          esc(d.cytat.kto) + "</span></div>"
+        : "") +
+      opcje +
+      "</div>";
+  }
+
+  function rysuj() {
+    chipy("fObszar", "obszar", unikalne("obszar"));
+    chipy("fWaga", "waga", ["blokada", "wysoka", "srednia", "niska"], OPIS_WAGI);
+    chipy("fKto", "kto", unikalne("kto"));
+    chipy("fStan", "stan", ["otwarte", "rozstrzygniete"],
+          { otwarte: "bez wyboru", rozstrzygniete: "z wyborem" });
+
+    var widoczne = D.filter(pasuje);
+    document.getElementById("lista").innerHTML = widoczne.length
+      ? widoczne.map(kartaHtml).join("")
+      : '<div class="pd-pusto">Żadne pytanie nie pasuje do tych filtrów.</div>';
+
+    liczniki();
+    podsumowanie();
+  }
+
+  function liczniki() {
+    var zrobione = D.filter(function (d) { return wybory[d.id]; }).length;
+    var otwarte = D.filter(function (d) { return !wybory[d.id]; });
+    document.getElementById("lZrobione").textContent = zrobione;
+    document.getElementById("lZostalo").textContent = otwarte.length;
+    document.getElementById("lBlokady").textContent =
+      otwarte.filter(function (d) { return d.waga === "blokada"; }).length;
+    document.getElementById("lKlient").textContent =
+      otwarte.filter(function (d) { return d.kto === "klient"; }).length;
+    document.getElementById("lWykonawca").textContent =
+      otwarte.filter(function (d) { return d.kto === "wykonawca"; }).length;
+    document.getElementById("pasek").style.width =
+      (D.length ? Math.round(zrobione / D.length * 100) : 0) + "%";
+  }
+
+  /* ---------------------------- podsumowanie ---------------------------- */
+
+  function tekstPodsumowania() {
+    var dzis = new Date().toISOString().slice(0, 10);
+    var linie = ["# Decyzje do podjęcia, stan na " + dzis, ""];
+    var zrobione = D.filter(function (d) { return wybory[d.id]; });
+    var otwarte = D.filter(function (d) { return !wybory[d.id]; });
+
+    linie.push("Rozstrzygnięte: " + zrobione.length + " z " + D.length +
+               ". Bez wyboru: " + otwarte.length + ".");
+    linie.push("");
+
+    if (zrobione.length) {
+      linie.push("## Wybrane warianty", "");
+      zrobione.forEach(function (d) {
+        var o = d.opcje.filter(function (x) { return x.id === wybory[d.id]; })[0];
+        if (!o) return;
+        linie.push("### " + d.id + ". " + d.pytanie);
+        linie.push("Wybór: **" + o.label + "**" +
+                   (o.rekomendowana ? " (zgodny z rekomendacją)" : " (inny niż rekomendacja)"));
+        linie.push("Odpowiada: " + d.kto + ". Blokuje: " + d.blokuje + ".");
+        linie.push("");
+        o.skutki.forEach(function (s) {
+          linie.push("- " + OPIS_SKUTKU[s.typ].toUpperCase() + ": " + s.t);
+        });
+        linie.push("");
+      });
+    }
+
+    /* Wszystko, co wymusza wybrany wariant, zebrane w jedną listę do zrobienia */
+    var zadania = [];
+    zrobione.forEach(function (d) {
+      var o = d.opcje.filter(function (x) { return x.id === wybory[d.id]; })[0];
+      if (!o) return;
+      o.skutki.filter(function (s) { return s.typ === "wymusza"; })
+        .forEach(function (s) { zadania.push("- [" + d.id + "] " + s.t); });
+    });
+    if (zadania.length) {
+      linie.push("## Co z tych wyborów wynika do zrobienia", "");
+      linie.push.apply(linie, zadania);
+      linie.push("");
+    }
+
+    var ryzyka = [];
+    zrobione.forEach(function (d) {
+      var o = d.opcje.filter(function (x) { return x.id === wybory[d.id]; })[0];
+      if (!o) return;
+      o.skutki.filter(function (s) { return s.typ === "ryzyko"; })
+        .forEach(function (s) { ryzyka.push("- [" + d.id + "] " + s.t); });
+    });
+    if (ryzyka.length) {
+      linie.push("## Ryzyka przyjęte razem z wyborami", "");
+      linie.push.apply(linie, ryzyka);
+      linie.push("");
+    }
+
+    if (otwarte.length) {
+      linie.push("## Nadal bez rozstrzygnięcia", "");
+      ["blokada", "wysoka", "srednia", "niska"].forEach(function (w) {
+        var grupa = otwarte.filter(function (d) { return d.waga === w; });
+        if (!grupa.length) return;
+        linie.push("**" + OPIS_WAGI[w].toUpperCase() + "**");
+        grupa.forEach(function (d) {
+          linie.push("- " + d.id + ". " + d.pytanie + " (odpowiada: " + d.kto + ")");
+        });
+        linie.push("");
+      });
+    }
+    return linie.join("\n");
+  }
+
+  function podsumowanie() {
+    document.getElementById("wynik").textContent = tekstPodsumowania();
+  }
+
+  /* ------------------------------- zdarzenia ------------------------------- */
+
+  document.getElementById("lista").addEventListener("change", function (e) {
+    var input = e.target;
+    if (!input.name || input.name.indexOf("d_") !== 0) return;
+    wybory[input.name.slice(2)] = input.value;
+    zapisz();
+    rysuj();
+  });
+
+  document.getElementById("bWypelnij").addEventListener("click", function () {
+    if (!window.confirm("Wstawić rekomendowany wariant wszędzie, gdzie nie ma jeszcze wyboru?")) return;
+    D.forEach(function (d) {
+      if (wybory[d.id]) return;
+      var r = d.opcje.filter(function (o) { return o.rekomendowana; })[0];
+      if (r) wybory[d.id] = r.id;
+    });
+    zapisz();
+    rysuj();
+  });
+
+  document.getElementById("bWyczysc").addEventListener("click", function () {
+    if (!window.confirm("Skasować wszystkie wybory?")) return;
+    wybory = {};
+    zapisz();
+    rysuj();
+  });
+
+  document.getElementById("bKopiuj").addEventListener("click", function () {
+    var tekst = tekstPodsumowania();
+    var przycisk = this;
+    function potwierdz() {
+      var stara = przycisk.textContent;
+      przycisk.textContent = "Skopiowano";
+      setTimeout(function () { przycisk.textContent = stara; }, 1500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(tekst).then(potwierdz, zapasoweKopiowanie);
+    } else {
+      zapasoweKopiowanie();
+    }
+    /* Schowek bywa zablokowany na protokole file://, wtedy kopiujemy przez pole tekstowe */
+    function zapasoweKopiowanie() {
+      var pole = document.createElement("textarea");
+      pole.value = tekst;
+      pole.style.position = "fixed";
+      pole.style.opacity = "0";
+      document.body.appendChild(pole);
+      pole.select();
+      try { document.execCommand("copy"); potwierdz(); } catch (err) { window.alert("Nie udało się skopiować. Zaznacz treść podsumowania ręcznie."); }
+      document.body.removeChild(pole);
+    }
+  });
+
+  document.getElementById("bPobierz").addEventListener("click", function () {
+    var blob = new Blob([tekstPodsumowania()], { type: "text/markdown;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "decyzje-" + new Date().toISOString().slice(0, 10) + ".md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+  });
+
+  rysuj();
+})();
+</script>
+
+</body>
+</html>

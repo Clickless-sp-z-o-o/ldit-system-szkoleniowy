@@ -1,0 +1,108 @@
+/* ============================================================================
+   Panel decyzyjny. Style tylko dla tego ekranu, reszta z assets/style.css.
+   ============================================================================ */
+
+.pd-pasek {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--surface-1, #fff);
+  border-bottom: 1px solid var(--line, #e2e8f0);
+  padding: 12px 0 14px;
+  margin-bottom: 18px;
+}
+
+.pd-liczniki { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.pd-licznik {
+  border: 1px solid var(--line, #e2e8f0); border-radius: var(--radius, 8px);
+  padding: 8px 13px; min-width: 104px; background: var(--surface-2, #f8fafc);
+}
+.pd-licznik .l { font-size: 11px; color: var(--ink-3, #64748b); text-transform: uppercase; letter-spacing: .04em; }
+.pd-licznik .w { font-size: 20px; font-weight: 650; line-height: 1.2; }
+.pd-licznik.blokady .w { color: #b91c1c; }
+.pd-licznik.zrobione .w { color: #15803d; }
+
+.pd-postep { height: 6px; border-radius: 3px; background: var(--surface-3, #eef2f7); overflow: hidden; }
+.pd-postep i { display: block; height: 100%; background: #16a34a; width: 0; transition: width .2s; }
+
+.pd-filtry { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-top: 12px; }
+.pd-filtr { display: flex; flex-direction: column; gap: 4px; }
+.pd-filtr > span { font-size: 11px; color: var(--ink-3, #64748b); font-weight: 600; }
+.pd-chipy { display: flex; gap: 5px; flex-wrap: wrap; }
+.pd-chip {
+  border: 1px solid var(--line-strong, #cbd5e1); background: #fff;
+  border-radius: 999px; padding: 4px 11px; font: inherit; font-size: 12px;
+  cursor: pointer; color: var(--ink-2, #334155);
+}
+.pd-chip:hover { background: var(--surface-2, #f8fafc); }
+.pd-chip.on { background: var(--brand-600, #1e3a5f); color: #fff; border-color: var(--brand-600, #1e3a5f); }
+
+.pd-akcje { margin-left: auto; display: flex; gap: 7px; }
+
+/* ------------------------------- karta ------------------------------- */
+
+.pd-karta {
+  border: 1px solid var(--line, #e2e8f0); border-left: 3px solid var(--line-strong, #cbd5e1);
+  border-radius: var(--radius-lg, 12px); padding: 16px 18px; margin-bottom: 14px;
+  background: var(--surface-1, #fff);
+}
+.pd-karta.waga-blokada { border-left-color: #dc2626; }
+.pd-karta.waga-wysoka { border-left-color: #f59e0b; }
+.pd-karta.rozstrzygnieta { border-left-color: #16a34a; background: #fbfefc; }
+
+.pd-naglowek { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 7px; }
+.pd-naglowek h3 { margin: 0; font-size: 15px; font-weight: 650; flex-basis: 100%; order: 2; }
+.pd-meta { font-size: 11px; color: var(--ink-3, #64748b); order: 3; flex-basis: 100%; }
+
+.pd-kontekst { font-size: 13px; color: var(--ink-2, #334155); line-height: 1.6; margin: 0 0 10px; }
+
+.pd-cytat {
+  border-left: 2px solid var(--line-strong, #cbd5e1); padding: 2px 0 2px 12px;
+  margin: 0 0 12px; font-size: 12.5px; color: var(--ink-2, #334155); font-style: italic;
+}
+.pd-cytat .kto { display: block; font-style: normal; font-size: 11px; color: var(--ink-3, #64748b); margin-top: 3px; }
+
+/* ------------------------------ warianty ------------------------------ */
+
+.pd-opcja {
+  border: 1px solid var(--line, #e2e8f0); border-radius: var(--radius, 8px);
+  margin-top: 9px; overflow: hidden;
+}
+.pd-opcja.wybrana { border-color: #16a34a; box-shadow: 0 0 0 1px #16a34a inset; }
+
+.pd-opcja-gl {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 10px 12px; cursor: pointer; background: var(--surface-2, #f8fafc);
+}
+.pd-opcja-gl:hover { background: var(--surface-3, #eef2f7); }
+.pd-opcja.wybrana .pd-opcja-gl { background: #f0fdf4; }
+.pd-opcja-gl input { margin-top: 2px; }
+.pd-opcja-gl .etykieta { font-size: 13px; font-weight: 600; }
+
+.pd-skutki { list-style: none; margin: 0; padding: 9px 12px 11px 12px; display: grid; gap: 5px; }
+.pd-skutek { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.5; align-items: flex-start; }
+.pd-skutek .z {
+  flex: none; width: 66px; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .03em; padding-top: 2px;
+}
+.pd-skutek.zysk .z { color: #15803d; }
+.pd-skutek.koszt .z { color: #b45309; }
+.pd-skutek.wymusza .z { color: #1d4ed8; }
+.pd-skutek.ryzyko .z { color: #b91c1c; }
+
+.pd-pusto { padding: 28px; text-align: center; color: var(--ink-3, #64748b); font-size: 13px; }
+
+/* ------------------------------ podsumowanie ------------------------------ */
+
+.pd-podsumowanie { margin-top: 26px; }
+.pd-podsumowanie h2 { margin-bottom: 6px; }
+.pd-wynik {
+  background: var(--brand-900, #0b1220); color: #cbd5e1;
+  border-radius: var(--radius-lg, 12px); padding: 16px 18px;
+  font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px;
+  line-height: 1.65; white-space: pre-wrap; max-height: 460px; overflow-y: auto;
+}
+.pd-wynik b { color: #fff; }
+
+@media (max-width: 720px) {
+  .pd-akcje { margin-left: 0; width: 100%; }
+  .pd-skutek .z { width: 56px; }
+}

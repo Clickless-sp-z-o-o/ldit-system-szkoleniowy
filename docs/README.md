@@ -112,6 +112,7 @@ Szczegóły i pełna lista kto komu co jest winien: [14. Pytania otwarte](14-pyt
 | Schemat bazy | [`makieta/db/schema.sql`](../makieta/db/schema.sql) | **Źródło prawdy o strukturze danych** [D-151] |
 | Reguły wyliczeń | [`makieta/db/views.sql`](../makieta/db/views.sql) | Pola wyliczane zapisane jako widoki SQL |
 | Dokumentacja jako strona | [`dokumentacja/index.html`](../dokumentacja/index.html) | Ta sama treść w formie klikalnej, do pokazania klientowi |
+| **Panel decyzyjny** | [`dokumentacja/sekcje/17-panel-decyzji.html`](../dokumentacja/sekcje/17-panel-decyzji.html) | 38 punktów do rozstrzygnięcia, każdy wariant z konsekwencjami. Wybory składają się w podsumowanie do wysłania |
 
 ---
 

@@ -162,6 +162,11 @@ albo `<!-- rejestr:od -->`.
 Silnik Mermaid leży lokalnie w `dokumentacja/assets/mermaid.min.js`, więc strona renderuje
 diagramy offline, bez internetu.
 
+**Panel decyzyjny** (`dokumentacja/sekcje/17-panel-decyzji.html`) zbiera wszystkie nierozstrzygnięte
+punkty wraz z wariantami i konsekwencjami. Treść siedzi w `dokumentacja/assets/decyzje.js`.
+Gdy pytanie zostanie rozstrzygnięte, wpis wędruje do `docs/13-rejestr-decyzji.md` jako decyzja
+D-xx, a z panelu znika.
+
 ---
 
 ## Konwencje kodu

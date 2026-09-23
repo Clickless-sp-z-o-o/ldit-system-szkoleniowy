@@ -30,6 +30,7 @@ var SECTIONS = [
   { grupa: "Rejestry", items: [
     { id: "12-pytania-ryzyka", ikona: "&#9873;", label: "Pytania otwarte i ryzyka" },
     { id: "13-decyzje",        ikona: "&#9878;", label: "Rejestr decyzji" },
+    { id: "17-panel-decyzji",  ikona: "&#9745;", label: "Panel decyzyjny" },
     { id: "14-slownik",        ikona: "&#9906;", label: "Słownik" }
   ] },
   { grupa: "Warsztaty", items: [
