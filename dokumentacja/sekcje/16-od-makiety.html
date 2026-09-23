@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Od makiety do aplikacji</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Realizacja</div>
+    <h1 class="doc-title">Od makiety do działającej aplikacji</h1>
+    <p class="doc-lead">
+      Odpowiedź na pytanie postawione wprost: jak trudne będzie przepisanie tego, co widać
+      w makiecie, na aplikację z prawdziwą bazą pod spodem. Co jest już gotowe i przenosi się
+      bez zmian, co trzeba napisać od nowa, czego jeszcze brakuje w dokumentacji i w jakiej
+      kolejności to robić.
+    </p>
+  </div>
+
+  <div class="callout ok">
+    <span class="ct">Krótka odpowiedź</span>
+    Nie jeden prompt. Ale po rundzie z 23.09.2026 to już nie jest pisanie systemu od zera, tylko
+    podmiana czterech warstw wokół modelu danych, który jest gotowy, wykonywalny i przetestowany.
+  </div>
+
+  <p>
+    Różnica jest konkretna. Przed tą rundą makieta była rysunkiem: dane w jednym pliku JSON,
+    uprawnienia opisane w tekście, role przełączane listą w rogu ekranu. Model, który miał powstać
+    w aplikacji, istniał wyłącznie w dokumentacji, więc pierwszy kontakt z bazą oznaczałby
+    projektowanie go od nowa. Po tej rundzie model jest plikiem <code>schema.sql</code>, który
+    uruchamia się na prawdziwym silniku, ma klucze obce, ograniczenia słownikowe i przechodzi testy.
+  </p>
+  <p>
+    To przesuwa najdroższą część pracy, czyli <b>rozstrzyganie, jak dane mają wyglądać</b>,
+    z etapu implementacji na etap, który właśnie się skończył.
+  </p>
+
+  <h2>Co jest już przenośne bez przepisywania</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Element</th><th>Gdzie leży</th><th>Co się z nim dzieje przy przenosinach</th></tr></thead>
+      <tbody>
+        <tr><td><b>Struktura danych, 30 tabel</b></td><td class="mono">makieta/db/schema.sql</td>
+            <td>Zmiana typów TEXT na text, REAL na numeric. Klucze obce, CHECK i indeksy przechodzą bez zmian</td></tr>
+        <tr><td><b>Reguły pól wyliczanych</b></td><td class="mono">makieta/db/views.sql</td>
+            <td>Widoki przenoszą się wprost, stają się warstwą domenową</td></tr>
+        <tr><td><b>Silnik prowizji</b></td><td class="mono">makieta/assets/prowizja.js</td>
+            <td>Czysta funkcja bez zależności. Przenosi się jako moduł albo jako funkcja w bazie</td></tr>
+        <tr><td><b>Macierz uprawnień</b></td><td class="mono">role, moduly, uprawnienia, uprawnienia_pol</td>
+            <td>Przenosi się jako dane, nie jako kod</td></tr>
+        <tr><td><b>Zakres widzialności per konto</b></td><td class="mono">uzytkownik_instytucja, v_zakres_uzytkownika</td>
+            <td>Staje się podstawą polityk bezpieczeństwa na wierszach</td></tr>
+        <tr><td><b>Osiemnaście ekranów</b></td><td class="mono">makieta/strony/</td>
+            <td>Specyfikacja układu, kolejności kolumn, zachowania filtrów i akcji</td></tr>
+        <tr><td><b>Dane w realnych wolumenach</b></td><td class="mono">makieta/db/seed.sql</td>
+            <td>Zestaw do testów wydajnościowych i do pokazania klientowi</td></tr>
+        <tr><td><b>Przypadki testowe prowizji</b></td><td class="mono">docs/07, tools/test-prowizja.mjs</td>
+            <td>Gotowe testy jednostkowe, 27 asercji już przechodzi</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">
+    To jest dokładnie ta część, w której najłatwiej o błąd nie do wykrycia, a najtrudniej
+    o poprawkę po wdrożeniu.
+  </p>
+
+  <h2>Co trzeba napisać od nowa</h2>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart LR
+  subgraph gotowe["Gotowe, przenosi sie"]
+    A1[schema.sql<br/>30 tabel]
+    A2[views.sql<br/>reguly wyliczen]
+    A3[prowizja.js<br/>silnik]
+    A4[macierz uprawnien<br/>jako dane]
+    A5[18 ekranow<br/>jako specyfikacja]
+  end
+
+  subgraph nowe["Do napisania"]
+    B1[Warstwa serwera<br/>i autoryzacja]
+    B2[Interfejs<br/>we frameworku]
+    B3[Integracje<br/>M365, formularz, faktury]
+    B4[Pliki<br/>certyfikaty, PDF]
+    B5[Zadania automatyczne<br/>i alerty]
+  end
+
+  A1 --> B1
+  A2 --> B1
+  A3 --> B1
+  A4 --> B1
+  A5 --> B2
+</pre>
+<!-- diagram:do -->
+
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Warstwa</th><th class="c">Trudność</th><th>Dlaczego tyle</th></tr></thead>
+      <tbody>
+        <tr><td><b>Warstwa serwera i autoryzacja</b></td><td class="c"><span class="pill warn">wysoka</span></td>
+            <td>W makiecie separacja działa w przeglądarce, bo cała baza jest po stronie klienta.
+                W aplikacji musi działać w bazie i na serwerze, inaczej nie jest zabezpieczeniem</td></tr>
+        <tr><td><b>Interfejs</b></td><td class="c"><span class="pill">średnia</span></td>
+            <td>Osiemnaście ekranów istnieje, z układem i zachowaniem. Praca to przełożenie ich
+                na komponenty, nie wymyślanie, jak mają wyglądać</td></tr>
+        <tr><td><b>Integracje</b></td><td class="c"><span class="pill warn">wysoka</span></td>
+            <td>Microsoft 365, formularz, import faktur. Każda ma własne tryby awarii i limity,
+                żadnej nie da się przetestować bez dostępu do systemu po drugiej stronie</td></tr>
+        <tr><td><b>Pliki</b></td><td class="c"><span class="pill">średnia</span></td>
+            <td>Certyfikaty z szablonu per instytucja <span class="ref">D-98</span>,
+                podgląd faktur PDF <span class="ref">D-24</span>, paczka ZIP</td></tr>
+        <tr><td><b>Zadania automatyczne</b></td><td class="c"><span class="pill">średnia</span></td>
+            <td>Zadania przypięte do statusów i dat <span class="ref new">D-140</span>
+                <span class="ref new">D-145</span>. Wymaga procesu w tle, którego w makiecie nie ma</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Pięć powodów, dla których to nie jest jeden prompt</h2>
+
+  <ol>
+    <li>
+      <b>Autoryzacja zmienia model myślenia.</b> W makiecie warstwa separacji odsiewa dane po ich
+      wczytaniu, bo baza i tak leży w przeglądarce. W aplikacji to samo rozwiązanie byłoby dziurą:
+      wystarczyłoby zapytanie z pominięciem warstwy. Makieta mówi <b>co</b> ograniczyć, nie <b>jak</b>.
+    </li>
+    <li>
+      <b>Prowizja ma pułapkę okresową.</b> W modelach A i B przekroczenie progu podnosi stawkę dla
+      całego obrotu okresu, także dla faktur już wystawionych. Rozliczenie musi przeliczyć okres
+      w jednej transakcji. To miejsce, w którym naiwna implementacja zaniża prowizję i nikt tego
+      nie zauważa, dopóki nie porówna z Excelem.
+    </li>
+    <li>
+      <b>Pola wyliczane niosą historię.</b> Zasada <span class="ref">D-19</span> wymaga, żeby ręczna
+      edycja kasowała regułę, ale żeby dało się do niej wrócić. Wartość z reguły musi być liczona
+      i przechowywana także wtedy, gdy nie obowiązuje, a historii nie wolno przeliczać wstecz
+      <span class="ref">D-23</span>.
+    </li>
+    <li>
+      <b>Integracje nie mają wersji makietowej.</b> Wysyłki maila, zaciągania formularza ani importu
+      faktur nie da się zasymulować tak, żeby cokolwiek z tego wynikało.
+    </li>
+    <li>
+      <b>Cztery blokady nadal stoją.</b> <span class="ref">P-01</span> <span class="ref">P-02</span>
+      <span class="ref">P-09</span> <span class="ref">P-25</span> nie są domknięte.
+    </li>
+  </ol>
+
+  <h2>Czego brakuje, żeby model bez kontekstu zbudował z tego aplikację</h2>
+
+  <div class="callout warn">
+    <span class="ct">Uczciwa odpowiedź</span>
+    Dziś: nie w całości. Model zbudowałby bazę i silnik prowizji, ale nie odtworzyłby ekranów
+    ani reguł walidacji, bo nie ma ich spisanych.
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th class="c">#</th><th>Czego brakuje</th><th>Dlaczego blokuje</th><th>Ile pracy</th></tr></thead>
+      <tbody>
+        <tr><td class="c">1</td><td><b>Specyfikacja ekranów pole po polu</b></td>
+            <td>Bez tego model odtworzy układ z makiety, ale zgadnie zachowanie</td>
+            <td>duża, ale mechaniczna, bo makieta jest wzorem</td></tr>
+        <tr><td class="c">2</td><td><b>Lista operacji domenowych</b></td>
+            <td>Bez tego każdy ekran wymyśla własny sposób zapisu</td><td>średnia</td></tr>
+        <tr><td class="c">3</td><td><b>Reguły walidacji</b> (NIP, PESEL, daty, kolejność etapów)</td>
+            <td>Dziś walidacje są tylko tam, gdzie wymusza je schemat bazy</td><td>mała</td></tr>
+        <tr><td class="c">4</td><td><b>Polityka dostępu do wierszy w bazie</b></td>
+            <td>To jest punkt, w którym najłatwiej o wyciek</td><td>średnia, wysokie ryzyko</td></tr>
+        <tr><td class="c">5</td><td><b>Scenariusz importu starej bazy</b> <span class="ref new">D-147</span></td>
+            <td>Klient ma realne dane do przeniesienia</td><td>średnia, zależna od klienta</td></tr>
+        <tr><td class="c">6</td><td><b>Treści szablonów maili i wzór certyfikatu</b></td>
+            <td>Dziś są nazwy szablonów, nie ma treści</td><td>mała, zależna od klienta</td></tr>
+        <tr><td class="c">7</td><td><b>Definicja gotowości</b></td>
+            <td>Bez tego nie ma jak zamknąć etapu</td><td>mała, wysoka wartość</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Punkty 1, 2 i 4 to ta część, która realnie decyduje, czy nowy model odtworzy system,
+    czy zbuduje coś podobnego.
+  </p>
+
+  <h2>Realistyczna kolejność prac</h2>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+  S0[Stan na dzis:<br/>schemat, reguly, silnik prowizji,<br/>18 ekranow, uprawnienia jako dane]
+
+  S1[1. Walidacja konfiguratora prowizji<br/>realnymi liczbami klienta]
+  S2[2. Domkniecie blokad<br/>P-01, P-02, P-09, P-25]
+  S3[3. Spisanie specyfikacji ekranow<br/>i operacji domenowych]
+  S4[4. Baza docelowa<br/>schemat, polityki dostepu, migracje]
+  S5[5. Aplikacja<br/>etap I wg docs/12]
+  S6[6. Integracje<br/>M365, formularz, faktury]
+
+  S0 --> S1 --> S2 --> S3 --> S4 --> S5 --> S6
+
+  S1 -.warunek wstepny z warsztatu.-> W[D-20]
+  S2 -.odpowiada klient.-> K[P-01, P-02, P-09]
+  S2 -.odpowiada wykonawca.-> P[P-25]
+</pre>
+<!-- diagram:do -->
+
+
+  <div class="callout">
+    <span class="ct">Krok pierwszy nie jest formalnością <span class="ref">D-20</span></span>
+    Na warsztacie ustalono go jako warunek wstępny kodowania. Konfigurator jest gotowy i działa.
+    Brakuje jednej rzeczy: <b>klient nie wpisał w niego jeszcze własnych liczb</b>.
+  </div>
+
+  <div class="q">
+    „żebyśmy nie kodowali aplikacji, zanim nie zostanie to ustalone. Taki prosty konfigurator
+    w HTML, będziesz wpisywał cyferki i mi powiesz czy to się dobrze liczy czy nie.”
+    <span class="who">Bartek, warsztat 25.08.2026, 45:09</span>
+  </div>
+
+  <h2>Jak to przekłada się na sposób pracy</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Etap</th><th>Realny kształt pracy</th></tr></thead>
+      <tbody>
+        <tr><td>Baza docelowa</td><td>jedna sesja, bo schema.sql już istnieje i jest sprawdzony</td></tr>
+        <tr><td>Warstwa dostępu i polityki</td><td>kilka sesji, z osobnym audytem separacji na końcu</td></tr>
+        <tr><td>Jeden ekran wraz z zapisem</td><td>jedna sesja na ekran, przy gotowej specyfikacji pole po polu</td></tr>
+        <tr><td>Silnik prowizji</td><td>jedna sesja na implementację, druga na testy z przypadkami z docs/07</td></tr>
+        <tr><td>Integracje</td><td>osobno, każda z własnym cyklem prób</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout ok">
+    <span class="ct">Wniosek praktyczny</span>
+    Im więcej z listy braków zostanie spisane przed startem, tym bardziej praca zamienia się
+    w wykonywanie specyfikacji zamiast w podejmowanie decyzji w trakcie kodowania. Decyzja podjęta
+    w kodzie kosztuje najwięcej, bo nikt jej potem nie znajduje.
+  </div>
+
+  <h2>Czego makieta celowo nie rozstrzyga</h2>
+  <ul>
+    <li><b>Framework i stos technologiczny.</b> Makieta jest czystym HTML, żeby nie przesądzać wyboru.
+        Kierunek z <span class="ref new">D-143</span> to framework z gotowym modułem uprawnień,
+        ale konkret nie jest wybrany.</li>
+    <li><b>Architektura danych.</b> <span class="ref">P-25</span> i <span class="ref new">P-56</span>:
+        osobne bazy per instytucja kontra jedna baza z separacją wierszy. Makieta pokazuje drugi
+        wariant, bo tylko on daje widoki zbiorcze, ale to nie jest rozstrzygnięcie.</li>
+    <li><b>Hosting, kopie zapasowe, utrzymanie.</b> Poza zakresem makiety.</li>
+    <li><b>Zakres panelu klienta końcowego.</b> <span class="ref">P-33</span> otwarte.</li>
+  </ul>
+
+  <p class="muted">
+    Makieta: <a href="../../makieta/index.html" target="_blank" rel="noopener">otwórz &#8599;</a>.
+    Warstwa danych: <a href="../../makieta/DANE.md">DANE.md</a>.
+    Schemat: <a href="../../makieta/db/schema.sql">schema.sql</a>.
+  </p>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/18-od-makiety-do-aplikacji.md">18-od-makiety-do-aplikacji.md</a>.
+    Decyzje wykonawcze z tej rundy: <span class="ref new">D-148</span> - <span class="ref new">D-157</span>,
+    nowe pytania <span class="ref new">P-59</span> - <span class="ref new">P-63</span>.
+  </div>
+
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
+</body>
+</html>

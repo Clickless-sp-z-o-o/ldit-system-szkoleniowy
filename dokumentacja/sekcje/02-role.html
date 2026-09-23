@@ -20,6 +20,42 @@
   </div>
 
   <h2>Role w systemie</h2>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+    LDIT["LDIT<br/>Administrator + Pracownicy LDIT<br/>widzi wszystkie instytucje"]
+
+    LDIT --> IS1["Instytucja szkoleniowa A<br/>np. Odczaruj"]
+    LDIT --> IS2["Instytucja szkoleniowa B<br/>np. Metal Maniak"]
+
+    IS1 --> PR1["Pracownik IS A<br/>handlowiec"]
+    IS2 --> PR2["Pracownik IS B<br/>handlowiec"]
+
+    PR1 --> K1["Klienci instytucji A"]
+    IS1 --> K1
+    PR2 --> K2["Klienci instytucji B"]
+    IS2 --> K2
+
+    K1 --> U1["Uczestnicy szkolen A"]
+    K2 --> U2["Uczestnicy szkolen B"]
+
+    subgraph Granica["Granica separacji [D-35]"]
+        IS1
+        IS2
+        PR1
+        PR2
+        K1
+        K2
+        U1
+        U2
+    end
+
+    style LDIT fill:#dcf3e3
+    style Granica fill:none,stroke:#e84040,stroke-dasharray: 5 5
+</pre>
+<!-- diagram:do -->
+
   <p>Warsztat rozszerzył model z 4 do <b>5 ról bazowych</b>, plus możliwość tworzenia własnych.</p>
   <div class="tbl-wrap">
     <table class="t">
@@ -170,6 +206,21 @@
     </table>
   </div>
 
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+    Start(("Zadanie: pokazac rekord")) --> Modul{"Czy rola ma dostep<br/>do modulu?"}
+    Modul -- "Nie" --> Brak1["Brak dostepu<br/>modul niewidoczny w menu"]
+    Modul -- "Tak, podglad lub edycja" --> Pole{"Czy rola ma dostep<br/>do tego pola?"}
+    Pole -- "Nie" --> Ukryj["Pole ukryte lub zamaskowane<br/>np. bez kwot i prowizji"]
+    Pole -- "Tak" --> Wiersz{"Czy wiersz miesci sie<br/>w zakresie uzytkownika?"}
+    Wiersz -- "Nie" --> Brak2["Brak dostepu<br/>rekord niewidoczny"]
+    Wiersz -- "Tak" --> Pokaz["Rekord widoczny<br/>z dozwolonymi polami"]
+
+    Ukryj --> Wiersz
+</pre>
+<!-- diagram:do -->
+
   <h2>Separacja danych</h2>
   <div class="callout danger">
     <span class="ct">To jest wymaganie biznesowe, nie tylko techniczne</span>
@@ -260,5 +311,11 @@
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>

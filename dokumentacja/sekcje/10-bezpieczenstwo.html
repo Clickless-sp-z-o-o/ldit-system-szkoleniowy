@@ -117,6 +117,28 @@
   <p>Cel: materiał dowodowy przy wyjaśnianiu incydentów bezpieczeństwa.</p>
 
   <h2>Separacja danych: trzy warstwy</h2>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+  Z["Zapytanie o dane"] --> A["Adapter sklada komplet danych"]
+  A --> F["Warstwa separacji"]
+
+  F --> W1{"Wiersze:<br/>czy instytucja jest<br/>w zakresie konta?"}
+  W1 -->|"nie"| X1["Wiersz nie trafia do wyniku"]
+  W1 -->|"tak"| W2{"Pola:<br/>czy rola ma prawo<br/>do prowizji, PESEL,<br/>zyskow firmy?"}
+  W2 -->|"nie"| X2["Pole wyzerowane<br/>zanim opusci warstwe"]
+  W2 -->|"tak"| OK["Dane trafiaja do ekranu"]
+  X2 --> OK
+
+  E["Ekran"] -.->|"nigdy nie widzi<br/>odsianych danych"| OK
+
+  style F fill:#dcf3e3
+  style X1 fill:#fee2e2
+  style X2 fill:#fee2e2
+</pre>
+<!-- diagram:do -->
+
   <p>
     Opisane szczegółowo w
     <a href="02-role.html" onclick="if(parent!==window){parent.docNav('02-role');return false}">02. Aktorzy i uprawnienia</a>.
@@ -307,5 +329,11 @@
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>

@@ -24,37 +24,331 @@
   </div>
 
   <h2>Diagram encji</h2>
-  <div class="diagram">                        <span class="hi">INSTYTUCJA SZKOLENIOWA</span>
-                        (dane firmy, siedziba, wzór certyfikatu)
-                                    |
-              +---------------------+---------------------+
-              |                     |                     |
-    <span class="hi">WARUNKI PROWIZYJNE</span>      <span class="hi">KATALOG SZKOLEŃ</span>         <span class="hi">UŻYTKOWNICY IS</span>
-    (wersjonowane w czasie)  (szablon szkolenia)     (admin IS, handlowiec)
-              |                     |
-              |                <span class="hi">TERMIN SZKOLENIA</span>
-              |                (realizacja szablonu)
-              |                     |
-              |                     |
-        <span class="hi">KLIENT</span> (firma końcowa)      |
-        (dane stałe, NIP, wielkość) |
-              |                     |
-              +-----> <span class="em">WNIOSEK / PROJEKT</span> <-----+
-                      (dane finansowe,        |
-                       nabór, PUP, statusy)   |
-                            |                 |
-                            |                 |
-                    <span class="hi">UCZESTNIK WNIOSKU</span> --------+
-                    (osoba, szkolenie, kwota,
-                     status kwalifikacji)
-                            |
-                        <span class="hi">CERTYFIKAT</span>
+  <!-- diagram:od -->
+<pre class="mermaid">
+erDiagram
+    urzedy_pracy {
+        string id PK
+        string nazwa
+        string wojewodztwo
+        string powiat
+    }
 
-     <span class="hi">KORESPONDENCJA</span> ----> KLIENT (wspólna dla wszystkich wniosków)
-     <span class="hi">NOTATKI</span>       ----> KLIENT
-     <span class="hi">ZGŁOSZENIA</span>    ----> INSTYTUCJA lub KLIENT (baza incydentów)
-     <span class="hi">NABÓR</span>         ----> URZĄD PRACY (PUP), 340 pozycji
-     <span class="hi">FAKTURA</span>       ----> INSTYTUCJA SZKOLENIOWA</div>
+    progi_dofinansowania {
+        string id PK
+        string wielkosc "mikro/maly/sredni/duzy/inny"
+        real procent_dofinansowania "domyslnie 90 lub 70, edytowalne"
+        string obowiazuje_od
+        string obowiazuje_do "NULL = wersja aktualna"
+    }
+
+    instytucje {
+        string id PK
+        string nazwa
+        string skrot
+        string siedziba_miejscowosc "zrodlo pola na certyfikacie"
+        string nip
+        string model_terminow "kalendarz/z_gory"
+        int aktywna
+    }
+
+    warunki_prowizyjne {
+        string id PK
+        string instytucja_id FK
+        string obowiazuje_od
+        string obowiazuje_do "NULL = aktualne"
+        string model "A/B/C/D"
+        string rodzaj_kumulacji "miesieczny/roczny/brak"
+        string sposob_liczenia "od_calosci/od_nadwyzki/stala"
+        real stawka_stala
+    }
+
+    progi_prowizyjne {
+        string id PK
+        string warunki_id FK
+        real od_kwoty
+        real stawka
+    }
+
+    katalog_szkolen {
+        string id PK
+        string instytucja_id FK
+        string nazwa
+        int liczba_godzin
+        int liczba_dni
+        string tryb
+        real cena
+    }
+
+    terminy {
+        string id PK
+        string instytucja_id FK
+        string szkolenie_id FK
+        string data_od
+        string data_do
+        string status_realizacji
+        int zapisani
+        int limit_miejsc
+    }
+
+    klienci {
+        string id PK
+        int numer_klienta "sekwencyjny w roku"
+        string nazwa
+        string nip
+        string wielkosc_przedsiebiorstwa
+        int liczba_zatrudnionych
+        string instytucja_id FK "instytucja pozyskujaca, opcjonalne"
+        string pup_id FK
+        int zainteresowany_naborem
+    }
+
+    klient_instytucja {
+        string klient_id PK
+        string instytucja_id PK
+    }
+
+    nabory {
+        string id PK
+        string pup_id FK
+        string rodzaj
+        string status
+        string data_prognozowana
+        string data_od
+        string data_do
+        int liczba_klientow
+    }
+
+    faktury {
+        string id PK
+        string numer
+        string instytucja_id FK
+        real kwota
+        string vat
+        string data_wystawienia
+        string status
+        int liczba_projektow
+    }
+
+    wnioski {
+        string id PK
+        int numer
+        string rok "klucz rocznika, tekstowy"
+        string klient_id FK
+        string instytucja_id FK
+        string pup_id FK
+        string nabor_id FK
+        string szkolenie_glowne_id FK
+        string faktura_id FK
+        int etap "1-10"
+        string wielkosc_przedsiebiorstwa "nadpisanie per wniosek"
+        string osoba_kontaktowa "nadpisanie per wniosek"
+        real koszt_calkowity_z_doplata "RECZNE, podstawa prowizji"
+        real kwota_doplaty_dodatkowej "RECZNE, domyslnie 0"
+        real koszt_calkowity "WYLICZANE"
+        int koszt_regula_aktywna
+        real przyznano "WYLICZANE, edytowalne"
+        int przyznano_regula_aktywna
+        int prowizja_regula_aktywna
+        string prowizja_typ_nadpisania "procent/kwota"
+        real prowizja_wartosc
+        string status_skladania
+        string status_decyzji
+        string status_finansowy
+        string data_wystawienia_faktury "okres rozliczeniowy prowizji"
+    }
+
+    uczestnicy {
+        string id PK
+        string wniosek_id FK
+        string imie_nazwisko
+        string pesel "dane wrazliwe"
+        string szkolenie_id FK
+        string termin_id FK
+        real kwota
+        string status_kwalifikacji "zakwalifikowany/niezakwalifikowany"
+        string powod_niezakwalifikowania
+    }
+
+    role {
+        string id PK
+        string nazwa
+        string zakres "ldit/instytucja/klient"
+        int systemowa
+    }
+
+    moduly {
+        string id PK
+        string nazwa
+        string grupa
+        int kolejnosc
+    }
+
+    uprawnienia {
+        string rola_id PK
+        string modul_id PK
+        string poziom "brak/podglad/edycja"
+    }
+
+    uprawnienia_pol {
+        string rola_id PK
+        string klucz PK
+        int widoczne
+    }
+
+    uzytkownicy {
+        string id PK
+        string login
+        string imie_nazwisko
+        string rola_id FK
+        string instytucja_id FK "konto IS, opcjonalne"
+        string klient_id FK "konto klienta koncowego, opcjonalne"
+        int wszystkie_instytucje
+        int zablokowane
+    }
+
+    uzytkownik_instytucja {
+        string uzytkownik_id PK
+        string instytucja_id PK
+    }
+
+    przebieg_wniosku {
+        string id PK
+        string wniosek_id FK
+        string czas
+        int etap_z
+        int etap_do
+        string komentarz
+        string uzytkownik_id FK
+    }
+
+    zadania {
+        string id PK
+        string tytul
+        string typ "reczne/automatyczne"
+        string wniosek_id FK
+        string przypisane_do FK
+        string termin
+        string status
+        string zrodlo_statusu
+    }
+
+    notatki {
+        string id PK
+        string klient_id FK
+        string instytucja_id FK
+        string czas
+        string autor_id FK
+        string tresc
+    }
+
+    korespondencja {
+        string id PK
+        string klient_id FK
+        string instytucja_id FK
+        string data
+        string kierunek
+        string od_kogo
+        string temat
+        string skrzynka
+        int zalaczniki
+    }
+
+    formularze_oczekujace {
+        string id PK
+        string data
+        string firma
+        string nip
+        string instytucja_id FK
+        int osob
+        string szkolenie
+        string status "oczekuje/zaakceptowany/odrzucony"
+    }
+
+    szablony_maili {
+        string id PK
+        string nazwa
+        string odbiorca
+        string autor
+        int uzyc
+    }
+
+    zgloszenia {
+        string id PK
+        string data
+        string podmiot_typ
+        string podmiot "tekst, nie klucz obcy"
+        string typ
+        string waga
+    }
+
+    rejestr_aktywnosci {
+        string id PK
+        string czas
+        string kto
+        string obiekt
+        string pole
+    }
+
+    logowania {
+        string id PK
+        string czas
+        string kto
+        string wynik
+    }
+
+    cele {
+        string id PK
+        string nazwa
+        real cel
+        real obecnie
+    }
+
+    meta {
+        string klucz PK
+        string wartosc
+    }
+
+    instytucje ||--o{ warunki_prowizyjne : "ma wersje warunkow"
+    warunki_prowizyjne ||--o{ progi_prowizyjne : "ma progi kwotowe"
+    instytucje ||--o{ katalog_szkolen : "oferuje"
+    instytucje ||--o{ terminy : "organizuje"
+    katalog_szkolen ||--o{ terminy : "ma realizacje"
+    instytucje |o--o{ klienci : "pozyskala"
+    urzedy_pracy |o--o{ klienci : "wlasciwy PUP"
+    klienci ||--o{ klient_instytucja : "widoczny u"
+    instytucje ||--o{ klient_instytucja : "widzi klienta"
+    urzedy_pracy ||--o{ nabory : "oglasza"
+    instytucje ||--o{ faktury : "wystawiona dla"
+    klienci ||--o{ wnioski : "sklada"
+    instytucje ||--o{ wnioski : "obsluguje"
+    urzedy_pracy |o--o{ wnioski : "rozpatruje"
+    nabory |o--o{ wnioski : "w ramach naboru"
+    katalog_szkolen |o--o{ wnioski : "szkolenie glowne"
+    faktury |o--o{ wnioski : "rozliczony faktura"
+    wnioski ||--o{ uczestnicy : "obejmuje"
+    katalog_szkolen |o--o{ uczestnicy : "szkolenie uczestnika"
+    terminy |o--o{ uczestnicy : "termin uczestnika"
+    role ||--o{ uprawnienia : "ma dostep do modulow"
+    moduly ||--o{ uprawnienia : "jest przedmiotem uprawnienia"
+    role ||--o{ uprawnienia_pol : "ma widocznosc pol"
+    role ||--o{ uzytkownicy : "przypisana do konta"
+    instytucje |o--o{ uzytkownicy : "konto macierzyste"
+    klienci |o--o{ uzytkownicy : "konto klienta koncowego"
+    uzytkownicy ||--o{ uzytkownik_instytucja : "ma dostep do"
+    instytucje ||--o{ uzytkownik_instytucja : "udostepniona kontu"
+    wnioski ||--o{ przebieg_wniosku : "ma historie etapow"
+    uzytkownicy |o--o{ przebieg_wniosku : "autor zmiany"
+    wnioski |o--o{ zadania : "generuje"
+    uzytkownicy |o--o{ zadania : "przypisane do"
+    klienci |o--o{ notatki : "dotyczy klienta"
+    instytucje |o--o{ notatki : "dotyczy instytucji"
+    uzytkownicy |o--o{ notatki : "autor"
+    klienci |o--o{ korespondencja : "dotyczy klienta"
+    instytucje |o--o{ korespondencja : "dotyczy instytucji"
+    instytucje |o--o{ formularze_oczekujace : "zrodlo zgloszenia"
+</pre>
+<!-- diagram:do -->
 
   <h2>Kluczowe decyzje modelowe</h2>
 
@@ -229,6 +523,21 @@
   </div>
   <p>W makiecie przyjęto konwencję: <b>pola ręczne oznaczone na żółto</b> <span class="ref">D-81</span>.</p>
 
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart LR
+    A["Wartosc z reguly - liczona zawsze na biezaco (np. koszt_calkowity_wyliczony)"] --> B{"regula_aktywna?"}
+    B -->|"tak"| C["Wartosc efektywna = wartosc z reguly"]
+    B -->|"nie"| D["Wartosc efektywna = wartosc zapisana recznie"]
+    C --> E["Uzytkownik edytuje pole recznie"]
+    E --> F["regula_aktywna ustawiane na 0, zapisywana wartosc reczna"]
+    F --> B
+    D --> G["Uzytkownik klika Przywroc regule"]
+    G --> H["regula_aktywna ustawiane na 1"]
+    H --> B
+</pre>
+<!-- diagram:do -->
+
   <h2>Podział na roczniki</h2>
   <p>
     Baza wniosków dzielona na roczniki (odwzorowanie zakładek Excela). Nawigacja: <b>Zestawienia
@@ -245,5 +554,11 @@
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>

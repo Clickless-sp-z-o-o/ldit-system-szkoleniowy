@@ -145,6 +145,16 @@ node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus kore
 Po zmianie schematu bazy przebuduj ją: `node tools/build-sqlite.mjs`.
 Po dodaniu strony podłącz skrypty: `node tools/wire-pages.mjs`.
 
+## Dokumentacja
+
+`docs/*.md` to źródło prawdy, `dokumentacja/index.html` to ta sama treść jako klikalna
+strona dla klienta. Diagramy pisze się **wyłącznie w Markdownie**, a do strony przenosi je
+`node tools/build-diagramy.mjs` (idempotentne). Nie edytuj diagramów w plikach HTML,
+bo następne uruchomienie skryptu je nadpisze.
+
+Silnik Mermaid leży lokalnie w `dokumentacja/assets/mermaid.min.js`, więc strona renderuje
+diagramy offline, bez internetu.
+
 ---
 
 ## Konwencje kodu

@@ -33,6 +33,50 @@
   </div>
 
   <h2>Mapa zakładek</h2>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+  subgraph OP["Praca operacyjna"]
+    M1["Dashboard<br/>MUST"]
+    M2["Dofinansowania<br/>Baza danych + Wnioski<br/>MUST"]
+    M5["Nabory<br/>MUST"]
+    M15["Zadania i powiadomienia<br/>SHOULD, wrocilo D-140"]
+  end
+
+  subgraph KONF["Konfiguracja"]
+    M6["Instytucje szkoleniowe<br/>+ katalog szkolen<br/>MUST"]
+    M7["Konfigurator instytucji<br/>prowizje, certyfikat<br/>MUST, tylko admin"]
+    M9["Wysylka maili<br/>MUST"]
+  end
+
+  subgraph ZARZ["Zarzadzanie"]
+    M8["Administracja<br/>prowizje, faktury, statystyki<br/>MUST, tylko admin"]
+    M10["Zgloszenia<br/>SHOULD"]
+    M11["Konta i uprawnienia<br/>MUST, tylko admin"]
+    M12["Rejestr aktywnosci<br/>MUST, tylko admin"]
+  end
+
+  subgraph ZEW["Panele zewnetrzne"]
+    M13["Terminy i kalendarz<br/>SHOULD"]
+    M17["Panel klienta koncowego<br/>OTWARTE, P-33"]
+  end
+
+  M2 --> M6
+  M2 --> M5
+  M6 --> M7
+  M6 --> M13
+  M2 --> M8
+  M8 --> M7
+
+  style M7 fill:#fde68a
+  style M8 fill:#fde68a
+  style M11 fill:#fde68a
+  style M12 fill:#fde68a
+  style M17 fill:#e9d5ff
+</pre>
+<!-- diagram:do -->
+
   <div class="tbl-wrap">
     <table class="t">
       <thead><tr><th>#</th><th>Zakładka</th><th>Priorytet</th><th>Specyfikacja</th></tr></thead>
@@ -259,5 +303,11 @@
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>

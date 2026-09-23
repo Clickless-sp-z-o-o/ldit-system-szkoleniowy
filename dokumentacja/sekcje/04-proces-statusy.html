@@ -18,29 +18,30 @@
   </div>
 
   <h2>Przebieg procesu od początku do końca</h2>
-  <div class="diagram">1. <span class="hi">POZYSKANIE</span>      handlowiec IS pozyskuje klienta końcowego, wysyła link do formularza
-              |
-2. <span class="hi">FORMULARZ</span>       klient wypełnia formularz online, system rejestruje datę wpłynięcia
-              |
-3. <span class="hi">AKCEPTACJA</span>      Bartek klika „Akceptuj”, rekord wchodzi do bazy (bramka anty-spamowa)
-              |          <span class="em">&gt;&gt;&gt; ROLA HANDLOWCA IS SIĘ KOŃCZY &lt;&lt;&lt;</span>
-4. <span class="hi">OCZEKIWANIE</span>     klient trafia do bazy, system wiąże go z naborem właściwego PUP
-   NA NABÓR                (aktualnym lub prognozowanym)
-              |
-5. <span class="hi">PRZYGOTOWANIE</span>   rejestracja klienta w BUR, ustalenie szkoleń i kwot
-   WNIOSKU
-              |
-6. <span class="hi">ZŁOŻENIE</span>        wniosek złożony w PUP
-              |
-7. <span class="hi">DECYZJA</span>         urząd wydaje decyzję pozytywną lub negatywną, może obciąć kwotę lub osoby
-              |
-8. <span class="hi">USTALENIE</span>       termin szkolenia ustalony (model A lub B), ewentualne pismo do PUP
-   TERMINU
-              |
-9. <span class="hi">REALIZACJA</span>      szkolenie się odbywa
-              |
-10. <span class="hi">ROZLICZENIE</span>    IS wystawia fakturę, system generuje certyfikaty (ZIP),
-                          LDIT wysyła paczkę i wystawia fakturę prowizyjną</div>
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+    subgraph Baza["Baza klientow (przed Wnioskami)"]
+        E1["1. Przekazanie klienta<br/>IS przekazuje, LDIT weryfikuje dane"]
+        E2["2. Akceptacja formularza<br/>brama anty-spam, wpis do bazy klientow"]
+    end
+
+    subgraph Wnioski["Tabela Wnioski, od etapu 3 [D-146]"]
+        E3["3. Przygotowanie wniosku i dokumentow<br/>profil praca.gov.pl, zalaczniki, podpisy"]
+        E4["4. Zlozenie wniosku<br/>wniosek zlozony w PUP"]
+        E5["5. Oczekiwanie na decyzje<br/>PUP rozpatruje"]
+        E6{"6. Decyzja urzedu"}
+        E7["7. Ustalenie terminu szkolenia<br/>model A: LDIT z kalendarza IS<br/>model B: IS ustala i przekazuje"]
+        E8["8. Realizacja szkolenia"]
+        E9["9. Rozliczenie<br/>dane do faktury, certyfikaty"]
+        E10(["10. Proces zakonczony<br/>dofinansowanie rozliczone"])
+    end
+
+    E1 --> E2 --> E3 --> E4 --> E5 --> E6
+    E6 -- "negatywna" --> Powrot["Klient zostaje w bazie<br/>czeka na kolejny nabor"]
+    E6 -- "pozytywna" --> E7 --> E8 --> E9 --> E10
+</pre>
+<!-- diagram:do -->
 
   <h2>Statusy</h2>
   <p>W obecnym Excelu funkcjonują <b>dwa niezależne statusy</b> na jednym wierszu. Nie ustalono, czy w systemie zostaną dwa pola, czy jeden łańcuch <span class="ref p">P-42</span>.</p>
@@ -107,6 +108,64 @@
     widoczny obok koloru. Wiersz „rozliczone” ma ciemne tło, więc tekst na nim jest jasny.
   </div>
 
+  <!-- diagram:od -->
+<pre class="mermaid">
+stateDiagram-v2
+    [*] --> Niezlozony
+    Niezlozony: Niezlozony (klient w bazie, wniosek jeszcze nie poszedl)
+    NW: NW (umowione z klientem ze piszemy wniosek, ale sprawa stoi)
+    Zlozony: Zlozony (wniosek trafil do urzedu)
+    Rezygnacja: Rezygnacja (klient zrezygnowal przed zlozeniem)
+
+    Niezlozony --> NW: umowiono pisanie wniosku
+    Niezlozony --> Zlozony: wniosek trafil do urzedu
+    NW --> Zlozony: wniosek trafil do urzedu
+    Niezlozony --> Rezygnacja
+    NW --> Rezygnacja
+    Zlozony --> [*]
+</pre>
+<!-- diagram:do -->
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+stateDiagram-v2
+    state "Wniosek" as Wniosek {
+        state "Status skladania" as Skladanie {
+            [*] --> Niezlozony2
+            Niezlozony2: Niezlozony
+            NW2: NW
+            Zlozony2: Zlozony
+            RezSkladanie: Rezygnacja
+            Niezlozony2 --> NW2
+            Niezlozony2 --> Zlozony2
+            NW2 --> Zlozony2
+            Niezlozony2 --> RezSkladanie
+            NW2 --> RezSkladanie
+        }
+        --
+        state "Status decyzji" as Decyzja {
+            [*] --> OczekujeDecyzji
+            OczekujeDecyzji: Oczekuje na decyzje
+            Pozytywna: Pozytywna
+            Negatywna: Negatywna
+            RezPoNapisaniu: Rezygnacja po napisaniu
+            OczekujeDecyzji --> Pozytywna: decyzja urzedu pozytywna
+            OczekujeDecyzji --> Negatywna: decyzja urzedu negatywna, np. brak srodkow
+            OczekujeDecyzji --> RezPoNapisaniu: klient rezygnuje po przygotowaniu wniosku
+        }
+        --
+        state "Status finansowy" as Finansowy {
+            [*] --> OczekujeFinansow
+            OczekujeFinansow: Oczekuje (czekamy)
+            Zafakturowany2: Zafakturowany
+            Rozliczone2: Rozliczone
+            OczekujeFinansow --> Zafakturowany2: IS wystawia fakture
+            Zafakturowany2 --> Rozliczone2: LDIT wysyla pakiet rozliczeniowy i fakture prowizyjna
+        }
+    }
+</pre>
+<!-- diagram:do -->
+
   <h2>Wyzwalacze powiadomień</h2>
   <p>Powiadomienia mailowe wyzwalane zmianą statusu lub datą. Szczegóły w sekcji <a href="08-powiadomienia.html" onclick="if(parent!==window){parent.docNav('08-powiadomienia');return false}">Powiadomienia i certyfikaty</a>.</p>
   <div class="tbl-wrap">
@@ -169,5 +228,11 @@
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>

@@ -26,14 +26,25 @@
     współpracujące <b>instytucje szkoleniowe (IS)</b>.
   </p>
 
-  <div class="diagram">Instytucja szkoleniowa (IS)          LDIT                    Klient końcowy (firma)
-        |                              |                              |
-   handlowiec pozyskuje  ---->  przejmuje proces  ---->  wypełnia formularz
-   klienta końcowego            i prowadzi wniosek        wysyła uczestników
-        |                              |                              |
-   realizuje szkolenie  &lt;----  składa wniosek do PUP  ---->  otrzymuje dofinansowanie
-        |                              |
-   wystawia fakturę      ---->  pobiera prowizję (% od kosztu szkolenia)</div>
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart LR
+  IS["Instytucja szkoleniowa<br/>handlowiec pozyskuje klienta"]
+  LDIT["LDIT<br/>przejmuje proces,<br/>prowadzi wniosek"]
+  KL["Klient koncowy<br/>firma, wysyla uczestnikow"]
+  PUP["Urzad pracy<br/>PUP"]
+
+  IS -->|"1. przekazuje klienta<br/>przez formularz"| LDIT
+  KL -->|"2. wypelnia formularz"| LDIT
+  LDIT -->|"3. sklada wniosek"| PUP
+  PUP -->|"4. decyzja i dofinansowanie"| KL
+  IS -->|"5. realizuje szkolenie"| KL
+  IS -->|"6. wystawia fakture"| KL
+  IS -.->|"7. placi prowizje<br/>procent od kosztu szkolenia"| LDIT
+
+  style LDIT fill:#dcf3e3
+</pre>
+<!-- diagram:do -->
 
   <p>
     <b>Źródło przychodu LDIT:</b> prowizja od instytucji szkoleniowej, liczona procentowo od kosztu
@@ -259,5 +270,11 @@
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>

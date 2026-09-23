@@ -129,6 +129,37 @@
   </div>
 
   <h2>Wzory</h2>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+    K["klient.wielkosc_przedsiebiorstwa"] --> W{"wielkosc efektywna"}
+    N["wniosek.wielkosc_przedsiebiorstwa - nadpisanie, D-132"] --> W
+    W --> P["procent_dofinansowania z progi_dofinansowania, wersja wg daty wniosku, D-131"]
+
+    Z["koszt_calkowity_z_doplata - RECZNE, D-134"]
+    D["kwota_doplaty_dodatkowej - RECZNE, domyslnie 0, D-63"]
+    Z --> KC["koszt_calkowity = z_doplata minus doplata - WYLICZANE, D-134"]
+    D --> KC
+
+    KC --> PR["przyznano = koszt_calkowity_efektywny razy procent - WYLICZANE, edytowalne, D-135"]
+    P --> PR
+    S["status_decyzji = Pozytywna?"] --> PR
+
+    KC --> WK["wklad_wlasny = koszt_calkowity_efektywny minus przyznano_efektywny - reszta"]
+    PR --> WK
+
+    Z --> PP["PODSTAWA PROWIZJI LDIT = koszt_calkowity_z_doplata, D-64"]
+
+    U["uczestnicy.kwota, tylko zakwalifikowani, D-61"] --> CW["calkowita_wartosc_szkolenia - WYLICZANE, informacyjne, D-79"]
+
+    classDef reczne fill:#fff3b0,stroke:#7a6b00,color:#000
+    classDef wyliczane fill:#d6e8ff,stroke:#1a4a7a,color:#000
+    class Z,D reczne
+    class W,P,KC,PR,WK,CW,PP wyliczane
+</pre>
+<!-- diagram:do -->
+
   <pre class="code">wskaznik_dofinansowania = 0,9  gdy wielkosc = mikro
                         = 0,7  w pozostałych przypadkach
 
@@ -374,5 +405,11 @@ Całkowita wartość    =  90 000 zł</pre>
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>

@@ -39,20 +39,41 @@
   </div>
 
   <h2>Diagram zależności liczenia prowizji LDIT</h2>
-  <div class="diagram">  <span class="hi">koszt_calkowity</span> (ręczne) ─────────────┐
-  <span class="hi">kwota_doplaty_dodatkowej</span> (ręczne) ────┼──▶  <span class="em">koszt_calkowity_z_doplata</span>  ──┐
-                                          │      (= PODSTAWA naliczenia)      │
-                                          ┘                                   │
-                                                                              ▼
-  <span class="hi">warunki_prowizyjne</span> (per instytucja, wersjonowane w czasie)          <span class="em">prowizja_kwota</span>
-    ├─ rodzaj_kumulacji   (miesięczny / roczny / brak) ──┐                  = podstawa × stawka
-    ├─ sposob_liczenia    (od_calosci / od_nadwyzki / stala) ─┼──▶ <span class="em">stawka %</span> ──┘
-    └─ progi[]            (próg, stawka) ◀── <span class="hi">obrót narastający w okresie</span>
-                                                    ▲
-                                <span class="hi">data_wystawienia_faktury</span> wyznacza okres i kolejność
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+  A["Warunki instytucji aktywne w dniu wystawienia faktury<br/>tabela warunki_prowizyjne, wg obowiazuje_od / obowiazuje_do"] --> B{"rodzaj_kumulacji?"}
 
-  <span class="hi">nadpisanie per wniosek</span> (admin) ──▶ kasuje regułę ──▶ <span class="em">prowizja_procent</span> ustawiona ręcznie
-                                             (przywracalna: „Przywróć regułę”)</div>
+  B -->|brak| D1["sposob_liczenia wymuszony na: stala"]
+  D1 --> MD["MODEL D<br/>stala stawka, niezalezna od obrotu<br/>standard w firmie: 20%"]
+  MD --> N1["prowizja pozycji = kwota_pozycji x stawka_stala / 100"]
+
+  B -->|miesieczny| C1{"sposob_liczenia?"}
+  C1 -->|od_calosci| MA["MODEL A<br/>prog miesieczny, stawka od CALOSCI obrotu miesiaca"]
+  MA --> N2["1. policz obrot calego miesiaca<br/>2. wybierz JEDNA stawke wg najwyzszego osiagnietego progu<br/>3. zastosuj ja do KAZDEJ pozycji miesiaca, takze juz wystawionych"]
+
+  C1 -->|od_nadwyzki| MC["MODEL C<br/>prog miesieczny, stawka od NADWYZKI"]
+  MC --> N3["kazdy fragment obrotu rozliczany stawka wlasnego progu<br/>pojedyncza faktura moze byc podzielona miedzy kilka stawek"]
+
+  B -->|roczny| R1{"sposob_liczenia?"}
+  R1 -->|od_nadwyzki| MB["MODEL B<br/>skala roczna YTD, stawka od NADWYZKI"]
+  MB --> N4["mechanika jak w Modelu C, okno = caly rok kalendarzowy<br/>stawka zwykle MALEJE wraz ze wzrostem obrotu"]
+  R1 -->|od_calosci| RX["kombinacja dostepna technicznie w konfiguratorze<br/>brak realnej umowy klienta w tym wariancie, nieprzetestowana"]
+
+  N1 --> OV{"Nadpisanie indywidualne<br/>na tym wniosku?<br/>prowizja_regula_aktywna = false"}
+  N2 --> OV
+  N3 --> OV
+  N4 --> OV
+  OV -->|tak, typ = procent| OVP["prowizja pozycji = kwota_pozycji x stawka_nadpisana / 100"]
+  OV -->|tak, typ = kwota| OVK["prowizja pozycji = prowizja_wartosc<br/>D-136, bez przeliczania z procentu"]
+  OV -->|nie| FIN["prowizja pozycji = wynik z modelu A / B / C / D"]
+
+  OVP --> POOL["Kwota bazowa pozycji WLICZA SIE do sumy narastajacej<br/>ktora wyznacza progi dla pozostalych wnioskow instytucji<br/>D-137"]
+  OVK --> POOL
+  FIN --> SUMA["Suma prowizji calego okresu<br/>= suma prowizji wszystkich pozycji okresu"]
+  POOL --> SUMA
+</pre>
+<!-- diagram:do -->
 
   <div class="two">
     <div class="card">
@@ -174,6 +195,31 @@ Przykład z warsztatu:
   </div>
 
   <h2>Pułapka implementacyjna: Model A liczy się na całym okresie</h2>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart TD
+  subgraph SA["Model A: od calosci, stawka podnoszona WSTECZ"]
+    A1["Faktura 1: 26 000 zl wystawiona"] --> A2["Naiwnie: obrot-do-tej-pory = 26 000, ponizej 50 000<br/>zapisz stawke 10% -> 2 600 zl"]
+    A2 --> A3["Faktura 2: 25 000 zl wystawiona"]
+    A3 --> A4["Naiwnie: policz TYLKO te fakture<br/>jej wlasny obrot = 25 000, ale narastajaco = 51 000, powyzej progu -> 12% -> 3 000 zl"]
+    A4 --> A5["BLEDNA SUMA: 2 600 + 3 000 = 5 600 zl<br/>Faktura 1 zostala policzona po nieaktualnej stawce 10%"]
+    A3 --> A6["Poprawnie: wystawienie Faktury 2<br/>wyzwala przeliczenie CALEGO miesiaca naraz"]
+    A6 --> A7["Obrot okresu = 51 000, powyzej 50 000<br/>JEDNA stawka 12% dla WSZYSTKICH pozycji miesiaca"]
+    A7 --> A8["Faktura 1 PRZELICZONA: 26 000 x 12% = 3 120 zl<br/>Faktura 2: 25 000 x 12% = 3 000 zl"]
+    A8 --> A9["POPRAWNA SUMA: 6 120 zl"]
+  end
+
+  subgraph SB["Model B i C: od nadwyzki, punkt podzialu przesuwa sie w PRZOD"]
+    B1["Faktury okresu ulozone chronologicznie<br/>narastajaco liczone kolejno od zera"]
+    B1 --> B2["Korekta albo wstawienie faktury WCZESNIEJ<br/>w kolejnosci chronologicznej (P-04)"]
+    B2 --> B3["Narastajaco PRZED kazda kolejna fakturą sie zmienia<br/>punkt podzialu miedzy stawkami przesuwa sie"]
+    B3 --> B4["Wszystkie faktury PO miejscu zmiany<br/>musza byc przeliczone od nowa, w tej samej kolejnosci"]
+    B4 --> B5["Silnik operuje na calej liscie faktur okresu naraz<br/>nigdy na pojedynczej fakturze w izolacji"]
+  end
+</pre>
+<!-- diagram:do -->
+
   <div class="callout danger">
     <span class="ct">Naiwna implementacja daje w Modelu A błędny wynik zaniżony o 9%</span>
     W modelu „od całości” nie wolno liczyć prowizji fakturami po kolei i sumować wyników.
@@ -253,5 +299,11 @@ POPRAWNIE, na sumie okresu:
   </div>
 
 </div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
 </body>
 </html>
