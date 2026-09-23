@@ -70,16 +70,22 @@ function dolaczSilnik(tresc) {
   return tresc.replace("</body>", skrypt + "</body>");
 }
 
-function wstaw(tresc, kod, gdzie, plik) {
+function wstaw(tresc, kod, gdzie, plik, gniazdo) {
   const nowy = blok(kod);
 
   if (gdzie.zamien) {
+    /* Rysunek ASCII istnieje tylko przed pierwszym uruchomieniem. Przy podmianie
+       zostawiamy w jego miejscu trwały znacznik gniazda, żeby kolejne uruchomienia
+       wiedziały, gdzie ten diagram ma wrócić. */
+    const znacznikGniazda = "<!-- diagram:gniazdo:" + gniazdo + " -->";
+    if (tresc.includes(znacznikGniazda)) {
+      return tresc.replace(znacznikGniazda, znacznikGniazda + "\n  " + nowy);
+    }
     const wzorzec = /<div class="diagram">[\s\S]*?<\/div>/;
-    if (wzorzec.test(tresc)) return tresc.replace(wzorzec, nowy);
-    /* Rysunek ASCII juz podmieniony przy poprzednim uruchomieniu */
-    const juz = new RegExp(ZNACZNIK_OD + "[\\s\\S]*?" + ZNACZNIK_DO);
-    if (juz.test(tresc)) return tresc.replace(juz, nowy);
-    throw new Error("Brak rysunku do podmiany w " + plik);
+    if (wzorzec.test(tresc)) {
+      return tresc.replace(wzorzec, znacznikGniazda + "\n  " + nowy);
+    }
+    throw new Error("Brak rysunku ani gniazda do podmiany w " + plik);
   }
 
   const naglowek = gdzie.po || gdzie.przed;
@@ -113,8 +119,19 @@ for (const sekcja of doCzyszczenia) {
     console.warn("Pomijam, brak sekcji: " + sekcja);
     continue;
   }
-  stan[sekcja] = readFileSync(sciezka, "utf8")
-    .replace(new RegExp("\\s*" + ZNACZNIK_OD + "[\\s\\S]*?" + ZNACZNIK_DO, "g"), "");
+  let tresc = readFileSync(sciezka, "utf8");
+
+  /* Sekcje z pierwszego uruchomienia mają już podmieniony rysunek ASCII, ale nie mają
+     jeszcze znacznika gniazda. Dokładamy go raz, zanim wyczyścimy stare bloki. */
+  for (const p of ROZKLAD.filter((r) => r.sekcja === sekcja && r.gdzie.zamien)) {
+    const znacznik = "<!-- diagram:gniazdo:" + p.md + "#" + (p.nr + 1) + " -->";
+    if (!tresc.includes(znacznik) && tresc.includes(ZNACZNIK_OD)) {
+      tresc = tresc.replace(ZNACZNIK_OD, znacznik + "\n  " + ZNACZNIK_OD);
+    }
+  }
+
+  stan[sekcja] = tresc.replace(
+    new RegExp("\\s*" + ZNACZNIK_OD + "[\\s\\S]*?" + ZNACZNIK_DO, "g"), "");
 }
 
 let wstawionych = 0;
@@ -126,7 +143,8 @@ for (const pozycja of ROZKLAD) {
     console.warn("Brak diagramu #" + (pozycja.nr + 1) + " w " + pozycja.md);
     continue;
   }
-  stan[pozycja.sekcja] = wstaw(stan[pozycja.sekcja], kod, pozycja.gdzie, pozycja.sekcja);
+  stan[pozycja.sekcja] = wstaw(stan[pozycja.sekcja], kod, pozycja.gdzie, pozycja.sekcja,
+                               pozycja.md + "#" + (pozycja.nr + 1));
   wstawionych++;
 }
 

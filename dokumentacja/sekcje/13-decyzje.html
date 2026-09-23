@@ -12,21 +12,20 @@
     <div class="doc-kicker">Rejestry</div>
     <h1 class="doc-title">Rejestr decyzji</h1>
     <p class="doc-lead">
-      124 decyzje podjęte na warsztacie 25.08.2026, w kolejności chronologicznej, plus
-      4 uzupełnienia dopisane po nim (04.09.2026). Każda decyzja ma siłę (twarda, wstępna,
-      odrzucona, odroczona), autora potrzeby lub rozwiązania oraz znacznik czasu z nagrania.
+157 decyzji projektowych w kolejności chronologicznej: 120 z warsztatu 25.08.2026,
+      4 uzupełnienia dopisane po nim, 23 z warsztatu doprecyzowującego 04.09.2026 i 10 decyzji
+      wykonawczych z budowy makiety na bazie danych 23.09.2026. Każda ma siłę (twarda, wstępna,
+      odrzucona, odroczona), autora potrzeby lub rozwiązania oraz znacznik czasu z nagrania,
+      jeśli padła na warsztacie.
     </p>
   </div>
 
-  <div class="callout warn">
-    <span class="ct">Ta lista kończy się na D-124</span>
-    Warsztat doprecyzowujący 04.09.2026 dodał decyzje <b>D-125 - D-147</b> (23 decyzje, w tym 6 odwróceń
-    wcześniejszych ustaleń). Ich pełny wykaz i osobna sekcja konfliktów:
-    <a href="15-warsztat-0904.html" onclick="if(parent!==window){parent.docNav('15-warsztat-0904');return false}">Warsztat 04.09.2026</a>.
-    Budowa makiety na bazie danych 23.09.2026 dodała <b>D-148 - D-157</b>, czyli 10 decyzji wykonawczych
-    o tym, gdzie ustalenia mają być egzekwowane:
-    <a href="16-od-makiety.html" onclick="if(parent!==window){parent.docNav('16-od-makiety');return false}">Od makiety do aplikacji</a>.
-    Pełny rejestr: <a href="../../docs/13-rejestr-decyzji.md">docs/13-rejestr-decyzji.md</a>.
+  <div class="callout">
+    <span class="ct">Jak czytać ten rejestr</span>
+    Najpierw osiem bloków z warsztatu 25.08.2026 (D-01 &ndash; D-120), ułożonych chronologicznie
+    wg nagrania. Potem cztery uzupełnienia dopisane po nim, decyzje z warsztatu doprecyzowującego
+    04.09.2026 i na końcu decyzje wykonawcze z budowy makiety. Zestawienie odwróceń i unieważnień
+    jest pod tabelami. Źródło: <a href="../../docs/13-rejestr-decyzji.md">docs/13-rejestr-decyzji.md</a>.
   </div>
 
   <div class="card">
@@ -286,6 +285,73 @@
     ustaleń przekazanych po nim.
   </p>
 
+    <!-- rejestr:od -->
+  <h2>Warsztat doprecyzowujący (2026-09-04)</h2>
+  <div class="callout ok">
+    <span class="ct">23 decyzji, w tym 6 odwróceń wcześniejszych ustaleń</span>
+    Drugi warsztat przeprowadzono na żywo na makiecie v2. Przyniósł powrót modułu zadań,
+    edytowalne pola finansowe, konfigurowalne progi dofinansowania i rozdzielenie widoku
+    Dofinansowań na Bazę danych i Wnioski. Kontekst, cytaty i sekcja konfliktów:
+    <a href="15-warsztat-0904.html" onclick="if(parent!==window){parent.docNav('15-warsztat-0904');return false}">Warsztat 04.09.2026</a>.
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Typ</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref new">D-125</span></td><td>Rola wynika z konta zalogowanego użytkownika (będzie panel logowania). Przełącznik ról w makiecie jest wyłącznie demonstracyjny</td><td><span class="pill tw">TWARDA</span></td><td>[W] potwierdził, [K]</td><td>uszczegółowia <span class="ref">D-02</span>, <span class="ref">D-36</span></td></tr>
+        <tr><td><span class="ref new">D-126</span></td><td>Administrator instytucji dodaje i zarządza własnymi pracownikami (maksymalnie własne uprawnienia). Administrator LDIT zachowuje usuwanie i blokowanie tych kont oraz filtrowanie listy kont po instytucji (kontrola liczby)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozszerza <span class="ref">D-72</span></td></tr>
+        <tr><td><span class="ref new">D-127</span></td><td>Zakładka "Dofinansowania" statyczna, obok osobna, jawna pozycja "Wszystkie instytucje". Lista instytucji rozwijana w lewym menu</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>aktualizuje <span class="ref">D-112</span></td></tr>
+        <tr><td><span class="ref new">D-128</span></td><td>Widok dofinansowań rozdzielony na dwie tabele: <b>Baza danych</b> (klient = jeden wiersz, wnioski zagnieżdżone) po lewej i <b>Wnioski</b> (od etapu 3, klient może się powielać, numer klienta zachowany) po prawej. Tabele synchronizowane</td><td><span class="pill tw">TWARDA</span></td><td>[K] potrzeba, [W] kompromis</td><td>NOWE</td></tr>
+        <tr><td><span class="ref new">D-129</span></td><td>Osobne zakładki roczne (Dofinansowania 2026, 2027 ...). Dane historyczne <b>nie są migrowane</b> (2027 startuje z pustą bazą wniosków), do dashboardu trafiają wyłącznie podsumowania liczbowe jako wsad</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>aktualizuje <span class="ref">D-24</span></td></tr>
+        <tr><td><span class="ref new">D-130</span></td><td>Priorytet w Bazie klientów wyznacza <b>ostatni dzień naboru</b> (sortowanie rosnąco). Flaga "zainteresowany kolejnym naborem" per klient. Edycja inline dat naboru (od-do), koniec naboru wyróżniony wizualnie</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozszerza <span class="ref">D-90</span></td></tr>
+        <tr><td><span class="ref new">D-131</span></td><td>Progi dofinansowania dla każdej wielkości (mikro, mały, średni, inny) <b>konfigurowalne i wersjonowane datą</b>. Wartości domyślne (90/10, 70/30) zostają, ale można je zmienić na kolejny rok</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>koryguje <span class="ref">D-59</span></td></tr>
+        <tr><td><span class="ref new">D-132</span></td><td>Wielkość przedsiębiorstwa <b>edytowalna per wniosek</b>. Nie wynika wyłącznie z liczby zatrudnionych, bo firma do 9 osób z obrotem powyżej 2 mln EUR nie jest mikro</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>koryguje <span class="ref">D-68</span></td></tr>
+        <tr><td><span class="ref new">D-133</span></td><td>Dane klienta edytowalne <b>per wniosek</b>, w tym dane kontaktowe (inna osoba, mail, telefon). Osobna zakładka danych stałych klienta plus podsumowanie zmian statusów po kliencie</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozszerza <span class="ref">D-53</span>, <span class="ref">D-54</span></td></tr>
+        <tr><td><span class="ref new">D-134</span></td><td><b>"Koszt całkowity z dopłatą" jest ręczny (edytowalny)</b>, a "koszt całkowity" jest wyliczany jako różnica (z dopłatą minus dopłata dodatkowa)</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] potwierdził</td><td>odwraca <span class="ref">D-64</span></td></tr>
+        <tr><td><span class="ref new">D-135</span></td><td><b>"Przyznano" edytowalne ręcznie</b> przyciskiem (odblokowanie komórki), z akcją "Przywróć regułę". Kwoty bywają niezależne od procentu dofinansowania</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>odwraca <span class="ref">D-58</span>, rozstrzyga <span class="ref p">P-30</span></td></tr>
+        <tr><td><span class="ref new">D-136</span></td><td>Indywidualne nadpisanie prowizji per wniosek jako <b>procent albo kwota</b> (wybór typu)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>koryguje <span class="ref">D-21</span></td></tr>
+        <tr><td><span class="ref new">D-137</span></td><td>Indywidualna stawka per wniosek <b>wlicza się do puli progowej</b> (narastająco, miesięcznie lub rocznie)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozstrzyga <span class="ref p">P-03</span></td></tr>
+        <tr><td><span class="ref new">D-138</span></td><td>Nadpisanie prowizji odbywa się <b>z karty wniosku</b>. Moduł Administracja pokazuje podsumowanie po instytucjach (bez rozwinięcia w pojedyncze wnioski) oraz dashboard prowizji miesięczny i narastająco</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>potwierdza <span class="ref">D-93</span></td></tr>
+        <tr><td><span class="ref new">D-139</span></td><td>Numer faktury prezentowany przy wniosku (do odnalezienia faktury), import faktur i lista faktur w Administracji</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>uszczegółowia <span class="ref">D-37</span>, <span class="ref">D-38</span></td></tr>
+        <tr><td><span class="ref new">D-140</span></td><td><b>Moduł zadań i powiadomień wraca do systemu.</b> Zadania ręczne i automatyczne (per wniosek/status, np. przygotowanie rozliczenia z daty ostatniego dnia szkolenia), alerty na datę, plan dnia z lewej strony, licznik wniosków oczekujących na akceptację. Do przemyślenia: jeden moduł czy dwa. Ostatni moduł w kolejności prac</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td><b>odwraca <span class="ref">D-118</span></b></td></tr>
+        <tr><td><span class="ref new">D-141</span></td><td>Statystyki ilościowe i kwotowe <b>per instytucja oraz zbiorczo</b> (suma wszystkich IS) na zakładce Administracja. System nagród dla instytucji (np. top 1)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozszerza moduł statystyk</td></tr>
+        <tr><td><span class="ref new">D-142</span></td><td><b>Kalendarz terminów per instytucja w systemie.</b> Instytucja wystawia terminy, przypisuje do wniosku. LDIT ma wgląd we wszystkie kalendarze. Widok: kalendarz plus tabela, po kliknięciu terminu lista uczestników</td><td><span class="pill tw">TWARDA</span></td><td>[K] potrzeba, [W] rozwiązanie</td><td>rozstrzyga <span class="ref p">P-10</span></td></tr>
+        <tr><td><span class="ref new">D-143</span></td><td>Kierunek architektury: <b>osobne mini-bazy danych per instytucja pod spodem</b> dla bezpieczeństwa (żeby IS nie odsłoniła cudzych danych przez narzędzia deweloperskie). Wykorzystanie frameworka open source z gotowym modułem uprawnień</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>dotyczy <span class="ref p">P-25</span></td></tr>
+        <tr><td><span class="ref new">D-144</span></td><td>Jeden klient może być przypisany do <b>wielu instytucji</b> (znaczniki). Każda instytucja widzi go tylko w swoim kontekście</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>rozstrzyga <span class="ref p">P-41</span></td></tr>
+        <tr><td><span class="ref new">D-145</span></td><td>Przebieg wniosku (timeline) budowany automatycznie z <b>logów zmian statusu</b>. Zmiana statusu przyciskiem "przejdź do następnego etapu" z komentarzem, zamiast wyboru z listy. Do statusów przypięte zadania (automatyczne lub ręczne)</td><td><span class="pill tw">TWARDA</span></td><td>[W] propozycja, [K] akceptacja</td><td>NOWE</td></tr>
+        <tr><td><span class="ref new">D-146</span></td><td>Etapy procesu wg pliku <b><code>Etapy_procesu.png</code></b> jako referencyjny model procesu (Dział Dotacji). Klient wchodzi do tabeli Wnioski dopiero od <b>etapu 3</b> (przygotowanie dokumentów)</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td>NOWE</td></tr>
+        <tr><td><span class="ref new">D-147</span></td><td>Formularz zgłoszeniowy preferencyjnie <b>Google Forms</b> (łatwiej dostępny), zaczytywany z eksportu (CSV/PDF). LDIT może też dodawać klientów ręcznie oraz importem starej bazy</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W] propozycja, [K] potrzeba</td><td>uszczegółowia <span class="ref">D-66</span>, <span class="ref">D-70</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Budowa makiety na bazie danych (2026-09-23)</h2>
+  <div class="callout">
+    <span class="ct">10 decyzji wykonawczych, wszystkie autorstwa wykonawcy</span>
+    Te decyzje nie padły na warsztacie. Powstały przy przenoszeniu makiety na bazę SQLite,
+    przy wdrażaniu panelu logowania i przy egzekwowaniu separacji danych. Ustalenia z warsztatów
+    mówiły, <b>co</b> system ma robić, ale nie rozstrzygały, <b>gdzie</b> ma to być egzekwowane.
+    Szerzej: <a href="16-od-makiety.html" onclick="if(parent!==window){parent.docNav('16-od-makiety');return false}">Od makiety do aplikacji</a>.
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Dotyczy</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref new">D-148</span></td><td><b>Separacja danych egzekwowana w warstwie dostępu do danych, nie w interfejsie.</b> Warstwa dostępu oddaje ekranowi wyłącznie te wiersze i te pola, które wolno zobaczyć zalogowanemu kontu. Ukrycie kolumny w widoku nie jest zabezpieczeniem, bo rekord i tak jest w pamięci przeglądarki</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>realizuje <span class="ref">D-35</span>, <span class="ref">D-76</span>, <span class="ref">D-114</span>, dotyczy blokady <span class="ref p">P-25</span></td></tr>
+        <tr><td><span class="ref new">D-149</span></td><td><b>Uprawnienia na trzech poziomach: moduł, pole, wiersz.</b> Moduł mówi, czy rola widzi zakładkę. Pole mówi, czy widzi prowizję, PESEL albo zysk firmy. Wiersz mówi, czyje instytucje i czyich klientów. Każdy poziom ma własną tabelę, żadnego poziomu nie da się obejść ustawieniem innego</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>uszczegółowia <span class="ref">D-35</span>, <span class="ref">D-36</span></td></tr>
+        <tr><td><span class="ref new">D-150</span></td><td><b>Klient wspólny dla wielu instytucji jest prezentowany wyłącznie w kontekście instytucji zalogowanego konta.</b> Informacja o tym, która instytucja pozyskała klienta, nie może trafić do innej instytucji, bo sama w sobie jest przewagą konkurencyjną</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>uszczegółowia <span class="ref new">D-144</span></td></tr>
+        <tr><td><span class="ref new">D-151</span></td><td><b>Schemat bazy jest źródłem prawdy o strukturze danych.</b> Plik <code>makieta/db/schema.sql</code> definiuje, dokumentacja opisuje. Przy rozjeździe wygrywa schemat, a dokumentacja jest poprawiana</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>NOWE</td></tr>
+        <tr><td><span class="ref new">D-152</span></td><td><b>Reguły pól wyliczanych zapisane jako widoki SQL</b>, w jednym miejscu, zamiast powielane w kodzie każdego ekranu. Plik <code>makieta/db/views.sql</code></td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>realizuje <span class="ref">D-19</span></td></tr>
+        <tr><td><span class="ref new">D-153</span></td><td><b>Każde pole wyliczane ma dwa warianty: wartość z reguły i wartość efektywną.</b> Wartość z reguły liczy się zawsze, także gdy reguła jest wyłączona ręczną edycją. Bez tego przycisk "Przywróć regułę" nie miałby do czego wracać</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>realizuje <span class="ref">D-19</span>, <span class="ref new">D-135</span></td></tr>
+        <tr><td><span class="ref new">D-154</span></td><td><b>Konto klienta końcowego jest powiązane z konkretnym rekordem klienta.</b> Bez tego powiązania panel klienta nie ma jak ustalić, czyj wniosek pokazać</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>dotyczy <span class="ref p">P-33</span></td></tr>
+        <tr><td><span class="ref new">D-155</span></td><td><b>Progi dofinansowania i warunki prowizyjne leżą w tabelach konfiguracyjnych, nigdy w kodzie.</b> Wartości domyślne 90/10 i 70/30 są wierszami w tabeli z datą obowiązywania, a nie liczbami w programie</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>realizuje <span class="ref new">D-131</span>, <span class="ref">D-22</span></td></tr>
+        <tr><td><span class="ref new">D-156</span></td><td><b>Konfigurator warunków prowizyjnych jest ekranem administratora</b>, mimo że wchodzi się do niego z zakładki Instytucje szkoleniowe. Rola bez prawa do prowizji dostaje komunikat o braku dostępu, a nie pusty ekran</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>uszczegółowia <span class="ref">D-07</span>, <span class="ref">D-93</span></td></tr>
+        <tr><td><span class="ref new">D-157</span></td><td><b>Makieta ma panel logowania zamiast przełącznika ról.</b> Pięć kont demonstracyjnych, jedno na rolę. Klient ogląda system tak, jak będzie go używał, a nie przez przełącznik, którego w systemie nie będzie</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>realizuje <span class="ref new">D-125</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- rejestr:do -->
+
   <h2>Decyzje unieważnione w trakcie warsztatu</h2>
   <div class="tbl-wrap">
     <table class="t">
@@ -299,25 +365,54 @@
     </table>
   </div>
 
+  <h3>Odwrócone na warsztacie doprecyzowującym (2026-09-04)</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Wcześniejsza decyzja</th><th>Odwrócona lub skorygowana przez</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref">D-118</span> zadania wykluczone, do Projectly</td><td><span class="ref new">D-140</span> moduł zadań wraca do systemu</td></tr>
+        <tr><td><span class="ref">D-58</span> przyznano nieedytowalne</td><td><span class="ref new">D-135</span> przyznano edytowalne z przywracaniem reguły</td></tr>
+        <tr><td><span class="ref">D-64</span> koszt całkowity ręczny, z dopłatą wyliczany</td><td><span class="ref new">D-134</span> odwrócony kierunek: z dopłatą ręczny, koszt całkowity wyliczany</td></tr>
+        <tr><td><span class="ref">D-59</span> progi 90/10 i 70/30 sztywne</td><td><span class="ref new">D-131</span> progi konfigurowalne i wersjonowane datą</td></tr>
+        <tr><td><span class="ref">D-68</span> wielkość auto z liczby zatrudnionych</td><td><span class="ref new">D-132</span> wielkość edytowalna per wniosek, kryterium obrotu</td></tr>
+        <tr><td><span class="ref">D-21</span> prowizja zawsze procentowo</td><td><span class="ref new">D-136</span> indywidualne nadpisanie: procent albo kwota</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">
+    Runda budowy makiety (D-148 &ndash; D-157) nie odwróciła żadnej decyzji klienta.
+    Rozstrzygnęła wyłącznie, gdzie ustalenia mają być egzekwowane.
+  </p>
+
   <h2>Statystyka decyzji</h2>
   <div class="tbl-wrap">
     <table class="t">
       <thead><tr><th>Kategoria</th><th>Liczba</th></tr></thead>
       <tbody>
-        <tr><td>TWARDA (w tym warianty typu "TWARDA co do zasady")</td><td class="num">96</td></tr>
-        <tr><td>WSTĘPNA</td><td class="num">19</td></tr>
+        <tr><td>TWARDA (w tym warianty typu "TWARDA co do zasady")</td><td class="num">125</td></tr>
+        <tr><td>WSTĘPNA</td><td class="num">23</td></tr>
         <tr><td>ODRZUCONA / wykluczenie</td><td class="num">7</td></tr>
         <tr><td>ODROCZONA bez decyzji</td><td class="num">2</td></tr>
-        <tr><td><b>Razem</b></td><td class="num"><b>124</b></td></tr>
+        <tr><td><b>Razem</b></td><td class="num"><b>157</b></td></tr>
       </tbody>
     </table>
   </div>
-  <p>Potrzebę zgłosił klient: <b>82</b> decyzji. Rozwiązanie zaproponował wykonawca: <b>42</b>.</p>
-  <p>Liczby obejmują 4 uzupełnienia po warsztacie (D-121 &ndash; D-124, wszystkie TWARDE, wszystkie z potrzeby klienta).</p>
+  <p>Potrzebę zgłosił klient: <b>ok. 100</b> decyzji. Rozwiązanie zaproponował wykonawca: <b>ok. 57</b>.</p>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Pochodzenie</th><th>Zakres</th><th class="num">Liczba</th></tr></thead>
+      <tbody>
+        <tr><td>Warsztat 25.08.2026</td><td>D-01 &ndash; D-120</td><td class="num">120</td></tr>
+        <tr><td>Uzupełnienia po pierwszym warsztacie</td><td>D-121 &ndash; D-124</td><td class="num">4</td></tr>
+        <tr><td>Warsztat doprecyzowujący 04.09.2026</td><td>D-125 &ndash; D-147</td><td class="num">23</td></tr>
+        <tr><td>Budowa makiety na bazie danych 23.09.2026</td><td>D-148 &ndash; D-157</td><td class="num">10</td></tr>
+      </tbody>
+    </table>
+  </div>
   <div class="callout warn">
     <span class="ct">Uwaga o interpretacji</span>
     Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde
-    ustalenia w wąskim zakresie, obok których stoi 50 pytań otwartych, w tym 4 blokady. Decyzje
+    ustalenia w wąskim zakresie, obok których stoi 58 pytań otwartych, w tym 4 blokady. Decyzje
     z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu
     stron i wymagają potwierdzenia.
   </div>

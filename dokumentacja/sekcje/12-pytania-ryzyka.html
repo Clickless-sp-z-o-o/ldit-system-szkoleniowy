@@ -12,15 +12,16 @@
     <div class="doc-kicker">Rejestry</div>
     <h1 class="doc-title">Pytania otwarte i ryzyka</h1>
     <p class="doc-lead">
-      Dwa rejestry z jednego warsztatu. 54 pytania otwarte uporządkowane wg pilności, w tym 4 blokady,
-      bez których odpowiedni moduł nie może zostać zaprojektowany. Obok tego 24 ryzyka projektowe
-      z oceną wpływu i prawdopodobieństwa oraz proponowaną mitygacją. To lista rzeczy, które trzeba
-      domknąć albo świadomie zaakceptować przed rozpoczęciem prac.
+      Dwa rejestry. 63 ponumerowane pytania otwarte uporządkowane wg pilności, z czego 5 zostało
+      zamkniętych na warsztacie doprecyzowującym, więc realnie otwartych jest około 58, w tym
+      4 blokady, bez których odpowiedni moduł nie może zostać zaprojektowany. Obok tego 24 ryzyka
+      projektowe z oceną wpływu i prawdopodobieństwa oraz proponowaną mitygacją. To lista rzeczy,
+      które trzeba domknąć albo świadomie zaakceptować przed rozpoczęciem prac.
     </p>
   </div>
 
   <div class="kpis">
-    <div class="kpi"><div class="k-label">Pytania otwarte</div><div class="k-value">54</div><div class="k-foot">w tym 4 blokady</div></div>
+    <div class="kpi"><div class="k-label">Pytania otwarte</div><div class="k-value">~58</div><div class="k-foot">z 63 numerowanych, w tym 4 blokady</div></div>
     <div class="kpi"><div class="k-label">Ryzyka</div><div class="k-value">24</div><div class="k-foot">4 krytyczne, 8 wysokich</div></div>
     <div class="kpi"><div class="k-label">Blokady</div><div class="k-value">4</div><div class="k-foot">P-01, P-02, P-09, P-25</div></div>
     <div class="kpi"><div class="k-label">Ryzyka krytyczne</div><div class="k-value">4</div><div class="k-foot">priorytet 16&ndash;25</div></div>
@@ -362,6 +363,48 @@
     </div>
   </details>
 
+    <!-- rejestr:od -->
+  <h3>Pytania z warsztatu doprecyzowującego (2026-09-04)</h3>
+  <details class="acc">
+    <summary>4 pytania otwarte po drugim warsztacie</summary>
+    <div class="acc-body">
+      <p><span class="ref p">P-55</span> <b>Zadania kontra powiadomienia: jeden moduł czy dwa</b><br>
+        Moduł zadań wraca do systemu <span class="ref new">D-140</span>. Klient rozróżnia zadania (plan dnia, do zrobienia) od powiadomień/alertów (przypomnienia na datę). Nie ustalono, czy to jeden moduł, czy dwa.</p>
+      <p><span class="ref p">P-56</span> <b>Osobne bazy per instytucja kontra zbiorcze widoki</b><br>
+        Wykonawca skłania się ku osobnym mini-bazom per instytucja <span class="ref new">D-143</span>, co stoi w napięciu z wymaganiami zbiorczego dashboardu, ciągłej numeracji klientów i zestawienia wszystkich instytucji. Powiązane z blokadą <span class="ref p">P-25</span>. Wymaga domknięcia architektury.</p>
+      <p><span class="ref p">P-57</span> <b>Które zadania są automatyczne, a które ręczne</b><br>
+        Część zadań da się wyzwalać ze statusu i daty (np. przygotowanie rozliczenia z daty ostatniego dnia szkolenia), ale klient podkreśla, że 342 urzędy mają różne zasady i "nie ma jednego standardu". Do rozpisania, które zadania wskakują automatycznie, a które zostają ręczne.</p>
+      <p><span class="ref p">P-58</span> <b>Zakres i forma bota</b><br>
+        Plik "Makieta + Bot" sugeruje istnienie bota, ale jego demonstracja odbyła się poza nagraniem. Zakres, cel i technologia bota do udokumentowania na podstawie odrębnego materiału.</p>
+    </div>
+  </details>
+
+  <h3>Pytania z budowy makiety na bazie danych (2026-09-23)</h3>
+  <details class="acc">
+    <summary>5 pytań technicznych przed startem implementacji</summary>
+    <div class="acc-body">
+      <p class="muted">Żadne z nich nie jest blokadą, ale dwa z nich stoją przed startem
+        implementacji: gdzie egzekwować separację w aplikacji i czy powstaje osobna
+        specyfikacja ekranów.</p>
+      <p><span class="ref p">P-59</span> <b>Gdzie egzekwować separację danych w docelowej aplikacji</b><br>
+        W makiecie separacja działa w warstwie dostępu do danych po stronie przeglądarki <span class="ref new">D-148</span>, bo cała baza leży u klienta. W aplikacji to samo rozwiązanie byłoby dziurą. Do rozstrzygnięcia: polityki na wierszach w bazie, filtr w warstwie serwera, czy jedno i drugie.<br>
+        <b>Odpowiada:</b> wykonawca. <b>Pilność:</b> przed projektem bazy docelowej. <b>Powiązane:</b> <span class="ref p">P-25</span>, <span class="ref p">P-56</span>, <span class="ref new">D-148</span>.</p>
+      <p><span class="ref p">P-60</span> <b>Reguły walidacji danych wejściowych</b><br>
+        Dziś walidacje są wyłącznie tam, gdzie wymusza je schemat bazy (klucze obce, słowniki wartości). Brakuje reguł dla: NIP z sumą kontrolną, PESEL, zakresów dat (data faktury wobec dat szkolenia), kwot nieujemnych, dopuszczalnych przeskoków etapu procesu.<br>
+        <b>Odpowiada:</b> wykonawca, z potwierdzeniem klienta przy regułach biznesowych. <b>Pilność:</b> średnia.</p>
+      <p><span class="ref p">P-61</span> <b>Zakres specyfikacji ekranów</b><br>
+        Osiemnaście ekranów makiety pokazuje układ i zachowanie, ale nie ma ich spisanych pole po polu. Do rozstrzygnięcia: czy powstaje osobny dokument specyfikacji ekranów, czy makieta pozostaje jedynym źródłem, a ekrany opisuje się dopiero przy implementacji.<br>
+        <b>Odpowiada:</b> wykonawca. <b>Pilność:</b> przed startem implementacji. <b>Powiązane:</b> [18. Od makiety do aplikacji](18-od-makiety-do-aplikacji.md).</p>
+      <p><span class="ref p">P-62</span> <b>Co się dzieje z kontem klienta końcowego</b><br>
+        Panel klienta wymaga powiązania konta z rekordem klienta <span class="ref new">D-154</span>. Nierozstrzygnięte: kto zakłada to konto, czy powstaje automatycznie po akceptacji formularza, i co widzi klient mający wnioski u dwóch instytucji.<br>
+        <b>Odpowiada:</b> klient. <b>Pilność:</b> niska, moduł jest w etapie IV. <b>Powiązane:</b> <span class="ref p">P-33</span>, <span class="ref new">D-144</span>.</p>
+      <p><span class="ref p">P-63</span> <b>Definicja gotowości modułu</b><br>
+        Nie ma ustalonego kryterium, po którym moduł uznaje się za skończony. Propozycja: zgodność liczb z Excelem klienta na uzgodnionym zestawie przypadków plus przejście testów z dokumentacji.<br>
+        <b>Odpowiada:</b> obie strony. <b>Pilność:</b> przed startem etapu I.</p>
+    </div>
+  </details>
+  <!-- rejestr:do -->
+
   <h3>Podsumowanie pytań</h3>
   <div class="tbl-wrap">
     <table class="t">
@@ -375,7 +418,11 @@
         <tr><td>Bezpieczeństwo i RODO</td><td class="num">4</td></tr>
         <tr><td>Proces i nazewnictwo</td><td class="num">8</td></tr>
         <tr><td>Handlowe i formalne</td><td class="num">6</td></tr>
-        <tr><td><b>Razem</b></td><td class="num"><b>54</b></td></tr>
+        <tr><td>Warsztat doprecyzowujący 04.09.2026 (P-55 &ndash; P-58)</td><td class="num">4</td></tr>
+        <tr><td>Budowa makiety na bazie danych 23.09.2026 (P-59 &ndash; P-63)</td><td class="num">5</td></tr>
+        <tr><td><b>Razem ponumerowanych</b></td><td class="num"><b>63</b></td></tr>
+        <tr><td>Zamknięte na warsztacie 04.09 (P-03, P-06, P-10, P-30, P-41)</td><td class="num">&minus;5</td></tr>
+        <tr><td><b>Realnie otwartych</b></td><td class="num"><b>~58</b></td></tr>
       </tbody>
     </table>
   </div>

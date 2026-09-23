@@ -148,9 +148,16 @@ Po dodaniu strony podłącz skrypty: `node tools/wire-pages.mjs`.
 ## Dokumentacja
 
 `docs/*.md` to źródło prawdy, `dokumentacja/index.html` to ta sama treść jako klikalna
-strona dla klienta. Diagramy pisze się **wyłącznie w Markdownie**, a do strony przenosi je
-`node tools/build-diagramy.mjs` (idempotentne). Nie edytuj diagramów w plikach HTML,
-bo następne uruchomienie skryptu je nadpisze.
+strona dla klienta. Dwie rzeczy przenoszą się z Markdowna automatycznie i **nie wolno ich
+edytować w plikach HTML**, bo następne uruchomienie skryptu je nadpisze:
+
+```
+node tools/build-diagramy.mjs   # diagramy Mermaid z docs/*.md do sekcji HTML
+node tools/build-rejestry.mjs   # decyzje D-125+ i pytania P-55+ do rejestrow HTML
+```
+
+Oba skrypty są idempotentne, a wstawione bloki są otoczone znacznikiem `<!-- diagram:od -->`
+albo `<!-- rejestr:od -->`.
 
 Silnik Mermaid leży lokalnie w `dokumentacja/assets/mermaid.min.js`, więc strona renderuje
 diagramy offline, bez internetu.
