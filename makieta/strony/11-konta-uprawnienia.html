@@ -153,9 +153,8 @@
               <div class="card-head">
                 <h3>Uprawnienia roli: <span id="nazwaRoli"></span><span class="tip-mark" data-tip="Zestaw modulow widocznych i edytowalnych dla wybranej roli. Model jest plaski, bez hierarchii: dopuszczalna jest dowolna kombinacja, nawet gdy pracownik widzi wiecej niz menedzer.">i</span></h3>
                 <div class="ch-actions">
-                  <button class="btn xs" onclick="zaznaczWszystko(true)">Zaznacz wszystko</button>
-                  <button class="btn xs" onclick="zaznaczWszystko(false)">Wyczyść</button>
-                  <button class="btn xs primary" onclick="alert('Zmiany uprawnień zapisane. Wpis w rejestrze aktywności zawiera rolę, moduł oraz wartość przed i po (D-116).')">Zapisz</button>
+                  <button class="btn xs" onclick="zaznaczWszystko(true)">Edycja we wszystkich</button>
+                  <button class="btn xs" onclick="zaznaczWszystko(false)">Ukryj wszystkie</button>
                 </div>
               </div>
               <div class="tbl-wrap">
@@ -163,9 +162,7 @@
                   <thead>
                     <tr>
                       <th>Moduł<span class="tip-mark" data-tip="Zakladka z lewej nawigacji. Jednostka uprawnienia jest wlasnie modul, nie pojedyncze pole.">i</span></th>
-                      <th class="c" style="width:110px">Podgląd<span class="tip-mark" data-tip="Prawo do zobaczenia modulu. Bez podgladu modul nie pojawia sie w menu i nie da sie go otworzyc nawet z adresu URL.">i</span></th>
-                      <th class="c" style="width:110px">Edycja<span class="tip-mark" data-tip="Prawo do zmian w module. Zaznaczenie edycji wlacza podglad automatycznie, bo nie da sie edytowac czegos, czego sie nie widzi.">i</span></th>
-                      <th style="width:150px">Efekt<span class="tip-mark" data-tip="Wynikowy poziom dostepu roli do modulu: podglad i edycja, tylko odczyt albo modul ukryty.">i</span></th>
+                      <th style="width:230px">Poziom dostępu<span class="tip-mark" data-tip="Brak: modul nie pojawia sie w menu i nie da sie go otworzyc z adresu URL. Podglad: tylko odczyt. Edycja: odczyt i zmiany. Zapis do tabeli uprawnienia, kazda zmiana trafia do rejestru aktywnosci.">i</span></th>
                     </tr>
                   </thead>
                   <tbody id="bodyPerm"></tbody>
@@ -173,9 +170,27 @@
               </div>
               <div class="card-body">
                 <div class="small muted mb0">
-                  Zaznaczenie edycji włącza podgląd automatycznie, bo nie da się edytować modułu,
-                  którego się nie widzi. Odznaczenie podglądu wyłącza edycję.
+                  Zmiana zapisuje się od razu. Poziom edycji zawiera podgląd, bo nie da się edytować
+                  modułu, którego się nie widzi.
                 </div>
+              </div>
+            </div>
+
+            <div class="card mt16 mb0">
+              <div class="card-head">
+                <h3>Uprawnienia pól i funkcji<span class="tip-mark" data-tip="Uprawnienia wewnatrz modulu, zapisane w tabeli uprawnienia_pol. Klucz ma postac feature jak w Open Mercato (grupa.funkcja), bo docelowy framework nadaje uprawnienia w ten sposob (D-176).">i</span></h3>
+                <span class="sub">klucz feature i opis</span>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th class="c" style="width:110px">Widoczne</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bodyFeat"></tbody>
+                </table>
               </div>
             </div>
 
@@ -196,31 +211,21 @@
     <div class="tab-pane" id="t3">
       <div class="card-body">
         <div class="note">
-          Wersja robocza macierzy widoczności do potwierdzenia przez klienta. Szare pola oznaczone
-          znakiem zapytania to miejsca, w których warsztat nie dał rozstrzygnięcia. Najedź kursorem,
-          żeby zobaczyć czego dotyczy wątpliwość.
+          Podsumowanie wszystkich ról naraz, tylko do odczytu. Macierz jest wygenerowana z tych samych
+          tabel co Konfigurator ról (uprawnienia i uprawnienia_pol), więc nie może pokazywać innych wartości.
+          Zmiany wprowadzasz wyłącznie w zakładce Konfigurator ról.
         </div>
 
         <div class="legend" style="margin-bottom:12px">
-          <span><i style="background:var(--pos-bg);border-color:#86efac"></i>pełny dostęp</span>
-          <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>ograniczony</span>
-          <span><i style="background:var(--info-bg);border-color:#7dd3fc"></i>tylko odczyt</span>
-          <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>brak lub nierozstrzygnięte</span>
+          <span><i style="background:var(--pos-bg);border-color:#86efac"></i>edycja lub uprawnienie nadane</span>
+          <span><i style="background:var(--info-bg);border-color:#7dd3fc"></i>tylko podgląd</span>
+          <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>brak</span>
         </div>
       </div>
 
       <div class="tbl-wrap">
         <table class="tbl matrix">
-          <thead>
-            <tr>
-              <th>Moduł<span class="tip-mark" data-tip="Zakladka systemu, dla ktorej okreslamy poziom dostepu poszczegolnych rol.">i</span></th>
-              <th class="c">Administrator<span class="tip-mark" data-tip="Bartek. Pelny dostep do wszystkiego, w tym finansow i prowizji. Zachowuje usuwanie i blokowanie kont oraz filtrowanie po instytucji (D-126).">i</span></th>
-              <th class="c">Pracownik LDIT<span class="tip-mark" data-tip="Zespol LDIT. Widzi tylko przydzielone instytucje, bez zyskow firmy i stawek prowizji.">i</span></th>
-              <th class="c">Instytucja szkoleniowa<span class="tip-mark" data-tip="Administrator instytucji. Widzi wylacznie wlasna zakladke i wlasnych klientow, moze zarzadzac wlasnymi pracownikami w granicach swoich uprawnien (D-126).">i</span></th>
-              <th class="c">Pracownik IS<span class="tip-mark" data-tip="Handlowiec instytucji. Widzi wylacznie wlasnych, przefiltrowanych klientow. Rola dodana na warsztacie (D-72).">i</span></th>
-              <th class="c">Klient końcowy<span class="tip-mark" data-tip="Uczestnik. Zakres panelu klienta jest jeszcze nierozstrzygniety.">i</span></th>
-            </tr>
-          </thead>
+          <thead><tr id="hdrMx"></tr></thead>
           <tbody id="bodyMx"></tbody>
         </table>
       </div>
@@ -260,12 +265,12 @@
 
       <div class="card-body">
         <div class="btn-row" style="margin-bottom:14px">
-          <button class="btn primary" onclick="alert('Przydział zapisany. Zmiana zakresu widoczności pracownika trafia do rejestru aktywności (D-116).')">Zapisz przydział</button>
-          <button class="btn">Historia zmian przydziału</button>
+          <button class="btn primary" onclick="zapiszPrzydzial()">Zapisz przydział</button>
+          <a class="btn" href="12-rejestr-aktywnosci.html">Historia zmian w rejestrze aktywności</a>
         </div>
         <div class="note mb0">
-          Konta instytucji szkoleniowych i ich handlowców nie występują w tej tabeli, bo ich zakres
-          jest z definicji zamknięty do własnej instytucji i nie podlega konfiguracji. Konto
+          Konta instytucji szkoleniowych i ich handlowców nie występują w tej tabeli. Takie konto ma
+          dokładnie jedną instytucję, wybieraną w formularzu konta, i nie da się jej poszerzyć. Konto
           administratora ma dostęp do wszystkich instytucji i nie da się tego odznaczyć.
         </div>
       </div>
@@ -291,11 +296,14 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="ustaw"></script>
 <script type="text/kfs-strona">
@@ -309,20 +317,66 @@ document.querySelectorAll(".tab").forEach(function (t) {
   });
 });
 
-/* ================= 1. UZYTKOWNICY ================= */
+/* ================= WSPOLNE ================= */
 var U = DB.UZYTKOWNICY;
+var DLUGOSC_SOLI_BAJTY = 8;
+
+/* Rejestr aktywnosci jest tylko do dopisywania (D-189). Autor zawsze z sesji. */
+function czasTeraz() {
+  var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function wpiszAktywnosc(typ, obiekt, pole, przed, po) {
+  Store.insert("rejestr_aktywnosci", {
+    czas: czasTeraz(), kto: Auth.sesja().imie, typ: typ, obiekt: obiekt, pole: pole, przed: przed, po: po
+  }, "AKT-");
+}
+function losowaSol() {
+  var b = crypto.getRandomValues(new Uint8Array(DLUGOSC_SOLI_BAJTY));
+  return Array.prototype.map.call(b, function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+}
+function rolaPoId(id) {
+  return DB.ROLE.filter(function (r) { return r.id === id; })[0] || null;
+}
+function czyRolaInstytucji(rolaId) {
+  var r = rolaPoId(rolaId);
+  return !!r && r.zakres === "instytucja";
+}
+
+/* ================= 1. UZYTKOWNICY ================= */
 var tylkoBez2fa = false;
-
-var role = [];
-U.forEach(function (u) { if (role.indexOf(u.rola) < 0) role.push(u.rola); });
 var selRola = document.getElementById("fRola");
-role.forEach(function (r) { selRola.innerHTML += '<option>' + r + '</option>'; });
 
-function tagRoli(r) {
-  var k = r === "Administrator" ? "set"
-        : r === "Pracownik LDIT" ? "info"
-        : r === "Instytucja szkoleniowa" ? "pos" : "mute";
-  return '<span class="tag ' + k + '">' + r + '</span>';
+function odswiezFiltrRoli() {
+  var wybrana = selRola.value;
+  selRola.innerHTML = '<option value="">Wszystkie role</option>' + DB.ROLE.map(function (r) {
+    return '<option value="' + esc(r.nazwa) + '">' + esc(r.nazwa) + '</option>';
+  }).join("");
+  selRola.value = wybrana;
+}
+
+function tagRoli(nazwa) {
+  var r = DB.ROLE.filter(function (x) { return x.nazwa === nazwa; })[0];
+  var k = !r ? "mute" : r.id === "admin" ? "set" : r.zakres === "ldit" ? "info" : r.zakres === "instytucja" ? "pos" : "mute";
+  return '<span class="tag ' + k + '">' + esc(nazwa) + '</span>';
+}
+
+function wierszUsera(u) {
+  return '<tr class="' + (u["2fa"] ? "" : "no2fa") + '">' +
+    '<td class="strong">' + esc(u.imie) + '<div class="small muted mono">' + esc(u.login) + '</div></td>' +
+    '<td>' + tagRoli(u.rola) + '</td>' +
+    '<td class="small">' + (u.inst === "wszystkie"
+        ? '<span class="tag set">wszystkie instytucje</span>'
+        : esc(u.inst)) + '</td>' +
+    '<td class="c">' + (u["2fa"]
+        ? '<span class="tag pos dot">włączone</span>'
+        : '<span class="tag neg dot">wyłączone</span>') + '</td>' +
+    '<td class="mono muted nowrap">' + esc(u.ost) + '</td>' +
+    '<td class="right nowrap">' +
+      '<button class="btn xs" onclick="edytujUsera(\'' + escJs(u.login) + '\')">Edytuj</button> ' +
+      '<button class="btn xs" onclick="usunUsera(\'' + escJs(u.login) + '\')">Usuń</button> ' +
+      '<button class="btn xs danger" onclick="blokuj(\'' + escJs(u.imie) + '\')">Zablokuj</button>' +
+    '</td></tr>';
 }
 
 function renderU() {
@@ -336,43 +390,22 @@ function renderU() {
   });
 
   document.getElementById("liczU").innerHTML =
-    "<b>" + lista.length + "</b> z " + U.length + " kont aktywnych";
+    "<b>" + lista.length + "</b> z " + U.length + " kont";
 
-  document.getElementById("bodyU").innerHTML = lista.map(function (u) {
-    return '<tr class="' + (u["2fa"] ? "" : "no2fa") + '">' +
-      '<td class="strong">' + u.imie + '<div class="small muted mono">' + u.login + '</div></td>' +
-      '<td>' + tagRoli(u.rola) + '</td>' +
-      '<td class="small">' + (u.inst === "wszystkie"
-          ? '<span class="tag set">wszystkie instytucje</span>'
-          : u.inst) + '</td>' +
-      '<td class="c">' + (u["2fa"]
-          ? '<span class="tag pos dot">włączone</span>'
-          : '<span class="tag neg dot">wyłączone</span>') + '</td>' +
-      '<td class="mono muted nowrap">' + u.ost + '</td>' +
-      '<td class="right nowrap">' +
-        '<button class="btn xs" onclick="edytujUsera(\'' + u.login + '\')">Edytuj</button> ' +
-        '<button class="btn xs" onclick="usunUsera(\'' + u.login + '\')">Usuń</button> ' +
-        '<button class="btn xs danger" onclick="blokuj(\'' + u.imie + '\')">Zablokuj</button>' +
-      '</td></tr>';
-  }).join("");
-
-  if (!lista.length) {
-    document.getElementById("bodyU").innerHTML =
-      '<tr><td colspan="6"><div class="empty"><div class="ei">&#9679;</div>' +
-      '<div class="et">Brak kont spełniających filtr</div>Zmień kryteria wyszukiwania.</div></td></tr>';
-  }
+  document.getElementById("bodyU").innerHTML = lista.length ? lista.map(wierszUsera).join("") :
+    '<tr><td colspan="6"><div class="empty"><div class="ei">&#9679;</div>' +
+    '<div class="et">Brak kont spełniających filtr</div>Zmień kryteria wyszukiwania.</div></td></tr>';
 }
 
 function renderAlert2fa() {
   var bez = U.filter(function (u) { return !u["2fa"]; });
   document.getElementById("alert2fa").innerHTML =
     '<b>' + bez.length + ' konta bez dwuskładnikowego uwierzytelnienia:</b> ' +
-    bez.map(function (u) { return u.imie + " (" + u.login + ")"; }).join(", ") + '. ' +
+    bez.map(function (u) { return esc(u.imie) + " (" + esc(u.login) + ")"; }).join(", ") + '. ' +
     'Wymaganie MUST z warsztatu mówi o 2FA wymuszonym, nie opcjonalnym. Konta wyróżnione żółtym tłem ' +
     'nie spełniają tego warunku i przy wdrożeniu produkcyjnym powinny zostać objęte wymuszeniem ' +
     'przy pierwszym logowaniu.';
 }
-renderAlert2fa();
 
 function blokuj(imie) {
   alert("Blokada konta: " + imie + "\n\nW systemie docelowym: sesja unieważniona natychmiast, " +
@@ -388,35 +421,49 @@ document.getElementById("chip2fa").addEventListener("click", function () {
   document.getElementById(id).addEventListener("input", renderU);
   document.getElementById(id).addEventListener("change", renderU);
 });
+odswiezFiltrRoli();
 renderU();
+renderAlert2fa();
 
 /* ================================================================
-   Inline CRUD kont. Administrator dodaje, edytuje i usuwa konta
-   (D-116). Zapis do wspólnego JSON przez Store, odświeżanie przez
-   db:changed. Blokada konta (unieważnienie sesji) to osobny koncept.
+   CRUD kont (D-116). Haslo nigdy jawnie: sol i skrot (assets/haslo.js).
+   Przydzial instytucji: konto roli instytucji ma DOKLADNIE jedna
+   instytucje (instytucja_id konta i jeden wiersz uzytkownik_instytucja),
+   konta LDIT dostaja przydzial w siatce na zakladce 4.
    ================================================================ */
-/* Role pochodza z tabeli role, nie z listy przepisanej do kodu (D-36) */
-var POLA_ROLE = DB.ROLE.map(function (r) { return r.nazwa; });
-var ROLA_PO_NAZWIE = {};
-DB.ROLE.forEach(function (r) { ROLA_PO_NAZWIE[r.nazwa] = r.id; });
 var edytowanyUser = null;
 
+function poleTekstowe(idp, label, val, ro) {
+  return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
+    '<span class="muted">' + label + '</span>' +
+    '<input class="inp" id="uf_' + idp + '" value="' + esc(val) + '"' + (ro ? " readonly" : "") + '></label>';
+}
+
+function instytucjaKonta(login) {
+  var r = Store.one("SELECT instytucja_id FROM uzytkownicy WHERE id = ?", [login]);
+  return r ? r.instytucja_id : null;
+}
+
 function userFormHTML(u, tytul) {
-  function esc(v) { return String(v == null ? "" : v).replace(/"/g, "&quot;"); }
-  function inp(idp, label, val, ro) {
-    return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
-      '<span class="muted">' + label + '</span>' +
-      '<input class="inp" id="uf_' + idp + '" value="' + esc(val) + '"' + (ro ? " readonly" : "") + '></label>';
-  }
-  var rolaOpts = POLA_ROLE.map(function (r) { return "<option" + (u && u.rola === r ? " selected" : "") + ">" + r + "</option>"; }).join("");
+  var rolaId = u ? u.rolaId : DB.ROLE[0].id;
+  var instId = u ? instytucjaKonta(u.login) : null;
+  var rolaOpts = DB.ROLE.map(function (r) {
+    return '<option value="' + esc(r.id) + '"' + (r.id === rolaId ? " selected" : "") + '>' + esc(r.nazwa) + '</option>';
+  }).join("");
+  var instOpts = '<option value="">wybierz instytucję</option>' + DB.INSTYTUCJE.map(function (i) {
+    return '<option value="' + esc(i.id) + '"' + (i.id === instId ? " selected" : "") + '>' + esc(i.nazwa) + '</option>';
+  }).join("");
   return '<div class="card mb0"><div class="card-body">' +
-    '<div class="small strong" style="margin-bottom:10px">' + tytul + '</div>' +
+    '<div class="small strong" style="margin-bottom:10px">' + esc(tytul) + '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' +
-      inp("imie", "Imię i nazwisko", u ? u.imie : "", false) +
-      inp("login", "Login (e-mail)", u ? u.login : "", !!u) +
+      poleTekstowe("imie", "Imię i nazwisko", u ? u.imie : "", false) +
+      poleTekstowe("login", "Login (e-mail)", u ? u.login : "", !!u) +
       '<label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Rola</span>' +
-        '<select class="inp" id="uf_rola">' + rolaOpts + '</select></label>' +
-      inp("inst", "Przypisane instytucje", u ? u.inst : "", false) +
+        '<select class="inp" id="uf_rola" onchange="przelaczPoleInstytucji()">' + rolaOpts + '</select></label>' +
+      '<label class="small" style="display:flex;flex-direction:column;gap:3px" id="uf_instWrap">' +
+        '<span class="muted">Instytucja (dokładnie jedna)</span>' +
+        '<select class="inp" id="uf_inst">' + instOpts + '</select></label>' +
+      '<div class="small muted" id="uf_instHint" style="align-self:end">Przydział instytucji kont LDIT ustawiasz w zakładce Przypisanie do instytucji.</div>' +
       '<label class="small" style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
         '<input type="checkbox" id="uf_2fa"' + (u && u["2fa"] ? " checked" : "") + '> Wymuszone 2FA</label>' +
     '</div>' +
@@ -425,10 +472,16 @@ function userFormHTML(u, tytul) {
       '<button class="btn sm" onclick="zamknijUserForm()">Anuluj</button>' +
     '</div></div></div>';
 }
+window.przelaczPoleInstytucji = function () {
+  var jedna = czyRolaInstytucji(document.getElementById("uf_rola").value);
+  document.getElementById("uf_instWrap").style.display = jedna ? "flex" : "none";
+  document.getElementById("uf_instHint").style.display = jedna ? "none" : "block";
+};
 function otworzUserForm(u, tytul) {
   var el = document.getElementById("userForm");
   el.innerHTML = userFormHTML(u, tytul);
   el.style.display = "block";
+  przelaczPoleInstytucji();
 }
 window.zamknijUserForm = function () {
   var el = document.getElementById("userForm");
@@ -439,164 +492,175 @@ window.edytujUsera = function (login) {
   var u = U.filter(function (x) { return x.login === login; })[0];
   otworzUserForm(u, "Edycja konta: " + (u ? u.imie : login));
 };
+
 function zbierzUsera() {
+  var rolaId = document.getElementById("uf_rola").value;
+  var jedna = czyRolaInstytucji(rolaId);
   return {
     imie_nazwisko: document.getElementById("uf_imie").value.trim(),
-    rola_id: ROLA_PO_NAZWIE[document.getElementById("uf_rola").value],
-    instytucje: document.getElementById("uf_inst").value.trim(),
+    rola_id: rolaId,
+    instytucja_id: jedna ? (document.getElementById("uf_inst").value || null) : null,
+    wszystkie_instytucje: rolaId === "admin" ? 1 : 0,
     dwa_fa: document.getElementById("uf_2fa").checked ? 1 : 0
   };
 }
 
-/* Przydzial do instytucji jest relacja, nie tekstem w kolumnie (D-113).
-   Pole formularza przyjmuje nazwy po przecinku albo slowo "wszystkie". */
-function zapiszPrzydzial(uzytkownikId, tekst) {
-  Store.exec("DELETE FROM uzytkownik_instytucja WHERE uzytkownik_id = ?", [uzytkownikId]);
-  var wszystkie = /^wszystkie$/i.test(tekst.trim());
-  var pierwsza = null;
-
-  if (!wszystkie) {
-    tekst.split(",").map(function (n) { return n.trim(); }).filter(Boolean).forEach(function (nazwa) {
-      var inst = Store.one("SELECT id FROM instytucje WHERE nazwa = ?", [nazwa]);
-      if (!inst) return;
-      if (!pierwsza) pierwsza = inst.id;
-      Store.insert("uzytkownik_instytucja", { uzytkownik_id: uzytkownikId, instytucja_id: inst.id });
-    });
-  }
-
-  var rola = Store.one("SELECT r.zakres FROM uzytkownicy u JOIN role r ON r.id = u.rola_id WHERE u.id = ?",
-                       [uzytkownikId]);
-  Store.update("uzytkownicy", uzytkownikId, {
-    wszystkie_instytucje: wszystkie ? 1 : 0,
-    instytucja_id: (rola && rola.zakres === "instytucja") ? pierwsza : null
-  });
+/* Konto roli instytucji: jeden wiersz w uzytkownik_instytucja, zgodny z instytucja_id */
+function ustawJednaInstytucje(login, instytucjaId) {
+  Store.exec("DELETE FROM uzytkownik_instytucja WHERE uzytkownik_id = ?", [login]);
+  if (instytucjaId) Store.insert("uzytkownik_instytucja", { uzytkownik_id: login, instytucja_id: instytucjaId });
 }
+function wyczyscPrzydzial(login) {
+  Store.exec("DELETE FROM uzytkownik_instytucja WHERE uzytkownik_id = ?", [login]);
+}
+
+function dodajKonto(dane, login) {
+  var domyslne = Store.one("SELECT wartosc FROM meta WHERE klucz = 'haslo_demo'");
+  var sol = losowaSol();
+  Store.insert("uzytkownicy", {
+    id: login, login: login, haslo_sol: sol, haslo_skrot: Haslo.skrot(domyslne.wartosc, sol),
+    imie_nazwisko: dane.imie_nazwisko, rola_id: dane.rola_id, instytucja_id: dane.instytucja_id,
+    wszystkie_instytucje: dane.wszystkie_instytucje, ostatnie_logowanie: null,
+    dwa_fa: dane.dwa_fa, zablokowane: 0
+  });
+  if (dane.instytucja_id) ustawJednaInstytucje(login, dane.instytucja_id);
+  wpiszAktywnosc("Zmiana konta", login, "Utworzenie konta", "", rolaPoId(dane.rola_id).nazwa);
+}
+
+function zmienKonto(login, dane) {
+  var stare = U.filter(function (x) { return x.login === login; })[0];
+  Store.update("uzytkownicy", login, dane);
+  if (dane.instytucja_id) ustawJednaInstytucje(login, dane.instytucja_id);
+  else if (stare.rolaId !== dane.rola_id) wyczyscPrzydzial(login);
+  if (stare.rolaId !== dane.rola_id) {
+    wpiszAktywnosc("Zmiana uprawnień", login, "Rola konta", stare.rola, rolaPoId(dane.rola_id).nazwa);
+  } else {
+    wpiszAktywnosc("Zmiana konta", login, "Dane konta", "", "zapisano");
+  }
+}
+
 window.zapiszUsera = function () {
   var dane = zbierzUsera();
   if (!dane.imie_nazwisko) { document.getElementById("uf_imie").focus(); return; }
+  if (czyRolaInstytucji(dane.rola_id) && !dane.instytucja_id) {
+    window.alert("Konto tej roli musi mieć dokładnie jedną instytucję.");
+    return;
+  }
   if (edytowanyUser) {
-    Store.update("uzytkownicy", edytowanyUser, dane);
-    zapiszPrzydzial(edytowanyUser, dane.instytucje);
+    zmienKonto(edytowanyUser, dane);
   } else {
-    var login = document.getElementById("uf_login").value.trim();
+    var login = document.getElementById("uf_login").value.trim().toLowerCase();
     if (!login) { document.getElementById("uf_login").focus(); return; }
-    if (Store.find("uzytkownicy", login)) {
-      window.alert("Konto o tym adresie juz istnieje.");
+    if (Store.one("SELECT id FROM uzytkownicy WHERE lower(login) = ?", [login])) {
+      window.alert("Konto o tym adresie już istnieje.");
       return;
     }
-    var haslo = Store.one("SELECT wartosc FROM meta WHERE klucz = 'haslo_demo'");
-    Store.insert("uzytkownicy", {
-      id: login, login: login, haslo_demo: haslo ? haslo.wartosc : "demo",
-      imie_nazwisko: dane.imie_nazwisko, rola_id: dane.rola_id,
-      ostatnie_logowanie: null, dwa_fa: dane.dwa_fa, zablokowane: 0
-    });
-    zapiszPrzydzial(login, dane.instytucje);
+    dodajKonto(dane, login);
   }
   zamknijUserForm();
 };
 window.usunUsera = function (login) {
+  if (login === Auth.sesja().login) { window.alert("Nie można usunąć własnego konta."); return; }
   var u = U.filter(function (x) { return x.login === login; })[0];
-  if (window.confirm("Usunąć konto " + (u ? u.imie : login) + " (" + login + ")?")) {
-    Store.remove("uzytkownicy", login);
-  }
+  if (!window.confirm("Usunąć konto " + (u ? u.imie : login) + " (" + login + ")?")) return;
+  Store.remove("uzytkownicy", login);
+  wpiszAktywnosc("Zmiana konta", login, "Usunięcie konta", u ? u.rola : "", "");
 };
 document.getElementById("btnDodajUsera").addEventListener("click", function () {
   edytowanyUser = null;
   otworzUserForm(null, "Nowe konto użytkownika");
 });
 
-/* Odświeżanie po zmianie kont */
-window.addEventListener("db:changed", function () {
-  U = DB.UZYTKOWNICY;
-  renderU();
-  renderAlert2fa();
-});
-
-/* ================= 2. KONFIGURATOR ROL ================= */
-var M = DB.MODULY;
-
-var ROLE = [
-  { key: "admin", nazwa: "Administrator", opis: "Bartek. Pełny dostęp, w tym finanse i prowizje.", sys: true },
-  { key: "ldit",  nazwa: "Pracownik LDIT", opis: "Łucja, Martyna, Asia. Bez zysków firmy i stawek.", sys: true },
-  { key: "is",    nazwa: "Instytucja szkoleniowa", opis: "Administrator instytucji, własna zakładka.", sys: true },
-  { key: "pis",   nazwa: "Pracownik IS", opis: "Handlowiec instytucji, rola dodana na warsztacie (D-72).", sys: true },
-  { key: "klient", nazwa: "Klient końcowy", opis: "Panel uczestnika, zakres nierozstrzygnięty.", sys: true }
+/* ================= 2. KONFIGURATOR ROL (jedyne miejsce edycji uprawnien) =================
+   Zrodlem sa tabele uprawnienia (rola x modul: brak/podglad/edycja) i uprawnienia_pol
+   (rola x klucz: widoczne). Kazda zmiana zapisuje sie od razu i trafia do rejestru
+   aktywnosci. Klucze pol maja postac "feature" jak w Open Mercato (D-176). */
+var POZIOMY = [
+  { id: "brak", nazwa: "brak (moduł ukryty)" },
+  { id: "podglad", nazwa: "podgląd" },
+  { id: "edycja", nazwa: "podgląd i edycja" }
 ];
-
-/* v = podglad, e = edycja. Wartosci startowe wynikaja z macierzy widocznosci. */
-var STARTOWE = {
-  admin:  { "*": "ve" },
-  ldit:   { "Dashboard": "v", "Dofinansowania": "ve", "Zestawienia": "ve", "Baza klientów": "ve",
-            "Nabory": "v", "Instytucje szkoleniowe": "v", "Wysyłka maili": "ve",
-            "Zgłoszenia": "ve", "Terminy": "ve", "Statystyki": "v" },
-  is:     { "Dashboard": "v", "Dofinansowania": "v", "Zestawienia": "v", "Baza klientów": "ve",
-            "Nabory": "v", "Instytucje szkoleniowe": "ve", "Wysyłka maili": "v",
-            "Konta i uprawnienia": "ve", "Terminy": "ve", "Statystyki": "v" },
-  pis:    { "Baza klientów": "ve" },
-  klient: {}
+var OPIS_FEATURE = {
+  "finanse.kwoty_wniosku": "Kwoty wniosku: koszt całkowity, przyznane dofinansowanie, wkład własny",
+  "finanse.prowizja": "Stawki i kwoty prowizji LDIT oraz warunki prowizyjne instytucji (D-07)",
+  "finanse.zysk_ldit": "Zysk firmy LDIT, marża i przychód z prowizji (D-114)",
+  "finanse.faktury": "Faktury i rozliczenia okresów prowizyjnych",
+  "statystyki.zbiorcze": "Statystyki zbiorcze wszystkich instytucji",
+  "statystyki.wlasne": "Statystyki własnej instytucji lub instytucji z przydziału",
+  "klient.pesel": "Numery PESEL uczestników",
+  "klient.dane_kontaktowe": "Dane kontaktowe klientów i osób kontaktowych",
+  "zgloszenia.dostep": "Wgląd w zgłoszenia (incydenty) o klientach i instytucjach",
+  "admin.konta": "Usuwanie i blokowanie kont (D-126)",
+  "admin.rejestr": "Wgląd w rejestr aktywności",
+  "admin.progi_dofinansowania": "Progi dofinansowania z datami obowiązywania (D-131)",
+  "zestawienia.dodawanie_lat": "Dodawanie zakładek kolejnych lat w Zestawieniach"
 };
+var aktywna = "pracownik";
 
-var PERM = {};
-ROLE.forEach(function (r) {
-  PERM[r.key] = {};
-  M.forEach(function (m) {
-    var s = STARTOWE[r.key]["*"] || STARTOWE[r.key][m] || "";
-    PERM[r.key][m] = { v: s.indexOf("v") >= 0, e: s.indexOf("e") >= 0 };
-  });
-});
-
-var aktywna = "ldit";
+function moduly() { return DB.MODULY_ROWS; }
+function poziomyRoli(rolaId) {
+  var m = {};
+  Store.query("SELECT modul_id, poziom FROM uprawnienia WHERE rola_id = ?", [rolaId])
+    .forEach(function (r) { m[r.modul_id] = r.poziom; });
+  return m;
+}
+function klucze() {
+  return Store.query("SELECT DISTINCT klucz FROM uprawnienia_pol ORDER BY klucz").map(function (r) { return r.klucz; });
+}
+function widoczneRoli(rolaId) {
+  var m = {};
+  Store.query("SELECT klucz, widoczne FROM uprawnienia_pol WHERE rola_id = ?", [rolaId])
+    .forEach(function (r) { m[r.klucz] = !!r.widoczne; });
+  return m;
+}
+function nazwaPoziomu(id) {
+  return POZIOMY.filter(function (p) { return p.id === id; })[0].nazwa;
+}
 
 function renderRole() {
-  document.getElementById("liczR").textContent = ROLE.length + " ról";
-  document.getElementById("listaRol").innerHTML = ROLE.map(function (r) {
-    var n = M.filter(function (m) { return PERM[r.key][m].v; }).length;
-    return '<div class="role-item' + (r.key === aktywna ? " on" : "") + '" data-r="' + r.key + '">' +
-      r.nazwa + ' <span class="tag mute" style="float:right">' + n + '/' + M.length + '</span>' +
-      '<div class="rd">' + r.opis + '</div></div>';
+  document.getElementById("liczR").textContent = DB.ROLE.length + " ról";
+  document.getElementById("listaRol").innerHTML = DB.ROLE.map(function (r) {
+    var p = poziomyRoli(r.id);
+    var n = moduly().filter(function (m) { return (p[m.id] || "brak") !== "brak"; }).length;
+    return '<div class="role-item' + (r.id === aktywna ? " on" : "") + '" data-r="' + esc(r.id) + '">' +
+      esc(r.nazwa) + ' <span class="tag mute" style="float:right">' + n + '/' + moduly().length + '</span>' +
+      '<div class="rd">' + esc(r.opis) + '</div></div>';
   }).join("");
   document.querySelectorAll(".role-item").forEach(function (el) {
     el.addEventListener("click", function () { aktywna = el.dataset.r; renderKonfig(); });
   });
 }
 
-function efekt(p) {
-  if (p.e) return '<span class="tag pos">podgląd i edycja</span>';
-  if (p.v) return '<span class="tag info">tylko odczyt</span>';
-  return '<span class="tag mute">moduł ukryty</span>';
+function renderPerm() {
+  document.getElementById("nazwaRoli").textContent = rolaPoId(aktywna).nazwa;
+  var p = poziomyRoli(aktywna);
+  document.getElementById("bodyPerm").innerHTML = moduly().map(function (m) {
+    var opcje = POZIOMY.map(function (z) {
+      return '<option value="' + z.id + '"' + ((p[m.id] || "brak") === z.id ? " selected" : "") + '>' + z.nazwa + '</option>';
+    }).join("");
+    return '<tr><td class="strong">' + esc(m.nazwa) + '<div class="small muted">' + esc(m.grupa) + '</div></td>' +
+      '<td><select class="inp" data-modul="' + esc(m.id) + '">' + opcje + '</select></td></tr>';
+  }).join("");
+  document.querySelectorAll('#bodyPerm select').forEach(function (s) {
+    s.addEventListener("change", function () { zmienPoziom(s.dataset.modul, s.value); });
+  });
 }
 
-function renderPerm() {
-  var r = ROLE.filter(function (x) { return x.key === aktywna; })[0];
-  document.getElementById("nazwaRoli").textContent = r.nazwa;
-  document.getElementById("bodyPerm").innerHTML = M.map(function (m, i) {
-    var p = PERM[aktywna][m];
-    return '<tr>' +
-      '<td class="strong">' + m + '</td>' +
-      '<td class="c"><label class="chk"><input type="checkbox" data-m="' + i + '" data-k="v"' + (p.v ? " checked" : "") + '></label></td>' +
-      '<td class="c"><label class="chk"><input type="checkbox" data-m="' + i + '" data-k="e"' + (p.e ? " checked" : "") + '></label></td>' +
-      '<td>' + efekt(p) + '</td>' +
-      '</tr>';
+function renderFeatures() {
+  var w = widoczneRoli(aktywna);
+  document.getElementById("bodyFeat").innerHTML = klucze().map(function (k) {
+    return '<tr><td><span class="mono strong">' + esc(k) + '</span>' +
+      '<div class="small muted">' + esc(OPIS_FEATURE[k] || "") + '</div></td>' +
+      '<td class="c"><label class="chk"><input type="checkbox" data-klucz="' + esc(k) + '"' + (w[k] ? " checked" : "") + '></label></td></tr>';
   }).join("");
-
-  document.querySelectorAll('#bodyPerm input[type=checkbox]').forEach(function (c) {
-    c.addEventListener("change", function () {
-      var m = M[parseInt(c.dataset.m, 10)];
-      var p = PERM[aktywna][m];
-      if (c.dataset.k === "e") {
-        p.e = c.checked;
-        if (p.e) p.v = true;
-      } else {
-        p.v = c.checked;
-        if (!p.v) p.e = false;
-      }
-      renderKonfig();
-    });
+  document.querySelectorAll('#bodyFeat input[type=checkbox]').forEach(function (c) {
+    c.addEventListener("change", function () { zmienFeature(c.dataset.klucz, c.checked); });
   });
 }
 
 function renderMenu() {
-  var widoczne = M.filter(function (m) { return PERM[aktywna][m].v; });
+  var p = poziomyRoli(aktywna);
+  var widoczne = moduly().filter(function (m) { return (p[m.id] || "brak") !== "brak"; });
   var el = document.getElementById("podgladMenu");
   if (!widoczne.length) {
     el.innerHTML = '<div class="nic">Rola nie widzi żadnego modułu. Po zalogowaniu użytkownik ' +
@@ -604,112 +668,156 @@ function renderMenu() {
     return;
   }
   el.innerHTML = widoczne.map(function (m) {
-    return '<div class="mi">' + m + (PERM[aktywna][m].e ? '<b>edycja</b>' : '<b style="color:#64748b">odczyt</b>') + '</div>';
+    return '<div class="mi">' + esc(m.nazwa) +
+      (p[m.id] === "edycja" ? '<b>edycja</b>' : '<b style="color:#64748b">odczyt</b>') + '</div>';
   }).join("");
 }
 
-function renderKonfig() { renderRole(); renderPerm(); renderMenu(); }
-
-function zaznaczWszystko(v) {
-  M.forEach(function (m) { PERM[aktywna][m] = { v: v, e: v }; });
-  renderKonfig();
+/* Macierz: podsumowanie wygenerowane z tych samych tabel, bez wlasnych wartosci */
+function komorkaMacierzy(klasa, tekst) { return '<td><span class="lv ' + klasa + '">' + tekst + '</span></td>'; }
+function renderMacierz() {
+  document.getElementById("hdrMx").innerHTML = '<th>Uprawnienie</th>' + DB.ROLE.map(function (r) {
+    return '<th class="c">' + esc(r.nazwa) + '</th>';
+  }).join("");
+  var poziomy = {}, widoczne = {};
+  DB.ROLE.forEach(function (r) { poziomy[r.id] = poziomyRoli(r.id); widoczne[r.id] = widoczneRoli(r.id); });
+  var wierszeModulow = moduly().map(function (m) {
+    return '<tr><td class="strong">' + esc(m.nazwa) + '</td>' + DB.ROLE.map(function (r) {
+      var z = poziomy[r.id][m.id] || "brak";
+      return komorkaMacierzy(z === "edycja" ? "full" : z === "podglad" ? "read" : "none", nazwaPoziomu(z));
+    }).join("") + '</tr>';
+  });
+  var wierszePol = klucze().map(function (k) {
+    return '<tr><td><span class="mono strong">' + esc(k) + '</span></td>' + DB.ROLE.map(function (r) {
+      return widoczne[r.id][k] ? komorkaMacierzy("full", "tak") : komorkaMacierzy("none", "nie");
+    }).join("") + '</tr>';
+  });
+  document.getElementById("bodyMx").innerHTML = wierszeModulow.concat(wierszePol).join("");
 }
+
+function renderKonfig() { renderRole(); renderPerm(); renderFeatures(); renderMenu(); renderMacierz(); }
+
+function zmienPoziom(modulId, poziom) {
+  var przed = poziomyRoli(aktywna)[modulId] || "brak";
+  if (przed === poziom) return;
+  if (aktywna === "admin" && modulId === "ustaw" && poziom !== "edycja") {
+    window.alert("Administrator musi zachować edycję w module Ustawienia, inaczej straci dostęp do tego ekranu.");
+    renderKonfig();
+    return;
+  }
+  Store.exec("UPDATE uprawnienia SET poziom = ? WHERE rola_id = ? AND modul_id = ?", [poziom, aktywna, modulId]);
+  wpiszAktywnosc("Zmiana uprawnień", aktywna + " / " + modulId, "Poziom modułu", przed, poziom);
+}
+
+function zmienFeature(klucz, widoczne) {
+  var przed = !!widoczneRoli(aktywna)[klucz];
+  if (przed === widoczne) return;
+  Store.exec("UPDATE uprawnienia_pol SET widoczne = ? WHERE rola_id = ? AND klucz = ?",
+             [widoczne ? 1 : 0, aktywna, klucz]);
+  wpiszAktywnosc("Zmiana uprawnień", aktywna + " / " + klucz, "Uprawnienie pola", przed ? "tak" : "nie", widoczne ? "tak" : "nie");
+}
+
+/* Hurtowa zmiana modulow roli: jeden wpis w rejestrze zamiast kilkunastu */
+function ustawWszystkieModuly(poziom) {
+  if (aktywna === "admin" && poziom !== "edycja") {
+    window.alert("Administrator musi zachować edycję w module Ustawienia.");
+    return;
+  }
+  Store.exec("UPDATE uprawnienia SET poziom = ? WHERE rola_id = ?", [poziom, aktywna]);
+  wpiszAktywnosc("Zmiana uprawnień", aktywna, "Poziom wszystkich modułów", "różne", poziom);
+}
+function zaznaczWszystko(zaznacz) { ustawWszystkieModuly(zaznacz ? "edycja" : "brak"); }
 
 function nowaRola() {
   var n = prompt("Nazwa nowej roli:", "Menedżer zespołu");
-  if (!n) return;
-  var key = "r" + Date.now();
-  ROLE.push({ key: key, nazwa: n, opis: "Rola własna, utworzona przez administratora.", sys: false });
-  PERM[key] = {};
-  M.forEach(function (m) { PERM[key][m] = { v: false, e: false }; });
-  aktywna = key;
-  renderKonfig();
+  if (!n || !n.trim()) return;
+  var id = "rola" + Date.now();
+  Store.insert("role", { id: id, nazwa: n.trim(), opis: "Rola własna, utworzona przez administratora.", zakres: "ldit", systemowa: 0 });
+  moduly().forEach(function (m) { Store.insert("uprawnienia", { rola_id: id, modul_id: m.id, poziom: "brak" }); });
+  klucze().forEach(function (k) { Store.insert("uprawnienia_pol", { rola_id: id, klucz: k, widoczne: 0 }); });
+  aktywna = id;
+  wpiszAktywnosc("Zmiana uprawnień", id, "Nowa rola", "", n.trim());
 }
 
+/* ================= 4. PRZYPISANIE DO INSTYTUCJI (siatka, jedyny edytor kont LDIT) ================= */
+function przydzialy() {
+  var m = {};
+  Store.query("SELECT uzytkownik_id, instytucja_id FROM uzytkownik_instytucja").forEach(function (r) {
+    (m[r.uzytkownik_id] = m[r.uzytkownik_id] || []).push(r.instytucja_id);
+  });
+  return m;
+}
+function pracownicyLdit() {
+  return U.filter(function (u) { var r = rolaPoId(u.rolaId); return r && r.zakres === "ldit"; });
+}
+
+function renderPrzydzial() {
+  var inst = DB.INSTYTUCJE, przydzial = przydzialy();
+  document.getElementById("hdrPrzyp").innerHTML =
+    '<th>Pracownik LDIT</th>' +
+    inst.map(function (i) { return '<th class="c" title="' + esc(i.nazwa) + '">' + esc(i.skrot) + '</th>'; }).join("") +
+    '<th class="c">Razem</th>';
+
+  document.getElementById("bodyPrzyp").innerHTML = pracownicyLdit().map(function (u) {
+    var wsz = u.inst === "wszystkie", moje = przydzial[u.login] || [], n = 0;
+    var kom = inst.map(function (i) {
+      var on = wsz || moje.indexOf(i.id) >= 0;
+      if (on) n++;
+      return '<td class="c"><label class="chk"><input type="checkbox" class="pchk" data-u="' + esc(u.login) +
+        '" data-i="' + esc(i.id) + '"' + (on ? " checked" : "") + (wsz ? " disabled" : "") + '></label></td>';
+    }).join("");
+    return '<tr><td class="strong">' + esc(u.imie) +
+      '<div class="small muted">' + esc(u.rola) + (wsz ? ", przydział niekonfigurowalny" : "") + '</div></td>' +
+      kom + '<td class="c"><span class="tag ' + (n === inst.length ? "set" : n ? "info" : "mute") + '">' +
+      n + " z " + inst.length + '</span></td></tr>';
+  }).join("");
+}
+
+function nazwyInstytucji(ids) {
+  return ids.map(function (id) {
+    var i = DB.INSTYTUCJE.filter(function (x) { return x.id === id; })[0];
+    return i ? i.skrot : id;
+  }).join(", ") || "brak";
+}
+
+function zapiszPrzydzialUsera(login, chce, ma) {
+  ma.filter(function (id) { return chce.indexOf(id) < 0; }).forEach(function (id) {
+    Store.exec("DELETE FROM uzytkownik_instytucja WHERE uzytkownik_id = ? AND instytucja_id = ?", [login, id]);
+  });
+  chce.filter(function (id) { return ma.indexOf(id) < 0; }).forEach(function (id) {
+    Store.insert("uzytkownik_instytucja", { uzytkownik_id: login, instytucja_id: id });
+  });
+  wpiszAktywnosc("Zmiana uprawnień", login, "Przydział instytucji", nazwyInstytucji(ma), nazwyInstytucji(chce));
+}
+
+window.zapiszPrzydzial = function () {
+  var stan = przydzialy(), chce = {};
+  document.querySelectorAll("#bodyPrzyp .pchk:not(:disabled)").forEach(function (c) {
+    chce[c.dataset.u] = chce[c.dataset.u] || [];
+    if (c.checked) chce[c.dataset.u].push(c.dataset.i);
+  });
+  var zmienione = Object.keys(chce).filter(function (login) {
+    var ma = stan[login] || [];
+    return ma.length !== chce[login].length || ma.some(function (id) { return chce[login].indexOf(id) < 0; });
+  });
+  zmienione.forEach(function (login) { zapiszPrzydzialUsera(login, chce[login], stan[login] || []); });
+  window.alert(zmienione.length
+    ? "Przydział zapisany dla kont: " + zmienione.length + ". Zmiany są w rejestrze aktywności."
+    : "Brak zmian do zapisania.");
+};
+
+/* Odświeżanie po zmianie danych */
+function odswiezWszystko() {
+  U = DB.UZYTKOWNICY;
+  odswiezFiltrRoli();
+  renderU();
+  renderAlert2fa();
+  renderKonfig();
+  renderPrzydzial();
+}
+window.addEventListener("db:changed", odswiezWszystko);
 renderKonfig();
-
-/* ================= 3. MACIERZ WIDOCZNOSCI ================= */
-/* Zrodlo: docs/02-aktorzy-i-uprawnienia.md, sekcja "Macierz widocznosci". */
-var Q = "Warsztat nie dał rozstrzygnięcia, pytanie otwarte do potwierdzenia z klientem: ";
-var MX = [
-  ["Dashboard (statystyki)",
-    ["full", "Pełny, wszystkie IS"], ["part", "Bez marżowości i zysków"],
-    ["none", "Własne wskaźniki (?)", Q + "jaki zakres wskaźników widzi instytucja na swoim dashboardzie"],
-    ["none", "Brak"], ["none", "Brak"]],
-  ["Dofinansowania / Zestawienia",
-    ["full", "Wszystkie IS"], ["part", "Przypisane IS"], ["part", "Własna zakładka"],
-    ["none", "Brak"], ["none", "Brak"]],
-  ["Baza klientów (Niezłożone)",
-    ["full", "Pełna"], ["part", "Przypisane IS"], ["part", "Własni klienci"],
-    ["part", "Własni, przefiltrowani"], ["none", "Brak"]],
-  ["Karta klienta i wniosku",
-    ["full", "Pełna edycja"], ["part", "Edycja w kontekście"], ["read", "Odczyt statusu"],
-    ["read", "Odczyt ograniczony"],
-    ["none", "Własny status (?)", Q + "czy klient końcowy widzi status swojego wniosku, zależy od decyzji o panelu klienta"]],
-  ["Katalog szkoleń",
-    ["full", "Pełny"], ["read", "Odczyt"], ["full", "Własny, pełna edycja"],
-    ["none", "Brak"], ["none", "Brak"]],
-  ["Terminy i kalendarz",
-    ["full", "Pełny"], ["part", "W kontekście"], ["part", "Własne terminy"], ["none", "Brak"],
-    ["none", "Własne (?)", Q + "czy klient końcowy widzi terminy swoich szkoleń"]],
-  ["Konfigurator IS (prowizje)",
-    ["full", "Wyłącznie admin"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
-  ["Administracja (prowizje szczegółowe)",
-    ["full", "Wyłącznie admin"],
-    ["none", "Brak (?)", Q + "P-35, czy pracownik LDIT ma docelowo dostęp do danych finansowych. Klient nie dokończył zdania."],
-    ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
-  ["Faktury",
-    ["full", "Pełny"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
-  ["Powiadomienia i szablony",
-    ["full", "Pełny"], ["part", "Wysyłka"], ["part", "Szablony do Outlooka"],
-    ["none", "Brak"], ["none", "Brak"]],
-  ["Zgłoszenia (incydenty)",
-    ["full", "Pełny"], ["full", "Pełny"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]],
-  ["Nabory",
-    ["full", "Pełny"], ["read", "Odczyt"],
-    ["none", "Odczyt (?)", Q + "czy instytucja widzi nabory, handlowiec IS świadomie ich nie dostaje (D-91)"],
-    ["none", "Brak"],
-    ["none", "Odczyt (?)", Q + "czy klient końcowy widzi listę naborów"]],
-  ["Konta i uprawnienia",
-    ["full", "Pełny"], ["none", "Brak"], ["part", "Użytkownicy własnej IS"],
-    ["none", "Brak"], ["none", "Brak"]],
-  ["Rejestr aktywności",
-    ["full", "Pełny"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"], ["none", "Brak"]]
-];
-
-document.getElementById("bodyMx").innerHTML = MX.map(function (r) {
-  var kom = r.slice(1).map(function (c) {
-    var t = c[2] ? ' title="' + c[2].replace(/"/g, "&quot;") + '"' : "";
-    return '<td><span class="lv ' + c[0] + '"' + t + '>' + c[1] + '</span></td>';
-  }).join("");
-  return '<tr><td class="strong">' + r[0] + '</td>' + kom + '</tr>';
-}).join("");
-
-/* ================= 4. PRZYPISANIE DO INSTYTUCJI ================= */
-var IS8 = DB.INSTYTUCJE.slice(0, 8);
-var pracownicy = U.filter(function (u) {
-  return u.rola === "Administrator" || u.rola === "Pracownik LDIT";
-});
-
-document.getElementById("hdrPrzyp").innerHTML =
-  '<th>Pracownik LDIT</th>' +
-  IS8.map(function (i) { return '<th class="c" title="' + i.nazwa + '">' + i.skrot + '</th>'; }).join("") +
-  '<th class="c">Razem</th>';
-
-document.getElementById("bodyPrzyp").innerHTML = pracownicy.map(function (u) {
-  var wsz = u.inst === "wszystkie";
-  var n = 0;
-  var kom = IS8.map(function (i) {
-    var on = wsz || u.inst.indexOf(i.nazwa) >= 0;
-    if (on) n++;
-    return '<td class="c"><label class="chk"><input type="checkbox" class="pchk"' +
-      (on ? " checked" : "") + (wsz ? " disabled" : "") + '></label></td>';
-  }).join("");
-  return '<tr><td class="strong">' + u.imie +
-    '<div class="small muted">' + u.rola + (wsz ? ", przydział niekonfigurowalny" : "") + '</div></td>' +
-    kom + '<td class="c"><span class="tag ' + (n === IS8.length ? "set" : n ? "info" : "mute") + '">' +
-    n + " z " + IS8.length + '</span></td></tr>';
-}).join("");
+renderPrzydzial();
 </script>
 </body>
 </html>

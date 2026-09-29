@@ -20,13 +20,13 @@
   <div class="page-head">
     <div class="ph-text">
       <h1 class="page-title">Rejestr aktywności
-        <span class="tip-mark" data-tip="Wglad administratora: kto co zrobil i kiedy. Cztery strumienie: zmiany danych (wartosc przed i po), log akcji (kliknięcia), log wysylek powiadomien, log logowan. Tylko do odczytu. D-116, D-122.">i</span>
+        <span class="tip-mark" data-tip="Wglad administratora: kto co zrobil i kiedy. Trzy strumienie: zmiany danych (wartosc przed i po), istotne zdarzenia (D-189, w tym wysylki) i log logowan. Rejestr jest tylko do dopisywania. D-116, D-122.">i</span>
       </h1>
       <p class="page-desc">
         Moduł wyłącznie dla administratora. Cel: wgląd, <b>kto co zrobił i kiedy</b>
-        <span class="ref">D-122</span>. Cztery strumienie zdarzeń
+        <span class="ref">D-122</span>. Trzy strumienie zdarzeń
         <span class="ref">D-116</span> <span class="ref">D-55</span>: zmiany danych
-        (wartość przed i po), log akcji (kliknięcia), log wysyłek powiadomień oraz log logowań.
+        (wartość przed i po), istotne zdarzenia <span class="ref">D-189</span> (w tym wysyłki) oraz log logowań.
         Każda akcja przypisana do konta zalogowanego pracownika <span class="ref">D-121</span>,
         bo każdy działa we własnym imieniu.
       </p>
@@ -45,8 +45,7 @@
   <div class="card">
     <div class="tabs">
       <div class="tab on" data-t="t1">Rejestr zmian danych</div>
-      <div class="tab" data-t="t3">Log akcji (kliknięcia)</div>
-      <div class="tab" data-t="t4">Log wysyłek</div>
+      <div class="tab" data-t="t3">Istotne zdarzenia</div>
       <div class="tab" data-t="t2">Log logowań</div>
     </div>
 
@@ -74,9 +73,10 @@
         <input class="inp search" id="qA" placeholder="Szukaj po obiekcie: PR-26-0141, KL-0238, IS-02...">
         <select class="inp" id="fKto"><option value="">Wszyscy użytkownicy</option></select>
         <select class="inp" id="fTyp"><option value="">Wszystkie typy operacji</option></select>
-        <input class="inp" type="date" id="dOd" value="2026-08-01" title="Data od">
-        <input class="inp" type="date" id="dDo" value="2026-08-29" title="Data do">
+        <input class="inp" type="date" id="dOd" title="Data od">
+        <input class="inp" type="date" id="dDo" title="Data do">
         <button class="chip" id="chipFin">Tylko wartości finansowe</button>
+        <button class="chip" id="chipIstotne">Tylko istotne zdarzenia</button>
         <span class="sp"></span>
         <span class="small muted" id="liczA"></span>
       </div>
@@ -134,8 +134,8 @@
         <input class="inp search" id="qL" placeholder="Szukaj: konto, adres IP, urządzenie...">
         <select class="inp" id="fWynik">
           <option value="">Wszystkie próby</option>
-          <option>OK</option>
-          <option>Błędne hasło</option>
+          <option value="udane">Udane</option>
+          <option value="nieudane">Nieudane</option>
         </select>
         <span class="sp"></span>
         <span class="small muted" id="liczL"></span>
@@ -150,12 +150,11 @@
               <th>Adres IP</th>
               <th>Urządzenie</th>
               <th>Wynik</th>
-              <th></th>
             </tr>
           </thead>
           <tbody id="bodyL"></tbody>
           <tfoot>
-            <tr><td colspan="6" class="c muted small" style="padding:14px" id="stopkaL"></td></tr>
+            <tr><td colspan="5" class="c muted small" style="padding:14px" id="stopkaL"></td></tr>
           </tfoot>
         </table>
       </div>
@@ -194,43 +193,25 @@
       </div>
     </div>
 
-    <!-- ============ ZAKLADKA 3: LOG AKCJI (KLIKNIECIA) ============ -->
+    <!-- ============ ZAKLADKA 3: ISTOTNE ZDARZENIA (D-189) ============ -->
     <div class="tab-pane" id="t3">
       <div class="card-body">
         <div class="note mb0">
-          <b>Co jest logowane:</b> istotne akcje w interfejsie, także te, które nie zmieniają danych:
-          otwarcie karty klienta lub wniosku, uruchomienie eksportu, wejście w moduł finansowy,
-          podgląd PDF faktury, uruchomienie wysyłki. Każda akcja przypisana do zalogowanego
-          pracownika <span class="ref">D-121</span> <span class="ref">D-122</span>.<br><br>
-          <b>Zakres do doprecyzowania</b> <span class="ref p">P-54</span>: logujemy istotne akcje,
-          nie każde kliknięcie. Dosłowne logowanie każdego ruchu myszy generuje szum i ogromny wolumen,
-          a przy tym obciąża politykę retencji <span class="ref p">P-26</span>.
+          <b>Które zdarzenia są istotne</b> <span class="ref">D-189</span>: logujemy zdarzenia o znaczeniu
+          dowodowym, nie każde kliknięcie. Lista: otwarcie karty klienta lub wniosku, eksport, wejście
+          w moduł finansowy, wysyłka maila, zmiana statusu i zmiana uprawnień. Każde zdarzenie jest
+          przypisane do zalogowanego pracownika <span class="ref">D-121</span> <span class="ref">D-122</span>.
+          To jest ten sam rejestr co w pierwszej zakładce, tu widać go w podziale na typ.
+          Przycisk „Pokaż wpisy” otwiera listę przefiltrowaną po typie. Wysyłki maili są typem
+          „Wysyłka maila” z tej listy.
+          <br><br>
+          Zakres do doprecyzowania <span class="ref p">P-54</span>, retencja <span class="ref p">P-26</span>.
         </div>
       </div>
       <div class="tbl-wrap">
         <table class="tbl">
-          <thead><tr><th style="width:135px">Czas</th><th>Kto</th><th>Akcja</th><th>Obiekt</th><th>Kontekst</th></tr></thead>
-          <tbody id="bodyAkcje"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ============ ZAKLADKA 4: LOG WYSYLEK ============ -->
-    <div class="tab-pane" id="t4">
-      <div class="card-body">
-        <div class="note mb0">
-          <b>Co jest logowane:</b> każda wysyłka powiadomienia lub maila z systemu: kto wysłał,
-          do kogo, jaki szablon, kiedy i z jakiego wyzwalacza (automatyczny czy ręczny)
-          <span class="ref">D-122</span>. Log domyka wymóg potwierdzenia przed wysyłką
-          <span class="ref">D-106</span> dowodem, że wysyłka faktycznie nastąpiła. Instytucje
-          szkoleniowe nie wysyłają z systemu <span class="ref">D-87</span>, więc w tym logu
-          nadawcą jest zawsze LDIT albo automat systemowy.
-        </div>
-      </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead><tr><th style="width:135px">Czas</th><th>Nadawca</th><th>Odbiorca</th><th>Szablon</th><th>Wyzwalacz</th><th>Wynik</th></tr></thead>
-          <tbody id="bodyWys"></tbody>
+          <thead><tr><th>Typ zdarzenia</th><th class="num">Wpisów</th><th>Ostatni wpis</th><th></th></tr></thead>
+          <tbody id="bodyIstotne"></tbody>
         </table>
       </div>
     </div>
@@ -309,125 +290,146 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="ustaw"></script>
 <script type="text/kfs-strona">
 /* ================= ZAKLADKI ================= */
+function przelaczZakladke(id) {
+  document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x.dataset.t === id); });
+  document.querySelectorAll(".tab-pane").forEach(function (x) { x.classList.toggle("on", x.id === id); });
+}
 document.querySelectorAll(".tab").forEach(function (t) {
-  t.addEventListener("click", function () {
-    document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
-    document.querySelectorAll(".tab-pane").forEach(function (x) { x.classList.remove("on"); });
-    t.classList.add("on");
-    document.getElementById(t.dataset.t).classList.add("on");
-  });
+  t.addEventListener("click", function () { przelaczZakladke(t.dataset.t); });
 });
+
+/* Rejestr jest tylko do dopisywania (D-189): ekran nie ma zadnej akcji edycji ani usuwania wpisow. */
+function dzisiajData() {
+  var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+function najnowszeNaGorze(a, b) { return a.czas < b.czas ? 1 : a.czas > b.czas ? -1 : 0; }
 
 /* ================= 1. REJESTR ZMIAN DANYCH ================= */
-var A = DB.AKTYWNOSC;
-var DZIS = "2026-08-29";
+var A = DB.AKTYWNOSC.slice().sort(najnowszeNaGorze);
+var DZIS = dzisiajData();
 var TYPY_FIN = ["Zmiana kwoty", "Nadpisanie prowizji", "Przywrócenie reguły", "Zmiana warunków IS"];
+/* Istotne zdarzenia z D-189: nie kazde klikniecie, tylko te, ktore maja znaczenie dowodowe */
+var ISTOTNE = ["Otwarcie karty", "Eksport", "Wejście w moduł finansowy", "Wysyłka maila", "Zmiana statusu", "Zmiana uprawnień"];
 var tylkoFin = false;
+var tylkoIstotne = false;
 
 function jestFin(w) { return TYPY_FIN.indexOf(w.typ) >= 0; }
+function jestIstotne(w) {
+  return ISTOTNE.some(function (t) { return (w.typ || "").indexOf(t) === 0; });
+}
 
-/* Slowniki filtrow */
-var ktos = [], typy = [];
-A.forEach(function (w) {
-  if (ktos.indexOf(w.kto) < 0) ktos.push(w.kto);
-  if (typy.indexOf(w.typ) < 0) typy.push(w.typ);
-});
-ktos.sort();
-typy.sort();
-ktos.forEach(function (k) { document.getElementById("fKto").innerHTML += '<option>' + k + '</option>'; });
-typy.forEach(function (t) { document.getElementById("fTyp").innerHTML += '<option>' + t + '</option>'; });
+function opcje(lista) {
+  return lista.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join("");
+}
+function unikalne(lista, pole) {
+  var out = [];
+  lista.forEach(function (w) { if (w[pole] && out.indexOf(w[pole]) < 0) out.push(w[pole]); });
+  return out.sort();
+}
+function odswiezFiltryA() {
+  var kto = document.getElementById("fKto").value, typ = document.getElementById("fTyp").value;
+  document.getElementById("fKto").innerHTML = '<option value="">Wszyscy użytkownicy</option>' + opcje(unikalne(A, "kto"));
+  document.getElementById("fTyp").innerHTML = '<option value="">Wszystkie typy operacji</option>' + opcje(unikalne(A, "typ"));
+  document.getElementById("fKto").value = kto;
+  document.getElementById("fTyp").value = typ;
+}
 
-/* KPI */
 function kpi(label, val, foot, admin) {
   return '<div class="kpi' + (admin ? " admin" : "") + '">' +
-    '<div class="k-label">' + label + '</div>' +
-    '<div class="k-value">' + val + '</div>' +
+    '<div class="k-label">' + esc(label) + '</div>' +
+    '<div class="k-value">' + esc(val) + '</div>' +
     (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
 }
 
-var dzisiaj = A.filter(function (w) { return w.czas.slice(0, 10) === DZIS; });
-var finTydzien = A.filter(jestFin);
-var nadpisania = A.filter(function (w) {
-  return w.typ === "Nadpisanie prowizji" || w.typ === "Przywrócenie reguły";
-});
-var adminOps = A.filter(function (w) { return w.kto === "Bartłomiej Olejnik"; });
-
-document.getElementById("kpi").innerHTML =
-  kpi("Zmiany dzisiaj", dzisiaj.length, "stan na " + DZIS + ", godz. 11:00") +
-  kpi("Zmiany kwot w tym tygodniu", finTydzien.length,
-      '<span class="tag warn dot">wartości finansowe</span>', true) +
-  kpi("Nadpisania i przywrócenia reguł", nadpisania.length, "pola wyliczane edytowane ręcznie", true) +
-  kpi("Operacje administratora", adminOps.length, "z " + A.length + " wpisów w widocznym zakresie");
+function renderKpiA() {
+  var dzisiaj = A.filter(function (w) { return w.czas.slice(0, 10) === DZIS; });
+  var nadpisania = A.filter(function (w) {
+    return w.typ === "Nadpisanie prowizji" || w.typ === "Przywrócenie reguły";
+  });
+  var admini = DB.UZYTKOWNICY.filter(function (u) { return u.rolaId === "admin"; }).map(function (u) { return u.imie; });
+  var opAdmina = A.filter(function (w) { return admini.indexOf(w.kto) >= 0; });
+  document.getElementById("kpi").innerHTML =
+    kpi("Zmiany dzisiaj", dzisiaj.length, "stan na " + esc(DZIS)) +
+    kpi("Zmiany o charakterze finansowym", A.filter(jestFin).length,
+        '<span class="tag warn dot">wartości finansowe</span>', true) +
+    kpi("Nadpisania i przywrócenia reguł", nadpisania.length, "pola wyliczane edytowane ręcznie", true) +
+    kpi("Operacje administratora", opAdmina.length, "z " + A.length + " wpisów w rejestrze");
+}
 
 function tagTypu(t) {
   var k = t === "Zmiana kwoty" ? "warn"
         : t === "Nadpisanie prowizji" ? "neg"
         : t === "Przywrócenie reguły" ? "set"
         : t === "Zmiana statusu" ? "info"
+        : t === "Zmiana uprawnień" ? "set"
         : t === "Blokada konta" ? "neg" : "mute";
-  return '<span class="tag ' + k + '">' + t + '</span>';
+  return '<span class="tag ' + k + '">' + esc(t) + '</span>';
 }
 
-function renderA() {
+function wierszA(w) {
+  var fin = jestFin(w);
+  return '<tr class="' + (fin ? "row-fin" : "") + '">' +
+    '<td class="mono muted nowrap">' + esc(w.czas) + '</td>' +
+    '<td class="strong nowrap">' + esc(w.kto) + '</td>' +
+    '<td>' + tagTypu(w.typ) + '</td>' +
+    '<td class="mono nowrap">' + esc(w.obiekt) + '</td>' +
+    '<td class="small">' + esc(w.pole) + '</td>' +
+    '<td class="small">' + (w.przed
+        ? '<span class="przed">' + esc(w.przed) + '</span>'
+        : '<span class="muted">wartość pusta</span>') + '</td>' +
+    '<td class="small"><span class="arrow">&rarr;</span><span class="po">' + esc(w.po) + '</span></td>' +
+    '<td class="c">' + (fin
+        ? '<span class="tag warn dot">wartość finansowa</span>'
+        : '<span class="tag mute">operacyjna</span>') + '</td>' +
+    '</tr>';
+}
+
+function filtrujA() {
   var q = document.getElementById("qA").value.toLowerCase().trim();
   var fk = document.getElementById("fKto").value;
   var ft = document.getElementById("fTyp").value;
   var od = document.getElementById("dOd").value;
   var doo = document.getElementById("dDo").value;
-
-  var lista = A.filter(function (w) {
+  return A.filter(function (w) {
     var d = w.czas.slice(0, 10);
     if (fk && w.kto !== fk) return false;
     if (ft && w.typ !== ft) return false;
     if (od && d < od) return false;
     if (doo && d > doo) return false;
     if (tylkoFin && !jestFin(w)) return false;
-    if (q && (w.obiekt + " " + w.pole + " " + w.kto).toLowerCase().indexOf(q) < 0) return false;
+    if (tylkoIstotne && !jestIstotne(w)) return false;
+    if (q && ((w.obiekt || "") + " " + (w.pole || "") + " " + w.kto).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
+}
 
+function renderA() {
+  var lista = filtrujA();
   document.getElementById("liczA").innerHTML =
     "<b>" + lista.length + "</b> z " + A.length + " wpisów &middot; w tym " +
     lista.filter(jestFin).length + " o charakterze finansowym";
 
-  document.getElementById("bodyA").innerHTML = lista.map(function (w) {
-    var fin = jestFin(w);
-    return '<tr class="' + (fin ? "row-fin" : "") + '">' +
-      '<td class="mono muted nowrap">' + w.czas + '</td>' +
-      '<td class="strong nowrap">' + w.kto + '</td>' +
-      '<td>' + tagTypu(w.typ) + '</td>' +
-      '<td class="mono nowrap">' + w.obiekt + '</td>' +
-      '<td class="small">' + w.pole + '</td>' +
-      '<td class="small">' + (w.przed
-          ? '<span class="przed">' + w.przed + '</span>'
-          : '<span class="muted">wartość pusta</span>') + '</td>' +
-      '<td class="small"><span class="arrow">&rarr;</span><span class="po">' + w.po + '</span></td>' +
-      '<td class="c">' + (fin
-          ? '<span class="tag warn dot">wartość finansowa</span>'
-          : '<span class="tag mute">operacyjna</span>') + '</td>' +
-      '</tr>';
-  }).join("");
+  document.getElementById("bodyA").innerHTML = lista.length ? lista.map(wierszA).join("") :
+    '<tr><td colspan="8"><div class="empty"><div class="ei">&#9679;</div>' +
+    '<div class="et">Brak wpisów w wybranym zakresie</div>' +
+    'Rozszerz zakres dat albo wyczyść filtry.</div></td></tr>';
 
-  if (!lista.length) {
-    document.getElementById("bodyA").innerHTML =
-      '<tr><td colspan="8"><div class="empty"><div class="ei">&#9679;</div>' +
-      '<div class="et">Brak wpisów w wybranym zakresie</div>' +
-      'Rozszerz zakres dat albo wyczyść filtry.</div></td></tr>';
-  }
-
-  document.getElementById("stopkaA").innerHTML =
-    "Widoczne " + lista.length + " wpisów z ostatnich dwóch dni roboczych. " +
-    "W systemie docelowym rejestr liczy setki tysięcy pozycji rocznie, dlatego lista jest " +
-    "stronicowana, a domyślny zakres dat ograniczony do bieżącego miesiąca.";
+  document.getElementById("stopkaA").textContent =
+    "Widoczne " + lista.length + " wpisów. W systemie docelowym rejestr liczy setki tysięcy pozycji " +
+    "rocznie, dlatego lista będzie stronicowana.";
 }
 
 document.getElementById("chipFin").addEventListener("click", function () {
@@ -435,72 +437,92 @@ document.getElementById("chipFin").addEventListener("click", function () {
   this.classList.toggle("on", tylkoFin);
   renderA();
 });
+document.getElementById("chipIstotne").addEventListener("click", function () {
+  tylkoIstotne = !tylkoIstotne;
+  this.classList.toggle("on", tylkoIstotne);
+  renderA();
+});
 ["qA", "fKto", "fTyp", "dOd", "dDo"].forEach(function (id) {
   document.getElementById(id).addEventListener("input", renderA);
   document.getElementById(id).addEventListener("change", renderA);
 });
-renderA();
+document.getElementById("dDo").value = DZIS;
 
-/* ================= 2. LOG LOGOWAN ================= */
-var L = DB.LOGOWANIA;
+/* ================= 2. ISTOTNE ZDARZENIA (D-189) ================= */
+/* Jedno zrodlo: te same wpisy co w rejestrze zmian. Tu tylko podsumowanie per typ i skrot do filtra. */
+function renderIstotne() {
+  document.getElementById("bodyIstotne").innerHTML = ISTOTNE.map(function (typ) {
+    var wpisy = A.filter(function (w) { return (w.typ || "").indexOf(typ) === 0; });
+    return '<tr><td class="strong">' + esc(typ) + '</td>' +
+      '<td class="num">' + wpisy.length + '</td>' +
+      '<td class="mono muted nowrap">' + (wpisy.length ? esc(wpisy[0].czas) : "brak wpisów") + '</td>' +
+      '<td class="right">' + (wpisy.length
+        ? '<button class="btn xs" onclick="pokazTyp(\'' + escJs(typ) + '\')">Pokaż wpisy</button>' : "") + '</td></tr>';
+  }).join("");
+}
+
+/* Filtr po typie: wybiera pierwszy pasujacy typ z rejestru i wraca do listy */
+window.pokazTyp = function (typ) {
+  var dokladny = unikalne(A, "typ").filter(function (t) { return t.indexOf(typ) === 0; })[0];
+  document.getElementById("fTyp").value = dokladny || "";
+  document.getElementById("dOd").value = "";
+  przelaczZakladke("t1");
+  renderA();
+};
+
+/* ================= 3. LOG LOGOWAN ================= */
+var L = DB.LOGOWANIA.slice().sort(najnowszeNaGorze);
 var UMAP = {};
 DB.UZYTKOWNICY.forEach(function (u) { UMAP[u.login] = u; });
 
-var nieudane = L.filter(function (r) { return r.wynik !== "OK"; });
-var ipy = [];
-L.forEach(function (r) { if (ipy.indexOf(r.ip) < 0) ipy.push(r.ip); });
-var poza = L.filter(function (r) {
+function udane(r) { return r.wynik === "OK" || r.wynik === "sukces"; }
+function poGodzinach(r) {
   var g = parseInt(r.czas.slice(11, 13), 10);
   return g >= 20 || g < 6;
-});
+}
 
-document.getElementById("kpiL").innerHTML =
-  kpi("Logowania w rejestrze", L.length, "zakres: 28 i 29 sierpnia 2026") +
-  kpi("Próby nieudane", nieudane.length,
-      nieudane.length ? '<span class="tag neg dot">wymaga sprawdzenia</span>' : "brak") +
-  kpi("Unikalne adresy IP", ipy.length, "195.12.44.8 to biuro LDIT") +
-  kpi("Logowania poza godzinami", poza.length, "przed 6:00 i po 20:00");
+function renderKpiL() {
+  var nieudane = L.filter(function (r) { return !udane(r); });
+  var ipy = unikalne(L, "ip");
+  var dni = L.map(function (r) { return r.czas.slice(0, 10); }).sort();
+  document.getElementById("kpiL").innerHTML =
+    kpi("Logowania w rejestrze", L.length, L.length ? "zakres: " + esc(dni[0]) + " do " + esc(dni[dni.length - 1]) : "brak wpisów") +
+    kpi("Próby nieudane", nieudane.length,
+        nieudane.length ? '<span class="tag neg dot">wymaga sprawdzenia</span>' : "brak") +
+    kpi("Unikalne adresy IP", ipy.length, "w całym logu") +
+    kpi("Logowania poza godzinami", L.filter(poGodzinach).length, "przed 6:00 i po 20:00");
+}
+
+function wierszL(r) {
+  var u = UMAP[r.kto], ok = udane(r);
+  return '<tr class="' + (ok ? "" : "row-danger") + '">' +
+    '<td class="mono muted nowrap">' + esc(r.czas) + '</td>' +
+    '<td class="strong mono">' + esc(r.kto) +
+      (u ? '<div class="small muted" style="font-family:inherit">' + esc(u.imie) + ", " + esc(u.rola) +
+           (u["2fa"] ? "" : ", <b>bez 2FA</b>") + '</div>' : "") + '</td>' +
+    '<td class="mono">' + esc(r.ip) + '</td>' +
+    '<td class="muted">' + esc(r.urzadzenie) + '</td>' +
+    '<td>' + (ok
+        ? '<span class="tag pos dot">udane</span>'
+        : '<span class="tag neg dot">' + esc(r.wynik) + '</span>') + '</td>' +
+    '</tr>';
+}
 
 function renderL() {
   var q = document.getElementById("qL").value.toLowerCase().trim();
   var fw = document.getElementById("fWynik").value;
-
   var lista = L.filter(function (r) {
-    if (fw && r.wynik !== fw) return false;
+    if (fw === "udane" && !udane(r)) return false;
+    if (fw === "nieudane" && udane(r)) return false;
     if (q && (r.kto + " " + r.ip + " " + r.urzadzenie).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
-
-  document.getElementById("liczL").innerHTML =
-    "<b>" + lista.length + "</b> z " + L.length + " prób logowania";
-
-  document.getElementById("bodyL").innerHTML = lista.map(function (r) {
-    var u = UMAP[r.kto];
-    var ok = r.wynik === "OK";
-    return '<tr class="' + (ok ? "" : "row-danger") + '">' +
-      '<td class="mono muted nowrap">' + r.czas + '</td>' +
-      '<td class="strong mono">' + r.kto +
-        (u ? '<div class="small muted" style="font-family:inherit">' + u.imie + ", " + u.rola +
-             (u["2fa"] ? "" : ", <b>bez 2FA</b>") + '</div>' : "") + '</td>' +
-      '<td class="mono">' + r.ip + '</td>' +
-      '<td class="muted">' + r.urzadzenie + '</td>' +
-      '<td>' + (ok
-          ? '<span class="tag pos dot">udane</span>'
-          : '<span class="tag neg dot">' + r.wynik + '</span>') + '</td>' +
-      '<td class="right"><button class="btn xs" onclick="alert(\'Szczegóły sesji: ' + r.kto +
-        '\\nCzas: ' + r.czas + '\\nIP: ' + r.ip +
-        '\\n\\nW systemie docelowym: lista operacji wykonanych w tej sesji, pobrana z rejestru zmian danych.\')">Sesja</button></td>' +
-      '</tr>';
-  }).join("");
-
-  if (!lista.length) {
-    document.getElementById("bodyL").innerHTML =
-      '<tr><td colspan="6"><div class="empty"><div class="ei">&#9679;</div>' +
-      '<div class="et">Brak prób logowania spełniających filtr</div>Zmień kryteria.</div></td></tr>';
-  }
-
-  document.getElementById("stopkaL").innerHTML =
-    "Widoczne " + lista.length + " pozycji z dwóch dni. Log logowań jest niezależny od rejestru zmian " +
+  document.getElementById("liczL").innerHTML = "<b>" + lista.length + "</b> z " + L.length + " prób logowania";
+  document.getElementById("bodyL").innerHTML = lista.length ? lista.map(wierszL).join("") :
+    '<tr><td colspan="5"><div class="empty"><div class="ei">&#9679;</div>' +
+    '<div class="et">Brak prób logowania spełniających filtr</div>Zmień kryteria.</div></td></tr>';
+  document.getElementById("stopkaL").textContent =
+    "Widoczne " + lista.length + " pozycji. Log logowań jest niezależny od rejestru zmian " +
     "danych i podlega osobnej polityce retencji, patrz sekcja niżej.";
 }
 
@@ -508,77 +530,47 @@ function renderL() {
   document.getElementById(id).addEventListener("input", renderL);
   document.getElementById(id).addEventListener("change", renderL);
 });
-renderL();
 
-/* Sygnaly do sprawdzenia, wyliczane z logu */
-var sygnaly = [];
-nieudane.forEach(function (r) {
-  sygnaly.push(["now", "Nieudane logowanie na konto " + r.kto,
-    r.czas + ", IP " + r.ip + ". Kolejna udana próba nastąpiła 2 minuty później, " +
-    "czyli najprawdopodobniej literówka w haśle, a nie atak."]);
-});
-poza.forEach(function (r) {
-  sygnaly.push(["done", "Logowanie poza godzinami pracy",
-    r.czas + ", konto " + r.kto + ", " + r.urzadzenie + ". Konto instytucji szkoleniowej, " +
-    "praca wieczorna jest tu normą, ale bez 2FA to jest sygnał do domknięcia."]);
-});
-sygnaly.push(["done", "Konta bez 2FA nadal aktywne",
-  DB.UZYTKOWNICY.filter(function (u) { return !u["2fa"]; }).length +
-  " kont loguje się jednoskładnikowo. Przy analizie ewentualnego wycieku to pierwsza rzecz, " +
-  "o którą zapyta audytor."]);
+/* Sygnaly do sprawdzenia, wyliczane wylacznie z danych logu */
+function nastepneUdane(r) {
+  var kolejne = L.filter(function (x) { return x.kto === r.kto && udane(x) && x.czas > r.czas; })
+    .sort(function (a, b) { return a.czas < b.czas ? -1 : 1; });
+  return kolejne[0] || null;
+}
+function sygnalyLogowan() {
+  var sygnaly = [];
+  L.filter(function (r) { return !udane(r); }).forEach(function (r) {
+    var nast = nastepneUdane(r);
+    sygnaly.push(["now", "Nieudane logowanie na konto " + r.kto,
+      r.czas + ", IP " + r.ip + ", wynik: " + r.wynik + ". " +
+      (nast ? "Kolejne udane logowanie tego konta: " + nast.czas + "." : "Brak późniejszego udanego logowania tego konta.")]);
+  });
+  L.filter(poGodzinach).forEach(function (r) {
+    var u = UMAP[r.kto];
+    sygnaly.push(["done", "Logowanie poza godzinami pracy",
+      r.czas + ", konto " + r.kto + ", " + r.urzadzenie + (u ? ", rola: " + u.rola + (u["2fa"] ? "" : ", bez 2FA") : "") + "."]);
+  });
+  var bez2fa = DB.UZYTKOWNICY.filter(function (u) { return !u["2fa"]; }).length;
+  if (bez2fa) sygnaly.push(["done", "Konta bez 2FA nadal aktywne", bez2fa + " kont loguje się jednoskładnikowo."]);
+  return sygnaly;
+}
+function renderSygnaly() {
+  var s = sygnalyLogowan();
+  document.getElementById("sygnaly").innerHTML = s.length ? s.map(function (x) {
+    return '<div class="tl-item ' + x[0] + '"><div class="t">' + esc(x[1]) + '</div>' +
+      '<div class="m">' + esc(x[2]) + '</div></div>';
+  }).join("") : '<div class="small muted">Brak sygnałów w logu.</div>';
+}
 
-document.getElementById("sygnaly").innerHTML = sygnaly.map(function (s) {
-  return '<div class="tl-item ' + s[0] + '"><div class="t">' + s[1] + '</div>' +
-    '<div class="m">' + s[2] + '</div></div>';
-}).join("");
-
-/* ================= 3. LOG AKCJI (KLIKNIECIA) [D-122] ================= */
-/* Dane demonstracyjne: log akcji nie ma jeszcze wlasnej tabeli w seedzie,
-   wiec pokazujemy reprezentatywny wycinek istotnych akcji. */
-var AKCJE = [
-  { czas: "2026-08-29 10:52", kto: "Martyna Kowal", akcja: "Otwarcie karty klienta", obiekt: "KL-0238", kontekst: "Metal Maniak" },
-  { czas: "2026-08-29 10:48", kto: "Martyna Kowal", akcja: "Eksport do Excela", obiekt: "Zestawienie 2026", kontekst: "widok przefiltrowany: PUP Warszawa" },
-  { czas: "2026-08-29 10:31", kto: "Bartłomiej Olejnik", akcja: "Wejście w moduł Administracja", obiekt: "Prowizje", kontekst: "dane finansowe, tylko admin" },
-  { czas: "2026-08-29 09:20", kto: "Asia Nowak", akcja: "Generowanie certyfikatów", obiekt: "PR-26-0141", kontekst: "paczka ZIP, 12 osób" },
-  { czas: "2026-08-29 09:05", kto: "Martyna Kowal", akcja: "Otwarcie karty wniosku", obiekt: "PR-26-0139", kontekst: "Dron Fortech" },
-  { czas: "2026-08-28 16:40", kto: "Łucja Dąbek", akcja: "Kliknięcie: Dane do faktury", obiekt: "PR-26-0132", kontekst: "przygotowanie maila do IS" },
-  { czas: "2026-08-28 15:12", kto: "Bartłomiej Olejnik", akcja: "Podgląd PDF faktury", obiekt: "FV-2026-084", kontekst: "sprawdzenie terminu płatności" },
-  { czas: "2026-08-28 11:03", kto: "Asia Nowak", akcja: "Wyszukiwarka globalna", obiekt: "NIP 527-xxx", kontekst: "wynik: 1 klient" }
-];
-document.getElementById("bodyAkcje").innerHTML = AKCJE.map(function (a) {
-  return '<tr>' +
-    '<td class="mono muted nowrap">' + a.czas + '</td>' +
-    '<td class="strong nowrap">' + a.kto + '</td>' +
-    '<td>' + a.akcja + '</td>' +
-    '<td class="mono nowrap">' + a.obiekt + '</td>' +
-    '<td class="small muted">' + a.kontekst + '</td>' +
-    '</tr>';
-}).join("");
-
-/* ================= 4. LOG WYSYLEK [D-122] ================= */
-var WYSYLKI = [
-  { czas: "2026-08-29 10:50", kto: "Martyna Kowal", odbiorca: "klient: Metal Maniak sp. z o.o.", szablon: "Wniosek w trakcie przygotowania", wyzwalacz: "ręczny", wynik: "OK" },
-  { czas: "2026-08-29 10:12", kto: "System", odbiorca: "IS: Dron Fortech (osoba od terminów)", szablon: "Prośba o ustalenie terminu", wyzwalacz: "automatyczny", wynik: "OK" },
-  { czas: "2026-08-29 09:22", kto: "Asia Nowak", odbiorca: "IS: Odczaruj Power BI", szablon: "Dane do faktury", wyzwalacz: "ręczny", wynik: "OK" },
-  { czas: "2026-08-28 17:05", kto: "System", odbiorca: "uczestnicy terminu (14)", szablon: "Szczegóły organizacyjne", wyzwalacz: "automatyczny", wynik: "OK" },
-  { czas: "2026-08-28 14:30", kto: "Łucja Dąbek", odbiorca: "klient: Zenit sp.j.", szablon: "Instrukcja konta praca.gov.pl", wyzwalacz: "ręczny", wynik: "OK" },
-  { czas: "2026-08-28 12:00", kto: "System", odbiorca: "LDIT (osoba od faktur)", szablon: "Alert o fakturze", wyzwalacz: "automatyczny", wynik: "OK" },
-  { czas: "2026-08-28 08:15", kto: "Łucja Dąbek", odbiorca: "klient: Termex Serwis", szablon: "Prośba o opinię w Google", wyzwalacz: "ręczny", wynik: "nie wysłano: brak zgody" }
-];
-document.getElementById("bodyWys").innerHTML = WYSYLKI.map(function (w) {
-  var ok = w.wynik === "OK";
-  var wyz = w.wyzwalacz === "automatyczny"
-    ? '<span class="tag info">automatyczny</span>'
-    : '<span class="tag mute">' + w.wyzwalacz + '</span>';
-  return '<tr class="' + (ok ? "" : "row-danger") + '">' +
-    '<td class="mono muted nowrap">' + w.czas + '</td>' +
-    '<td class="strong nowrap">' + w.kto + '</td>' +
-    '<td>' + w.odbiorca + '</td>' +
-    '<td>' + w.szablon + '</td>' +
-    '<td>' + wyz + '</td>' +
-    '<td>' + (ok ? '<span class="tag pos dot">wysłano</span>' : '<span class="tag warn dot">' + w.wynik + '</span>') + '</td>' +
-    '</tr>';
-}).join("");
+function odswiez() {
+  A = DB.AKTYWNOSC.slice().sort(najnowszeNaGorze);
+  L = DB.LOGOWANIA.slice().sort(najnowszeNaGorze);
+  DB.UZYTKOWNICY.forEach(function (u) { UMAP[u.login] = u; });
+  odswiezFiltryA(); renderKpiA(); renderA(); renderIstotne();
+  renderKpiL(); renderL(); renderSygnaly();
+}
+window.addEventListener("db:changed", odswiez);
+odswiez();
 </script>
 </body>
 </html>

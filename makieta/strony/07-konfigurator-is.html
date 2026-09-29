@@ -93,10 +93,11 @@
             </div>
 
             <div class="note" style="margin-top:16px">
-              <b>Prowizja zawsze wyrażana procentowo</b>, nigdy kwotowo <span class="ref">D-21</span>.
+              <b>Stawka warunków jest procentowa.</b> Indywidualne nadpisanie na wniosku może być procentem
+              albo kwotą <span class="ref">D-136</span> i wlicza się do puli progowej <span class="ref">D-137</span>.
               Podstawą naliczenia jest <b>koszt całkowity z dopłatą</b>, nie kwota przyznana przez urząd
-              <span class="ref">D-18</span>. Nadpisanie stawki dla pojedynczego projektu jest możliwe
-              wyłącznie z modułu Administracja <span class="ref">D-93</span>.
+              <span class="ref">D-18</span>. Nadpisanie robi się na karcie wniosku, a podgląd wyniku jest w module Administracja
+              <span class="ref">D-138</span>.
             </div>
 
             <div class="note open mb0">
@@ -119,16 +120,18 @@
             </div>
 
             <div class="note warn" style="margin-top:16px">
-              <b>Historia rozliczeń nie jest przeliczana wstecz</b> <span class="ref">D-23</span>.
-              Zmiana warunków tworzy nową wersję z datą obowiązywania, typowo od 1 stycznia kolejnego
-              roku. Projekty rozliczone na starych warunkach zostają na nich na zawsze, nawet jeśli
-              nowa stawka jest korzystniejsza.
+              <b>Historia rozliczeń nie jest przeliczana wstecz</b> <span class="ref">D-23</span> <span class="ref">D-162</span>.
+              Nowe warunki działają od swojej daty, nigdy wstecz. Dodanie wersji tworzy nowy wiersz z datą
+              obowiązywania (dzisiejszą lub przyszłą) i zamyka poprzedni dniem wcześniej. Projekty rozliczone
+              na starych warunkach zostają na nich na zawsze, nawet jeśli nowa stawka jest korzystniejsza.
             </div>
 
-            <div class="note mb0">
-              <b>Zmiana wchodzi od kolejnego roku</b> <span class="ref">D-22</span>.
-              Wersja oznaczona jako planowana jest edytowalna do dnia wejścia w życie. Po tej dacie
-              staje się aktualna, a poprzednia trafia do archiwum bez możliwości edycji.
+            <div class="card mb0" id="cardNowaWersja" style="margin-top:16px">
+              <div class="card-head"><h3>Nowa wersja warunków</h3></div>
+              <div class="card-body">
+                <div class="btn-row" id="polaWersji" style="align-items:center"></div>
+                <div class="small" id="bladWersji" style="color:var(--neg-ink);margin-top:6px"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -138,13 +141,13 @@
         <div class="card mb0">
           <div class="card-head">
             <h3>Rozliczenia wg wersji warunków</h3>
-            <span class="sub">ile projektów zostało policzonych na której wersji</span>
+            <span class="sub">ile projektów przypada na którą wersję, prowizję naliczoną pokazuje moduł Administracja</span>
           </div>
           <div class="card-body tight">
             <table class="tbl">
               <thead>
                 <tr><th>Wersja</th><th>Okres obowiązywania</th><th>Sposób liczenia</th>
-                    <th class="num">Projektów</th><th class="num">Podstawa</th><th class="num">Prowizja</th><th></th></tr>
+                    <th class="num">Projektów</th><th class="num">Podstawa</th></tr>
               </thead>
               <tbody id="rozlWersje"></tbody>
             </table>
@@ -157,9 +160,7 @@
           <div class="card-head">
             <h3>Progi dofinansowania KFS<span class="tip-mark" data-tip="Progi dofinansowania KFS są konfigurowalne i datowane (D-131), a nie zaszyte na sztywno. Reguły KFS zmieniają się co roku, na przykład w przyszłym roku może obowiązywać 80/20 zamiast 90/10. Dlatego każdy wskaźnik ma datę 'obowiązuje od', a system dobiera zestaw progów po dacie projektu. Koryguje D-59, gdzie procenty były wpisane na stałe.">i</span></h3>
             <span class="sub">konfigurowalne, wersjonowane datą <span class="ref">D-131</span> <span class="ref">D-59</span></span>
-            <div class="ch-actions">
-              <button class="btn sm" onclick="alert('Demo makiety.\nTworzy nową wersję progów z datą obowiązywania od 1 stycznia kolejnego roku, edytowalną do dnia wejścia w życie. Projekty rozliczone na starych progach zostają na nich (analogicznie do warunków prowizyjnych, D-23).')">Dodaj wersję od kolejnego roku</button>
-            </div>
+            <div class="ch-actions"><span class="tag mute" id="progiInfo"></span></div>
           </div>
           <div class="card-body tight">
             <table class="tbl">
@@ -169,41 +170,20 @@
                   <th class="num">Procent dofinansowania</th>
                   <th class="num">Procent wkładu własnego</th>
                   <th>Obowiązuje od</th>
+                  <th>Obowiązuje do</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td class="strong">Mikro <span class="muted small">(do 9 osób na umowie o pracę)</span></td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="90"> %</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="10"> %</td>
-                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
-                </tr>
-                <tr>
-                  <td class="strong">Mały</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
-                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
-                </tr>
-                <tr>
-                  <td class="strong">Średni</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
-                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
-                </tr>
-                <tr>
-                  <td class="strong">Duży</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
-                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
-                </tr>
-                <tr>
-                  <td class="strong">Inny</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="70"> %</td>
-                  <td class="num"><input class="inp num" style="width:88px;text-align:right" value="30"> %</td>
-                  <td><input class="inp" type="date" style="width:150px" value="2026-01-01"></td>
-                </tr>
-              </tbody>
+              <tbody id="progiDof"></tbody>
             </table>
+
+            <div id="formProgi" style="padding:14px 16px;border-top:1px solid var(--line)">
+              <div class="small muted" style="margin-bottom:8px">
+                <b>Nowa wersja progów.</b> Zamyka obowiązujące wiersze dniem poprzedzającym i dodaje nowe,
+                stare wiersze zostają bez zmian <span class="ref">D-131</span>. Zmienia tylko administrator <span class="ref">D-190</span>.
+              </div>
+              <div class="btn-row" id="polaProgi" style="align-items:center"></div>
+              <div class="small" id="bladProgi" style="color:var(--neg-ink);margin-top:6px"></div>
+            </div>
 
             <div class="note warn" style="margin-top:16px;margin-bottom:0">
               <b>Progi KFS zmieniają się co roku, dlatego są konfigurowalne i datowane</b>
@@ -328,10 +308,9 @@
             </div>
 
             <div class="note warn" style="margin-top:16px">
-              <b>Klauzula mówi o finansowaniu w 90%, co odpowiada mikroprzedsiębiorcy.</b>
-              Przy firmach powyżej mikro dofinansowanie wynosi 70% i wkład własny 30%, więc treść
-              wymaga parametryzacji: procent musi być podstawiany z wielkości przedsiębiorstwa klienta,
-              a nie wpisany na sztywno w szablonie. Do potwierdzenia u klienta przed pierwszą wysyłką.
+              <b>Procent finansowania w klauzuli jest parametryzowany.</b>
+              Wartość pochodzi z progu dofinansowania wniosku (tabela progów),
+              nie jest wpisana na sztywno w szablonie. Do potwierdzenia u klienta przed pierwszą wysyłką.
             </div>
 
             <div class="note mb0">
@@ -405,10 +384,9 @@
                   </div>
                 </div>
 
-                <div class="grid g3">
-                  <div class="kpi"><div class="k-label">Wypełnień w 2026</div><div class="k-value" id="kfWyp"></div><div class="k-foot">od 1 stycznia</div></div>
+                <div class="grid g2">
+                  <div class="kpi"><div class="k-label">Klientów w bazie</div><div class="k-value" id="kfWyp"></div><div class="k-foot">przypisanych do instytucji</div></div>
                   <div class="kpi"><div class="k-label">Oczekuje akceptacji</div><div class="k-value" id="kfKol"></div><div class="k-foot">bramka anty-spam</div></div>
-                  <div class="kpi"><div class="k-label">W tym testowe</div><div class="k-value">3</div><div class="k-foot">nie tworzą klienta</div></div>
                 </div>
               </div>
             </div>
@@ -464,54 +442,101 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="admin"></script>
 <script type="text/kfs-strona">
 (function () {
   "use strict";
 
-  var PELNE = DB.INSTYTUCJE.slice(0, 8);
-  var wybrana = "IS-02"; /* Metal Maniak, model progowy A */
+  var wybrana = DB.INSTYTUCJE.length ? DB.INSTYTUCJE[0].id : null;
+  var mozeEdytowac = Auth.edytujeModul("admin");
+  var KOLEJNOSC_WIELKOSCI = ["mikro", "mały", "średni", "duży", "inny"];
 
+  /* Jeden slownik modeli, zgodny z komentarzem naglowka assets/prowizja.js */
   var OPIS_MODELU = {
-    A: "próg miesięczny, stawka od całości obrotu",
-    B: "skala roczna narastająco, stawka od nadwyżki",
-    C: "próg miesięczny, stawka od nadwyżki",
-    D: "stała stawka, bez kumulacji"
+    A: "kumulacja miesięczna, stawka od całości obrotu okresu",
+    B: "kumulacja roczna, stawka od nadwyżki ponad próg",
+    C: "kumulacja miesięczna, stawka od nadwyżki ponad próg",
+    D: "stała stawka, bez progów"
   };
   var OPIS_KUMULACJI = { miesieczny: "miesięczna", roczny: "roczna", brak: "brak" };
   var OPIS_SPOSOBU = { od_calosci: "od całości", od_nadwyzki: "od nadwyżki", stala: "stała stawka" };
 
-  /* Poprzednia wersja warunków, wg modelu. Odpowiada wpisowi w rejestrze
-     aktywności: próg miesięczny Metal Maniak zmieniony z 45 000 na 50 000. */
-  function poprzednia(p) {
-    if (p.model === "A") return { model: "A", kumulacja: "miesieczny", sposob: "od_calosci", stala: null,
-      progi: p.progi.map(function (x, i) { return { od: i === 1 ? 45000 : x.od, st: x.st }; }) };
-    if (p.model === "B") return { model: "B", kumulacja: "roczny", sposob: "od_nadwyzki", stala: null,
-      progi: [{ od: 0, st: 20 }, { od: 600000, st: 18 }] };
-    if (p.model === "C") return { model: "C", kumulacja: "miesieczny", sposob: "od_nadwyzki", stala: null,
-      progi: [{ od: 0, st: 18 }, { od: 120000, st: 15 }] };
-    return { model: "D", kumulacja: "brak", sposob: "stala", stala: 20, progi: [] };
+  /* ---------- Pomocnicze ---------- */
+  function dwie(n) { return String(n).padStart(2, "0"); }
+  function dzisiaj() {
+    var d = new Date();
+    return d.getFullYear() + "-" + dwie(d.getMonth() + 1) + "-" + dwie(d.getDate());
+  }
+  function terazStr() {
+    var d = new Date();
+    return dzisiaj() + " " + dwie(d.getHours()) + ":" + dwie(d.getMinutes());
+  }
+  function dzienPrzed(data) {
+    var d = new Date(data + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10);
+  }
+  function logZmiana(obiekt, pole, przed, po) {
+    Store.insert("rejestr_aktywnosci", {
+      czas: terazStr(), kto: Auth.sesja().imie, typ: "Zmiana warunków IS",
+      obiekt: obiekt, pole: pole, przed: przed || "brak", po: po
+    }, "AKT-");
+  }
+  function instytucja(id) {
+    return DB.INSTYTUCJE.filter(function (x) { return x.id === id; })[0];
   }
 
-  /* Wersja planowana od 2027: kolejny próg albo korekta stawki stałej */
-  function planowana(p) {
-    if (p.sposob === "stala") {
-      return { model: "D", kumulacja: "brak", sposob: "stala", stala: (p.stala || 20) - 0.5, progi: [] };
+  /* ---------- Wersje warunkow prowizyjnych (tabela warunki_prowizyjne) ---------- */
+  function wersjeInstytucji(isId) {
+    return Store.query("SELECT * FROM warunki_prowizyjne WHERE instytucja_id = ? ORDER BY obowiazuje_od", [isId])
+      .map(function (r) {
+        return { id: r.id, od: r.obowiazuje_od, do: r.obowiazuje_do, model: r.model,
+                 kumulacja: r.rodzaj_kumulacji, sposob: r.sposob_liczenia, stala: r.stawka_stala,
+                 progi: JSON.parse(r.progi || "[]") };
+      });
+  }
+  function stanWersji(v, dzis) {
+    if (v.od > dzis) return "planowana";
+    return v.do && v.do < dzis ? "archiwalna" : "aktualna";
+  }
+  function wersjaNaDzien(wersje, data) {
+    try { return Prowizja.warunkiNaDzien(wersje, data); }
+    catch (e) {
+      if (e instanceof Prowizja.ProwizjaError) return null;
+      throw e;
     }
-    var ost = p.progi[p.progi.length - 1];
-    var nowe = p.progi.slice();
-    nowe.push({ od: ost.od * 2, st: p.sposob === "od_calosci" ? ost.st + 2 : Math.max(8, ost.st - 2) });
-    return { model: p.model, kumulacja: p.kumulacja, sposob: p.sposob, stala: null, progi: nowe };
+  }
+  function modelZ(kumulacja, sposob) {
+    if (kumulacja === "brak") return "D";
+    if (sposob === "od_nadwyzki") return kumulacja === "roczny" ? "B" : "C";
+    return "A";
+  }
+  function trescProgow(v) {
+    return v.sposob === "stala"
+      ? "stawka stała " + DB.fmtPct(v.stala)
+      : v.progi.map(function (x) { return DB.fmtPLN(x.od) + " &rarr; " + DB.fmtPct(x.st); }).join(", ");
+  }
+  function opisTekstowy(v) {
+    var t = "model " + v.model + ", " + OPIS_KUMULACJI[v.kumulacja] + " kumulacja, " + OPIS_SPOSOBU[v.sposob];
+    return t + (v.sposob === "stala" ? ", " + v.stala + "%"
+      : ", progi " + v.progi.map(function (x) { return x.od + ":" + x.st; }).join(" "));
   }
 
   function warunkiHtml(p) {
-    var progi = p.progi && p.progi.length
+    if (!p) {
+      return '<div class="note open mb0">Brak warunków prowizyjnych dla tej instytucji. ' +
+        "Prowizja nie jest naliczana, dopóki nie zostanie dodana pierwsza wersja warunków.</div>";
+    }
+    var progi = p.progi.length
       ? '<div class="tbl-wrap" style="margin-top:12px"><table class="tbl">' +
         "<thead><tr><th>Od kwoty obrotu</th><th class='num'>Stawka</th><th>Zastosowanie</th></tr></thead><tbody>" +
         p.progi.map(function (x, i) {
@@ -523,198 +548,293 @@
       : '<div class="note mb0" style="margin-top:12px">Brak progów. Stawka jest stała niezależnie od obrotu.</div>';
 
     return '<dl class="dl">' +
-      "<dt>Model</dt><dd><span class='pill k'>" + p.model + "</span> " + OPIS_MODELU[p.model] + "</dd>" +
+      "<dt>Model</dt><dd><span class='pill k'>" + esc(p.model) + "</span> " + OPIS_MODELU[p.model] + "</dd>" +
       "<dt>Rodzaj kumulacji</dt><dd>" + OPIS_KUMULACJI[p.kumulacja] + "</dd>" +
       "<dt>Sposób liczenia</dt><dd>" + OPIS_SPOSOBU[p.sposob] + "</dd>" +
       "<dt>Stawka stała</dt><dd>" + (p.stala != null ? "<b>" + DB.fmtPct(p.stala) + "</b>" : "<span class='muted'>nie dotyczy, warunki progowe</span>") + "</dd>" +
-      "<dt>Liczba progów</dt><dd>" + (p.progi ? p.progi.length : 0) + "</dd>" +
+      "<dt>Liczba progów</dt><dd>" + p.progi.length + "</dd>" +
       "</dl>" + progi;
   }
 
-  function wersje(i) {
-    var akt = i.prowizja;
-    return [
-      { od: "2027-01-01", do: null, stan: "planowana", w: planowana(akt),
-        opis: "Wersja robocza, edytowalna do dnia wejścia w życie." },
-      { od: "2026-01-01", do: null, stan: "aktualna", w: akt,
-        opis: "Obowiązuje wszystkie projekty z datą faktury w 2026." },
-      { od: "2025-01-01", do: "2025-12-31", stan: "archiwalna", w: poprzednia(akt),
-        opis: "Zamknięta. Projekty rozliczone na tej wersji zostają na niej." }
-    ];
+  function historiaHtml(wersje, dzis) {
+    if (!wersje.length) return '<div class="small muted">Brak wersji warunków.</div>';
+    return wersje.slice().reverse().map(function (v) {
+      var stan = stanWersji(v, dzis);
+      var cls = stan === "aktualna" ? "now" : stan === "archiwalna" ? "done" : "";
+      var tag = stan === "aktualna" ? '<span class="tag pos">aktualne</span>'
+              : stan === "planowana" ? '<span class="tag info">planowane</span>'
+              : '<span class="tag mute">archiwalne</span>';
+      var okres = v.do ? "obowiązywało " + esc(v.od) + " do " + esc(v.do) : "obowiązuje od " + esc(v.od);
+      var usun = stan === "planowana" && mozeEdytowac
+        ? '<div class="btn-row" style="margin-top:7px"><button class="btn xs danger" data-usun="' + esc(v.id) + '">Usuń wersję</button></div>' : "";
+      return '<div class="tl-item ' + cls + '"><div class="t">' + okres + " " + tag + "</div>" +
+        '<div class="m">' + OPIS_KUMULACJI[v.kumulacja] + " kumulacja, " + OPIS_SPOSOBU[v.sposob] +
+        "<br>" + trescProgow(v) + "</div>" + usun + "</div>";
+    }).join("");
   }
 
-  /* ---------- Render ---------- */
-  function render() {
-    var i = DB.INSTYTUCJE.filter(function (x) { return x.id === wybrana; })[0];
-    var p = i.prowizja;
-    var W = wersje(i);
+  /* Rozliczenia wg wersji: ile projektow (pozytywnych, z data faktury) przypada na ktora wersje.
+     Prowizja naliczona jest w module Administracja (jedno zrodlo liczb). */
+  function rozliczeniaHtml(wersje, projekty) {
+    var licz = {}, bezWarunkow = { n: 0, podstawa: 0 };
+    projekty.forEach(function (w) {
+      var v = wersjaNaDzien(wersje, w.dataFaktury);
+      var cel = v ? (licz[v.id] = licz[v.id] || { n: 0, podstawa: 0 }) : bezWarunkow;
+      cel.n++;
+      cel.podstawa += w.podstawaProwizji;
+    });
+    var dzis = dzisiaj();
+    var wiersze = wersje.slice().reverse().map(function (v) {
+      var r = licz[v.id] || { n: 0, podstawa: 0 };
+      var stan = stanWersji(v, dzis);
+      var znacznik = stan === "aktualna" ? "<span class='tag pos'>aktualna</span>"
+        : stan === "planowana" ? "<span class='tag info'>planowana</span>" : "<span class='tag mute'>zamknięta</span>";
+      return "<tr><td class='strong'>od " + esc(v.od) + "</td><td>" + (v.do ? esc(v.od) + " do " + esc(v.do) : stan === "planowana" ? "od " + esc(v.od) : esc(v.od) + " do dziś") + " " + znacznik + "</td>" +
+        "<td class='muted'>" + OPIS_SPOSOBU[v.sposob] + "</td>" +
+        "<td class='num'>" + r.n + "</td><td class='num'>" + DB.fmtPLN(r.podstawa) + "</td></tr>";
+    }).join("");
+    if (bezWarunkow.n) {
+      wiersze += "<tr class='row-danger'><td class='strong'>brak warunków</td><td class='muted'>data faktury przed pierwszą wersją</td><td></td>" +
+        "<td class='num'>" + bezWarunkow.n + "</td><td class='num'>" + DB.fmtPLN(bezWarunkow.podstawa) + "</td></tr>";
+    }
+    return wiersze || "<tr><td colspan='5'><div class='empty'><div class='et'>Brak wersji warunków</div></div></td></tr>";
+  }
 
-    document.getElementById("tagModel").textContent = "Model " + p.model + ": " + OPIS_MODELU[p.model];
+  /* ---------- Nowa wersja warunkow ---------- */
+  function polaWersjiHtml() {
+    if (!mozeEdytowac) return '<span class="small muted">Zmiana warunków wymaga uprawnienia do edycji modułu Administracja.</span>';
+    return '<select class="inp" id="nwKum" style="width:auto"><option value="miesieczny">Kumulacja miesięczna</option>' +
+        '<option value="roczny">Kumulacja roczna</option><option value="brak">Bez kumulacji, stała stawka</option></select>' +
+      '<select class="inp" id="nwSposob" style="width:auto"><option value="od_calosci">Od całości</option>' +
+        '<option value="od_nadwyzki">Od nadwyżki</option></select>' +
+      '<input class="inp" id="nwProgi" style="width:210px" placeholder="progi: 0:10, 50000:12" value="0:10, 50000:12">' +
+      '<input class="inp num" id="nwStala" style="width:90px;display:none" placeholder="stała %" value="20">' +
+      '<label class="small muted" for="nwOd">obowiązuje od</label>' +
+      '<input class="inp" type="date" id="nwOd" style="width:150px" min="' + dzisiaj() + '" value="' + dzisiaj() + '">' +
+      '<button class="btn primary" id="nwZapisz">Dodaj wersję</button>';
+  }
 
-    var wn26 = DB.WNIOSKI.filter(function (w) { return w.is === i.id; });
-    /* Wnioskow z 2025 nie przenosimy (D-160), liczymy tylko biezacy rocznik */
-    document.getElementById("podsumowanie").innerHTML =
-      i.miasto + " &middot; " + wn26.length + " projektów w 2026 &middot; opiekun " + i.opiekun;
+  function czytajProgi(tekst) {
+    var progi = tekst.split(",").map(function (c) {
+      var p = c.split(":");
+      return { od: parseFloat(p[0]), st: parseFloat(p[1]) };
+    });
+    var ok = progi.every(function (x, i) {
+      return !isNaN(x.od) && !isNaN(x.st) && x.st >= 0 && x.st <= 100 && (i ? x.od > progi[i - 1].od : x.od === 0);
+    });
+    return ok ? progi : null;
+  }
 
-    /* Warunki aktualne */
-    document.getElementById("obowOd").innerHTML = "obowiązuje od <b>2026-01-01</b>";
-    document.getElementById("warunkiAkt").innerHTML = warunkiHtml(p);
+  function odczytajNowaWersje() {
+    var kum = document.getElementById("nwKum").value;
+    var sposob = kum === "brak" ? "stala" : document.getElementById("nwSposob").value;
+    var stala = parseFloat(document.getElementById("nwStala").value);
+    var progi = kum === "brak" ? [] : czytajProgi(document.getElementById("nwProgi").value);
+    if (kum === "brak" && !(stala >= 0 && stala <= 100)) return { blad: "Stała stawka musi być liczbą od 0 do 100." };
+    if (kum !== "brak" && !progi) return { blad: "Progi zapisz jako pary od:stawka, rosnąco, pierwszy od 0, na przykład 0:10, 50000:12." };
+    if (kum === "roczny" && sposob === "od_calosci") return { blad: "Liczenie od całości ma model A tylko z kumulacją miesięczną. Dla rocznej wybierz od nadwyżki (model B)." };
+    return { kumulacja: kum, sposob: sposob, model: modelZ(kum, sposob),
+             stala: kum === "brak" ? stala : null, progi: progi };
+  }
 
-    /* Historia wersji */
-    document.getElementById("historia").innerHTML = W.map(function (v) {
-      var cls = v.stan === "aktualna" ? "now" : v.stan === "archiwalna" ? "done" : "";
-      var tag = v.stan === "aktualna" ? '<span class="tag pos">aktualne</span>'
-              : v.stan === "planowana" ? '<span class="tag info">planowane</span>'
-              : '<span class="tag mute">archiwalne</span>';
-      var okres = v.do ? "obowiązywało " + v.od + " do " + v.do : "obowiązuje od " + v.od;
-      var tresc = v.w.sposob === "stala"
-        ? "stawka stała " + DB.fmtPct(v.w.stala)
-        : v.w.progi.map(function (x) { return DB.fmtPLN(x.od) + " &rarr; " + DB.fmtPct(x.st); }).join(", ");
-      return '<div class="tl-item ' + cls + '">' +
-        '<div class="t">' + okres + " " + tag + "</div>" +
-        '<div class="m">' + OPIS_KUMULACJI[v.w.kumulacja] + " kumulacja, " + OPIS_SPOSOBU[v.w.sposob] + "<br>" + tresc + "</div>" +
-        '<div class="m" style="margin-top:4px">' + v.opis + "</div>" +
-        (v.stan === "planowana" ? '<div class="btn-row" style="margin-top:7px"><button class="btn xs">Edytuj wersję</button><button class="btn xs danger">Usuń</button></div>' : "") +
-        "</div>";
+  function dodajWersje() {
+    var nowa = odczytajNowaWersje();
+    var od = document.getElementById("nwOd").value;
+    var wersje = wersjeInstytucji(wybrana);
+    var dzis = dzisiaj();
+    var otwarta = wersje.filter(function (v) { return !v.do; }).pop();
+    var powod = nowa.blad
+      || (!od || od < dzis ? "Nowe warunki obowiązują od dziś albo od daty przyszłej, nigdy wstecz (D-162)." : "")
+      || (wersje.some(function (v) { return v.od > dzis; }) ? "Istnieje już wersja planowana. Usuń ją, żeby dodać inną." : "")
+      || (otwarta && od <= otwarta.od ? "Data musi być późniejsza niż początek obowiązującej wersji (" + otwarta.od + ")." : "");
+    document.getElementById("bladWersji").textContent = powod;
+    if (powod) return;
+
+    if (otwarta) Store.update("warunki_prowizyjne", otwarta.id, { obowiazuje_do: dzienPrzed(od) });
+    Store.insert("warunki_prowizyjne", {
+      instytucja_id: wybrana, obowiazuje_od: od, obowiazuje_do: null, model: nowa.model,
+      rodzaj_kumulacji: nowa.kumulacja, sposob_liczenia: nowa.sposob, stawka_stala: nowa.stala,
+      progi: JSON.stringify(nowa.progi)
+    }, "WP-");
+    logZmiana(instytucja(wybrana).nazwa, "Warunki prowizyjne", otwarta ? opisTekstowy(otwarta) : "brak",
+      opisTekstowy({ model: nowa.model, kumulacja: nowa.kumulacja, sposob: nowa.sposob, stala: nowa.stala, progi: nowa.progi }) + ", od " + od);
+    render();
+  }
+
+  function usunPlanowana(id) {
+    var wersje = wersjeInstytucji(wybrana);
+    var v = wersje.filter(function (x) { return x.id === id; })[0];
+    var poprzednia = wersje.filter(function (x) { return x.do === dzienPrzed(v.od); })[0];
+    Store.remove("warunki_prowizyjne", id);
+    if (poprzednia) Store.update("warunki_prowizyjne", poprzednia.id, { obowiazuje_do: null });
+    logZmiana(instytucja(wybrana).nazwa, "Warunki prowizyjne", opisTekstowy(v) + ", od " + v.od, "usunięto wersję planowaną");
+    render();
+  }
+
+  /* ---------- Progi dofinansowania KFS (tabela progi_dofinansowania) ---------- */
+  function progiDofRender(dzis) {
+    var wiersze = DB.PROGI_DOFINANSOWANIA.slice().sort(function (a, b) {
+      var k = KOLEJNOSC_WIELKOSCI.indexOf(a.wielkosc) - KOLEJNOSC_WIELKOSCI.indexOf(b.wielkosc);
+      return k || (a.obowiazuje_od < b.obowiazuje_od ? -1 : 1);
+    });
+    document.getElementById("progiInfo").textContent = wiersze.length + " wierszy";
+    document.getElementById("progiDof").innerHTML = wiersze.map(function (r) {
+      var obowiazuje = r.obowiazuje_od <= dzis && (!r.obowiazuje_do || r.obowiazuje_do >= dzis);
+      return "<tr class='" + (obowiazuje ? "row-hl" : "") + "'><td class='strong'>" + esc(r.wielkosc.charAt(0).toUpperCase() + r.wielkosc.slice(1)) +
+        (r.wielkosc === "mikro" ? " <span class='muted small'>(do 9 osób na umowie o pracę)</span>" : "") + "</td>" +
+        "<td class='num'>" + DB.fmtPct(r.procent_dofinansowania) + "</td>" +
+        "<td class='num'>" + DB.fmtPct(100 - r.procent_dofinansowania) + "</td>" +
+        "<td class='mono'>" + esc(r.obowiazuje_od) + "</td>" +
+        "<td class='mono'>" + (r.obowiazuje_do ? esc(r.obowiazuje_do) : "<span class='tag pos'>obowiązuje</span>") + "</td></tr>";
     }).join("");
 
-    /* Rozliczenia wg wersji */
-    var poz26 = wn26.filter(function (w) { return w.statusDec === "Pozytywna"; });
-    var poz25 = wn25.filter(function (w) { return w.statusDec === "Pozytywna"; });
+    var forma = document.getElementById("formProgi");
+    if (!mozeEdytowac) { forma.style.display = "none"; return; }
+    var rok = parseInt(dzis.slice(0, 4), 10) + 1;
+    document.getElementById("polaProgi").innerHTML = KOLEJNOSC_WIELKOSCI.map(function (w) {
+      var akt = wiersze.filter(function (r) { return r.wielkosc === w && r.obowiazuje_od <= dzis; }).pop();
+      return '<label class="small muted">' + esc(w) + ' %</label>' +
+        '<input class="inp num" data-wielkosc="' + esc(w) + '" style="width:70px" value="' + (akt ? akt.procent_dofinansowania : "") + '">';
+    }).join("") +
+      '<label class="small muted" for="pdOd">obowiązuje od</label>' +
+      '<input class="inp" type="date" id="pdOd" style="width:150px" min="' + dzis + '" value="' + rok + '-01-01">' +
+      '<button class="btn primary" id="pdZapisz">Dodaj wersję progów</button>';
+  }
 
-    /* Liczymy caly okres naraz. W modelu "od calosci" przekroczenie progu
-       podnosi stawke takze dla pozycji juz wystawionych, wiec przyrostowe
-       sumowanie zanizyloby wynik. Patrz docs/07-silnik-prowizji.md. */
-    function policz(lista, war) {
-      var wynik = liczOkres(war, lista.map(function (w) { return { kwota: w.kosztZDoplata || 0 }; }));
-      return { obrot: wynik.obrot, prow: wynik.suma, n: lista.length };
-    }
-    var r26 = policz(poz26, p);
-    var r25 = policz(poz25, poprzednia(p));
+  function dodajWersjeProgow() {
+    var od = document.getElementById("pdOd").value;
+    var dzis = dzisiaj();
+    var nowe = {};
+    var zle = false;
+    document.querySelectorAll("#polaProgi input[data-wielkosc]").forEach(function (inp) {
+      var v = parseFloat(inp.value);
+      if (isNaN(v) || v < 0 || v > 100) zle = true;
+      nowe[inp.dataset.wielkosc] = v;
+    });
+    var wiersze = DB.PROGI_DOFINANSOWANIA;
+    var najnowszy = wiersze.reduce(function (m, r) { return r.obowiazuje_od > m ? r.obowiazuje_od : m; }, "");
+    var powod = zle ? "Każdy procent musi być liczbą od 0 do 100."
+      : (!od || od < dzis) ? "Nowe progi obowiązują od dziś albo od daty przyszłej, nigdy wstecz."
+      : od <= najnowszy ? "Data musi być późniejsza niż początek najnowszej wersji progów (" + najnowszy + ")." : "";
+    document.getElementById("bladProgi").textContent = powod;
+    if (powod) return;
 
-    document.getElementById("rozlWersje").innerHTML =
-      "<tr class='row-hl'><td class='strong'>od 2027-01-01</td><td class='muted'>planowana</td>" +
-      "<td class='muted'>" + OPIS_SPOSOBU[planowana(p).sposob] + "</td>" +
-      "<td class='num muted'>0</td><td class='num muted'>&ndash;</td><td class='num muted'>&ndash;</td>" +
-      "<td class='right'><button class='btn xs'>Podgląd</button></td></tr>" +
-      "<tr><td class='strong'>od 2026-01-01</td><td>2026-01-01 do dziś <span class='tag pos'>aktualna</span></td>" +
-      "<td class='muted'>" + OPIS_SPOSOBU[p.sposob] + "</td>" +
-      "<td class='num'>" + r26.n + "</td><td class='num'>" + DB.fmtPLN(r26.obrot) + "</td>" +
-      "<td class='num strong'>" + DB.fmtPLN(r26.prow) + "</td>" +
-      "<td class='right'><button class='btn xs'>Podgląd</button></td></tr>" +
-      "<tr><td class='strong'>2025-01-01</td><td>2025-01-01 do 2025-12-31 <span class='tag mute'>zamknięta</span></td>" +
-      "<td class='muted'>" + OPIS_SPOSOBU[poprzednia(p).sposob] + "</td>" +
-      "<td class='num'>" + r25.n + "</td><td class='num'>" + DB.fmtPLN(r25.obrot) + "</td>" +
-      "<td class='num strong'>" + DB.fmtPLN(r25.prow) + "</td>" +
-      "<td class='right'><button class='btn xs' disabled>Zablokowana</button></td></tr>";
+    KOLEJNOSC_WIELKOSCI.forEach(function (w) {
+      wiersze.filter(function (r) { return r.wielkosc === w && (!r.obowiazuje_do || r.obowiazuje_do >= od); })
+        .forEach(function (r) { Store.update("progi_dofinansowania", r.id, { obowiazuje_do: dzienPrzed(od) }); });
+      Store.insert("progi_dofinansowania", { wielkosc: w, procent_dofinansowania: nowe[w],
+        obowiazuje_od: od, obowiazuje_do: null }, "PD-");
+    });
+    logZmiana("Progi dofinansowania", "Nowa wersja od " + od, "poprzednie progi",
+      KOLEJNOSC_WIELKOSCI.map(function (w) { return w + " " + nowe[w] + "%"; }).join(", "));
+    render();
+  }
 
-    /* ---------- Certyfikat ---------- */
-    var szk = DB.SZKOLENIA.filter(function (s) { return s.is === i.id; })[0] || DB.SZKOLENIA[0];
+  /* ---------- Certyfikat, dane do faktury, formularz ---------- */
+  function certyfikatRender(i, wn) {
+    var szk = DB.SZKOLENIA.filter(function (s) { return s.is === i.id; })[0] ||
+              { nazwa: "(brak szkoleń w katalogu)", godz: "-", cena: 0 };
     var termin = DB.TERMINY.filter(function (t) { return t.is === i.id; })[0];
-    var przykladOsoba = (wn26[0] && wn26[0].uczestnicy[0]) ? wn26[0].uczestnicy[0].imie : "Katarzyna Nowak";
-    var terminTxt = termin ? termin.od + " do " + termin.do : "2026-09-08 do 2026-09-09";
+    var przykladOsoba = (wn[0] && wn[0].uczestnicy[0]) ? wn[0].uczestnicy[0].imie : "(brak uczestników)";
+    var terminTxt = termin ? termin.od + " do " + termin.do : "brak terminu";
 
     document.getElementById("certSub").textContent = i.nazwa;
-    document.getElementById("certPlik").textContent =
-      "wzor_certyfikatu_" + i.skrot.toLowerCase() + "_2026.docx";
+    document.getElementById("certPlik").textContent = "wzor_certyfikatu_" + String(i.skrot || i.id).toLowerCase() + "_2026.docx";
 
     var PH = [
-      ["{{uczestnik_imie_nazwisko}}", "Uczestnik projektu", przykladOsoba],
-      ["{{szkolenie_nazwa}}", "Katalog szkoleń", szk.nazwa],
-      ["{{termin_realizacji}}", "Termin szkolenia", terminTxt],
-      ["{{data_wystawienia}}", "Data systemowa", "2026-08-29"],
-      ["{{miejscowosc}}", "<b>Siedziba instytucji</b> <span class='ref'>D-99</span>", "<b>" + i.miasto + "</b>"],
-      ["{{numer_certyfikatu}}", "Opcjonalny, reguła nieustalona <span class='ref p'>P-40</span>",
-        "<span class='muted'>brak</span>"]
+      ["{{uczestnik_imie_nazwisko}}", "Uczestnik projektu", esc(przykladOsoba)],
+      ["{{szkolenie_nazwa}}", "Katalog szkoleń", esc(szk.nazwa)],
+      ["{{termin_realizacji}}", "Termin szkolenia", esc(terminTxt)],
+      ["{{data_wystawienia}}", "Data systemowa", esc(dzisiaj())],
+      ["{{miejscowosc}}", "<b>Siedziba instytucji</b> <span class='ref'>D-99</span>", "<b>" + esc(i.miasto) + "</b>"],
+      ["{{numer_certyfikatu}}", "Opcjonalny, reguła nieustalona <span class='ref p'>P-40</span>", "<span class='muted'>brak</span>"]
     ];
     document.getElementById("placeholdery").innerHTML = PH.map(function (r) {
       return "<tr><td class='mono strong'>" + r[0] + "</td><td class='small'>" + r[1] + "</td><td class='small'>" + r[2] + "</td></tr>";
     }).join("");
 
     document.getElementById("podgladCert").innerHTML =
-      '<div class="c-top">' + i.nazwa + "</div>" +
+      '<div class="c-top">' + esc(i.nazwa) + "</div>" +
       '<div class="c-tyt">Certyfikat ukończenia szkolenia</div>' +
       '<div class="c-txt">zaświadcza się, że</div>' +
       '<div class="c-os"><span class="ph">{{uczestnik_imie_nazwisko}}</span></div>' +
       '<div class="c-txt">ukończył(a) szkolenie<br><b><span class="ph">{{szkolenie_nazwa}}</span></b><br>' +
       'zrealizowane w terminie <span class="ph">{{termin_realizacji}}</span><br>' +
-      "w wymiarze " + szk.godz + " godzin dydaktycznych</div>" +
+      "w wymiarze " + esc(szk.godz) + " godzin dydaktycznych</div>" +
       '<div class="c-stopka">' +
         '<div><span class="ph">{{miejscowosc}}</span>, <span class="ph">{{data_wystawienia}}</span></div>' +
-        '<div>nr <span class="ph">{{numer_certyfikatu}}</span></div>' +
-      "</div>";
+        '<div>nr <span class="ph">{{numer_certyfikatu}}</span></div></div>';
+    return { szk: szk, terminTxt: terminTxt };
+  }
 
-    /* ---------- Dane do faktury ---------- */
-    var wzor = wn26.filter(function (w) { return w.statusDec === "Pozytywna"; })[0] || wn26[0];
+  function tekstMailaFaktury(dane) {
+    return "Dzień dobry, proszę o wystawienie faktur dla Klientów:\n\n" +
+      "Nazwa Klienta: " + dane.klient + "\n" +
+      "Adres siedziby: " + dane.adres + "\n" +
+      "NIP: " + dane.nip + "\n\n" +
+      "Imię i nazwisko odbiorcy FV: " + dane.odbiorca + "\n\n" +
+      "Szkolenie: " + dane.szkolenie + "\n" +
+      "Ilość osób: " + dane.osob + "\n" +
+      "Cena jedn.: " + DB.fmtPLN2(dane.cenaJedn) + "\n" +
+      "Cena całk.: " + DB.fmtPLN2(dane.cenaJedn * dane.osob) + "\n" +
+      "VAT: ZW\n" +
+      "Termin płatności: 14 dni od wystawienia\n\n" +
+      "Uwagi:\n" +
+      "- Usługa zwolniona z podatku VAT na podstawie § 3 ust. 1 pkt 14 Rozporządzenia Ministra Finansów " +
+      "z dnia 20 grudnia 2013 r. w sprawie zwolnień od podatku od towarów i usług oraz warunków stosowania " +
+      "tych zwolnień (Dz. U. z 2020 r. poz. 1983). Szkolenie finansowane w " + dane.procent + " z Krajowego Funduszu Szkoleniowego.\n" +
+      "- Uczestnicy: " + dane.uczestnicy + "\n" +
+      "- Termin: " + dane.termin;
+  }
+
+  function daneDoFakturyRender(i, wn, ctx) {
+    var wzor = wn.filter(function (w) { return w.statusDec === "Pozytywna"; })[0] || wn[0];
     var kl = wzor ? DB.KLIENCI.filter(function (k) { return k.id === wzor.klient; })[0] : null;
+    var klRow = wzor ? Store.find("klienci", wzor.klient) : null;
+    var procent = wzor && wzor.procent != null ? DB.fmtPct(wzor.procent) : "-";
     var osob = wzor ? wzor.osobZakw : 0;
-    var cenaJedn = wzor && wzor.uczestnicy.length ? wzor.uczestnicy[0].kwota : szk.cena;
-    var proc = wzor ? Math.round(DB.wskaznik(wzor.wielkosc) * 100) : 90;
-    var uczLista = wzor
-      ? wzor.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; })
-          .map(function (u) { return u.imie; }).join(", ")
-      : "";
+
+    var dane = {
+      klient: kl ? kl.nazwa : "", nip: kl ? kl.nip : "", odbiorca: kl ? kl.osoba : "",
+      adres: klRow ? [klRow.adres_siedziby, klRow.miasto].filter(Boolean).join(", ") : "",
+      szkolenie: wzor ? wzor.szkolenie : ctx.szk.nazwa, osob: osob, procent: procent,
+      cenaJedn: wzor && wzor.uczestnicy.length ? wzor.uczestnicy[0].kwota : ctx.szk.cena,
+      uczestnicy: wzor ? wzor.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; })
+        .map(function (u) { return u.imie; }).join(", ") : "",
+      termin: ctx.terminTxt
+    };
 
     document.getElementById("mailFakt").innerHTML =
-      '<div class="mh">' +
-        '<div class="r"><b>Do</b><span>' + i.mail + "</span></div>" +
+      '<div class="mh"><div class="r"><b>Do</b><span>' + esc(i.mail) + "</span></div>" +
         '<div class="r"><b>Od</b><span>powiadomienia@ldit.pl</span></div>' +
-        '<div class="r"><b>Temat</b><span>Dane do faktury, klient nr ' + (wzor ? wzor.nr : "-") + ", " + (kl ? kl.nazwa : "-") + "</span></div>" +
-      "</div>" +
-      '<div class="mb">' +
-"Dzień dobry, proszę o wystawienie faktur dla Klientów:\n\n" +
-"Nazwa Klienta: " + (kl ? kl.nazwa : "") + "\n" +
-"Adres siedziby: ul. Przykładowa 12, " + (kl ? kl.miasto : "") + "\n" +
-"NIP: " + (kl ? kl.nip : "") + "\n\n" +
-"Imię i nazwisko odbiorcy FV: " + (kl ? kl.osoba : "") + "\n\n" +
-"Szkolenie: " + (wzor ? wzor.szkolenie : szk.nazwa) + "\n" +
-"Ilość osób: " + osob + "\n" +
-"Cena jedn.: " + DB.fmtPLN2(cenaJedn) + "\n" +
-"Cena całk.: " + DB.fmtPLN2(cenaJedn * osob) + "\n" +
-"VAT: ZW\n" +
-"Termin płatności: 14 dni od wystawienia\n\n" +
-"Uwagi:\n" +
-"- Usługa zwolniona z podatku VAT na podstawie § 3 ust. 1 pkt 14 Rozporządzenia Ministra Finansów " +
-"z dnia 20 grudnia 2013 r. w sprawie zwolnień od podatku od towarów i usług oraz warunków stosowania " +
-"tych zwolnień (Dz. U. z 2020 r. poz. 1983). Szkolenie finansowane w 90% z Krajowego Funduszu Szkoleniowego.\n" +
-"- Uczestnicy: " + uczLista + "\n" +
-"- Termin: " + terminTxt +
-      "</div>";
+        '<div class="r"><b>Temat</b><span>Dane do faktury, klient nr ' + esc(wzor ? wzor.nr : "-") + ", " + esc(dane.klient || "-") + "</span></div></div>" +
+      '<div class="mb">' + esc(tekstMailaFaktury(dane)) + "</div>";
 
-    document.getElementById("uwagaProc").innerHTML = proc !== 90
-      ? '<div class="note warn" style="margin-top:14px;margin-bottom:0">Ten klient to <b>' + (wzor ? wzor.wielkosc : "") +
-        "</b>, dofinansowanie wynosi <b>" + proc + "%</b>, a szablon wpisuje na sztywno 90%. " +
-        "Bez parametryzacji treść maila będzie niezgodna ze stanem faktycznym.</div>"
-      : '<div class="note" style="margin-top:14px;margin-bottom:0">Ten klient to <b>mikro</b>, ' +
-        "więc 90% z klauzuli zgadza się przypadkowo. Przy pierwszym kliencie powyżej mikro treść trzeba parametryzować.</div>";
+    document.getElementById("uwagaProc").innerHTML = wzor
+      ? '<div class="note" style="margin-top:14px;margin-bottom:0">Klient wzorcowy: <b>' + esc(wzor.wielkosc) +
+        "</b>, procent finansowania <b>" + esc(procent) + "</b> pochodzi z progu dofinansowania wniosku.</div>" : "";
 
     var konta = DB.UZYTKOWNICY.filter(function (u) { return u.inst === i.nazwa; });
     document.getElementById("odbiorcaFakt").innerHTML =
-      ['<option>' + i.kontakt + " (" + i.mail + ")</option>"]
-        .concat(konta.map(function (u) { return "<option>" + u.imie + " (" + u.login + ")</option>"; })).join("");
+      ["<option>" + esc(i.kontakt) + " (" + esc(i.mail) + ")</option>"]
+        .concat(konta.map(function (u) { return "<option>" + esc(u.imie) + " (" + esc(u.login) + ")</option>"; })).join("");
+  }
 
-    /* ---------- Formularz zgłoszeniowy ---------- */
+  function formularzRender(i) {
     document.getElementById("linkForm").value =
-      "https://system.ldit.pl/zgloszenie/" + i.skrot.toLowerCase() + "-" + i.id.toLowerCase();
+      "https://system.ldit.pl/zgloszenie/" + String(i.skrot || i.id).toLowerCase() + "-" + i.id.toLowerCase();
     document.getElementById("kfWyp").textContent = DB.fmtNum(DB.KLIENCI.filter(function (k) { return k.is === i.id; }).length);
     document.getElementById("kfKol").textContent =
-      DB.KOLEJKA.filter(function (k) { return k.is === i.nazwa; }).length;
+      DB.KOLEJKA.filter(function (k) { return k.isId === i.id && k.status === "oczekuje"; }).length;
 
     var POLA = [
-      ["Nazwa firmy", "tekst", true],
-      ["NIP", "tekst, walidacja sumy kontrolnej", true],
-      ["Adres siedziby", "tekst", true],
-      ["Osoba kontaktowa", "tekst", true],
-      ["Telefon", "tekst", true],
-      ["Adres e-mail", "e-mail", true],
-      ["Liczba zatrudnionych na umowę o pracę", "liczba", true],
-      ["Rodzaj rozliczania", "lista wyboru", true],
-      ["Szkolenie", "lista z katalogu instytucji, z ceną", true],
-      ["Uczestnicy: imię i nazwisko", "lista powtarzalna", true],
-      ["Uczestnicy: PESEL", "tekst, dana wrażliwa", true],
+      ["Nazwa firmy", "tekst", true], ["NIP", "tekst, walidacja sumy kontrolnej", true],
+      ["Adres siedziby", "tekst", true], ["Osoba kontaktowa", "tekst", true], ["Telefon", "tekst", true],
+      ["Adres e-mail", "e-mail", true], ["Liczba zatrudnionych na umowę o pracę", "liczba", true],
+      ["Rodzaj rozliczania", "lista wyboru", true], ["Szkolenie", "lista z katalogu instytucji, z ceną", true],
+      ["Uczestnicy: imię i nazwisko", "lista powtarzalna", true], ["Uczestnicy: PESEL", "tekst, dana wrażliwa", true],
       ["Przypisanie uczestnika do szkolenia", "lista wyboru per uczestnik", false],
-      ["Uwagi", "tekst wielolinijkowy", false],
-      ["Zgoda na przetwarzanie danych", "pole wyboru", true]
+      ["Uwagi", "tekst wielolinijkowy", false], ["Zgoda na przetwarzanie danych", "pole wyboru", true]
     ];
     document.getElementById("polaForm").innerHTML = POLA.map(function (r) {
       return "<tr><td class='strong'>" + r[0] + "</td><td class='muted small'>" + r[1] + "</td>" +
@@ -722,14 +842,60 @@
     }).join("");
   }
 
-  /* ---------- Selektor i zakładki ---------- */
+  /* ---------- Render calosci ---------- */
+  function podlaczFormularzeEdycji() {
+    if (!mozeEdytowac) return;
+    var kum = document.getElementById("nwKum");
+    kum.addEventListener("change", function () {
+      var brak = kum.value === "brak";
+      document.getElementById("nwSposob").style.display = brak ? "none" : "";
+      document.getElementById("nwProgi").style.display = brak ? "none" : "";
+      document.getElementById("nwStala").style.display = brak ? "" : "none";
+    });
+    document.getElementById("nwZapisz").addEventListener("click", dodajWersje);
+    document.getElementById("pdZapisz").addEventListener("click", dodajWersjeProgow);
+  }
+
+  function render() {
+    var i = instytucja(wybrana);
+    var dzis = dzisiaj();
+    var wersje = wersjeInstytucji(i.id);
+    var akt = wersjaNaDzien(wersje, dzis);
+    var wnioski = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.is === i.id; });
+    var wn26 = wnioski.filter(function (w) { return w.rok === "2026"; });
+
+    document.getElementById("tagModel").textContent = akt ? "Model " + akt.model + ": " + OPIS_MODELU[akt.model] : "Brak warunków prowizyjnych";
+    /* Wnioskow z 2025 nie ma w bazie (D-160), liczymy tylko to, co jest */
+    document.getElementById("podsumowanie").innerHTML =
+      esc(i.miasto) + " &middot; " + wn26.length + " projektów w 2026 &middot; opiekun " + esc(i.opiekun);
+    document.getElementById("obowOd").innerHTML = akt ? "obowiązuje od <b>" + esc(akt.od) + "</b>" : "brak warunków";
+    document.getElementById("warunkiAkt").innerHTML = warunkiHtml(akt);
+    document.getElementById("historia").innerHTML = historiaHtml(wersje, dzis);
+
+    var projekty = wnioski.filter(function (w) {
+      return w.statusDec === "Pozytywna" && w.dataFaktury && w.podstawaProwizji != null;
+    });
+    document.getElementById("rozlWersje").innerHTML = rozliczeniaHtml(wersje, projekty);
+
+    document.getElementById("polaWersji").innerHTML = polaWersjiHtml();
+    progiDofRender(dzis);
+    podlaczFormularzeEdycji();
+
+    var ctx = certyfikatRender(i, wn26);
+    daneDoFakturyRender(i, wn26, ctx);
+    formularzRender(i);
+  }
+
+  /* ---------- Selektor, zakladki, usuwanie planowanej wersji ---------- */
   var sel = document.getElementById("selIS");
-  sel.innerHTML = PELNE.map(function (i) {
-    return '<option value="' + i.id + '"' + (i.id === wybrana ? " selected" : "") + ">" + i.nazwa + " (" + i.miasto + ")</option>";
+  sel.innerHTML = DB.INSTYTUCJE.map(function (i) {
+    return '<option value="' + esc(i.id) + '"' + (i.id === wybrana ? " selected" : "") + ">" + esc(i.nazwa) + " (" + esc(i.miasto) + ")</option>";
   }).join("");
-  sel.addEventListener("change", function () {
-    wybrana = sel.value;
-    render();
+  sel.addEventListener("change", function () { wybrana = sel.value; render(); });
+
+  document.getElementById("historia").addEventListener("click", function (e) {
+    var id = e.target.getAttribute("data-usun");
+    if (id) usunPlanowana(id);
   });
 
   Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (t) {

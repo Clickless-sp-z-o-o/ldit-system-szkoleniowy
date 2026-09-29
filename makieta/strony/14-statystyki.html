@@ -32,9 +32,7 @@
       </p>
     </div>
     <div class="ph-actions">
-      <select class="inp" style="width:auto" id="okres">
-        <option>Rok 2026</option><option>Rok 2025</option><option>Porównanie 2025 / 2026</option>
-      </select>
+      <select class="inp" style="width:auto" id="okres"></select>
       <button class="btn">Eksport do Excela</button>
     </div>
   </div>
@@ -52,6 +50,14 @@
     <span class="small muted" id="podsumowanie"></span>
   </div>
 
+  <div class="card" id="kartaHistoria" style="display:none">
+    <div class="card-head"><h3 id="historiaTytul"></h3><span class="sub">tylko podsumowania, bez wniosków <span class="ref">D-160</span> <span class="ref">D-175</span></span></div>
+    <div class="card-body tight">
+      <table class="tbl"><thead id="historiaHead"></thead><tbody id="historiaBody"></tbody></table>
+    </div>
+  </div>
+
+  <div id="widokBiezacy">
   <!-- ================= DLA LDIT ================= -->
   <h2 style="font-size:15px;font-weight:700;margin:0 0 12px">Widok firmy pozyskującej dofinansowania</h2>
 
@@ -76,41 +82,16 @@
 
       <div class="card">
         <div class="card-head">
-          <h3>Lejek dostarczonych osób</h3>
+          <h3>Lejek osób w projektach</h3>
           <span class="sub" id="lejekOpis"></span>
         </div>
         <div class="card-body"><div class="funnel" id="lejek"></div></div>
       </div>
 
-      <div class="card">
-        <div class="card-head">
-          <h3>Porównanie instytucji</h3>
-          <span class="sub">skuteczność i wolumen</span>
-        </div>
-        <div class="card-body tight">
-          <div class="tbl-wrap">
-            <table class="tbl">
-              <thead>
-                <tr>
-                  <th>Instytucja</th>
-                  <th class="num">Projekty</th>
-                  <th class="num">Pozytywne</th>
-                  <th class="num">Skuteczność</th>
-                  <th class="num">Wartość wniosków</th>
-                  <th class="num">Przyznano</th>
-                  <th class="num kol-prowizja" style="background:#fffbeb">Prowizja</th>
-                  <th class="num kol-prowizja" style="background:#fffbeb">Marżowość</th>
-                </tr>
-              </thead>
-              <tbody id="porownanie"></tbody>
-            </table>
-          </div>
-          <div class="note" style="margin:14px 16px 16px">
-            Kolumny na żółtym tle to dane finansowe LDIT. Widzi je <b>wyłącznie administrator</b>
-            <span class="ref">D-34</span> <span class="ref">D-07</span>. Dla pozostałych ról kolumny
-            nie są rysowane, a same stawki nie trafiają nawet do pamięci strony.
-          </div>
-        </div>
+      <div class="note">
+        Skuteczność i porównanie instytucji, prowizja LDIT, przychód i VAT są w module
+        <a href="08-administracja.html">Administracja</a>, zakładka Statystyki
+        <span class="ref">D-141</span> <span class="ref">D-34</span>, żeby w systemie była jedna tabela i jedna liczba prowizji.
       </div>
     </div>
 
@@ -172,7 +153,7 @@
     <div class="card">
       <div class="card-head">
         <h3>Moje szkolenia</h3>
-        <span class="sub">Odczaruj Power BI</span>
+        <span class="sub" id="mojaInstytucja"></span>
       </div>
       <div class="card-body tight">
         <table class="tbl">
@@ -192,9 +173,8 @@
         <table class="tbl">
           <thead><tr><th>Handlowiec</th><th class="num">Formularze</th><th class="num">Śr. czas</th><th class="num">Skut.</th></tr></thead>
           <tbody>
-            <tr><td>Mirosława Kot</td><td class="num">34</td><td class="num">1,2 dnia</td><td class="num">68%</td></tr>
-            <tr><td>Aldona Rybak</td><td class="num">21</td><td class="num">0,8 dnia</td><td class="num">74%</td></tr>
-            <tr><td>Marek Sowa</td><td class="num">12</td><td class="num">2,9 dnia</td><td class="num">51%</td></tr>
+            <tr><td>Handlowiec 1</td><td class="num">-</td><td class="num">-</td><td class="num">-</td></tr>
+            <tr><td>Handlowiec 2</td><td class="num">-</td><td class="num">-</td><td class="num">-</td></tr>
           </tbody>
         </table>
       </div>
@@ -214,6 +194,7 @@
     To konflikt interesów opisany jako <span class="ref r">R-06</span>. Kierunek rozwiązania: wersja
     premium dla instytucji jako osobny moduł poza etapem I <span class="ref">D-96</span>.
   </div>
+  </div>
 
 </div>
 
@@ -223,181 +204,209 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dash"></script>
 <script type="text/kfs-strona">
 (function () {
+  "use strict";
+
+  var DZIS = (function () {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  })();
+  var ROK = DZIS.slice(0, 4);
+  var ROK_POPRZEDNI = String(parseInt(ROK, 10) - 1);
+  var LIMIT_LISTY = 8;
+  var PROG_DOBRY = 60, PROG_SREDNI = 40;
+
   var selIS = document.getElementById("fIS");
-  DB.INSTYTUCJE.slice(0, 8).forEach(function (i) {
-    selIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
-  });
+  selIS.innerHTML += DB.INSTYTUCJE.map(function (i) {
+    return '<option value="' + esc(i.id) + '">' + esc(i.nazwa) + '</option>';
+  }).join("");
 
-  function render() {
-    var fis = selIS.value;
-    var W = DB.WNIOSKI.filter(function (w) { return !fis || w.is === fis; });
+  var selOkres = document.getElementById("okres");
+  var WIDOK = { biezacy: "Rok " + ROK, poprzedni: "Rok " + ROK_POPRZEDNI, porownanie: "Porównanie " + ROK_POPRZEDNI + " / " + ROK };
+  selOkres.innerHTML = Object.keys(WIDOK).map(function (k) {
+    return '<option value="' + k + '">' + WIDOK[k] + '</option>';
+  }).join("");
 
-    var zloz = W.filter(function (w) { return w.statusSkl === "Złożony"; });
-    var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
-    var neg = W.filter(function (w) { return w.statusDec === "Negatywna"; });
+  function klasaSkutecznosci(s) { return s >= PROG_DOBRY ? "pos" : s >= PROG_SREDNI ? "warn" : "neg"; }
+  function suma(lista, pole) { return lista.reduce(function (s, x) { return s + (x[pole] || 0); }, 0); }
+  function kpi(l, v, f, adm) {
+    return '<div class="kpi' + (adm ? " admin" : "") + '"><div class="k-label">' + l + '</div>' +
+      '<div class="k-value">' + v + '</div>' + (f ? '<div class="k-foot">' + f + '</div>' : "") + '</div>';
+  }
+  function instytucjaPoId(id) {
+    return DB.INSTYTUCJE.filter(function (i) { return i.id === id; })[0];
+  }
+
+  /* ---------- Lata bez wnioskow: tylko podsumowania (D-160, D-175) ---------- */
+  function miara(rok, isId, nazwa) {
+    var wiersz = DB.PODSUMOWANIA.filter(function (p) { return p.rok === rok && p.isId === isId && p.miara === nazwa; })[0];
+    return wiersz ? wiersz.wartosc : null;
+  }
+  function liczbaLubMyslnik(v) { return v == null ? "-" : DB.fmtNum(v); }
+  function idsInstytucjiZDanymi(rok, fis) {
+    var ids = {};
+    DB.PODSUMOWANIA.filter(function (p) { return p.rok === rok && (!fis || p.isId === fis); })
+      .forEach(function (p) { ids[p.isId] = true; });
+    return Object.keys(ids).filter(function (id) { return instytucjaPoId(id); });
+  }
+  function proc(a, b) { return b ? Math.round(a / b * 100) + "%" : "-"; }
+
+  function renderPoprzedni(fis) {
+    document.getElementById("historiaTytul").textContent = "Podsumowanie roku " + ROK_POPRZEDNI;
+    document.getElementById("historiaHead").innerHTML = "<tr><th>Instytucja</th><th class='num'>Wnioski złożone</th>" +
+      "<th class='num'>Pozytywne</th><th class='num'>Skuteczność</th><th class='num'>Obrót</th></tr>";
+    var ids = idsInstytucjiZDanymi(ROK_POPRZEDNI, fis);
+    document.getElementById("historiaBody").innerHTML = ids.length ? ids.map(function (id) {
+      var zl = miara(ROK_POPRZEDNI, id, "wnioski_zlozone"), po = miara(ROK_POPRZEDNI, id, "wnioski_pozytywne");
+      return "<tr><td class='strong'>" + esc(instytucjaPoId(id).nazwa) + "</td><td class='num'>" + liczbaLubMyslnik(zl) + "</td>" +
+        "<td class='num'>" + liczbaLubMyslnik(po) + "</td><td class='num'>" + proc(po, zl) + "</td>" +
+        "<td class='num'>" + (miara(ROK_POPRZEDNI, id, "obrot") == null ? "-" : DB.fmtPLN(miara(ROK_POPRZEDNI, id, "obrot"))) + "</td></tr>";
+    }).join("") : "<tr><td colspan='5'><div class='empty'><div class='et'>Brak podsumowań za rok " + ROK_POPRZEDNI + "</div></div></td></tr>";
+  }
+
+  function delta(przed, teraz) {
+    if (!przed) return "-";
+    var d = Math.round((teraz - przed) / przed * 100);
+    return '<span class="delta ' + (d >= 0 ? "up" : "down") + '">' + (d >= 0 ? "&#9650; " : "&#9660; ") + Math.abs(d) + "%</span>";
+  }
+
+  function renderPorownanie(fis) {
+    document.getElementById("historiaTytul").textContent = "Porównanie " + ROK_POPRZEDNI + " / " + ROK;
+    document.getElementById("historiaHead").innerHTML = "<tr><th>Instytucja</th>" +
+      "<th class='num'>Złożone " + ROK_POPRZEDNI + "</th><th class='num'>Złożone " + ROK + "</th><th class='num'>Zmiana</th>" +
+      "<th class='num'>Pozytywne " + ROK_POPRZEDNI + "</th><th class='num'>Pozytywne " + ROK + "</th><th class='num'>Zmiana</th></tr>";
+    var ids = idsInstytucjiZDanymi(ROK_POPRZEDNI, fis);
+    var wiersze = ids.map(function (id) {
+      return { nazwa: instytucjaPoId(id).nazwa,
+               zl0: miara(ROK_POPRZEDNI, id, "wnioski_zlozone"), zl1: miara(ROK, id, "wnioski_zlozone"),
+               po0: miara(ROK_POPRZEDNI, id, "wnioski_pozytywne"), po1: miara(ROK, id, "wnioski_pozytywne") };
+    });
+    var razem = { nazwa: "Razem", zl0: suma(wiersze, "zl0"), zl1: suma(wiersze, "zl1"), po0: suma(wiersze, "po0"), po1: suma(wiersze, "po1") };
+    document.getElementById("historiaBody").innerHTML = wiersze.concat(wiersze.length ? [razem] : []).map(function (r, i, a) {
+      var ostatni = i === a.length - 1 && wiersze.length;
+      var tag = ostatni ? "strong" : "";
+      return "<tr><td class='strong'>" + esc(r.nazwa) + "</td><td class='num " + tag + "'>" + liczbaLubMyslnik(r.zl0) + "</td>" +
+        "<td class='num " + tag + "'>" + liczbaLubMyslnik(r.zl1) + "</td><td class='num'>" + delta(r.zl0, r.zl1) + "</td>" +
+        "<td class='num " + tag + "'>" + liczbaLubMyslnik(r.po0) + "</td><td class='num " + tag + "'>" + liczbaLubMyslnik(r.po1) + "</td>" +
+        "<td class='num'>" + delta(r.po0, r.po1) + "</td></tr>";
+    }).join("") || "<tr><td colspan='7'><div class='empty'><div class='et'>Brak podsumowań za rok " + ROK_POPRZEDNI + "</div></div></td></tr>";
+  }
+
+  /* ---------- Procent dofinansowania z tabeli progow (D-131), nie z kodu ---------- */
+  function procentDofinansowania(wielkosc) {
+    var wiersz = DB.PROGI_DOFINANSOWANIA.filter(function (r) {
+      return r.wielkosc === wielkosc && r.obowiazuje_od <= DZIS && (!r.obowiazuje_do || r.obowiazuje_do >= DZIS);
+    })[0];
+    return wiersz ? wiersz.procent_dofinansowania + "%" : "brak progu";
+  }
+
+  /* ---------- Widok biezacy ---------- */
+  function renderKpi(W, poz, neg, zloz, fis) {
     var rozstrzygniete = poz.length + neg.length;
     var skut = rozstrzygniete ? Math.round(poz.length / rozstrzygniete * 100) : 0;
-    var wartosc = W.reduce(function (s, w) { return s + w.wartosc; }, 0);
-    var przyznano = poz.reduce(function (s, w) { return s + (w.przyznano || 0); }, 0);
-    var uczestnicy = W.reduce(function (s, w) { return s + w.osob; }, 0);
-
+    var wartosc = suma(W, "wartosc");
+    var uczestnicy = suma(W, "osob");
     document.getElementById("podsumowanie").innerHTML =
-      "<b>" + W.length + "</b> projektów &middot; <b>" + uczestnicy + "</b> uczestników &middot; wartość <b>" +
-      DB.fmtPLN(wartosc) + "</b>";
+      "<b>" + W.length + "</b> projektów &middot; <b>" + uczestnicy + "</b> uczestników &middot; wartość <b>" + DB.fmtPLN(wartosc) + "</b>";
 
-    function kpi(l, v, f, adm) {
-      return '<div class="kpi' + (adm ? " admin" : "") + '"><div class="k-label">' + l + '</div>' +
-        '<div class="k-value">' + v + '</div>' + (f ? '<div class="k-foot">' + f + '</div>' : "") + '</div>';
-    }
-
-    /* Prowizja liczona okresowo per instytucja (poprawnie dla modelu A).
-       Role bez uprawnienia nie dostaja warunkow w ogole, wiec inst.prowizja
-       jest wtedy puste i liczenie sie nie odbywa (D-07, D-34). */
-    var widziProwizje = Auth.moze("finanse.prowizja");
-    if (!widziProwizje) {
-      document.querySelectorAll(".kol-prowizja").forEach(function (el) { el.remove(); });
-    }
-    var prowizjaRazem = 0;
-    var wgIS = {};
-    DB.INSTYTUCJE.slice(0, 8).forEach(function (inst) {
-      var pw = poz.filter(function (w) { return w.is === inst.id; });
-      var faktury = pw.map(function (w) { return { kwota: w.kosztZDoplata || 0 }; });
-      var wynik = (faktury.length && widziProwizje && inst.prowizja)
-        ? liczOkres(inst.prowizja, faktury)
-        : { suma: 0, obrot: 0, stawkaEfektywna: 0 };
-      var wszystkie = W.filter(function (w) { return w.is === inst.id; });
-      var pozIS = wszystkie.filter(function (w) { return w.statusDec === "Pozytywna"; });
-      var negIS = wszystkie.filter(function (w) { return w.statusDec === "Negatywna"; });
-      wgIS[inst.id] = {
-        nazwa: inst.nazwa, model: inst.prowizja ? inst.prowizja.model : "-",
-        projekty: wszystkie.length, poz: pozIS.length,
-        rozstrzyg: pozIS.length + negIS.length,
-        wartosc: wszystkie.reduce(function (s, w) { return s + w.wartosc; }, 0),
-        przyznano: pozIS.reduce(function (s, w) { return s + (w.przyznano || 0); }, 0),
-        prowizja: wynik.suma, obrot: wynik.obrot, stawka: wynik.stawkaEfektywna
-      };
-      if (!fis || fis === inst.id) prowizjaRazem += wynik.suma;
-    });
-
+    var prowizja = Auth.moze("finanse.prowizja")
+      ? kpi("Prowizja naliczona", '<a href="08-administracja.html">Administracja</a>', "jedno źródło liczb prowizji", true) : "";
     document.getElementById("kpi").innerHTML =
       kpi("Projekty", DB.fmtNum(W.length), zloz.length + " złożonych w urzędach") +
-      kpi("Skuteczność", skut + "%",
-          '<span class="tag pos">' + poz.length + " poz.</span> <span class='tag neg'>" + neg.length + " neg.</span>") +
-      kpi("Przyznane dofinansowania", DB.fmtPLN(przyznano),
-          "z wnioskowanych " + DB.fmtPLN(wartosc)) +
-      (widziProwizje
-        ? kpi("Prowizja naliczona", DB.fmtPLN(prowizjaRazem), "wg warunków per instytucja", true)
-        : "");
+      kpi("Skuteczność", skut + "%", '<span class="tag pos">' + poz.length + " poz.</span> <span class='tag neg'>" + neg.length + " neg.</span>") +
+      kpi("Przyznane dofinansowania", DB.fmtPLN(suma(poz, "przyznano")), "z wnioskowanych " + DB.fmtPLN(wartosc)) +
+      prowizja;
+  }
 
-    /* Wykres miesieczny z rozbiciem */
+  function renderMiesiace(W) {
     var mies = ["sty","lut","mar","kwi","maj","cze","lip","sie","wrz","paź","lis","gru"];
     var dane = mies.map(function () { return { poz: 0, neg: 0, brak: 0 }; });
     W.forEach(function (w) {
-      var m = parseInt(w.dataWniosku.slice(5, 7)) - 1;
+      var m = parseInt(w.dataWniosku.slice(5, 7), 10) - 1;
       if (w.statusDec === "Pozytywna") dane[m].poz++;
       else if (w.statusDec === "Negatywna") dane[m].neg++;
       else dane[m].brak++;
     });
     var maxM = Math.max.apply(null, dane.map(function (d) { return d.poz + d.neg + d.brak; })) || 1;
     document.getElementById("barsMies").innerHTML = dane.map(function (d, i) {
-      var suma = d.poz + d.neg + d.brak;
-      var h = Math.round(suma / maxM * 100);
+      var razem = d.poz + d.neg + d.brak;
+      var h = Math.round(razem / maxM * 100);
       var seg = function (n, cls) {
-        return n ? '<div class="fill ' + cls + '" style="height:' + (n / suma * h) + '%;border-radius:0"></div>' : "";
+        return n ? '<div class="fill ' + cls + '" style="height:' + (n / razem * h) + '%;border-radius:0"></div>' : "";
       };
-      return '<div class="b"><div class="val">' + (suma || "") + '</div>' +
-        seg(d.brak, "alt") + seg(d.neg, "neg") + seg(d.poz, "pos") +
-        '<div class="lab">' + mies[i] + '</div></div>';
+      return '<div class="b"><div class="val">' + (razem || "") + '</div>' +
+        seg(d.brak, "alt") + seg(d.neg, "neg") + seg(d.poz, "pos") + '<div class="lab">' + mies[i] + '</div></div>';
     }).join("");
+  }
 
-    /* Lejek */
-    var klienciIS = fis ? DB.KLIENCI.filter(function (k) { return k.is === fis; }).length : DB.KLIENCI.length;
-    document.getElementById("lejekOpis").textContent = fis ? wgIS[fis].nazwa : "wszystkie instytucje";
+  /* Lejek osob z danych wnioskow: zgloszeni, zakwalifikowani, w projektach z decyzja pozytywna, w rozliczonych */
+  function renderLejek(W, poz, fis) {
+    document.getElementById("lejekOpis").textContent = fis ? instytucjaPoId(fis).nazwa : "wszystkie instytucje";
     var lej = [
-      ["Formularze przyjęte", klienciIS],
-      ["Zarejestrowani w BUR", Math.round(klienciIS * 0.82)],
-      ["Wnioski złożone", zloz.length],
-      ["Decyzje pozytywne", poz.length],
-      ["Szkolenia odbyte", Math.round(poz.length * 0.79)],
-      ["Rozliczone", W.filter(function (w) { return w.rozliczenie === "Rozliczone"; }).length]
+      ["Uczestnicy zgłoszeni do projektów", suma(W, "osob")],
+      ["Zakwalifikowani", suma(W, "osobZakw")],
+      ["W projektach z decyzją pozytywną", suma(poz, "osobZakw")],
+      ["W projektach rozliczonych", suma(W.filter(function (w) { return w.rozliczenie === "Rozliczone"; }), "osobZakw")]
     ];
     var maxL = lej[0][1] || 1;
     document.getElementById("lejek").innerHTML = lej.map(function (r, i) {
-      var konw = i ? Math.round(r[1] / lej[i - 1][1] * 100) : 100;
+      var konw = i && lej[i - 1][1] ? Math.round(r[1] / lej[i - 1][1] * 100) : 100;
       return '<div class="fn-row"><div class="fl">' + r[0] + '</div>' +
         '<div class="ft"><i style="width:' + Math.round(r[1] / maxL * 100) + '%"></i></div>' +
-        '<div class="fv">' + DB.fmtNum(r[1]) +
-        (i ? ' <span class="small muted">' + konw + '%</span>' : "") + '</div></div>';
+        '<div class="fv">' + DB.fmtNum(r[1]) + (i ? ' <span class="small muted">' + konw + '%</span>' : "") + '</div></div>';
     }).join("");
+  }
 
-    /* Porownanie instytucji */
-    var lista = Object.keys(wgIS).map(function (k) { return wgIS[k]; })
-      .filter(function (r) { return r.projekty > 0; })
-      .sort(function (a, b) { return b.projekty - a.projekty; });
-    document.getElementById("porownanie").innerHTML = lista.map(function (r) {
-      var s = r.rozstrzyg ? Math.round(r.poz / r.rozstrzyg * 100) : 0;
-      var marza = r.wartosc ? (r.prowizja / r.wartosc * 100) : 0;
-      return '<tr><td class="strong">' + r.nazwa + ' <span class="pill k">' + r.model + '</span></td>' +
-        '<td class="num">' + r.projekty + '</td>' +
-        '<td class="num">' + r.poz + '</td>' +
-        '<td class="num"><span class="tag ' + (s >= 60 ? "pos" : s >= 40 ? "warn" : "neg") + '">' + s + '%</span></td>' +
-        '<td class="num">' + DB.fmtPLN(r.wartosc) + '</td>' +
-        '<td class="num">' + DB.fmtPLN(r.przyznano) + '</td>' +
-        (widziProwizje
-          ? '<td class="num strong kol-prowizja" style="background:#fffbeb">' + DB.fmtPLN(r.prowizja) + '</td>' +
-            '<td class="num kol-prowizja" style="background:#fffbeb">' + DB.fmtPct(Math.round(marza * 10) / 10) + '</td>'
-          : '') + '</tr>';
-    }).join("");
-
-    /* Wg wielkosci firmy */
+  function renderWielkosciIUrzedy(W) {
     var wgW = {};
     W.forEach(function (w) {
-      if (!wgW[w.wielkosc]) wgW[w.wielkosc] = { n: 0, poz: 0, rozstrzyg: 0 };
-      wgW[w.wielkosc].n++;
-      if (w.statusDec === "Pozytywna") { wgW[w.wielkosc].poz++; wgW[w.wielkosc].rozstrzyg++; }
-      if (w.statusDec === "Negatywna") wgW[w.wielkosc].rozstrzyg++;
+      var d = wgW[w.wielkosc] = wgW[w.wielkosc] || { n: 0, poz: 0, rozstrzyg: 0 };
+      d.n++;
+      if (w.statusDec === "Pozytywna") { d.poz++; d.rozstrzyg++; }
+      if (w.statusDec === "Negatywna") d.rozstrzyg++;
     });
     document.getElementById("wgWielkosci").innerHTML =
       ["mikro", "mały", "średni", "duży"].filter(function (k) { return wgW[k]; }).map(function (k) {
         var d = wgW[k];
         var s = d.rozstrzyg ? Math.round(d.poz / d.rozstrzyg * 100) : 0;
-        var wsk = k === "mikro" ? "90%" : "70%";
         return '<div style="margin-bottom:12px">' +
           '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">' +
-          '<span style="font-size:12.5px;font-weight:650;text-transform:capitalize">' + k + '</span>' +
-          '<span class="pill">dofin. ' + wsk + '</span>' +
+          '<span style="font-size:12.5px;font-weight:650;text-transform:capitalize">' + esc(k) + '</span>' +
+          '<span class="pill">dofin. ' + esc(procentDofinansowania(k)) + '</span>' +
           '<span style="margin-left:auto;font-size:12.5px;font-weight:700">' + s + '%</span></div>' +
           '<div class="progress"><i style="width:' + s + '%"></i></div>' +
           '<div class="small muted" style="margin-top:3px">' + d.n + ' projektów</div></div>';
       }).join("");
 
-    /* Urzedy */
     var wgP = {};
     W.forEach(function (w) {
-      if (!wgP[w.pupNazwa]) wgP[w.pupNazwa] = { n: 0, poz: 0, r: 0 };
-      wgP[w.pupNazwa].n++;
-      if (w.statusDec === "Pozytywna") { wgP[w.pupNazwa].poz++; wgP[w.pupNazwa].r++; }
-      if (w.statusDec === "Negatywna") wgP[w.pupNazwa].r++;
+      var d = wgP[w.pupNazwa] = wgP[w.pupNazwa] || { n: 0, poz: 0, r: 0 };
+      d.n++;
+      if (w.statusDec === "Pozytywna") { d.poz++; d.r++; }
+      if (w.statusDec === "Negatywna") d.r++;
     });
     document.getElementById("pupy").innerHTML = Object.keys(wgP)
-      .sort(function (a, b) { return wgP[b].n - wgP[a].n; }).slice(0, 8)
+      .sort(function (a, b) { return wgP[b].n - wgP[a].n; }).slice(0, LIMIT_LISTY)
       .map(function (k) {
         var d = wgP[k];
         var s = d.r ? Math.round(d.poz / d.r * 100) : 0;
-        return '<tr><td>' + k + '</td><td class="num">' + d.n + '</td>' +
-          '<td class="num"><span class="tag ' + (s >= 60 ? "pos" : s >= 40 ? "warn" : "neg") + '">' + s + '%</span></td></tr>';
+        return '<tr><td>' + esc(k) + '</td><td class="num">' + d.n + '</td>' +
+          '<td class="num"><span class="tag ' + klasaSkutecznosci(s) + '">' + s + '%</span></td></tr>';
       }).join("");
+  }
 
-    /* Kompletnosc danych */
+  function renderKompletnosc(W, poz) {
     var brakKosztu = W.filter(function (w) { return w.statusDec === "Pozytywna" && w.kosztCalkowity == null; }).length;
     var brakUcz = W.filter(function (w) { return !w.uczestnicy.length; }).length;
     var nieRozliczone = poz.filter(function (w) { return w.rozliczenie === "Oczekuje"; }).length;
@@ -409,56 +418,78 @@
       ["Uczestnicy niezakwalifikowani", niezakw, "warn"]
     ].map(function (r) {
       return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)">' +
-        '<span class="small">' + r[0] + '</span>' +
-        '<span class="tag ' + r[2] + '" style="margin-left:auto">' + r[1] + '</span></div>';
+        '<span class="small">' + r[0] + '</span><span class="tag ' + r[2] + '" style="margin-left:auto">' + r[1] + '</span></div>';
     }).join("") +
     '<div class="small muted" style="margin-top:10px">Niezakwalifikowani wymagają odrębnej faktury komercyjnej <span class="ref">D-84</span></div>';
+  }
 
-    /* Szkolenia */
+  function grupujSzkolenia(lista) {
     var wgS = {};
-    W.forEach(function (w) {
-      if (!wgS[w.szkolenie]) wgS[w.szkolenie] = { n: 0, ucz: 0, wart: 0, is: w.isNazwa };
-      wgS[w.szkolenie].n++;
-      wgS[w.szkolenie].ucz += w.osob;
-      wgS[w.szkolenie].wart += w.wartosc;
+    lista.forEach(function (w) {
+      var d = wgS[w.szkolenie] = wgS[w.szkolenie] || { n: 0, ucz: 0, wart: 0, is: w.isNazwa };
+      d.n++; d.ucz += w.osob; d.wart += w.wartosc;
     });
-    var listaS = Object.keys(wgS).map(function (k) { return Object.assign({ nazwa: k }, wgS[k]); })
+    return Object.keys(wgS).map(function (k) { return Object.assign({ nazwa: k }, wgS[k]); })
       .sort(function (a, b) { return b.wart - a.wart; });
+  }
+
+  function renderSzkolenia(W) {
+    var listaS = grupujSzkolenia(W);
     var maxW = listaS.length ? listaS[0].wart : 1;
     document.getElementById("szkolenia").innerHTML = listaS.slice(0, 10).map(function (r) {
-      return '<tr><td class="strong">' + r.nazwa + '</td><td class="muted">' + r.is + '</td>' +
-        '<td class="num">' + r.n + '</td><td class="num">' + r.ucz + '</td>' +
-        '<td class="num">' + DB.fmtPLN(r.wart) + '</td>' +
+      return '<tr><td class="strong">' + esc(r.nazwa) + '</td><td class="muted">' + esc(r.is) + '</td>' +
+        '<td class="num">' + r.n + '</td><td class="num">' + r.ucz + '</td><td class="num">' + DB.fmtPLN(r.wart) + '</td>' +
         '<td style="width:130px"><div class="progress"><i style="width:' + Math.round(r.wart / maxW * 100) + '%"></i></div></td></tr>';
     }).join("");
+  }
 
-    /* ===== Widok instytucji ===== */
-    var wIS = DB.WNIOSKI.filter(function (w) { return w.is === "IS-01"; });
+  /* Widok instytucji: podglad dla wybranej instytucji, a bez wyboru dla pierwszej z listy */
+  function renderWidokInstytucji(WSZYSTKIE, fis) {
+    var inst = instytucjaPoId(fis) || DB.INSTYTUCJE[0];
+    document.getElementById("mojaInstytucja").textContent = inst.nazwa;
+    var wIS = WSZYSTKIE.filter(function (w) { return w.is === inst.id; });
     var pozIS = wIS.filter(function (w) { return w.statusDec === "Pozytywna"; });
-    var odbyte = Math.round(pozIS.length * 0.79);
+    var odbyte = DB.TERMINY.filter(function (t) { return t.is === inst.id && t.status === "Odbyty" && t.od.slice(0, 4) === ROK; }).length;
     document.getElementById("kpiIS").innerHTML =
-      kpi("Szkolenia zrealizowane", odbyte, "w roku 2026") +
-      kpi("Łączna wartość", DB.fmtPLN(pozIS.reduce(function (s, w) { return s + w.wartosc; }, 0)), "moich szkoleń") +
+      kpi("Szkolenia zrealizowane", odbyte, "terminy ze statusem Odbyty w roku " + ROK) +
+      kpi("Łączna wartość", DB.fmtPLN(suma(pozIS, "wartosc")), "projektów z decyzją pozytywną") +
       kpi("Skuteczność moich klientów", (wIS.length ? Math.round(pozIS.length / wIS.length * 100) : 0) + "%",
           pozIS.length + " z " + wIS.length + " projektów");
+    document.getElementById("mojeSzkolenia").innerHTML = grupujSzkolenia(wIS).map(function (d) {
+      return '<tr><td class="strong">' + esc(d.nazwa) + '</td><td class="num">' + d.n + '</td>' +
+        '<td class="num">' + d.ucz + '</td><td class="num">' + DB.fmtPLN(d.wart) + '</td></tr>';
+    }).join("");
+  }
 
-    var wgSIS = {};
-    wIS.forEach(function (w) {
-      if (!wgSIS[w.szkolenie]) wgSIS[w.szkolenie] = { n: 0, ucz: 0, wart: 0 };
-      wgSIS[w.szkolenie].n++;
-      wgSIS[w.szkolenie].ucz += w.osob;
-      wgSIS[w.szkolenie].wart += w.wartosc;
-    });
-    document.getElementById("mojeSzkolenia").innerHTML = Object.keys(wgSIS)
-      .sort(function (a, b) { return wgSIS[b].wart - wgSIS[a].wart; })
-      .map(function (k) {
-        var d = wgSIS[k];
-        return '<tr><td class="strong">' + k + '</td><td class="num">' + d.n + '</td>' +
-          '<td class="num">' + d.ucz + '</td><td class="num">' + DB.fmtPLN(d.wart) + '</td></tr>';
-      }).join("");
+  function renderBiezacy(fis) {
+    var WSZYSTKIE = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.rok === ROK; });
+    var W = WSZYSTKIE.filter(function (w) { return !fis || w.is === fis; });
+    var zloz = W.filter(function (w) { return w.statusSkl === "Złożony"; });
+    var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
+    var neg = W.filter(function (w) { return w.statusDec === "Negatywna"; });
+
+    renderKpi(W, poz, neg, zloz, fis);
+    renderMiesiace(W);
+    renderLejek(W, poz, fis);
+    renderWielkosciIUrzedy(W);
+    renderKompletnosc(W, poz);
+    renderSzkolenia(W);
+    renderWidokInstytucji(WSZYSTKIE, fis);
+  }
+
+  function render() {
+    var fis = selIS.value;
+    var widok = selOkres.value;
+    var biezacy = widok === "biezacy";
+    document.getElementById("widokBiezacy").style.display = biezacy ? "" : "none";
+    document.getElementById("kartaHistoria").style.display = biezacy ? "none" : "";
+    if (biezacy) renderBiezacy(fis);
+    else if (widok === "poprzedni") renderPoprzedni(fis);
+    else renderPorownanie(fis);
   }
 
   selIS.addEventListener("change", render);
+  selOkres.addEventListener("change", render);
   render();
 })();
 </script>

@@ -7,22 +7,24 @@
 <link rel="stylesheet" href="../assets/style-sesja.css">
 </head>
 <body>
-<div class="page">
+<div class="page" id="stronaWniosku">
 
   <div class="page-head">
     <div class="ph-text">
       <div class="small muted" style="margin-bottom:4px">
-        <a href="02-zestawienia.html">Zestawienia 2026</a> &rsaquo; Projekt
+        <a href="02-zestawienia.html">Zestawienia</a> &rsaquo; Projekt
       </div>
       <h1 class="page-title" id="tytul">Projekt</h1>
       <p class="page-desc">
         Jeden projekt = jeden wniosek <span class="ref">D-53</span>.
-        Dane klienta wspólne dla projektów <span class="ref">D-54</span>, ale kontakt i wielkość edytowalne per wniosek
-        <span class="ref">D-132</span> <span class="ref">D-133</span>. Po warsztacie 04.09: koszt z dopłatą ręczny,
-        koszt całkowity wyliczany <span class="ref">D-134</span>; „Przyznano" edytowalne <span class="ref">D-135</span>.
+        Dane klienta wspólne dla projektów <span class="ref">D-54</span>, ale kontakt, wielkość i liczba zatrudnionych edytowalne per wniosek
+        <span class="ref">D-132</span> <span class="ref">D-133</span> <span class="ref">D-169</span>. Koszt z dopłatą ręczny,
+        koszt całkowity wyliczany <span class="ref">D-134</span>; „Przyznano" i wkład własny edytowalne z przywróceniem reguły
+        <span class="ref">D-135</span> <span class="ref">D-172</span>.
       </p>
     </div>
     <div class="ph-actions">
+      <span class="small muted" id="stanZapisu" role="status"></span>
       <button class="btn" onclick="alert('Generuje maila do instytucji szkoleniowej z uzupełnionymi danymi klienta.\\nWymaga zatwierdzenia przed wysyłką (D-104).')">Dane do faktury</button>
       <button class="btn" onclick="alert('Generuje po jednym PDF na uczestnika zakwalifikowanego,\\npakuje w ZIP: certyfikat_imie_nazwisko (D-100).')">Generuj certyfikaty</button>
       <button class="btn primary" id="btnZapisz">Zapisz</button>
@@ -36,17 +38,17 @@
       <div class="card">
         <div class="card-head">
           <h3>Model finansowy</h3>
-          <span class="sub">progi dofinansowania konfigurowalne per wielkość i rok <span class="ref">D-131</span></span>
+          <span class="sub">progi dofinansowania konfigurowalne per wielkość i data <span class="ref">D-131</span></span>
           <div class="ch-actions" style="align-items:center;gap:8px">
             <label class="small muted" style="font-weight:600">Wielkość
-              <span class="tip-mark" data-tip="Wielkosc wyznacza wskaznik dofinansowania (mikro 90% / pozostali 70%). NIE wynika tylko z liczby zatrudnionych: firma do 9 osob z obrotem powyzej 2 mln EUR to juz maly, nie mikro. Dlatego edytowalna per wniosek. D-132.">i</span>
+              <span class="tip-mark" data-tip="Wielkosc wyznacza prog dofinansowania. NIE wynika tylko z liczby zatrudnionych: firma do 9 osob z obrotem powyzej 2 mln EUR to juz maly, nie mikro. Dlatego edytowalna per wniosek. D-132.">i</span>
             </label>
             <select class="inp" id="selWielkosc" style="height:30px;width:auto;font-size:12.5px">
-              <option value="mikro">mikro (90/10)</option>
-              <option value="mały">mały (70/30)</option>
-              <option value="średni">średni (70/30)</option>
-              <option value="duży">duży (70/30)</option>
-              <option value="inny">inny (70/30)</option>
+              <option value="mikro">mikro</option>
+              <option value="mały">mały</option>
+              <option value="średni">średni</option>
+              <option value="duży">duży</option>
+              <option value="inny">inny</option>
             </select>
             <span class="tag mute" id="tagWielkosc"></span>
           </div>
@@ -57,43 +59,66 @@
             <div class="field calc-field">
               <label>Całkowita wartość szkolenia <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Suma kwot uczestnikow ZAKWALIFIKOWANYCH. Niezakwalifikowani maja kwote 0 i ida na odrebna fakture komercyjna. D-79, D-84.">i</span></label>
               <input class="inp num" id="fWartosc" readonly>
-              <div class="hint">Suma kwot uczestników <b>zakwalifikowanych</b> <span class="ref">D-79</span></div>
             </div>
 
             <div class="field calc-field">
-              <label>Koszt całkowity <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Po warsztacie 04.09 kierunek odwrocony (D-134): koszt calkowity WYLICZA sie jako koszt z doplata minus doplata dodatkowa. Wczesniej byl wpisywany recznie (D-64). To wartosc uznana przez urzad, podstawa dofinansowania.">i</span></label>
+              <label>Koszt całkowity <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Koszt z doplata minus doplata dodatkowa (D-134). To wartosc uznana przez urzad, podstawa dofinansowania. Widoczny po decyzji pozytywnej.">i</span></label>
               <input class="inp num" id="fKoszt" readonly>
-              <div class="hint">Wyliczane: koszt z dopłatą &minus; dopłata <span class="ref">D-134</span> (odwraca D-64)</div>
             </div>
 
             <div class="field calc-field" id="wrapPrzyznano">
-              <label>Przyznano <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Kwota dofinansowania z urzędu: koszt całkowity × wskaźnik wielkości firmy (90% mikro / 70% pozostali). Ręczna edycja kasuje regułę, przycisk poniżej ją przywraca.">i</span></label>
+              <label>Przyznano <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Kwota dofinansowania z urzedu: koszt calkowity razy procent wybranego progu. Reczna edycja kasuje regule, przycisk ja przywraca. D-135.">i</span></label>
               <input class="inp num" id="fPrzyznano">
               <div class="hint" id="hintPrzyznano"></div>
               <div class="restore-rule">
                 <span>&#9888; reguła wyłączona</span>
-                <button onclick="przywrocRegule()">Przywróć regułę</button>
+                <button onclick="przywrocRegule('przyznano')">Przywróć regułę</button>
               </div>
             </div>
           </div>
 
           <div class="grid g3">
-            <div class="field calc-field">
-              <label>Wkład własny <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Część kosztu pokrywana przez firmę (10% mikro / 30% pozostali). Liczony jako reszta, żeby równanie przyznano + wkład = koszt się domykało.">i</span></label>
-              <input class="inp num" id="fWklad" readonly>
-              <div class="hint">Liczony jako reszta, żeby równanie się domykało <span class="ref p">P-51</span></div>
+            <div class="field calc-field" id="wrapWklad">
+              <label>Wkład własny <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Domyslnie reszta (koszt minus przyznano), zeby rownanie sie domykalo. Kwote mozna nadpisac recznie, przycisk przywraca regule. D-172, D-173.">i</span></label>
+              <input class="inp num" id="fWklad">
+              <div class="restore-rule">
+                <span>&#9888; reguła wyłączona</span>
+                <button onclick="przywrocRegule('wklad')">Przywróć regułę</button>
+              </div>
             </div>
 
             <div class="field">
               <label>Kwota dopłaty dodatkowej <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Dodatkowa kwota, ktora doplaca klient (gdy urzad przyznal za malo albo instytucja nie schodzi z ceny). Domyslnie 0. Nie wchodzi do podstawy Przyznano. D-63.">i</span></label>
               <input class="inp num" id="fDoplata">
-              <div class="hint">Domyślnie 0. Nie wchodzi do podstawy „Przyznano” <span class="ref">D-63</span></div>
             </div>
 
             <div class="field">
-              <label>Koszt całkowity z dopłatą <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Wpisywana RECZNIE (D-134, odwrocenie). To wartosc, na jaka realnie umawiamy szkolenie, i PODSTAWA naliczania prowizji LDIT, nie kwota przyznana. Koszt calkowity liczy sie z niej minus doplata dodatkowa.">i</span></label>
+              <label>Koszt całkowity z dopłatą <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Wpisywany recznie (D-134). To wartosc, na jaka realnie umawiamy szkolenie. Koszt calkowity liczy sie z niej minus doplata dodatkowa. Podstawa prowizji zalezy od znacznika doplaty ponizej (D-174).">i</span></label>
               <input class="inp num" id="fKosztDop">
-              <div class="hint"><b>Ręczne. Podstawa naliczania prowizji</b> <span class="ref">D-134</span></div>
+            </div>
+          </div>
+
+          <div class="grid g3">
+            <div class="field calc-field" id="wrapProg">
+              <label>Próg dofinansowania <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Regula dobiera prog z wielkosci firmy i daty wniosku. Reczny wybor progu wylacza regule, przycisk ja przywraca. D-171.">i</span></label>
+              <select class="inp" id="selProg"></select>
+              <div class="restore-rule">
+                <span>&#9888; reguła wyłączona</span>
+                <button onclick="przywrocRegule('prog')">Przywróć regułę</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Liczba zatrudnionych <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Liczba osob na umowie o prace na dzien wniosku. Jest per wniosek, bo zmienia sie w czasie. D-169.">i</span></label>
+              <input class="inp num" id="fZatrudnieni" type="number" min="0" step="1">
+            </div>
+
+            <div class="field">
+              <label>Dopłata na fakturze KFS
+                <span class="tip-mark" data-tip="Zaznaczone: doplata jest na fakturze KFS i podstawa prowizji to koszt z doplata. Odznaczone: podstawa to koszt calkowity bez doplaty. D-174.">i</span></label>
+              <label class="small" style="display:flex;gap:8px;align-items:center;height:34px;font-weight:400">
+                <input type="checkbox" id="chDoplataFaktura"> tak, dopłata na fakturze KFS
+              </label>
             </div>
           </div>
 
@@ -152,21 +177,26 @@
 
       <div class="card">
         <div class="card-head">
-          <h3>Dane kontaktowe wniosku</h3>
-          <span class="tip-mark" data-tip="Osoba do kontaktu moze byc INNA dla kazdego wniosku (np. raz wlasciciel, raz sekretarka). Dlatego edytowalne per wniosek, niezaleznie od stalych danych firmy. Dane stale klienta sa w osobnej zakladce. D-133.">i</span>
+          <h3>Osoby kontaktowe wniosku</h3>
+          <span class="tip-mark" data-tip="Do dwoch osob i dwoch adresow e-mail per wniosek, niezaleznie od stalych danych klienta (raz wlasciciel, raz sekretarka). Po adresach e-mail wniosku dopasowywana jest korespondencja. D-133, D-169, D-178.">i</span>
           <span class="sub" style="margin-left:auto">edytowalne per wniosek</span>
         </div>
         <div class="card-body">
           <div class="field" style="margin-bottom:8px">
-            <label>Osoba do kontaktu</label>
-            <input class="inp" id="fkOsoba">
+            <label>Osoba 1</label>
+            <input class="inp" id="fkOsoba1" placeholder="imię i nazwisko">
+          </div>
+          <div class="grid g2" style="gap:10px;margin-bottom:14px">
+            <div class="field mb0"><label>E-mail</label><input class="inp" id="fkMail1"></div>
+            <div class="field mb0"><label>Telefon</label><input class="inp" id="fkTel1"></div>
+          </div>
+          <div class="field" style="margin-bottom:8px">
+            <label>Osoba 2</label>
+            <input class="inp" id="fkOsoba2" placeholder="imię i nazwisko">
           </div>
           <div class="grid g2" style="gap:10px">
-            <div class="field mb0"><label>E-mail</label><input class="inp" id="fkMail"></div>
-            <div class="field mb0"><label>Telefon</label><input class="inp" id="fkTel"></div>
-          </div>
-          <div class="note mb0" style="margin-top:10px;font-size:12px">
-            Dane kontaktowe mogą różnić się per wniosek. Dane stałe firmy są wspólne dla wszystkich jej projektów <span class="ref">D-133</span>.
+            <div class="field mb0"><label>E-mail</label><input class="inp" id="fkMail2"></div>
+            <div class="field mb0"><label>Telefon</label><input class="inp" id="fkTel2"></div>
           </div>
         </div>
       </div>
@@ -181,7 +211,7 @@
 
       <div class="card">
         <div class="card-head"><h3>Przebieg</h3>
-          <span class="tip-mark" data-tip="Os czasu budowana automatycznie z logow zmian statusu (D-145). Status zmienia sie przyciskiem ponizej z komentarzem, nie z listy. Etapy wg procesu Dzialu Dotacji (D-146).">i</span>
+          <span class="tip-mark" data-tip="Os czasu z zapisanych zmian etapu (D-145). Gdy zmian jeszcze nie ma, pokazujemy biezacy etap wniosku i daty z karty. Etapy wg procesu Dzialu Dotacji (D-146).">i</span>
         </div>
         <div class="card-body">
           <div class="timeline" id="przebieg"></div>
@@ -199,298 +229,411 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dofin"></script>
 <script type="text/kfs-strona">
-var id = new URLSearchParams(location.search).get("id");
-/* Prowizje widzi wylacznie administrator (D-07, D-93). Uprawnienie pochodzi
-   z zalogowanego konta, nie z parametru w adresie (D-125). */
-var isAdmin = Auth.moze("finanse.prowizja");
-var w = DB.WNIOSKI.filter(function (x) { return x.id === id; })[0] || DB.WNIOSKI[0];
-var kl = DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0];
-var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0];
-var wsk = DB.wskaznik(w.wielkosc);
-var regulaAktywna = true;
+(function () {
+  var ETAPOW = 10;
+  var TOLERANCJA = 0.005;
+  var wnId = new URLSearchParams(location.search).get("id");
+  /* Prowizje widzi wylacznie administrator (D-07, D-93). Uprawnienie pochodzi
+     z zalogowanego konta, nie z parametru w adresie (D-125). */
+  var isAdmin = Auth.moze("finanse.prowizja");
+  var mozeEdytowac = Auth.edytujeModul("dofin");
+  var w = null, raw = null, inst = null;
 
-/* Nadpisanie prowizji per wniosek (D-93 zaktualizowane, wyłącznie administrator).
-   regula aktywna -> licz wg warunkow IS; wylaczona -> uzyj stawki indywidualnej. */
-var prowizjaRegula = w.prowizjaRegula !== false;
-var typIndywid = "procent";           /* "procent" albo "kwota" - indywidualne nadpisanie (D-136) */
-var stawkaIndywid = w.prowizjaProcent != null ? w.prowizjaProcent : null;
-var kwotaIndywid = null;
-var ostatniaPodstawa = 0;
-/* Karte prowizji widzi wylacznie administrator (D-07 separacja, D-34 pracownik bez stawek) */
-if (!isAdmin) {
-  /* Karta znika z drzewa dokumentu, nie jest tylko schowana stylem */
-  var cardProw = document.getElementById("cardProwizja");
-  if (cardProw) cardProw.remove();
-}
+  function el(idElementu) { return document.getElementById(idElementu); }
 
-document.getElementById("tytul").textContent = w.id + " · " + w.klNazwa;
-
-/* Wielkosc edytowalna per wniosek (D-132). Zmiana przelicza wskaznik i cale wyliczenia.
-   Progi (90/10, 70/30) sa domyslne, ale konfigurowalne i wersjonowane rokiem (D-131). */
-var selW = document.getElementById("selWielkosc");
-if (selW.querySelector('option[value="' + w.wielkosc + '"]')) selW.value = w.wielkosc;
-function odswiezWielkosc() {
-  wsk = DB.wskaznik(w.wielkosc);
-  document.getElementById("tagWielkosc").textContent =
-    Math.round(wsk * 100) + "% dof. / " + Math.round((1 - wsk) * 100) + "% wkład";
-  document.getElementById("hintPrzyznano").innerHTML =
-    "koszt całkowity &times; " + wsk + " (" + w.wielkosc + ")";
-}
-selW.addEventListener("change", function () {
-  w.wielkosc = this.value;
-  odswiezWielkosc();
-  przelicz();
-});
-odswiezWielkosc();
-
-/* ---------- Model finansowy ---------- */
-function num(el) { return parseFloat(String(el.value).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0; }
-function set(el, v) { el.value = v.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-
-function przelicz() {
-  var wartosc = w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; })
-                            .reduce(function (s, u) { return s + u.kwota; }, 0);
-  set(document.getElementById("fWartosc"), wartosc);
-
-  /* D-134 (odwrocenie kierunku): koszt z doplata jest RECZNY, koszt calkowity WYLICZANY */
-  var kosztDop = num(document.getElementById("fKosztDop"));
-  var doplata = num(document.getElementById("fDoplata"));
-  var koszt = Math.round((kosztDop - doplata) * 100) / 100;
-  set(document.getElementById("fKoszt"), koszt);
-
-  if (regulaAktywna) {
-    set(document.getElementById("fPrzyznano"), Math.round(koszt * wsk * 100) / 100);
-  }
-  var przyznano = num(document.getElementById("fPrzyznano"));
-
-  /* Wklad wlasny jako reszta, zeby rownanie sie domykalo (P-51) */
-  var wklad = Math.round((koszt - przyznano) * 100) / 100;
-  set(document.getElementById("fWklad"), wklad);
-
-  /* Rownanie kontrolne: przyznano + wklad = koszt calkowity. Przyznano edytowalne (D-135). */
-  var ok = Math.abs((przyznano + wklad) - koszt) < 0.005;
-  document.getElementById("kontrola").innerHTML =
-    '<div class="note ' + (ok ? "" : "warn") + '" style="margin:6px 0 0">' +
-    '<b>Równanie kontrolne:</b> ' + DB.fmtPLN2(przyznano) + ' + ' + DB.fmtPLN2(wklad) +
-    ' = ' + DB.fmtPLN2(koszt) + ' <span class="small muted">(przyznano + wkład = koszt całkowity)</span> &nbsp; ' +
-    (ok ? '<span class="tag pos">domyka się</span>' : '<span class="tag neg">rozjazd</span>') +
-    ' <span class="ref">D-135</span></div>';
-
-  /* Podstawa prowizji = koszt calkowity z doplata (teraz pole reczne, D-134) */
-  liczProwizjeWidok(kosztDop);
-}
-
-function przywrocRegule() {
-  regulaAktywna = true;
-  document.getElementById("wrapPrzyznano").classList.remove("overridden");
-  przelicz();
-}
-
-document.getElementById("fPrzyznano").addEventListener("input", function () {
-  regulaAktywna = false;
-  document.getElementById("wrapPrzyznano").classList.add("overridden");
-  przelicz();
-});
-["fKosztDop", "fDoplata"].forEach(function (idf) {
-  document.getElementById(idf).addEventListener("input", przelicz);
-});
-
-/* Inicjalizacja: pole reczne to koszt z doplata (D-134) = koszt calkowity + doplata dodatkowa */
-var _koszt0 = w.kosztCalkowity != null ? w.kosztCalkowity : w.calkowita;
-var _doplata0 = w.doplata || 0;
-set(document.getElementById("fDoplata"), _doplata0);
-set(document.getElementById("fKosztDop"), _koszt0 + _doplata0);
-
-/* ---------- Uczestnicy ---------- */
-function renderUcz() {
-  var zakw = w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; }).length;
-  document.getElementById("subUcz").innerHTML =
-    zakw + " zakwalifikowanych z " + w.uczestnicy.length +
-    (zakw < w.uczestnicy.length ? ' &middot; niezakwalifikowani wymagają odrębnej faktury komercyjnej <span class="ref">D-84</span>' : "");
-
-  document.getElementById("uczestnicy").innerHTML = w.uczestnicy.map(function (u, i) {
-    var zak = u.status === "zakwalifikowany";
-    return '<tr' + (zak ? "" : ' class="row-danger"') + '>' +
-      '<td class="strong">' + u.imie + '</td>' +
-      '<td class="mono muted">' + u.pesel.slice(0, 6) + "*****" + '</td>' +
-      '<td>' + u.szkNazwa + '</td>' +
-      '<td class="num">' + (zak ? DB.fmtPLN(u.kwota) : '<span class="muted">0 zł</span>') + '</td>' +
-      '<td>' + (zak
-        ? '<span class="tag pos dot">zakwalifikowany</span>'
-        : '<span class="tag neg dot" title="' + u.powod + '">niezakwalifikowany</span>' +
-          '<div class="small muted">' + u.powod + '</div>') + '</td>' +
-      '<td class="right"><button class="btn xs" onclick="przelacz(' + i + ')">Zmień</button></td>' +
-      '</tr>';
-  }).join("");
-}
-function przelacz(i) {
-  var u = w.uczestnicy[i];
-  u.status = u.status === "zakwalifikowany" ? "niezakwalifikowany" : "zakwalifikowany";
-  if (u.status === "niezakwalifikowany" && !u.powod) u.powod = "brak umowy o pracę";
-  renderUcz(); przelicz();
-}
-
-/* ---------- Dane projektu ---------- */
-document.getElementById("dane").innerHTML =
-  [["Numer klienta", "<b>" + w.nr + "</b> <span class='small muted'>(trafia na fakturę)</span>"],
-   ["Klient", w.klNazwa],
-   ["NIP", '<span class="mono">' + w.nip + '</span>'],
-   ["Wielkość", w.wielkosc + " (" + (kl ? kl.zatrudnienie : "-") + " os. na UoP)"],
-   ["Instytucja", w.isNazwa],
-   ["Urząd pracy", w.pupNazwa],
-   ["Opiekun", w.opiekun],
-   ["Data formularza", w.dataFormularza + ' <span class="tag mute">auto</span>'],
-   ["Data wniosku", w.dataWniosku],
-   ["Data faktury", w.dataFaktury + ' <span class="small muted">wyznacza okres prowizji</span>'],
-   ["Status składania", w.statusSkl],
-   ["Status decyzji", w.statusDec || "brak"]
-  ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
-
-/* Dane kontaktowe per wniosek (D-133), domyslnie zaciagniete z danych klienta */
-document.getElementById("fkOsoba").value = (kl && kl.osoba) || w.klNazwa;
-document.getElementById("fkMail").value = (kl && kl.mail) || "";
-document.getElementById("fkTel").value = (kl && kl.tel) || "";
-
-/* ---------- Prowizja (wyłącznie administrator, D-07/D-34) ---------- */
-function liczProwizjeWidok(podstawa) {
-  if (!inst || !isAdmin || !inst.prowizja) return;
-  ostatniaPodstawa = podstawa;
-
-  var baza = liczProwizje(inst.prowizja, 0, podstawa);
-  var opisModelu = {
-    A: "próg miesięczny, stawka od całości",
-    B: "skala roczna YTD, stawka od nadwyżki",
-    C: "próg miesięczny, stawka od nadwyżki",
-    D: "stała stawka"
-  }[inst.prowizja.model];
-
-  /* Trzy tryby (D-136): regula wg instytucji, indywidualny procent albo indywidualna kwota. */
-  var uzyjIndywid = !prowizjaRegula;
-  var kwota, stawkaEfekt;
-  if (!uzyjIndywid) {
-    kwota = baza.kwota; stawkaEfekt = baza.stawka;
-  } else if (typIndywid === "kwota") {
-    if (kwotaIndywid == null) kwotaIndywid = Math.round(baza.kwota * 100) / 100;
-    kwota = kwotaIndywid; stawkaEfekt = podstawa ? kwota / podstawa * 100 : 0;
-  } else {
-    if (stawkaIndywid == null) stawkaIndywid = Math.round(baza.stawka * 100) / 100;
-    kwota = podstawa * stawkaIndywid / 100; stawkaEfekt = stawkaIndywid;
+  function wczytaj() {
+    w = DB.WNIOSKI_WSZYSTKIE.filter(function (x) { return x.id === wnId; })[0] || null;
+    if (!w) return false;
+    raw = Store.find("wnioski", w.id);
+    inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0] || null;
+    return true;
   }
 
-  document.getElementById("prowizja").innerHTML =
-    '<div class="kpi" style="border:0;padding:0;box-shadow:none;margin-bottom:12px">' +
-    '<div class="k-label">Prowizja od tego projektu</div>' +
-    '<div class="k-value">' + DB.fmtPLN2(kwota) + '</div>' +
-    '<div class="k-foot">stawka efektywna <b>' + DB.fmtPct(Math.round(stawkaEfekt * 100) / 100) + '</b>' +
-      (uzyjIndywid ? ' <span class="tag set dot">ręcznie</span>' : '') + '</div></div>' +
+  function dzis() {
+    var d = new Date();
+    function p(n) { return String(n).padStart(2, "0"); }
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function teraz() {
+    var d = new Date();
+    function p(n) { return String(n).padStart(2, "0"); }
+    return dzis() + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
 
-    '<div class="field" style="margin-bottom:10px">' +
-      '<label>Tryb prowizji <span class="calc-badge manual">admin</span>' +
-      '<span class="tip-mark" data-tip="Zgodnie z zasadami = licz wg warunkow instytucji (model A/B/C/D). Indywidualne nadpisanie per wniosek jako PROCENT albo KWOTA (D-136). Zmienia wylacznie administrator (D-93).">i</span></label>' +
-      '<select class="inp" onchange="ustawTrybProwizji(this.value)">' +
-        '<option value="regula"' + (!uzyjIndywid ? ' selected' : '') + '>Zgodnie z zasadami instytucji</option>' +
-        '<option value="procent"' + (uzyjIndywid && typIndywid === "procent" ? ' selected' : '') + '>Indywidualny procent (nadpisanie)</option>' +
-        '<option value="kwota"' + (uzyjIndywid && typIndywid === "kwota" ? ' selected' : '') + '>Indywidualna kwota (nadpisanie)</option>' +
-      '</select>' +
-    '</div>' +
+  /* Liczba z pola tekstowego albo null, gdy pole puste */
+  function num(pole) {
+    var t = String(pole.value).replace(/\s/g, "").replace(/[^\d,.-]/g, "").replace(",", ".");
+    var v = parseFloat(t);
+    return isNaN(v) ? null : v;
+  }
+  function pokazKwote(pole, v) {
+    pole.value = v == null ? "" : v.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function rozne(a, b) { return Math.abs((a || 0) - (b || 0)) >= TOLERANCJA; }
 
-    (uzyjIndywid
-      ? '<div class="field calc-field overridden" style="margin-bottom:10px">' +
-          '<label>' + (typIndywid === "kwota" ? "Kwota prowizji (zł)" : "Stawka indywidualna (%)") + '</label>' +
-          (typIndywid === "kwota"
-            ? '<input class="inp num" value="' + kwotaIndywid + '" onchange="zmienKwoteIndywid(this.value)">'
-            : '<input class="inp num" value="' + stawkaIndywid + '" onchange="zmienStawkeIndywid(this.value)">') +
+  /* ---------- Rejestr aktywnosci: autor z sesji ---------- */
+  function wpiszDoRejestru(typ, pole, przed, po) {
+    Store.insert("rejestr_aktywnosci", {
+      czas: teraz(), kto: Auth.sesja().imie, typ: typ, obiekt: w.id, pole: pole,
+      przed: przed == null || przed === "" ? "brak" : String(przed),
+      po: po == null || po === "" ? "brak" : String(po)
+    }, "AKT-");
+  }
+  function zapiszZmiany(tabela, rekordId, patch, wpisy) {
+    Store.update(tabela, rekordId, patch);
+    wpisy.forEach(function (x) { wpiszDoRejestru(x.typ || "Zmiana pola", x.pole, x.przed, x.po); });
+    wczytaj();
+    renderWszystko();
+  }
+  function komunikat(tekst) { el("stanZapisu").textContent = tekst; }
+
+  /* ---------- Model finansowy ---------- */
+  function opisProgu(p) {
+    return p.wielkosc + ", " + DB.fmtPct(p.procent_dofinansowania) + " (od " + p.obowiazuje_od +
+      (p.obowiazuje_do ? " do " + p.obowiazuje_do : "") + ")";
+  }
+  function renderProgi() {
+    var opcje = DB.PROGI_DOFINANSOWANIA.map(function (p) {
+      return '<option value="' + esc(p.id) + '">' + esc(opisProgu(p)) + '</option>';
+    }).join("");
+    el("selProg").innerHTML = '<option value="">brak progu</option>' + opcje;
+    el("selProg").value = w.progId || "";
+  }
+  function oznaczNadpisanie(idBloku, czyReczne) {
+    el(idBloku).classList.toggle("overridden", czyReczne);
+  }
+  function renderFinanse() {
+    var wielkosc = w.wielkosc;
+    if (el("selWielkosc").querySelector('option[value="' + wielkosc + '"]')) el("selWielkosc").value = wielkosc;
+    el("tagWielkosc").textContent = w.procent == null ? "" :
+      DB.fmtPct(w.procent) + " dof. / " + DB.fmtPct(100 - w.procent) + " wkład";
+    renderProgi();
+    pokazKwote(el("fWartosc"), w.wartosc);
+    pokazKwote(el("fKoszt"), w.kosztCalkowity);
+    pokazKwote(el("fPrzyznano"), w.przyznano);
+    pokazKwote(el("fWklad"), w.wklad);
+    /* Kwoty z adaptera, nie z surowej tabeli: rola bez finanse.kwoty_wniosku dostaje null */
+    pokazKwote(el("fDoplata"), w.doplata);
+    pokazKwote(el("fKosztDop"), w.kosztZDoplataZapisany);
+    el("fZatrudnieni").value = raw.liczba_zatrudnionych == null ? "" : raw.liczba_zatrudnionych;
+    el("chDoplataFaktura").checked = w.doplataNaFakturze;
+    el("hintPrzyznano").textContent = w.kosztCalkowity == null ?
+      "Wyliczane po decyzji pozytywnej" : "koszt całkowity × " + DB.fmtPct(w.procent) + " (wybrany próg)";
+    oznaczNadpisanie("wrapPrzyznano", !w.przyznanoRegula);
+    oznaczNadpisanie("wrapWklad", !w.wkladRegula);
+    oznaczNadpisanie("wrapProg", !w.progRegula);
+    renderKontrola();
+  }
+
+  /* Kontrola z pol formularza: przyznano + wklad = koszt (D-135). Wklad nadpisany
+     recznie moze sie nie domykac, wtedy to ostrzezenie, nie blad (D-173). */
+  function renderKontrola() {
+    var koszt = num(el("fKoszt")), przyznano = num(el("fPrzyznano")), wklad = num(el("fWklad"));
+    if (koszt == null || przyznano == null || wklad == null) {
+      el("kontrola").innerHTML = '<div class="note" style="margin:6px 0 0">Równanie kontrolne pojawi się po decyzji pozytywnej.</div>';
+      return;
+    }
+    var ok = !rozne(przyznano + wklad, koszt);
+    el("kontrola").innerHTML =
+      '<div class="note ' + (ok ? "" : "warn") + '" style="margin:6px 0 0">' +
+      '<b>Równanie kontrolne:</b> ' + esc(DB.fmtPLN2(przyznano)) + ' + ' + esc(DB.fmtPLN2(wklad)) +
+      ' = ' + esc(DB.fmtPLN2(koszt)) + ' <span class="small muted">(przyznano + wkład = koszt całkowity)</span> &nbsp; ' +
+      (ok ? '<span class="tag pos">domyka się</span>' : '<span class="tag neg">rozjazd</span>') +
+      ' <span class="ref">D-135</span></div>';
+  }
+
+  var KOLUMNY_KONTAKTU = [
+    ["osoba_kontaktowa", "fkOsoba1", "Osoba kontaktowa 1"], ["email", "fkMail1", "E-mail 1"], ["telefon", "fkTel1", "Telefon 1"],
+    ["osoba_kontaktowa_2", "fkOsoba2", "Osoba kontaktowa 2"], ["email_2", "fkMail2", "E-mail 2"], ["telefon_2", "fkTel2", "Telefon 2"]
+  ];
+
+  /* Zbiera z formularza tylko to, co sie zmienilo, i buduje wpisy do rejestru */
+  function zbierzZmiany() {
+    var patch = {}, wpisy = [];
+    function zmien(kolumna, etykieta, przed, po, poTekst) {
+      patch[kolumna] = po;
+      wpisy.push({ pole: etykieta, przed: przed, po: poTekst == null ? po : poTekst });
+    }
+    function zmienKwote(kolumna, etykieta, pole, obecna) {
+      var nowa = num(pole);
+      if (nowa !== null && rozne(nowa, obecna)) zmien(kolumna, etykieta, obecna, nowa);
+    }
+    function zmienNadpisywalna(kolumna, kolumnaReguly, etykieta, pole, obecna) {
+      var nowa = num(pole);
+      if (nowa === null || !rozne(nowa, obecna)) return;
+      zmien(kolumna, etykieta, obecna, nowa);
+      patch[kolumnaReguly] = 0;
+    }
+    var wielkosc = el("selWielkosc").value;
+    if (wielkosc !== w.wielkosc) zmien("wielkosc_przedsiebiorstwa", "Wielkość", w.wielkosc, wielkosc);
+    var zatrudnieni = el("fZatrudnieni").value === "" ? null : parseInt(el("fZatrudnieni").value, 10);
+    if (zatrudnieni !== raw.liczba_zatrudnionych) {
+      zmien("liczba_zatrudnionych", "Liczba zatrudnionych", raw.liczba_zatrudnionych, zatrudnieni);
+    }
+    zmienKwote("koszt_calkowity_z_doplata", "Koszt całkowity z dopłatą", el("fKosztDop"), w.kosztZDoplataZapisany);
+    zmienKwote("kwota_doplaty_dodatkowej", "Kwota dopłaty dodatkowej", el("fDoplata"), w.doplata);
+    zmienNadpisywalna("przyznano", "przyznano_regula_aktywna", "Przyznano", el("fPrzyznano"), w.przyznano);
+    zmienNadpisywalna("wklad_wlasny", "wklad_regula_aktywna", "Wkład własny", el("fWklad"), w.wklad);
+    var prog = el("selProg").value;
+    if (prog && prog !== w.progId) {
+      zmien("prog_dofinansowania_id", "Próg dofinansowania", w.progId, prog);
+      patch.prog_regula_aktywna = 0;
+    }
+    var naFakturze = el("chDoplataFaktura").checked;
+    if (naFakturze !== w.doplataNaFakturze) {
+      zmien("doplata_na_fakturze_kfs", "Dopłata na fakturze KFS", w.doplataNaFakturze ? "tak" : "nie", naFakturze ? 1 : 0, naFakturze ? "tak" : "nie");
+    }
+    KOLUMNY_KONTAKTU.forEach(function (k) {
+      var nowa = el(k[1]).value.trim();
+      if (nowa !== (raw[k[0]] || "")) zmien(k[0], k[2], raw[k[0]], nowa === "" ? null : nowa);
+    });
+    return { patch: patch, wpisy: wpisy };
+  }
+
+  function zapisz() {
+    var z = zbierzZmiany();
+    if (!z.wpisy.length) { komunikat("Brak zmian do zapisania."); return; }
+    z.patch.data_aktualizacji = dzis();
+    zapiszZmiany("wnioski", w.id, z.patch, z.wpisy);
+    komunikat("Zapisano " + z.wpisy.length + " zmian, " + teraz().slice(11));
+  }
+
+  var NAZWA_REGULY = { prog: "Próg dofinansowania", przyznano: "Przyznano", wklad: "Wkład własny" };
+  var KOLUMNA_REGULY = { prog: "prog_regula_aktywna", przyznano: "przyznano_regula_aktywna", wklad: "wklad_regula_aktywna" };
+  function przywrocRegule(pole) {
+    var patch = {};
+    patch[KOLUMNA_REGULY[pole]] = 1;
+    zapiszZmiany("wnioski", w.id, patch,
+      [{ typ: "Przywrócenie reguły", pole: NAZWA_REGULY[pole], przed: "ręcznie", po: "reguła" }]);
+    komunikat("Przywrócono regułę: " + NAZWA_REGULY[pole].toLowerCase());
+  }
+
+  /* ---------- Uczestnicy ---------- */
+  function renderUcz() {
+    var zakw = w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; }).length;
+    el("subUcz").innerHTML =
+      zakw + " zakwalifikowanych z " + w.uczestnicy.length +
+      (zakw < w.uczestnicy.length ? ' &middot; niezakwalifikowani wymagają odrębnej faktury komercyjnej <span class="ref">D-84</span>' : "");
+
+    el("uczestnicy").innerHTML = w.uczestnicy.map(function (u, i) {
+      var zak = u.status === "zakwalifikowany";
+      var pesel = u.pesel ? esc(u.pesel.slice(0, 6)) + "*****" : '<span class="muted">ukryty</span>';
+      return '<tr' + (zak ? "" : ' class="row-danger"') + '>' +
+        '<td class="strong">' + esc(u.imie) + '</td>' +
+        '<td class="mono muted">' + pesel + '</td>' +
+        '<td>' + esc(u.szkNazwa) + '</td>' +
+        '<td class="num">' + (zak ? esc(DB.fmtPLN(u.kwota)) : '<span class="muted">0 zł</span>') + '</td>' +
+        '<td>' + (zak
+          ? '<span class="tag pos dot">zakwalifikowany</span>'
+          : '<span class="tag neg dot" title="' + esc(u.powod) + '">niezakwalifikowany</span>' +
+            '<div class="small muted">' + esc(u.powod) + '</div>') + '</td>' +
+        '<td class="right">' + (mozeEdytowac ? '<button class="btn xs" onclick="przelacz(' + i + ')">Zmień</button>' : '') + '</td>' +
+        '</tr>';
+    }).join("");
+  }
+  function przelacz(i) {
+    var u = w.uczestnicy[i];
+    var ids = Store.query("SELECT id FROM uczestnicy WHERE wniosek_id = ? ORDER BY rowid", [w.id]);
+    var nowy = u.status === "zakwalifikowany" ? "niezakwalifikowany" : "zakwalifikowany";
+    var patch = {
+      status_kwalifikacji: nowy,
+      powod_niezakwalifikowania: nowy === "niezakwalifikowany" ? (u.powod || "brak umowy o pracę") : null
+    };
+    zapiszZmiany("uczestnicy", ids[i].id, patch,
+      [{ typ: "Zmiana kwalifikacji", pole: "Kwalifikacja: " + u.imie, przed: u.status, po: nowy }]);
+  }
+
+  /* ---------- Dane projektu ---------- */
+  function renderDane() {
+    var wiersze = [
+      ["Numer klienta", "<b>" + esc(w.nr) + "</b> <span class='small muted'>(trafia na fakturę)</span>"],
+      ["Klient", esc(w.klNazwa)],
+      ["NIP", '<span class="mono">' + esc(w.nip) + '</span>'],
+      ["Instytucja", esc(w.isNazwa)],
+      ["Urząd pracy", esc(w.pupNazwa)],
+      ["Opiekun", esc(w.opiekun)],
+      ["Data formularza", esc(w.dataFormularza) + ' <span class="tag mute">auto</span>'],
+      ["Data wniosku", esc(w.dataWniosku) || "brak"],
+      ["Data faktury", (esc(w.dataFaktury) || "brak") + ' <span class="small muted">wyznacza okres prowizji</span>'],
+      ["Status składania", esc(w.statusSkl)],
+      ["Status decyzji", esc(w.statusDec) || "brak"]
+    ];
+    el("dane").innerHTML = wiersze.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
+    document.getElementById("tytul").textContent = w.id + " · " + w.klNazwa;
+    KOLUMNY_KONTAKTU.forEach(function (k) { el(k[1]).value = raw[k[0]] || ""; });
+  }
+
+  /* ---------- Prowizja (wylacznie administrator, D-07/D-34) ---------- */
+  var OPIS_MODELU = {
+    A: "próg miesięczny, stawka od całości", B: "skala roczna YTD, stawka od nadwyżki",
+    C: "próg miesięczny, stawka od nadwyżki", D: "stała stawka"
+  };
+  function trybProwizji() {
+    if (raw.prowizja_regula_aktywna !== 0) return "regula";
+    return raw.prowizja_typ_nadpisania === "kwota" ? "kwota" : "procent";
+  }
+  /* Kwota i stawka wynikaja wylacznie z nadpisania. Dla reguly kwote liczy okres
+     w Administracji, bo zalezy od obrotu okresu (progi, kumulacja). */
+  function wynikNadpisania(tryb, podstawa) {
+    var wartosc = raw.prowizja_wartosc;
+    if (tryb === "regula" || wartosc == null) return { kwota: null, stawka: null };
+    if (tryb === "kwota") return { kwota: wartosc, stawka: podstawa ? wartosc / podstawa * 100 : null };
+    return { kwota: podstawa == null ? null : podstawa * wartosc / 100, stawka: wartosc };
+  }
+  function opcjaTrybu(wartosc, tryb, tekst) {
+    return '<option value="' + wartosc + '"' + (tryb === wartosc ? " selected" : "") + '>' + tekst + '</option>';
+  }
+  function renderProwizja() {
+    if (!isAdmin) return;
+    var tryb = trybProwizji();
+    var podstawa = w.podstawaProwizji;
+    var wynik = wynikNadpisania(tryb, podstawa);
+    var kwotaTekst = wynik.kwota == null
+      ? (tryb === "regula" ? "wg reguły instytucji" : "wpisz wartość") : DB.fmtPLN2(wynik.kwota);
+    var model = inst && inst.prowizja ? inst.prowizja.model : null;
+
+    el("prowizja").innerHTML =
+      '<div class="kpi" style="border:0;padding:0;box-shadow:none;margin-bottom:12px">' +
+      '<div class="k-label">Prowizja od tego projektu</div>' +
+      '<div class="k-value">' + esc(kwotaTekst) + '</div>' +
+      '<div class="k-foot">' + (wynik.stawka == null ? "" : 'stawka efektywna <b>' + esc(DB.fmtPct(Math.round(wynik.stawka * 100) / 100)) + '</b> ') +
+        (tryb === "regula" ? "" : '<span class="tag set dot">ręcznie</span>') + '</div></div>' +
+
+      '<div class="field" style="margin-bottom:10px">' +
+        '<label>Tryb prowizji <span class="calc-badge manual">admin</span>' +
+        '<span class="tip-mark" data-tip="Zgodnie z zasadami = licz wg warunkow instytucji (model A/B/C/D). Indywidualne nadpisanie per wniosek jako PROCENT albo KWOTA (D-136). Zmienia wylacznie administrator (D-93).">i</span></label>' +
+        '<select class="inp" onchange="ustawTrybProwizji(this.value)"' + (mozeEdytowac ? "" : " disabled") + '>' +
+          opcjaTrybu("regula", tryb, "Zgodnie z zasadami instytucji") +
+          opcjaTrybu("procent", tryb, "Indywidualny procent (nadpisanie)") +
+          opcjaTrybu("kwota", tryb, "Indywidualna kwota (nadpisanie)") +
+        '</select>' +
+      '</div>' +
+
+      (tryb === "regula" ? "" :
+        '<div class="field calc-field overridden" style="margin-bottom:10px">' +
+          '<label>' + (tryb === "kwota" ? "Kwota prowizji (zł)" : "Stawka indywidualna (%)") + '</label>' +
+          '<input class="inp num" value="' + esc(raw.prowizja_wartosc == null ? "" : raw.prowizja_wartosc) +
+            '" onchange="zmienWartoscProwizji(this.value)"' + (mozeEdytowac ? "" : " disabled") + '>' +
           '<div class="restore-rule"><span>&#9888; reguła wyłączona</span>' +
-          '<button onclick="przywrocReguleProwizji()">Przywróć regułę</button></div>' +
-        '</div>'
-      : '') +
+          '<button onclick="ustawTrybProwizji(\'regula\')">Przywróć regułę</button></div>' +
+        '</div>') +
 
-    '<dl class="dl">' +
-    '<dt>Podstawa</dt><dd>' + DB.fmtPLN2(podstawa) + '<div class="small muted">koszt całkowity z dopłatą</div></dd>' +
-    '<dt>Model</dt><dd><span class="pill k">' + inst.prowizja.model + '</span> ' + opisModelu + '</dd>' +
-    (uzyjIndywid
-      ? '<dt>Stawka</dt><dd><b>' + DB.fmtPct(Math.round(stawkaEfekt * 100) / 100) + '</b> <span class="small muted">nadpisana ręcznie</span></dd>'
-      : (baza.rozbicie.length > 1
-          ? '<dt>Rozbicie</dt><dd>' + baza.rozbicie.map(function (x) {
-              return DB.fmtPLN(x.kwota) + " &times; " + x.st + "%";
-            }).join("<br>") + "</dd>"
-          : '<dt>Stawka</dt><dd>' + DB.fmtPct(inst.prowizja.stala || baza.stawka) + "</dd>")) +
-    '</dl>' +
+      '<dl class="dl">' +
+      '<dt>Podstawa</dt><dd>' + (podstawa == null ? '<span class="muted">po decyzji pozytywnej</span>' : esc(DB.fmtPLN2(podstawa))) +
+        '<div class="small muted">' + (w.doplataNaFakturze ? "koszt całkowity z dopłatą" : "koszt całkowity bez dopłaty") + ' <span class="ref">D-174</span></div></dd>' +
+      '<dt>Model</dt><dd>' + (model
+        ? '<span class="pill k">' + esc(model) + '</span> ' + esc(OPIS_MODELU[model])
+        : '<span class="muted">instytucja bez warunków</span>') + '</dd>' +
+      '</dl>' +
 
-    '<div class="note" style="margin:12px 0 0;font-size:12px">' +
-    'Nadpisanie działa <b>per wniosek</b> i ustawia je <b>wyłącznie administrator</b>, tu na karcie wniosku lub w module Administracja <span class="ref">D-93</span>. Instytucja nie widzi żadnej stawki <span class="ref">D-07</span>.' +
-    (uzyjIndywid ? '<div style="margin-top:6px">Nadpisany wniosek <b>wlicza się do puli progowej</b> pozostałych wniosków instytucji <span class="ref">D-137</span> (rozstrzygnięte na warsztacie, wcześniej P-03).</div>' : '') +
-    '</div>';
-}
-
-/* Przelaczniki trybu prowizji. Globalne, bo karta jest przerysowywana przy kazdej zmianie. */
-function ustawTrybProwizji(tryb) {
-  if (tryb === "regula") {
-    prowizjaRegula = true;
-  } else {
-    prowizjaRegula = false;
-    typIndywid = tryb;   /* "procent" albo "kwota" (D-136) */
+      '<div class="note" style="margin:12px 0 0;font-size:12px">' +
+      'Prowizja okresu liczy się w module <b>Administracja</b>, bo zależy od obrotu okresu i progów. Tu ustawiasz tylko nadpisanie <b>per wniosek</b> ' +
+      '<span class="ref">D-93</span>. Instytucja nie widzi żadnej stawki <span class="ref">D-07</span>.' +
+      (tryb === "regula" ? "" : '<div style="margin-top:6px">Nadpisany wniosek <b>wlicza się do puli progowej</b> pozostałych wniosków instytucji <span class="ref">D-137</span>.</div>') +
+      '</div>';
   }
-  liczProwizjeWidok(ostatniaPodstawa);
-}
-function zmienStawkeIndywid(val) {
-  var v = parseFloat(String(val).replace(",", "."));
-  stawkaIndywid = isNaN(v) ? null : v;
-  prowizjaRegula = false; typIndywid = "procent";
-  liczProwizjeWidok(ostatniaPodstawa);
-}
-function zmienKwoteIndywid(val) {
-  var v = parseFloat(String(val).replace(/[^\d,.-]/g, "").replace(",", "."));
-  kwotaIndywid = isNaN(v) ? null : v;
-  prowizjaRegula = false; typIndywid = "kwota";
-  liczProwizjeWidok(ostatniaPodstawa);
-}
-function przywrocReguleProwizji() {
-  prowizjaRegula = true;
-  liczProwizjeWidok(ostatniaPodstawa);
-}
-window.ustawTrybProwizji = ustawTrybProwizji;
-window.zmienStawkeIndywid = zmienStawkeIndywid;
-window.zmienKwoteIndywid = zmienKwoteIndywid;
-window.przywrocReguleProwizji = przywrocReguleProwizji;
 
-/* ---------- Korespondencja ---------- */
-document.getElementById("maile").innerHTML = DB.MAILE.map(function (m) {
-  return '<tr><td>' + (m.kier === "in" ? '<span class="tag info">&#8600;</span>' : '<span class="tag mute">&#8599;</span>') + '</td>' +
-    '<td class="strong">' + m.temat + '</td>' +
-    '<td class="small muted">' + m.skrz + '</td>' +
-    '<td class="small nowrap">' + m.data + '</td>' +
-    '<td class="c">' + (m.zal ? '<span class="pill">' + m.zal + '</span>' : '<span class="muted">&mdash;</span>') + '</td></tr>';
-}).join("");
+  var ETYKIETA_TRYBU = { regula: "reguła instytucji", procent: "indywidualny procent", kwota: "indywidualna kwota" };
+  function ustawTrybProwizji(tryb) {
+    var przed = ETYKIETA_TRYBU[trybProwizji()];
+    var patch = tryb === "regula"
+      ? { prowizja_regula_aktywna: 1 }
+      : { prowizja_regula_aktywna: 0, prowizja_typ_nadpisania: tryb, prowizja_wartosc: null };
+    zapiszZmiany("wnioski", w.id, patch,
+      [{ typ: "Nadpisanie prowizji", pole: "Tryb prowizji", przed: przed, po: ETYKIETA_TRYBU[tryb] }]);
+  }
+  function zmienWartoscProwizji(tekst) {
+    var v = parseFloat(String(tekst).replace(/\s/g, "").replace(",", "."));
+    var nowa = isNaN(v) ? null : v;
+    zapiszZmiany("wnioski", w.id, { prowizja_wartosc: nowa },
+      [{ typ: "Nadpisanie prowizji", pole: trybProwizji() === "kwota" ? "Kwota prowizji" : "Prowizja %",
+         przed: raw.prowizja_wartosc, po: nowa }]);
+  }
 
-/* ---------- Przebieg ---------- */
-var kroki = [
-  ["Formularz wpłynął", w.dataFormularza, true],
-  ["Zaakceptowany do bazy", w.dataFormularza, true],
-  ["Rejestracja w BUR", w.dataWniosku, w.statusSkl === "Złożony"],
-  ["Wniosek złożony w " + w.pupNazwa, w.dataWniosku, w.statusSkl === "Złożony"],
-  ["Decyzja urzędu", w.statusDec ? w.dataFaktury : "oczekuje", !!w.statusDec],
-  ["Termin ustalony", w.statusDec === "Pozytywna" ? "08-09.09.2026" : "&mdash;", w.statusDec === "Pozytywna"],
-  ["Szkolenie odbyte", w.rozliczenie !== "Brak" && w.rozliczenie !== "Oczekuje" ? "zrealizowane" : "&mdash;",
-    w.rozliczenie === "Rozliczone" || w.rozliczenie === "Zafakturowany"],
-  ["Rozliczone", w.rozliczenie === "Rozliczone" ? "zamknięte" : "&mdash;", w.rozliczenie === "Rozliczone"]
-];
-var pierwszyNiegotowy = kroki.findIndex(function (k) { return !k[2]; });
-document.getElementById("przebieg").innerHTML = kroki.map(function (k, i) {
-  var cls = k[2] ? "done" : (i === pierwszyNiegotowy ? "now" : "");
-  return '<div class="tl-item ' + cls + '"><div class="t">' + k[0] + '</div><div class="m">' + k[1] + '</div></div>';
-}).join("");
+  /* ---------- Korespondencja klienta ---------- */
+  function renderMaile() {
+    var maile = DB.MAILE.filter(function (m) { return m.klient === w.klient; });
+    el("maile").innerHTML = maile.length ? maile.map(function (m) {
+      return '<tr><td>' + (m.kier === "in" ? '<span class="tag info">&#8600;</span>' : '<span class="tag mute">&#8599;</span>') + '</td>' +
+        '<td class="strong">' + esc(m.temat) + '</td>' +
+        '<td class="small muted">' + esc(m.skrz) + '</td>' +
+        '<td class="small nowrap">' + esc(m.data) + '</td>' +
+        '<td class="c">' + (m.zal ? '<span class="pill">' + esc(m.zal) + '</span>' : '<span class="muted">&mdash;</span>') + '</td></tr>';
+    }).join("") : '<tr><td colspan="5" class="muted">Brak korespondencji tego klienta.</td></tr>';
+  }
 
-renderUcz();
-przelicz();
+  /* ---------- Przebieg: z tabeli przebieg_wniosku, a bez wpisow z etapu wniosku ---------- */
+  function pozycja(klasa, tytul, opis) {
+    return '<div class="tl-item ' + klasa + '"><div class="t">' + esc(tytul) + '</div><div class="m">' + esc(opis) + '</div></div>';
+  }
+  function renderPrzebieg() {
+    var wpisy = Store.query("SELECT * FROM przebieg_wniosku WHERE wniosek_id = ? ORDER BY czas", [w.id]);
+    if (wpisy.length) {
+      el("przebieg").innerHTML = wpisy.map(function (p, i) {
+        var tytul = "Etap " + p.etap_do + (p.etap_z != null ? " (z etapu " + p.etap_z + ")" : "");
+        return pozycja(i === wpisy.length - 1 ? "now" : "done", tytul, p.czas + (p.komentarz ? " · " + p.komentarz : ""));
+      }).join("");
+      return;
+    }
+    var daty = [["Formularz wpłynął", w.dataFormularza], ["Wniosek złożony", w.dataWniosku], ["Faktura wystawiona", w.dataFaktury]];
+    el("przebieg").innerHTML = daty.filter(function (d) { return d[1]; })
+      .map(function (d) { return pozycja("done", d[0], d[1]); }).join("") +
+      pozycja("now", "Aktualny etap: " + w.etap + " z " + ETAPOW, "brak zapisanych zmian etapu");
+  }
+
+  function renderWszystko() {
+    renderDane();
+    renderFinanse();
+    renderUcz();
+    renderProwizja();
+    renderMaile();
+    renderPrzebieg();
+  }
+
+  function zablokujEdycje() {
+    el("btnZapisz").style.display = "none";
+    el("btnDodajUcz").style.display = "none";
+    document.querySelectorAll("#stronaWniosku input.inp:not([readonly]), #stronaWniosku select.inp, #chDoplataFaktura")
+      .forEach(function (p) { p.disabled = true; });
+  }
+
+  function start() {
+    if (!wczytaj()) {
+      el("stronaWniosku").innerHTML =
+        '<div class="note warn" style="margin:24px 0"><b>Nie znaleziono wniosku</b> ' + esc(wnId) +
+        '. Wniosek nie istnieje albo nie masz do niego dostępu. <a href="02-zestawienia.html">Wróć do zestawień</a>.</div>';
+      return;
+    }
+    if (!isAdmin) el("cardProwizja").remove();
+    if (!mozeEdytowac) zablokujEdycje();
+    renderWszystko();
+    el("btnZapisz").addEventListener("click", zapisz);
+    ["fPrzyznano", "fWklad"].forEach(function (idPola) {
+      el(idPola).addEventListener("input", function () {
+        oznaczNadpisanie(idPola === "fPrzyznano" ? "wrapPrzyznano" : "wrapWklad", true);
+        renderKontrola();
+      });
+    });
+    el("selProg").addEventListener("change", function () { oznaczNadpisanie("wrapProg", true); });
+  }
+
+  window.przywrocRegule = przywrocRegule;
+  window.przelacz = przelacz;
+  window.ustawTrybProwizji = ustawTrybProwizji;
+  window.zmienWartoscProwizji = zmienWartoscProwizji;
+  start();
+})();
 </script>
 </body>
 </html>

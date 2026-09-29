@@ -40,12 +40,7 @@
       <input class="inp search" id="q" placeholder="Szukaj: NIP, nazwa klienta, urząd...">
       <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
       <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
-      <select class="inp" id="fStatus">
-        <option value="">Wszystkie statusy</option>
-        <option>Pozytywna</option><option>Negatywna</option>
-        <option>Oczekuje na decyzję</option><option>Niezłożony</option>
-        <option>NW</option><option>Rezygnacja</option>
-      </select>
+      <select class="inp" id="fStatus"><option value="">Wszystkie statusy</option></select>
       <span class="sp"></span>
       <span class="small muted" id="licz"></span>
     </div>
@@ -83,7 +78,7 @@
             <th>Urząd</th>
             <th class="c">Osób<span class="tip-mark" data-tip="Liczba uczestników zakwalifikowanych; po ukośniku łączna liczba zgłoszonych. Do wyliczeń wchodzą tylko zakwalifikowani (D-79).">i</span></th>
             <th class="num">Wartość<span class="tip-mark" data-tip="Suma kwot uczestników zakwalifikowanych. Podstawa modelu finansowego wniosku.">i</span></th>
-            <th class="num">Przyznano<span class="tip-mark" data-tip="Kwota dofinansowania z urzędu: koszt całkowity × wskaźnik wielkości firmy (90% mikro / 70% pozostali).">i</span></th>
+            <th class="num">Przyznano<span class="tip-mark" data-tip="Kwota dofinansowania z urzędu: koszt całkowity × procent progu dofinansowania wybranego we wniosku (D-131).">i</span></th>
             <th class="num">Koszt całk.<span class="tip-mark" data-tip="Wartość szkolenia uznana przez urząd. Po dodaniu dopłaty staje się podstawą naliczania prowizji (D-64).">i</span></th>
             <th>Status</th>
             <th>Rozliczenie<span class="tip-mark" data-tip="Etap finansowy projektu: Oczekuje → Zafakturowany → Rozliczone.">i</span></th>
@@ -110,27 +105,40 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dofin"></script>
 <script type="text/kfs-strona">
 /* Wejscie z listy instytucji w menu (?is=nazwa): pokazuj TYLKO dane tej instytucji.
-   Separacja egzekwowana na poziomie danych, nie interfejsu: obcinamy zrodlowa liste
-   wnioskow w budujW(), a nie tylko widok tabeli (D-35). Zgloszone wprost przez klienta. */
+   Filtr jest zakladany na zrodlowej liscie wnioskow w budujW(), nie tylko w widoku tabeli.
+   Rzeczywista separacja jest w warstwie danych makiety (assets/zakres.js) (D-35). */
 var forcedNazwa = new URLSearchParams(location.search).get("is");
 var forcedInst = forcedNazwa ? DB.INSTYTUCJE.filter(function (i) { return i.nazwa === forcedNazwa; })[0] : null;
 
-/* Aktywna zakladka roczna (D-159). Domyslnie rok biezacy, jesli ma zakladke. */
-var ROK_BIEZACY = "2026";
+/* Statusy: jedna lista dla filtra i edycji w komorce. Wartosc statusu wynika ze statusu
+   skladania i decyzji (statusValue). */
+var STATUSY = ["Niezłożony", "Czekamy", "Pozytywna", "Negatywna", "NW", "Rezygnacja"];
+
+/* Aktywna zakladka roczna (D-159). Domyslnie rok biezacy, jesli ma zakladke.
+   NIEPRZYPISANE to wnioski bez roku (D-165). */
+var NIEPRZYPISANE = "nieprzypisane";
+var ROK_BIEZACY = String(new Date().getFullYear());
 var rokAktywny = DB.LATA.some(function (l) { return l.rok === ROK_BIEZACY; })
   ? ROK_BIEZACY : (DB.LATA.length ? DB.LATA[DB.LATA.length - 1].rok : ROK_BIEZACY);
 
+function wnioskiZakladki(rok) {
+  if (rok === NIEPRZYPISANE) return DB.WNIOSKI_BEZ_ROKU;
+  return DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return String(w.rok) === rok; });
+}
 function budujW() {
-  var lista = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return String(w.rok) === rokAktywny; });
+  var lista = wnioskiZakladki(rokAktywny);
   return forcedInst ? lista.filter(function (w) { return w.is === forcedInst.id; }) : lista;
 }
 var W = budujW();
@@ -140,8 +148,8 @@ if (forcedInst) {
   document.querySelector(".page-title").textContent = "Zestawienie " + rokAktywny + " · " + forcedInst.nazwa;
   var pd = document.querySelector(".page-desc");
   if (pd) pd.innerHTML = "Widok ograniczony do jednej instytucji. Wyszukiwarka, filtry i eksport zwracają " +
-    "wyłącznie wiersze tej instytucji, separacja na poziomie danych <span class=\"ref\">D-35</span>. " +
-    "Docelowo osobne mini-bazy per instytucja pod spodem <span class=\"ref\">D-143</span>.";
+    "wyłącznie wiersze tej instytucji. Filtr jest zakładany w warstwie danych makiety, nie tylko w tabeli " +
+    "<span class=\"ref\">D-35</span>.";
   var notaZbiorcza = document.querySelector(".note.open");
   if (notaZbiorcza) notaZbiorcza.style.display = "none";
 }
@@ -150,13 +158,18 @@ if (tabProjekty) tabProjekty.textContent = W.length;
 
 /* Filtry */
 var selIS = document.getElementById("fIS");
-DB.INSTYTUCJE.slice(0, 8).forEach(function (i) {
-  selIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
+DB.INSTYTUCJE.forEach(function (i) {
+  selIS.innerHTML += '<option value="' + esc(i.id) + '">' + esc(i.nazwa) + '</option>';
 });
-if (forcedInst) { selIS.value = forcedInst.id; selIS.disabled = true; }
+/* Instytucja wybrana w menu (?is=): lista rozwijana bylaby duplikatem, wiec jest ukryta */
+if (forcedInst) { selIS.value = forcedInst.id; selIS.style.display = "none"; }
 var selPUP = document.getElementById("fPUP");
 DB.PUPY.forEach(function (p) {
-  selPUP.innerHTML += '<option value="' + p.id + '">' + p.nazwa + '</option>';
+  selPUP.innerHTML += '<option value="' + esc(p.id) + '">' + esc(p.nazwa) + '</option>';
+});
+var selStatus = document.getElementById("fStatus");
+STATUSY.forEach(function (s) {
+  selStatus.innerHTML += '<option>' + esc(s) + '</option>';
 });
 
 /* Kolor wiersza wg palety z Excela (D-01, D-158). Rozliczone ma pierwszenstwo,
@@ -183,13 +196,9 @@ function render() {
   var lista = W.filter(function (w) {
     if (fis && w.is !== fis) return false;
     if (fpup && w.pup !== fpup) return false;
-    if (fst) {
-      if (fst === "Oczekuje na decyzję") { if (!(w.statusSkl === "Złożony" && !w.statusDec)) return false; }
-      else if (fst === "Pozytywna" || fst === "Negatywna") { if (w.statusDec !== fst) return false; }
-      else if (w.statusSkl !== fst) return false;
-    }
+    if (fst && statusValue(w) !== fst) return false;
     if (q) {
-      var h = (w.klNazwa + " " + w.nip + " " + w.pupNazwa + " " + w.szkolenie + " " + w.isNazwa).toLowerCase();
+      var h = [w.klNazwa, w.nip, w.pupNazwa, w.szkolenie, w.isNazwa].join(" ").toLowerCase();
       if (h.indexOf(q) < 0) return false;
     }
     return true;
@@ -200,14 +209,14 @@ function render() {
     DB.fmtPLN(lista.reduce(function (s, w) { return s + w.wartosc; }, 0));
 
   document.getElementById("body").innerHTML = lista.slice(0, 140).map(function (w) {
-    return '<tr class="' + klasaWiersza(w) + '" data-id="' + w.id + '">' +
+    return '<tr class="' + klasaWiersza(w) + '" data-id="' + esc(w.id) + '">' +
       '<td><input type="checkbox" class="ck"></td>' +
-      '<td class="strong">' + w.nr + '</td>' +
-      '<td class="strong nowrap">' + w.klNazwa + '<div class="small muted">' + w.id + '</div></td>' +
-      '<td class="mono muted">' + w.nip + '</td>' +
-      '<td class="nowrap">' + w.isNazwa + '</td>' +
-      '<td class="nowrap">' + w.szkolenie + '</td>' +
-      '<td class="nowrap muted">' + w.pupNazwa + '</td>' +
+      '<td class="strong">' + esc(w.nr) + '</td>' +
+      '<td class="strong nowrap">' + esc(w.klNazwa) + '<div class="small muted">' + esc(w.id) + '</div></td>' +
+      '<td class="mono muted">' + esc(w.nip) + '</td>' +
+      '<td class="nowrap">' + esc(w.isNazwa) + '</td>' +
+      '<td class="nowrap">' + esc(w.szkolenie) + '</td>' +
+      '<td class="nowrap muted">' + esc(w.pupNazwa) + '</td>' +
       '<td class="c">' + w.osobZakw + (w.osob !== w.osobZakw ? '<span class="muted">/' + w.osob + '</span>' : "") + '</td>' +
       '<td class="num">' + DB.fmtPLN(w.wartosc) + '</td>' +
       '<td class="num strong">' + (w.przyznano != null ? DB.fmtPLN(w.przyznano) : '<span class="muted">&mdash;</span>') + '</td>' +
@@ -215,8 +224,8 @@ function render() {
       '<td>' + selectStatus(w) + '</td>' +
       '<td>' + tagRozl(w) + '</td>' +
       '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
-        '<button class="btn xs" onclick="otworz(\'' + w.id + '\')">Otwórz</button>' +
-        '<button class="btn xs" onclick="usunWniosek(\'' + w.id + '\')">Usuń</button>' +
+        '<button class="btn xs" onclick="otworz(\'' + escJs(w.id) + '\')">Otwórz</button>' +
+        '<button class="btn xs" onclick="usunWniosek(\'' + escJs(w.id) + '\')">Usuń</button>' +
       '</div></td>' +
       '</tr>';
   }).join("");
@@ -260,7 +269,7 @@ function masowo(status) {
 }
 
 function otworz(id) {
-  location.href = "03-wniosek.html?id=" + id;
+  location.href = "03-wniosek.html?id=" + encodeURIComponent(id);
 }
 
 document.getElementById("all").addEventListener("change", function () {
@@ -275,17 +284,19 @@ document.getElementById("all").addEventListener("change", function () {
 
 /* Zakladki lat (D-129, D-159): przelaczanie i dodawanie kolejnego roku */
 function liczbaWRoku(rok) {
-  return DB.WNIOSKI_WSZYSTKIE.filter(function (w) {
-    return String(w.rok) === rok && (!forcedInst || w.is === forcedInst.id);
-  }).length;
+  return wnioskiZakladki(rok).filter(function (w) { return !forcedInst || w.is === forcedInst.id; }).length;
 }
 function rysujLata() {
   var el = document.getElementById("lataTabs");
   var html = DB.LATA.map(function (l) {
-    return '<button class="lata-tab' + (l.rok === rokAktywny ? " on" : "") + '" onclick="wybierzRok(\'' + l.rok + '\')">' +
-      "Dofinansowania " + l.rok + ' <span class="n">' + liczbaWRoku(l.rok) + "</span></button>";
+    return '<button class="lata-tab' + (l.rok === rokAktywny ? " on" : "") + '" onclick="wybierzRok(\'' + escJs(l.rok) + '\')">' +
+      "Dofinansowania " + esc(l.rok) + ' <span class="n">' + liczbaWRoku(l.rok) + "</span></button>";
   }).join("");
-  if (Auth.moze("admin.lata_zestawien")) {
+  if (liczbaWRoku(NIEPRZYPISANE) > 0) {
+    html += '<button class="lata-tab' + (rokAktywny === NIEPRZYPISANE ? " on" : "") + '" onclick="wybierzRok(\'' + NIEPRZYPISANE + '\')"' +
+      ' title="Wnioski bez przypisanego roku (D-165)">Nieprzypisane <span class="n">' + liczbaWRoku(NIEPRZYPISANE) + "</span></button>";
+  }
+  if (Auth.moze("zestawienia.dodawanie_lat")) {
     html += '<span class="lata-dodaj" id="lataDodaj">' +
       '<button class="lata-tab plus" onclick="pokazDodajRok()" title="Dodaj zakładkę kolejnego roku">+ Dodaj rok</button></span>';
   }
@@ -295,13 +306,17 @@ window.rysujLata = rysujLata;
 
 function odswiezRok() {
   var tytul = document.querySelector(".page-title");
-  if (tytul && !forcedInst) tytul.textContent = "Zestawienie " + rokAktywny + " · wszystkie instytucje";
+  var nazwaZakladki = rokAktywny === NIEPRZYPISANE ? "nieprzypisane" : rokAktywny;
+  if (tytul && !forcedInst) tytul.textContent = "Zestawienie " + nazwaZakladki + " · wszystkie instytucje";
   W = budujW();
   var rok = DB.LATA.filter(function (l) { return l.rok === rokAktywny; })[0];
   var opis = rok && rok.opis ? rok.opis : "";
+  if (rokAktywny === NIEPRZYPISANE) opis = "Wnioski bez przypisanego roku. Nie znikają z systemu (D-165).";
   document.getElementById("notaRok").style.display = (opis || !W.length) ? "block" : "none";
-  document.getElementById("notaRokTresc").innerHTML = "<b>Dofinansowania " + rokAktywny +
-    (W.length ? "." : ": brak wniosków.") + "</b> " + opis + ' <span class="ref">D-159</span>';
+  document.getElementById("notaRokTresc").innerHTML = "<b>Dofinansowania " + esc(nazwaZakladki) +
+    (W.length ? "." : ": brak wniosków.") + "</b> " + esc(opis) + ' <span class="ref">D-159</span>';
+  /* Nowy projekt dostaje numer i identyfikator z roku, wiec nie ma sensu w zakladce bez roku */
+  document.getElementById("btnNowyProjekt").style.display = rokAktywny === NIEPRZYPISANE ? "none" : "";
   rysujLata(); render();
   var tp = document.querySelector(".mod-tabs a.on .n"); if (tp) tp.textContent = W.length;
 }
@@ -336,8 +351,6 @@ window.dodajRok = dodajRok;
    Koszt całkowity (ręczny, D-58) i reguła przyznano: karta 03-wniosek.
    ================================================================ */
 
-var STATUSY = ["Niezłożony", "Czekamy", "Pozytywna", "Negatywna", "NW", "Rezygnacja"];
-
 function statusValue(w) {
   if (w.statusDec === "Pozytywna") return "Pozytywna";
   if (w.statusDec === "Negatywna") return "Negatywna";
@@ -358,8 +371,8 @@ function mapStatus(val) {
 }
 function selectStatus(w) {
   var cur = statusValue(w);
-  return '<select class="inp" style="padding:3px 6px;font-size:12px" onchange="zmienStatus(\'' + w.id + '\', this.value)">' +
-    STATUSY.map(function (o) { return "<option" + (o === cur ? " selected" : "") + ">" + o + "</option>"; }).join("") +
+  return '<select class="inp" style="padding:3px 6px;font-size:12px;min-width:118px" onchange="zmienStatus(\'' + escJs(w.id) + '\', this.value)">' +
+    STATUSY.map(function (o) { return "<option" + (o === cur ? " selected" : "") + ">" + esc(o) + "</option>"; }).join("") +
     '</select>';
 }
 function terazStr() {
@@ -369,14 +382,14 @@ function terazStr() {
 }
 function logZmiana(obiekt, pole, przed, po) {
   Store.insert("rejestr_aktywnosci", {
-    czas: terazStr(), kto: "Bartłomiej Olejnik", typ: "Zmiana statusu",
+    czas: terazStr(), kto: Auth.sesja().imie, typ: "Zmiana statusu",
     obiekt: obiekt, pole: pole, przed: przed || "brak", po: po
   }, "AKT-");
 }
 function zmienStatus(id, val) {
   var w = W.filter(function (x) { return x.id === id; })[0];
-  logZmiana(id, "Status", w ? statusValue(w) : "", val);
   Store.update("wnioski", id, mapStatus(val));
+  logZmiana(id, "Status", w ? statusValue(w) : "", val);
 }
 window.zmienStatus = zmienStatus;
 
@@ -398,12 +411,12 @@ var IMIONA_NOWE = ["Jan Kowalski", "Anna Nowak", "Piotr Wiśniewski", "Maria Wó
 
 function pokazProjForm() {
   var el = document.getElementById("projForm");
-  var klOpts = DB.KLIENCI.map(function (k) { return '<option value="' + k.id + '">' + k.nazwa + " (" + k.id + ")</option>"; }).join("");
+  var klOpts = DB.KLIENCI.map(function (k) { return '<option value="' + esc(k.id) + '">' + esc(k.nazwa) + " (" + esc(k.id) + ")</option>"; }).join("");
   var szkOpts = DB.SZKOLENIA.map(function (s) {
     var i = DB.INSTYTUCJE.filter(function (x) { return x.id === s.is; })[0];
-    return '<option value="' + s.id + '">' + (i ? i.nazwa : "") + " - " + s.nazwa + " (" + DB.fmtPLN(s.cena) + ")</option>";
+    return '<option value="' + esc(s.id) + '">' + esc((i ? i.nazwa : "") + " - " + s.nazwa + " (" + DB.fmtPLN(s.cena) + ")") + "</option>";
   }).join("");
-  var stOpts = STATUSY.map(function (o) { return "<option>" + o + "</option>"; }).join("");
+  var stOpts = STATUSY.map(function (o) { return "<option>" + esc(o) + "</option>"; }).join("");
   el.innerHTML =
     '<div class="small strong" style="margin-bottom:8px">Nowy projekt (wniosek)</div>' +
     '<div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:0">' +
@@ -416,7 +429,7 @@ function pokazProjForm() {
       '<button class="btn primary sm" onclick="zapiszNowyProjekt()">Zapisz projekt</button>' +
       '<button class="btn sm" onclick="ukryjProjForm()">Anuluj</button>' +
     '</div>' +
-    '<div class="small muted" style="margin-top:6px">Koszt całkowity jest ręczny (D-58). Puste pole = liczba uczestników × cena szkolenia. Przyznano policzy się z wielkości firmy.</div>';
+    '<div class="small muted" style="margin-top:6px">Koszt całkowity jest ręczny (D-58). Puste pole = liczba uczestników × cena szkolenia. Przyznano policzy się z progu dofinansowania.</div>';
   el.style.display = "block";
 }
 function ukryjProjForm() { var el = document.getElementById("projForm"); el.style.display = "none"; el.innerHTML = ""; }
@@ -436,7 +449,8 @@ function zapiszNowyProjekt() {
     .reduce(function (m, w) { return Math.max(m, w.nr || 0); }, 0) + 1;
   var rr = rokAktywny.slice(2);
   var id = "PR-" + rr + "-" + String(numer).padStart(4, "0");
-  var dzis = "2026-08-29";
+  var d = new Date();
+  var dzis = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 
   _batch = true;
   Store.insert("wnioski", {
@@ -447,7 +461,7 @@ function zapiszNowyProjekt() {
     koszt_calkowity_z_doplata: koszt + doplata, kwota_doplaty_dodatkowej: doplata, etap: 3,
     status_skladania: st.status_skladania, status_decyzji: st.status_decyzji,
     status_finansowy: st.status_decyzji === "Pozytywna" ? "Oczekuje" : "Brak",
-    data_wplyniecia_formularza: dzis, data_wniosku: dzis, data_wystawienia_faktury: dzis
+    data_wplyniecia_formularza: dzis, data_wniosku: dzis   /* data faktury dopiero po wystawieniu faktury */
   });
   for (var i = 0; i < osob; i++) {
     Store.insert("uczestnicy", {

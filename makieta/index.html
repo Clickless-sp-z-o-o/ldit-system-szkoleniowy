@@ -56,7 +56,7 @@
           </div>
           <div class="avatar" id="avatar">&nbsp;</div>
           <button class="btn sm wyloguj" id="wyloguj"
-                  data-tip="Konczy sesje i wraca na ekran logowania. Rola wynika z konta, nie z ustawienia w interfejsie. D-125.">Wyloguj</button>
+                  data-tip="Konczy sesje i wraca na ekran logowania. Rola wynika z konta, nie z ustawienia w interfejsie. D-125. Sesja wygasa po 30 minutach bezczynnosci, wtedy trzeba zalogowac sie ponownie.">Wyloguj</button>
         </div>
       </div>
     </div>
@@ -78,10 +78,13 @@
 <script src="db/seed-db.js"></script>
 <script src="assets/sqlite.js"></script>
 <script src="assets/store.js"></script>
+<script src="assets/haslo.js"></script>
 <script src="assets/auth.js"></script>
+<script src="assets/straznik.js"></script>
 <script src="assets/zakres.js"></script>
 <script src="assets/prowizja.js"></script>
 <script src="assets/db.js"></script>
+<script src="assets/html.js"></script>
 <script src="assets/tips.js"></script>
 <script src="assets/boot.js"></script>
 
@@ -132,7 +135,7 @@ function render() {
 
   moduly.forEach(function (m) {
     if (m.grupa !== poprzedniaGrupa) {
-      html += '<div class="nav-group-label">' + m.grupa + '</div>';
+      html += '<div class="nav-group-label">' + esc(m.grupa) + '</div>';
       poprzedniaGrupa = m.grupa;
     }
 
@@ -144,9 +147,9 @@ function render() {
     var klasy = "nav-item" + (stan.aktywny === m.id ? " active" : "") +
                 (m.poziom === "podglad" ? " tylko-podglad" : "");
 
-    html += '<div class="' + klasy + '" data-id="' + m.id + '" data-plik="' + m.plik + '"' +
-            ' data-label="' + etykieta + '" data-tip="' + (TIPY_MODULOW[m.id] || "") + '">' +
-            '<span class="ico">' + (m.ikona || "") + '</span><span>' + etykieta + '</span>' +
+    html += '<div class="' + klasy + '" data-id="' + esc(m.id) + '" data-plik="' + esc(m.plik) + '"' +
+            ' data-label="' + esc(etykieta) + '" data-tip="' + esc(TIPY_MODULOW[m.id] || "") + '">' +
+            '<span class="ico">' + (m.ikona || "") + '</span><span>' + esc(etykieta) + '</span>' +
             (rozwijane ? '<span class="chev">&#9654;</span>' : '') + '</div>';
 
     if (rozwijane) {
@@ -156,9 +159,9 @@ function render() {
               '<span>Wszystkie instytucje</span></div>';
       instytucjeKonta().forEach(function (nazwa) {
         html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html?is=' + encodeURIComponent(nazwa) + '"' +
-                ' data-label="' + nazwa + '"' +
-                ' data-tip="Tylko klienci i wnioski instytucji ' + nazwa + ' (separacja danych, D-35).">' +
-                '<span>' + nazwa + '</span></div>';
+                ' data-label="' + esc(nazwa) + '"' +
+                ' data-tip="Tylko klienci i wnioski instytucji ' + esc(nazwa) + ' (separacja danych, D-35).">' +
+                '<span>' + esc(nazwa) + '</span></div>';
       });
       html += '</div>';
     }
@@ -188,11 +191,19 @@ function render() {
       el.classList.add("active");
       if (id) stan.aktywny = id;
 
-      document.getElementById("crumb").innerHTML =
-        "<b>" + (el.getAttribute("data-label") || el.textContent.trim()) + "</b>";
+      ustawOkruszek(el.getAttribute("data-label") || el.textContent.trim());
       document.getElementById("view").src = "strony/" + plik;
     });
   });
+}
+
+/* Okruszek buduje sie przez textContent: nazwy pochodza z bazy */
+function ustawOkruszek(tekst) {
+  var b = document.createElement("b");
+  b.textContent = tekst;
+  var el = document.getElementById("crumb");
+  el.innerHTML = "";
+  el.appendChild(b);
 }
 
 function pokazSesje() {
@@ -201,10 +212,10 @@ function pokazSesje() {
     sesja.rola_nazwa + (sesja.instytucja_nazwa ? " · " + sesja.instytucja_nazwa : "");
   document.getElementById("avatar").textContent = Auth.inicjaly();
 
+  /* Konto z ograniczonym zakresem nie dowiaduje sie, ile instytucji jest w systemie */
   var widoczne = DB.INSTYTUCJE.length;
-  var wszystkie = Store.query("SELECT COUNT(*) AS n FROM instytucje")[0].n;
   document.getElementById("stopka").innerHTML =
-    "Zakres konta: " + (sesja.wszystkie_instytucje ? "wszystkie instytucje" : widoczne + " z " + wszystkie) +
+    "Zakres konta: " + (sesja.wszystkie_instytucje ? "wszystkie instytucje" : "instytucje: " + widoczne) +
     "<br>Dane demonstracyjne, baza SQLite";
 
   document.getElementById("hintText").innerHTML = OPIS_ROLI[sesja.rola_id] || "";
@@ -219,7 +230,7 @@ document.getElementById("wyloguj").addEventListener("click", function () {
 document.getElementById("gsearch").addEventListener("keydown", function (e) {
   if (e.key === "Enter" && this.value.trim()) {
     document.getElementById("view").src = "strony/04-baza-klientow.html?q=" + encodeURIComponent(this.value.trim());
-    document.getElementById("crumb").innerHTML = "<b>Wyniki wyszukiwania</b>";
+    ustawOkruszek("Wyniki wyszukiwania");
   }
 });
 
@@ -227,7 +238,7 @@ document.getElementById("gsearch").addEventListener("keydown", function (e) {
 var start = Auth.moduly()[0];
 if (start) {
   stan.aktywny = start.id;
-  document.getElementById("crumb").innerHTML = "<b>" + start.nazwa + "</b>";
+  ustawOkruszek(start.nazwa);
   document.getElementById("view").src = "strony/" + start.plik;
 }
 

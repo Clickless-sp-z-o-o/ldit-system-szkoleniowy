@@ -22,7 +22,7 @@
   <div class="page-head">
     <div class="ph-text">
       <h1 class="page-title">Baza danych
-        <span class="tip-mark" data-tip="Wszyscy klienci koncowi, jeden klient to jeden wiersz. Klienta nigdy nie usuwamy (D-128). Rozwin klienta plusem, zeby zobaczyc jego konkretne wnioski. Widok powiazany z naborami, priorytet po ostatnim dniu naboru (D-130).">i</span>
+        <span class="tip-mark" data-tip="Wszyscy klienci koncowi, jeden klient to jeden wiersz. Rozwin klienta plusem, zeby zobaczyc jego konkretne wnioski. Widok powiazany z naborami, priorytet po ostatnim dniu naboru (D-130).">i</span>
       </h1>
       <p class="page-desc">
         Wszyscy klienci niezależnie od tego, czy wniosek już poszedł. Rozwiń klienta plusem, żeby zobaczyć
@@ -39,7 +39,7 @@
 
   <nav class="mod-tabs">
     <a href="04-baza-klientow.html" class="on" data-tip="Baza danych: wszyscy klienci, klient = jeden wiersz, rozwijany plusem do wnioskow. Wszystkie wnioski, domyslnie bez rozliczonych. D-128.">Baza danych</a>
-    <a href="02-zestawienia.html" data-tip="Wnioski (projekty): tylko wnioski od etapu 3, kolorowane statusem. D-128.">Wnioski <span class="n">174</span></a>
+    <a href="02-zestawienia.html" data-tip="Wnioski (projekty): tylko wnioski od etapu 3, kolorowane statusem. D-128.">Wnioski <span class="n" id="licznikWnioskow"></span></a>
     <a href="13-terminy.html" data-tip="Kalendarz terminow szkolen per instytucja. D-142.">Terminy szkoleń</a>
   </nav>
 
@@ -100,10 +100,10 @@
           <tr>
             <th style="width:30px"></th>
             <th style="width:44px">Nr<span class="tip-mark" data-tip="Numer klienta nadawany kolejno. To identyfikator porzadkowy, a nie kolejnosc na liscie: kolejnosc wyznacza koniec naboru, nie numer klienta.">i</span></th>
-            <th>Klient<span class="tip-mark" data-tip="Nazwa firmy klienta koncowego. Jeden klient to jeden wiersz. Klienta nigdy nie usuwamy, zostaje historia wspolpracy (D-128). Rozwin plusem, zeby zobaczyc wnioski.">i</span></th>
+            <th>Klient<span class="tip-mark" data-tip="Nazwa firmy klienta koncowego. Jeden klient to jeden wiersz. Rozwin plusem, zeby zobaczyc wnioski.">i</span></th>
             <th>NIP</th>
-            <th>Wielkość<span class="tip-mark" data-tip="Wielkosc przedsiebiorstwa decyduje o poziomie dofinansowania KFS: mikro (do 9 osob na umowie o prace) to 90 procent, powyzej mikro to 70 procent.">i</span></th>
-            <th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa obslugujaca klienta. Instytucje sa wobec siebie konkurencyjne, dane rozdzielone na poziomie danych.">i</span></th>
+            <th>Wielkość<span class="tip-mark" data-tip="Wielkosc przedsiebiorstwa decyduje o progu dofinansowania KFS (tabela progow, D-131). Mikro to do 9 osob na umowie o prace.">i</span></th>
+            <th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa obslugujaca klienta. Instytucje sa wobec siebie konkurencyjne, kazda widzi tylko swoich klientow.">i</span></th>
             <th>Urząd pracy<span class="tip-mark" data-tip="Powiatowy urzad pracy wlasciwy dla klienta. To urzad oglasza nabor KFS, wiec od niego zaleza daty i priorytet kontaktu.">i</span></th>
             <th>Status naboru<span class="tip-mark" data-tip="Stan naboru w urzedzie klienta: naeor ogloszony, w trakcie kontaktu, brak naboru z prognoza daty albo po naborze. Widok powiazany z naborami prognozowanymi (D-90).">i</span></th>
             <th class="nowrap"><b>Koniec naboru</b><span class="tip-mark" data-tip="Ostatni dzien naboru w urzedzie klienta. Ta data wyznacza priorytet: lista sortowana po niej rosnaco (D-130). Edycja inline w komorce, jak w Excelu.">i</span></th>
@@ -134,19 +134,37 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dofin"></script>
 <script type="text/kfs-strona">
 (function () {
-  var DZIS = new Date("2026-08-29");
+  var DZIS = new Date();
+  DZIS.setHours(0, 0, 0, 0);
+  var MS_NA_DOBE = 86400000;
 
+  /* Jeden nabor per urzad: najblizszy koniec (jeszcze trwajacy), potem prognozowany
+     bez daty konca, na koncu ostatnio zakonczony. Nie nadpisujemy ich po kolei. */
+  function rangaNaboru(n) {
+    if (!n.do) return { grupa: 1, klucz: 0 };
+    var koniec = new Date(n.do).getTime();
+    return koniec >= DZIS.getTime() ? { grupa: 0, klucz: koniec } : { grupa: 2, klucz: -koniec };
+  }
+  function lepszyNabor(a, b) {
+    var ra = rangaNaboru(a), rb = rangaNaboru(b);
+    return ra.grupa !== rb.grupa ? ra.grupa < rb.grupa : ra.klucz <= rb.klucz;
+  }
   var NAB = {};
-  DB.NABORY.forEach(function (n) { NAB[n.pup] = n; });
+  DB.NABORY.forEach(function (n) {
+    if (!NAB[n.pup] || !lepszyNabor(NAB[n.pup], n)) NAB[n.pup] = n;
+  });
 
   function naborKlienta(kl) {
     var p = DB.PUPY.filter(function (x) { return x.id === kl.pup; })[0];
@@ -154,17 +172,32 @@
   }
   function dniDo(iso) {
     if (!iso) return null;
-    return Math.round((new Date(iso) - DZIS) / 86400000);
+    return Math.round((new Date(iso) - DZIS) / MS_NA_DOBE);
   }
   function nazwaIS(id) {
     var i = DB.INSTYTUCJE.filter(function (x) { return x.id === id; })[0];
     return i ? i.nazwa : "-";
   }
 
-  /* Wnioski klienta z obu lat, pogrupowane po kliencie (D-128: w bazie danych wszystkie wnioski) */
-  var WSZYSTKIE_WN = DB.WNIOSKI.concat(DB.WNIOSKI_2025 || []);
-  var WN_BY_KL = {};
-  WSZYSTKIE_WN.forEach(function (w) { (WN_BY_KL[w.klient] = WN_BY_KL[w.klient] || []).push(w); });
+  /* Wszystkie wnioski klienta ze wszystkich lat (D-128), pogrupowane po kliencie */
+  function wnioskiPoKlientach() {
+    var mapa = {};
+    DB.WNIOSKI_WSZYSTKIE.forEach(function (w) { (mapa[w.klient] = mapa[w.klient] || []).push(w); });
+    return mapa;
+  }
+  var WN_BY_KL = wnioskiPoKlientach();
+
+  /* Licznik przy zakladce Wnioski: ten sam rok co domyslna zakladka w Zestawieniach */
+  function rokDomyslny() {
+    var biezacy = String(new Date().getFullYear());
+    if (DB.LATA.some(function (l) { return l.rok === biezacy; })) return biezacy;
+    return DB.LATA.length ? DB.LATA[DB.LATA.length - 1].rok : biezacy;
+  }
+  function odswiezLicznikWnioskow() {
+    var rok = rokDomyslny();
+    document.getElementById("licznikWnioskow").textContent =
+      DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return String(w.rok) === rok; }).length;
+  }
 
   function budujK() {
     return DB.KLIENCI.map(function (kl) {
@@ -209,7 +242,7 @@
   function tagStatusWn(w) {
     var v = statusValue(w);
     var map = { Pozytywna: "st-poz", Negatywna: "st-neg", Czekamy: "st-czekamy", NW: "warn", Rezygnacja: "st-rez", Niezłożony: "mute" };
-    return '<span class="tag ' + map[v] + ' dot">' + v + '</span>';
+    return '<span class="tag ' + map[v] + ' dot">' + esc(v) + '</span>';
   }
   function tagRozl(w) {
     if (w.rozliczenie === "Rozliczone") return '<span class="tag st-set">Rozliczone</span>';
@@ -241,31 +274,31 @@
     var najblizszy = aktywne.length ? aktywne[0] : null;
     document.getElementById("kpi").innerHTML =
       kpi("Klienci z otwartym naborem", DB.fmtNum(aktywne.length),
-          najblizszy ? '<span class="tag pos dot">koniec ' + najblizszy.koniec + ', za ' + najblizszy.dni + ' dni</span>' : "brak",
+          najblizszy ? '<span class="tag pos dot">koniec ' + esc(najblizszy.koniec) + ', za ' + najblizszy.dni + ' dni</span>' : "brak",
           "Klienci, ktorych urzad pracy ma wlasnie ogloszony nabor KFS. To oni sa priorytetem, sortowani po najblizszym koncu naboru (D-130).") +
       kpi("Czekają na nabór prognozowany", DB.fmtNum(prognoza.length), "urzędy w kontakcie lub z prognozą daty",
           "Klienci bez otwartego naboru, ale w urzedzie w kontakcie albo z prognozowana data naboru (D-90).") +
       kpi("Bez naboru w tym momencie", DB.fmtNum(bez.length), "nabór zakończony lub brak danych",
           "Klienci, ktorych urzad zakonczyl nabor albo brak danych. Zostaja w bazie, nie sa aktywnym priorytetem.") +
       kpi("Klienci w bazie łącznie", DB.fmtNum(K.length), "jeden klient to jeden wiersz",
-          "Wszyscy klienci w bazie danych, jeden klient to jeden wiersz. Klienta nigdy nie usuwamy (D-128).");
+          "Wszyscy klienci w bazie danych, jeden klient to jeden wiersz.");
   }
   renderKPI();
 
   /* Filtry */
   var selIS = document.getElementById("fIS");
-  DB.INSTYTUCJE.slice(0, 8).forEach(function (i) {
-    selIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
+  DB.INSTYTUCJE.forEach(function (i) {
+    selIS.innerHTML += '<option value="' + esc(i.id) + '">' + esc(i.nazwa) + '</option>';
   });
   var selPUP = document.getElementById("fPUP");
   DB.PUPY.forEach(function (p) {
-    selPUP.innerHTML += '<option value="' + p.id + '">' + p.nazwa + '</option>';
+    selPUP.innerHTML += '<option value="' + esc(p.id) + '">' + esc(p.nazwa) + '</option>';
   });
 
   function tagNaboru(r) {
     if (r.status === "Nabór ogłoszony") return '<span class="tag pos dot">Nabór trwa</span>';
     if (r.status === "W trakcie kontaktu") return '<span class="tag info dot">W trakcie kontaktu</span>';
-    if (r.status === "Brak naboru") return '<span class="tag warn dot">Prognoza: ' + r.nab.prognoza + '</span>';
+    if (r.status === "Brak naboru") return '<span class="tag warn dot">Prognoza: ' + esc(r.nab.prognoza) + '</span>';
     if (r.status === "Po naborze") return '<span class="tag mute dot">Po naborze</span>';
     return '<span class="tag mute dot">Brak danych</span>';
   }
@@ -277,13 +310,10 @@
     return '<span class="tag info">' + r.dni + ' dni</span>';
   }
   function tagWielkosc(w) {
-    return w === "mikro"
-      ? '<span class="pill k">mikro, 90%</span>'
-      : '<span class="pill w">' + w + ', 70%</span>';
+    return '<span class="pill ' + (w === "mikro" ? "k" : "w") + '">' + esc(w || "brak") + '</span>';
   }
-  function zainteresowanyKolejnym(r) { return (r.kl.nr % 4) !== 0; }
   function flagaKolejny(r) {
-    return zainteresowanyKolejnym(r)
+    return r.kl.zainteresowany
       ? '<span class="tag pos" data-tip="Zainteresowany kolejnym naborem. Klient zostaje w biezacym filtrze naboru jako kandydat do kontaktu (D-130).">tak</span>'
       : '<span class="tag mute" data-tip="Nie zainteresowany kolejnym naborem. Odznaczenie na bialo wypisuje klienta z biezacego filtra naboru (D-130).">nie</span>';
   }
@@ -298,14 +328,14 @@
     } else {
       body = lista.map(function (w) {
         return '<tr class="' + klasaWiersza(w) + '">' +
-          '<td class="strong mono nowrap">' + w.id + '</td>' +
-          '<td class="nowrap">' + w.szkolenie + '</td>' +
+          '<td class="strong mono nowrap">' + esc(w.id) + '</td>' +
+          '<td class="nowrap">' + esc(w.szkolenie) + '</td>' +
           '<td class="num">' + DB.fmtPLN(w.wartosc) + '</td>' +
           '<td class="num">' + (w.przyznano != null ? DB.fmtPLN(w.przyznano) : '<span class="muted">&mdash;</span>') + '</td>' +
           '<td class="num">' + (w.kosztCalkowity != null ? DB.fmtPLN(w.kosztCalkowity) : '<span class="muted">&mdash;</span>') + '</td>' +
           '<td>' + tagStatusWn(w) + '</td>' +
           '<td>' + tagRozl(w) + '</td>' +
-          '<td class="right"><button class="btn xs" onclick="location.href=\'03-wniosek.html?id=' + w.id + '\'">Otwórz</button></td>' +
+          '<td class="right"><button class="btn xs" onclick="location.href=\'' + escJs('03-wniosek.html?id=' + encodeURIComponent(w.id)) + '\'">Otwórz</button></td>' +
           '</tr>';
       }).join("");
     }
@@ -329,7 +359,7 @@
       if (fpup && r.kl.pup !== fpup) return false;
       if (fnab && r.status !== fnab) return false;
       if (q) {
-        var h = (r.kl.nazwa + " " + r.kl.nip + " " + r.pupNazwa + " " + r.isNazwa + " " + r.kl.osoba).toLowerCase();
+        var h = [r.kl.nazwa, r.kl.nip, r.pupNazwa, r.isNazwa, r.kl.osoba].join(" ").toLowerCase();
         if (h.indexOf(q) < 0) return false;
       }
       return true;
@@ -345,28 +375,27 @@
       var otw = !!expanded[r.kl.id];
       var maWnioski = r.wnioski.length > 0;
       var expBtn = maWnioski
-        ? '<button class="btn xs exp-btn" onclick="przelaczWnioski(\'' + r.kl.id + '\')" data-tip="Rozwin, zeby zobaczyc wnioski tego klienta, kolorowane statusem (D-128).">' + (otw ? "&minus;" : "+") + '</button>'
+        ? '<button class="btn xs exp-btn" onclick="przelaczWnioski(\'' + escJs(r.kl.id) + '\')" data-tip="Rozwin, zeby zobaczyc wnioski tego klienta, kolorowane statusem (D-128).">' + (otw ? "&minus;" : "+") + '</button>'
         : '<span class="muted">&middot;</span>';
       var row = '<tr class="' + cls + '">' +
         '<td class="exp-cell">' + expBtn + '</td>' +
-        '<td class="strong">' + r.kl.nr + '</td>' +
-        '<td class="strong nowrap">' + r.kl.nazwa +
-          '<div class="small muted">' + r.kl.id + ' &middot; ' + r.kl.miasto + '</div></td>' +
-        '<td class="mono muted">' + r.kl.nip + '</td>' +
+        '<td class="strong">' + esc(r.kl.nr) + '</td>' +
+        '<td class="strong nowrap">' + esc(r.kl.nazwa) +
+          '<div class="small muted">' + esc(r.kl.id) + ' &middot; ' + esc(r.kl.miasto) + '</div></td>' +
+        '<td class="mono muted">' + esc(r.kl.nip) + '</td>' +
         '<td class="nowrap">' + tagWielkosc(r.kl.wielkosc) +
-          '<div class="small muted">' + r.kl.zatrudnienie + ' os. na umowie</div></td>' +
-        '<td class="nowrap">' + r.isNazwa + '</td>' +
-        '<td class="nowrap muted">' + r.pupNazwa + '</td>' +
+          (r.kl.zatrudnienie == null ? "" : '<div class="small muted">' + esc(r.kl.zatrudnienie) + ' os. na umowie (ostatni wniosek)</div>') + '</td>' +
+        '<td class="nowrap">' + esc(r.isNazwa) + '</td>' +
+        '<td class="nowrap muted">' + esc(r.pupNazwa) + '</td>' +
         '<td class="nowrap">' + tagNaboru(r) + '</td>' +
         '<td class="mono nowrap"><b data-tip="Koniec naboru wyznacza priorytet kontaktu. Edycja inline: kliknij date i wpisz nowa, jak w Excelu (D-130).">' +
-          (r.koniec || '<span class="muted">&mdash;</span>') + '</b></td>' +
+          (esc(r.koniec) || '<span class="muted">&mdash;</span>') + '</b></td>' +
         '<td class="c">' + flagaKolejny(r) + '</td>' +
         '<td class="c">' + tagDni(r) + '</td>' +
         '<td class="c">' + (r.wnioski.length ? '<b>' + r.wnioski.length + '</b>' : '<span class="muted">0</span>') + '</td>' +
-        '<td class="nowrap small">' + r.kl.osoba + '<div class="muted">' + r.kl.tel + '</div></td>' +
+        '<td class="nowrap small">' + esc(r.kl.osoba) + '<div class="muted">' + esc(r.kl.tel) + '</div></td>' +
         '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
-          '<button class="btn xs" onclick="edytujKlient(\'' + r.kl.id + '\')">Edytuj</button>' +
-          '<button class="btn xs" onclick="usunKlient(\'' + r.kl.id + '\')">Usuń</button>' +
+          '<button class="btn xs" onclick="edytujKlient(\'' + escJs(r.kl.id) + '\')">Edytuj</button>' +
         '</div></td>' +
         '</tr>';
       return row + (otw ? detalWnioskow(r) : "");
@@ -392,58 +421,76 @@
     document.getElementById(id).addEventListener("input", render);
     document.getElementById(id).addEventListener("change", render);
   });
+  odswiezLicznikWnioskow();
   render();
 
   /* ================================================================
-     Inline CRUD bazy klientow. Zapis do wspolnego JSON przez Store.
+     CRUD bazy klientow. Z bazy nie usuwa sie klientow (D-128), wiec jest
+     tylko dodawanie i edycja. Zapis idzie przez Store.
      ================================================================ */
   function val(id) { return document.getElementById(id).value; }
-  function escAttr(v) { return String(v == null ? "" : v).replace(/"/g, "&quot;"); }
   var edytowanyKlient = null;
+  var KOLUMNY_KONTAKTOW = [
+    { osoba: "osoba_kontaktowa", tel: "telefon", mail: "email" },
+    { osoba: "osoba_kontaktowa_2", tel: "telefon_2", mail: "email_2" },
+    { osoba: "osoba_kontaktowa_3", tel: "telefon_3", mail: "email_3" }
+  ];
 
   function klientFormHTML(kl, tytul) {
     function inp(id, label, v, type) {
       return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
         '<span class="muted">' + label + '</span>' +
-        '<input class="inp" id="kf_' + id + '" ' + (type ? 'type="' + type + '" ' : "") + 'value="' + escAttr(v) + '"></label>';
+        '<input class="inp" id="kf_' + id + '" ' + (type ? 'type="' + type + '" ' : "") + 'value="' + esc(v) + '"></label>';
     }
     function sel(id, label, opts, v) {
       return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
         '<span class="muted">' + label + '</span>' +
         '<select class="inp" id="kf_' + id + '">' +
-        opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === v ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
+        opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === v ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") +
         '</select></label>';
     }
     var instOpts = DB.INSTYTUCJE.map(function (i) { return [i.id, i.nazwa]; });
     var pupOpts = DB.PUPY.map(function (p) { return [p.id, p.nazwa]; });
-    var wielkOpts = ["mikro", "mały", "średni", "duży"].map(function (w) { return [w, w]; });
+    var wielkOpts = ["mikro", "mały", "średni", "duży", "inny"].map(function (w) { return [w, w]; });
+    /* Instytucja pozyskujaca wybierana jest tylko przy dodawaniu, edycja jej nie zmienia */
+    var poleInstytucji = kl ? "" : sel("is", "Instytucja", instOpts, (instOpts[0] || [])[0]);
+    var kontakty = [0, 1, 2].map(function (n) {
+      var k = kl && kl.kontakty[n] ? kl.kontakty[n] : {};
+      var nr = n + 1;
+      return inp("osoba" + nr, "Osoba kontaktowa " + nr, k.osoba || "") +
+        inp("tel" + nr, "Telefon " + nr, k.tel || "") +
+        inp("mail" + nr, "E-mail " + nr, k.mail || "");
+    }).join("");
     return '<div class="card mb0"><div class="card-body">' +
-      '<div class="small strong" style="margin-bottom:10px">' + tytul + '</div>' +
+      '<div class="small strong" style="margin-bottom:10px">' + esc(tytul) + '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">' +
         inp("nazwa", "Nazwa firmy", kl ? kl.nazwa : "") +
         inp("nip", "NIP", kl ? kl.nip : "") +
         inp("miasto", "Miasto", kl ? kl.miasto : "") +
         sel("wielkosc", "Wielkość", wielkOpts, kl ? kl.wielkosc : "mikro") +
-        inp("zatrudnienie", "Zatrudnienie (os.)", kl ? kl.zatrudnienie : "", "number") +
-        sel("is", "Instytucja", instOpts, kl ? kl.is : (instOpts[0] || [])[0]) +
+        poleInstytucji +
         sel("pup", "Urząd pracy", pupOpts, kl ? kl.pup : (pupOpts[0] || [])[0]) +
-        inp("osoba", "Osoba kontaktowa", kl ? kl.osoba : "") +
-        inp("tel", "Telefon", kl ? kl.tel : "") +
-        inp("mail", "E-mail", kl ? kl.mail : "") +
+        kontakty +
       '</div>' +
+      '<div class="small muted" style="margin-top:8px">Liczba zatrudnionych jest na wniosku, nie przy kliencie (D-169).</div>' +
       '<div class="btn-row" style="margin-top:12px">' +
         '<button class="btn primary sm" onclick="zapiszKlient()">Zapisz</button>' +
         '<button class="btn sm" onclick="zamknijKlientForm()">Anuluj</button>' +
       '</div></div></div>';
   }
   function zbierzKlient() {
-    return {
+    var o = {
       nazwa: val("kf_nazwa"), nip: val("kf_nip"), miasto: val("kf_miasto"),
-      wielkosc_przedsiebiorstwa: val("kf_wielkosc"),
-      liczba_zatrudnionych: parseInt(val("kf_zatrudnienie"), 10) || 0,
-      instytucja_id: val("kf_is"), pup_id: val("kf_pup"),
-      osoba_kontaktowa: val("kf_osoba"), telefon: val("kf_tel"), email: val("kf_mail")
+      wielkosc_przedsiebiorstwa: val("kf_wielkosc"), pup_id: val("kf_pup")
     };
+    KOLUMNY_KONTAKTOW.forEach(function (kol, n) {
+      var nr = n + 1;
+      o[kol.osoba] = val("kf_osoba" + nr).trim() || null;
+      o[kol.tel] = val("kf_tel" + nr).trim() || null;
+      o[kol.mail] = val("kf_mail" + nr).trim() || null;
+    });
+    if (!edytowanyKlient) o.instytucja_id = val("kf_is");
+    return o;
   }
   function otworzKlientForm(kl, tytul) {
     var el = document.getElementById("klientForm");
@@ -475,24 +522,19 @@
     var o = zbierzKlient();
     if (!o.nazwa.trim()) { document.getElementById("kf_nazwa").focus(); return; }
     if (edytowanyKlient) {
+      /* Instytucja pozyskujaca zostaje bez zmian, formularz jej nie podaje */
       Store.update("klienci", edytowanyKlient, o);
-      przypiszDoInstytucji(edytowanyKlient, o.instytucja_id);
     } else {
       /* Numer klienta jest ciagly w roku i trafia na fakture (D-112), wiec
          liczymy go z calej tabeli, a nie z przefiltrowanego widoku. */
       var maxNr = Store.one("SELECT COALESCE(MAX(numer_klienta), 0) AS n FROM klienci").n;
       o.numer_klienta = maxNr + 1;
+      o.utworzono = new Date().toISOString().slice(0, 10);
       document.getElementById("q").value = o.nazwa;
       var nowy = Store.insert("klienci", o, "KL-");
       przypiszDoInstytucji(nowy.id, o.instytucja_id);
     }
     zamknijKlientForm();
-  };
-  window.usunKlient = function (id) {
-    var kl = DB.KLIENCI.filter(function (x) { return x.id === id; })[0];
-    if (window.confirm("Usunąć klienta " + (kl ? kl.nazwa : id) + "? Operacja dotyczy tylko danych makiety.")) {
-      Store.remove("klienci", id);
-    }
   };
   document.getElementById("btnNowyKlient").addEventListener("click", function () {
     otworzKlientForm(null, "Nowy klient");
@@ -501,10 +543,9 @@
   /* Odswiezanie po zmianie danych */
   window.addEventListener("db:changed", function () {
     K = budujK();
-    WN_BY_KL = {};
-    DB.WNIOSKI.concat(DB.WNIOSKI_2025 || []).forEach(function (w) { (WN_BY_KL[w.klient] = WN_BY_KL[w.klient] || []).push(w); });
+    WN_BY_KL = wnioskiPoKlientach();
     K.forEach(function (r) { r.wnioski = WN_BY_KL[r.kl.id] || []; });
-    renderKPI(); render();
+    odswiezLicznikWnioskow(); renderKPI(); render();
   });
 })();
 </script>

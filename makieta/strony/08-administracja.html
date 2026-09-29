@@ -69,9 +69,7 @@
         <h3>Prowizja per instytucja szkoleniowa</h3>
         <span class="sub">podstawa do fakturowania</span>
         <div class="ch-actions">
-          <select class="inp" style="width:auto" id="okres">
-            <option value="">Cały rok 2026</option>
-          </select>
+          <select class="inp" style="width:auto" id="okres"></select>
           <button class="btn sm">Eksport</button>
         </div>
       </div>
@@ -80,7 +78,7 @@
           <thead>
             <tr>
               <th>Instytucja</th>
-              <th class="c">Model<span class="tip-mark" data-tip="Sposób naliczania prowizji: A i D przestawiają lub trzymają jedną stawkę, B i C liczą od nadwyżki nad progiem. Konfigurowany per instytucja, widoczny tylko dla administratora (D-34).">i</span></th>
+              <th class="c">Model<span class="tip-mark" data-tip="Model z umowy instytucji: A kumulacja miesięczna od całości obrotu, B kumulacja roczna od całości obrotu, C od nadwyżki ponad próg, D stała stawka. Konfigurowany per instytucja w Konfiguratorze instytucji, widoczny tylko dla administratora (D-34).">i</span></th>
               <th>Kumulacja<span class="tip-mark" data-tip="Okres, w którym sumuje się obrót do sprawdzenia progu: miesięczny, roczny albo bez kumulacji (stawka stała).">i</span></th>
               <th class="num">Projekty<span class="tip-mark" data-tip="Liczba projektów z decyzją pozytywną wchodzących do podstawy prowizji w wybranym okresie.">i</span></th>
               <th class="num">Obrót narastająco<span class="tip-mark" data-tip="Suma kosztu całkowitego z dopłatą (D-64), nie kwoty przyznanej przez urząd. Tylko projekty z decyzją pozytywną. To podstawa naliczenia prowizji.">i</span></th>
@@ -96,16 +94,14 @@
         </table>
       </div>
       <div class="card-body" style="border-top:1px solid var(--line)">
-        <div class="legend">
-          <span><span class="pill">A</span> próg przestawia stawkę dla całego okresu</span>
-          <span><span class="pill k">B</span> od nadwyżki, kumulacja roczna</span>
-          <span><span class="pill w">C</span> od nadwyżki, kumulacja miesięczna</span>
-          <span><span class="pill">D</span> stawka stała, bez progów</span>
-        </div>
+        <div class="legend" id="legendaModeli"></div>
         <div class="small muted" style="margin-top:8px">
           Obrót liczony z pola <b>koszt całkowity z dopłatą</b>, nie z kwoty przyznanej przez urząd.
           Do obrotu wchodzą wyłącznie projekty z decyzją pozytywną. Kolejność faktur ma znaczenie,
-          bo określa, która faktura wyczerpała próg.
+          bo określa, która faktura wyczerpała próg. Faktura korygująca jest rozliczana w okresie swojej daty po stawce
+          faktury pierwotnej i nie zmienia obrotu tego okresu <span class="ref">D-161</span>. Nowe warunki działają od swojej
+          daty, nigdy wstecz <span class="ref">D-162</span>. Wniosek z nadpisaną prowizją wlicza się do puli progowej
+          <span class="ref">D-137</span>.
         </div>
       </div>
     </div>
@@ -114,7 +110,7 @@
       <div class="card-head">
         <h3>Dashboard prowizji <span class="ref">D-138</span></h3>
         <span class="sub">widok miesięczny per instytucja oraz wartość narastająco dla progu rocznego</span>
-        <div class="ch-actions"><span class="tag info">rok 2026</span></div>
+        <div class="ch-actions"><span class="tag info" id="tagRok"></span></div>
       </div>
       <div class="card-body tight">
         <div class="tbl-wrap" style="overflow-x:auto">
@@ -170,7 +166,7 @@
       <div class="card-head">
         <h3>Przewidywana prowizja <span class="ref">D-26</span></h3>
         <span class="sub">prognoza z zaplanowanych terminów szkoleń, zanim powstaną faktury</span>
-        <div class="ch-actions"><span class="tag info dot">okres prognozy: wrzesień 2026</span></div>
+        <div class="ch-actions"><span class="tag info dot" id="okresPrognozy"></span></div>
       </div>
       <div class="card-body tight">
         <table class="tbl">
@@ -235,7 +231,7 @@
         <div class="btn-row" style="align-items:center">
           <button class="btn primary" id="btnCsv">Importuj z systemu księgowego (CSV)</button>
           <button class="btn">Pobierz szablon CSV</button>
-          <span class="small muted">Ostatni import: 2026-08-28 17:12, 31 pozycji, 0 błędów mapowania.</span>
+          <span class="small muted">Import w makiecie jest demonstracją, bez zapisu do bazy.</span>
         </div>
         <dl class="dl mt16">
           <dt>Wolumen</dt>
@@ -297,9 +293,9 @@
 
     <div class="note">
       <b>Statystyki ilościowe i kwotowe per instytucja oraz zbiorczo <span class="ref">D-141</span>.</b>
-      Zestawienie pokazuje, ile wniosków przeszło, ile odrzucono i ile rezygnacji przypada na każdą
-      instytucję, a niżej sumę wszystkich instytucji. Kwotowo: koszt całkowity zsumowany, przychód
-      LDIT i VAT. Widok wyłącznie dla administratora <span class="ref">D-34</span>.
+      Ile wniosków złożono, ile decyzji pozytywnych i negatywnych, ile rezygnacji, jaki obrót i jaki przychód LDIT
+      (suma prowizji z tego samego silnika co zakładka Prowizje). Widok wyłącznie dla administratora
+      <span class="ref">D-34</span>.
     </div>
 
     <div class="grid g4" style="margin-bottom:18px" id="kpiStat"></div>
@@ -307,7 +303,16 @@
     <div class="card">
       <div class="card-head">
         <h3>Statystyki per instytucja szkoleniowa</h3>
-        <span class="sub">ilościowo i kwotowo, sortowane po przychodzie LDIT</span>
+        <span class="sub">skuteczność, obrót i przychód LDIT</span>
+        <div class="ch-actions">
+          <label class="small muted" for="miaraNagrody">Wyróżnienie wg</label>
+          <select class="inp" id="miaraNagrody" style="width:auto">
+            <option value="przychod">przychodu LDIT</option>
+            <option value="obrot">obrotu</option>
+            <option value="skutecznosc">skuteczności</option>
+            <option value="pozytywne">liczby decyzji pozytywnych</option>
+          </select>
+        </div>
       </div>
       <div class="card-body tight">
         <div class="tbl-wrap" style="overflow-x:auto">
@@ -315,15 +320,15 @@
             <thead>
               <tr>
                 <th>Instytucja</th>
-                <th class="num">Wnioski<span class="tip-mark" data-tip="Liczba wszystkich wniosków instytucji w 2026, niezależnie od decyzji i statusu składania.">i</span></th>
-                <th class="num">Przeszło<span class="tip-mark" data-tip="Wnioski z decyzją pozytywną urzędu. Tylko te wchodzą do podstawy prowizji.">i</span></th>
-                <th class="num">Odrzucono<span class="tip-mark" data-tip="Wnioski z decyzją negatywną urzędu.">i</span></th>
-                <th class="num">Rezygnacje<span class="tip-mark" data-tip="Wnioski ze statusem składania Rezygnacja, czyli wycofane przed rozstrzygnięciem.">i</span></th>
-                <th class="num">Skuteczność<span class="tip-mark" data-tip="Udział wniosków, które przeszły, w liczbie wniosków rozstrzygniętych (przeszło plus odrzucono).">i</span></th>
-                <th class="num">Koszt całkowity<span class="tip-mark" data-tip="Suma kosztu całkowitego z dopłatą projektów z decyzją pozytywną. Podstawa naliczenia prowizji.">i</span></th>
-                <th class="num">Przychód LDIT<span class="tip-mark" data-tip="Prowizja LDIT naliczona silnikiem progowym, czyli przychód firmy od tej instytucji.">i</span></th>
-                <th class="num">VAT<span class="tip-mark" data-tip="Szacunkowy VAT 23% od przychodu prowizyjnego LDIT. Wartość demonstracyjna w makiecie.">i</span></th>
-                <th class="c">Nagroda<span class="tip-mark" data-tip="System nagród dla instytucji (D-141). W makiecie wyróżniona instytucja z najwyższym przychodem, top 1.">i</span></th>
+                <th class="num">Złożone</th>
+                <th class="num">Pozytywne</th>
+                <th class="num">Odrzucone</th>
+                <th class="num">Rezygnacje</th>
+                <th class="num">Skuteczność<span class="tip-mark" data-tip="Udział wniosków z decyzją pozytywną w liczbie rozstrzygniętych (pozytywne plus odrzucone).">i</span></th>
+                <th class="num">Obrót<span class="tip-mark" data-tip="Podstawa prowizji projektów z decyzją pozytywną (koszt całkowity z dopłatą albo bez, wg znacznika na wniosku).">i</span></th>
+                <th class="num">Przychód LDIT<span class="tip-mark" data-tip="Suma prowizji naliczonej przez silnik okresowy, z korektami i nadpisaniami. To ta sama liczba co w zakładce Prowizje.">i</span></th>
+                <th class="num">VAT z faktur<span class="tip-mark" data-tip="Z kolumny VAT faktur instytucji. Stawka liczbowa daje kwotę VAT z kwoty brutto, oznaczenia typu ZW są pokazane wprost. Brak faktur to brak danych.">i</span></th>
+                <th class="c">Wyróżnienie</th>
               </tr>
             </thead>
             <tbody id="tabStat"></tbody>
@@ -334,9 +339,9 @@
       <div class="card-body" style="border-top:1px solid var(--line)">
         <div class="small muted">
           <b>System nagród dla instytucji <span class="ref">D-141</span>.</b>
-          Klient chce wyróżniać najlepiej współpracujące instytucje, na przykład top 1 po przychodzie.
-          Konkretny mechanizm nagrody (rabat na prowizji, wyróżnienie, benefit) nie został jeszcze
-          ustalony, tu pokazany jest tylko sposób wyłonienia lidera.
+          Klient chce wyróżniać najlepiej współpracujące instytucje. Mechanizm nagrody (rabat na prowizji,
+          wyróżnienie, benefit) nie został ustalony, więc tu wskazujemy tylko lidera wg wybranej miary,
+          bez żadnej kwoty.
         </div>
       </div>
     </div>
@@ -403,8 +408,7 @@
       </div>
       <div class="card-body" style="border-top:1px solid var(--line)">
         <div class="small muted">
-          <b>Do doprecyzowania przy dostarczeniu progów:</b> Cognity Center jest w tej makiecie
-          przypisane do dwóch osób, więc wartość wniosków tej instytucji liczy się dwa razy.
+          <b>Do doprecyzowania przy dostarczeniu progów:</b> <span id="uwagaWspolne"></span>
           Reguła podziału podstawy przy współdzielonej instytucji nie została ustalona.
           Możliwe warianty: podział po równo, przypisanie do opiekuna głównego albo naliczenie
           osobie, która faktycznie złożyła wniosek.
@@ -443,11 +447,14 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="admin"></script>
 <script type="text/kfs-strona">
@@ -456,11 +463,30 @@
 
   var MIES = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec",
               "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"];
-  var INST8 = DB.INSTYTUCJE.slice(0, 8);
-  var mapInst = {};
-  INST8.forEach(function (i) { mapInst[i.id] = i; });
+  var DZIS = (function () {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  })();
+  var ROK = DZIS.slice(0, 4);
+  var MARGINES_PROGU = 0.2;
+
+  /* Jeden slownik modeli, zgodny z komentarzem naglowka assets/prowizja.js */
+  var MODELE = {
+    A: { klasa: "pill", opis: "kumulacja miesięczna, stawka od całości obrotu okresu" },
+    B: { klasa: "pill k", opis: "kumulacja roczna, stawka od nadwyżki ponad próg" },
+    C: { klasa: "pill w", opis: "kumulacja miesięczna, stawka od nadwyżki ponad próg" },
+    D: { klasa: "pill", opis: "stała stawka, bez progów" }
+  };
+
   var mapSzk = {};
   DB.SZKOLENIA.forEach(function (s) { mapSzk[s.id] = s; });
+  var mapWniosek = {};
+  DB.WNIOSKI_WSZYSTKIE.forEach(function (w) { mapWniosek[w.id] = w; });
+
+  document.getElementById("legendaModeli").innerHTML = Object.keys(MODELE).map(function (m) {
+    return '<span><span class="' + MODELE[m].klasa + '">' + m + "</span> " + MODELE[m].opis + "</span>";
+  }).join("");
+  document.getElementById("tagRok").textContent = "rok " + ROK;
 
   /* ---------- Zakladki ---------- */
   document.querySelectorAll(".tab").forEach(function (t) {
@@ -472,122 +498,192 @@
     });
   });
 
+  /* ---------- Pomocnicze ---------- */
   function kpi(label, val, foot, admin) {
     return '<div class="kpi' + (admin ? " admin" : "") + '">' +
       '<div class="k-label">' + label + '</div><div class="k-value">' + val + '</div>' +
       (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
   }
   function pillModel(m) {
-    var kl = m === "B" ? "pill k" : m === "C" ? "pill w" : "pill";
-    return '<span class="' + kl + '">' + m + '</span>';
+    return '<span class="' + (MODELE[m] ? MODELE[m].klasa : "pill") + '">' + esc(m) + '</span>';
   }
   function opisOkresu(kum) {
     return kum === "miesieczny" ? "miesięczny" : kum === "roczny" ? "roczny" : "bez kumulacji";
   }
   function nazwaOkresu(okres) {
-    return okres ? MIES[parseInt(okres.slice(5, 7), 10) - 1] + " 2026" : "cały rok 2026";
+    return okres ? MIES[parseInt(okres.slice(5, 7), 10) - 1] + " " + ROK : "cały rok " + ROK;
   }
   function pct2(n) { return DB.fmtPct(Math.round(n * 100) / 100); }
-  function tip(txt) { return '<span class="tip-mark" data-tip="' + txt.replace(/"/g, "&quot;") + '">i</span>'; }
-
-  /* ---------- Silnik: prowizja rzeczywista per projekt ---------- */
-  function okresKey(w, kum) {
-    var d = w.dataFaktury || w.dataWniosku;
-    if (kum === "miesieczny") return d.slice(0, 7);
-    if (kum === "roczny") return d.slice(0, 4);
-    return d;
+  function tip(txt) { return '<span class="tip-mark" data-tip="' + esc(txt) + '">i</span>'; }
+  function brakDanych(kolumn, tytul, opis) {
+    return '<tr><td colspan="' + kolumn + '"><div class="empty"><div class="ei">&#9744;</div>' +
+      '<div class="et">' + tytul + '</div>' + opis + '</div></td></tr>';
   }
 
-  var POZ = DB.WNIOSKI.filter(function (w) {
-    return w.statusDec === "Pozytywna" && w.kosztZDoplata && mapInst[w.is];
-  }).slice().sort(function (a, b) {
-    return a.dataFaktury < b.dataFaktury ? -1 : a.dataFaktury > b.dataFaktury ? 1 : 0;
-  });
+  /* ---------- Wersje warunkow i silnik: jedno zrodlo prowizji naliczonej ---------- */
+  function wersjeInstytucji(isId) {
+    return Store.query("SELECT * FROM warunki_prowizyjne WHERE instytucja_id = ? ORDER BY obowiazuje_od", [isId])
+      .map(function (r) {
+        return { id: r.id, od: r.obowiazuje_od, do: r.obowiazuje_do, model: r.model,
+                 kumulacja: r.rodzaj_kumulacji, sposob: r.sposob_liczenia, stala: r.stawka_stala,
+                 progi: JSON.parse(r.progi || "[]") };
+      });
+  }
+  function warunkiNaDzien(wersje, data) {
+    try { return Prowizja.warunkiNaDzien(wersje, data); }
+    catch (e) {
+      if (e instanceof Prowizja.ProwizjaError) return null;
+      throw e;
+    }
+  }
 
-  /* Rozliczenie liczone na CALYM okresie, nie faktura po fakturze.
-     W modelu "od calosci" (np. Metal Maniak) przekroczenie progu podnosi stawke
-     takze dla pozycji juz wystawionych w tym miesiacu, wiec przyrostowe sumowanie
-     liczProwizje() zanizyloby wynik. Przyklad: 26 000 + 25 000 daje 6 120 zl,
-     a nie 2 600 + 3 000. Patrz docs/07-silnik-prowizji.md, "Pulapka implementacyjna". */
-  var WYNIK = {};
-  var grupyOkresu = {};
-  POZ.forEach(function (w) {
-    var inst = mapInst[w.is];
-    var key = w.is + "|" + okresKey(w, inst.prowizja.kumulacja);
-    if (!grupyOkresu[key]) grupyOkresu[key] = { inst: inst, pozycje: [] };
-    grupyOkresu[key].pozycje.push(w);
+  /* Faktury do rozliczenia: pozytywne wnioski z data faktury (podstawa z widoku SQL)
+     oraz faktury korygujace z tabeli faktury */
+  var POZ = DB.WNIOSKI_WSZYSTKIE.filter(function (w) {
+    return w.statusDec === "Pozytywna" && w.dataFaktury && w.podstawaProwizji != null;
   });
-  Object.keys(grupyOkresu).forEach(function (key) {
-    var g = grupyOkresu[key];
-    var wynik = liczOkres(g.inst.prowizja, g.pozycje.map(function (w) { return { kwota: w.kosztZDoplata }; }));
-    var narastajaco = 0;
-    g.pozycje.forEach(function (w, i) {
-      var p = wynik.pozycje[i];
-      WYNIK[w.id] = { kwota: p.prowizja, stawka: p.stawka, przed: narastajaco, rozbicie: p.rozbicie };
-      narastajaco += w.kosztZDoplata;
+  var FAKTURY_PO_ID = {};
+  DB.FAKTURY.forEach(function (f) { FAKTURY_PO_ID[f.id] = f; });
+
+  function fakturyInstytucji(isId) {
+    var projekty = POZ.filter(function (w) { return w.is === isId; });
+    var zwykle = projekty.map(function (w) { return { id: w.id, data: w.dataFaktury, kwota: w.podstawaProwizji }; });
+    var korekty = DB.FAKTURY.filter(function (f) { return f.isId === isId && f.rodzaj === "korygujaca"; })
+      .map(function (f) {
+        var pierwotny = projekty.filter(function (w) { return w.fakturaId === f.korygowana; })[0];
+        return { id: f.id, data: f.wystawiona, kwota: f.kwota, korygowana: pierwotny ? pierwotny.id : f.korygowana };
+      });
+    return { projekty: projekty, faktury: zwykle.concat(korekty) };
+  }
+
+  /* Nadpisanie per wniosek (D-136): procent albo kwota. Obrot zostaje w puli progowej (D-137),
+     zmienia sie tylko prowizja tej pozycji. */
+  function zastosujNadpisanie(pozycja, w) {
+    pozycja.wyliczona = pozycja.prowizja;
+    if (!w || w.prowizjaRegula || !w.prowizjaTyp) return;
+    pozycja.nadpisana = true;
+    pozycja.prowizja = w.prowizjaTyp === "procent" ? pozycja.kwota * w.prowizjaProcent / 100 : w.prowizjaKwota;
+    pozycja.stawka = pozycja.kwota ? pozycja.prowizja / pozycja.kwota * 100 : 0;
+  }
+
+  function rozliczInstytucje(inst) {
+    var dane = fakturyInstytucji(inst.id);
+    var wynik = { inst: inst, wersje: wersjeInstytucji(inst.id), projekty: dane.projekty.length,
+                  pozycje: [], blad: null };
+    if (!dane.faktury.length) return wynik;
+    var rozliczenie;
+    try { rozliczenie = Prowizja.rozliczOkresy(wynik.wersje, dane.faktury); }
+    catch (e) {
+      if (!(e instanceof Prowizja.ProwizjaError)) throw e;
+      wynik.blad = e.message;
+      return wynik;
+    }
+    rozliczenie.okresy.forEach(function (okres) {
+      var przed = 0;
+      okres.pozycje.forEach(function (p) {
+        var w = p.korekta ? null : mapWniosek[p.id];
+        p.wniosek = w;
+        p.faktura = p.korekta ? FAKTURY_PO_ID[p.id] : null;
+        p.klucz = okres.klucz;
+        p.przed = p.korekta ? null : przed;
+        zastosujNadpisanie(p, w);
+        if (!p.korekta) przed += p.kwota;
+        wynik.pozycje.push(p);
+      });
     });
-  });
+    return wynik;
+  }
+
+  var WYNIKI = {};
+  DB.INSTYTUCJE.forEach(function (inst) { WYNIKI[inst.id] = rozliczInstytucje(inst); });
+
+  /* Pozycje instytucji w wybranym okresie: rok biezacy, opcjonalnie miesiac daty faktury */
+  function pozycjeIS(isId, okres) {
+    return WYNIKI[isId].pozycje.filter(function (p) {
+      return p.data.slice(0, 4) === ROK && (!okres || p.data.slice(0, 7) === okres);
+    });
+  }
+  function podsumujPozycje(lista) {
+    var s = { n: 0, obrot: 0, prow: 0, rozl: 0 };
+    lista.forEach(function (p) {
+      s.prow += p.prowizja;
+      if (p.korekta) return;
+      s.n++;
+      s.obrot += p.kwota;
+      if (p.wniosek && p.wniosek.rozliczenie === "Rozliczone") s.rozl += p.prowizja;
+    });
+    return s;
+  }
 
   var selOkres = document.getElementById("okres");
-  var mcSet = {};
-  POZ.forEach(function (w) { mcSet[w.dataFaktury.slice(0, 7)] = true; });
-  Object.keys(mcSet).sort().forEach(function (m) {
-    selOkres.innerHTML += '<option value="' + m + '">' + nazwaOkresu(m) + '</option>';
+  var miesiace = {};
+  Object.keys(WYNIKI).forEach(function (k) {
+    WYNIKI[k].pozycje.forEach(function (p) { if (p.data.slice(0, 4) === ROK) miesiace[p.data.slice(0, 7)] = true; });
   });
+  selOkres.innerHTML = '<option value="">Cały rok ' + ROK + "</option>" +
+    Object.keys(miesiace).sort().map(function (m) {
+      return '<option value="' + esc(m) + '">' + nazwaOkresu(m) + "</option>";
+    }).join("");
 
-  var wybranaIS = "IS-02";
+  var wybranaIS = (DB.INSTYTUCJE.filter(function (i) { return pozycjeIS(i.id, "").length; })[0] ||
+                   DB.INSTYTUCJE[0] || {}).id;
 
-  function projektyIS(isId, okres) {
-    return POZ.filter(function (w) {
-      if (w.is !== isId) return false;
-      if (okres && w.dataFaktury.slice(0, 7) !== okres) return false;
-      return true;
-    });
+  /* ---------- Prowizja per instytucja ---------- */
+  function wierszeProwizji(okres) {
+    return DB.INSTYTUCJE.map(function (inst) {
+      var w = WYNIKI[inst.id];
+      var s = podsumujPozycje(pozycjeIS(inst.id, okres));
+      s.inst = inst;
+      s.akt = warunkiNaDzien(w.wersje, DZIS);
+      s.blad = w.blad;
+      return s;
+    }).filter(function (r) { return r.n > 0 || r.blad || r.prow; })
+      .sort(function (a, b) { return b.prow - a.prow; });
+  }
+
+  function wierszInstytucjiHtml(r) {
+    var st = r.obrot ? r.prow / r.obrot * 100 : 0;
+    var doFakt = r.prow - r.rozl;
+    var model = r.akt ? pillModel(r.akt.model) : '<span class="tag warn">brak warunków</span>';
+    var wynik = r.blad
+      ? '<td colspan="5"><span class="tag neg">' + esc(r.blad) + '</span></td>'
+      : '<td class="num">' + r.n + '</td>' +
+        '<td class="num">' + DB.fmtPLN(r.obrot) + '</td>' +
+        '<td class="num"><span class="tag mute">' + pct2(st) + '</span></td>' +
+        '<td class="num strong">' + DB.fmtPLN(r.prow) + '</td>' +
+        '<td class="num"><span class="tag set">' + DB.fmtPLN(r.rozl) + '</span></td>';
+    var zafakt = r.blad ? "" : '<td class="num">' + (Math.abs(doFakt) > 0.5
+      ? '<span class="tag warn">' + DB.fmtPLN(doFakt) + '</span>' : '<span class="muted">0 zł</span>') + '</td>';
+    return '<tr class="' + (r.inst.id === wybranaIS ? "sel" : "") + '">' +
+      '<td class="strong nowrap">' + esc(r.inst.nazwa) +
+        '<div class="small muted">' + esc(r.inst.miasto) + ' &middot; opiekun ' + esc(r.inst.opiekun) + '</div></td>' +
+      '<td class="c">' + model + '</td>' +
+      '<td class="muted nowrap">' + (r.akt ? opisOkresu(r.akt.kumulacja) : "-") + '</td>' +
+      wynik + zafakt +
+      '<td class="right"><button class="btn xs" data-is="' + esc(r.inst.id) + '">Pokaż projekty</button></td></tr>';
   }
 
   function renderProwizje() {
     var okres = selOkres.value;
-    var wiersze = INST8.map(function (inst) {
-      var lista = projektyIS(inst.id, okres);
-      var obrot = 0, prow = 0, rozl = 0;
-      lista.forEach(function (w) {
-        obrot += w.kosztZDoplata;
-        prow += WYNIK[w.id].kwota;
-        if (w.rozliczenie === "Rozliczone") rozl += WYNIK[w.id].kwota;
-      });
-      return { inst: inst, n: lista.length, obrot: obrot, prow: prow, rozl: rozl };
-    }).filter(function (r) { return r.n > 0; })
-      .sort(function (a, b) { return b.prow - a.prow; });
+    var wiersze = wierszeProwizji(okres);
+    var poprawne = wiersze.filter(function (r) { return !r.blad; });
 
-    document.getElementById("tabProw").innerHTML = wiersze.map(function (r) {
-      var st = r.obrot ? r.prow / r.obrot * 100 : 0;
-      var doFakt = r.prow - r.rozl;
-      return '<tr class="' + (r.inst.id === wybranaIS ? "sel" : "") + '">' +
-        '<td class="strong nowrap">' + r.inst.nazwa +
-          '<div class="small muted">' + r.inst.miasto + ' &middot; opiekun ' + r.inst.opiekun + '</div></td>' +
-        '<td class="c">' + pillModel(r.inst.prowizja.model) + '</td>' +
-        '<td class="muted nowrap">' + opisOkresu(r.inst.prowizja.kumulacja) + '</td>' +
-        '<td class="num">' + r.n + '</td>' +
-        '<td class="num">' + DB.fmtPLN(r.obrot) + '</td>' +
-        '<td class="num"><span class="tag mute">' + pct2(st) + '</span></td>' +
-        '<td class="num strong">' + DB.fmtPLN(r.prow) + '</td>' +
-        '<td class="num"><span class="tag set">' + DB.fmtPLN(r.rozl) + '</span></td>' +
-        '<td class="num">' + (doFakt > 0.5
-          ? '<span class="tag warn">' + DB.fmtPLN(doFakt) + '</span>'
-          : '<span class="muted">0 zł</span>') + '</td>' +
-        '<td class="right"><button class="btn xs" data-is="' + r.inst.id + '">Pokaż projekty</button></td></tr>';
-    }).join("");
+    document.getElementById("tabProw").innerHTML = wiersze.length
+      ? wiersze.map(wierszInstytucjiHtml).join("")
+      : brakDanych(10, "Brak projektów w wybranym okresie", "Zmień okres rozliczeniowy.");
 
-    var sObrot = 0, sProw = 0, sRozl = 0, sN = 0;
-    wiersze.forEach(function (r) { sObrot += r.obrot; sProw += r.prow; sRozl += r.rozl; sN += r.n; });
+    var razem = { n: 0, obrot: 0, prow: 0, rozl: 0 };
+    poprawne.forEach(function (r) {
+      razem.n += r.n; razem.obrot += r.obrot; razem.prow += r.prow; razem.rozl += r.rozl;
+    });
 
     document.getElementById("stopkaProw").innerHTML =
-      '<tr><td class="strong">Razem, ' + wiersze.length + ' instytucji</td><td></td><td></td>' +
-      '<td class="num strong">' + sN + '</td>' +
-      '<td class="num strong">' + DB.fmtPLN(sObrot) + '</td><td></td>' +
-      '<td class="num strong">' + DB.fmtPLN(sProw) + '</td>' +
-      '<td class="num strong">' + DB.fmtPLN(sRozl) + '</td>' +
-      '<td class="num strong">' + DB.fmtPLN(sProw - sRozl) + '</td><td></td></tr>';
+      '<tr><td class="strong">Razem, ' + poprawne.length + ' instytucji</td><td></td><td></td>' +
+      '<td class="num strong">' + razem.n + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(razem.obrot) + '</td><td></td>' +
+      '<td class="num strong">' + DB.fmtPLN(razem.prow) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(razem.rozl) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(razem.prow - razem.rozl) + '</td><td></td></tr>';
 
     document.querySelectorAll("#tabProw button[data-is]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -598,97 +694,135 @@
     });
 
     document.getElementById("kpiProw").innerHTML =
-      kpi('Obrót objęty prowizją' + tip("Suma kosztu całkowitego z dopłatą projektów z decyzją pozytywną w wybranym okresie. Podstawa naliczenia prowizji, nie kwota przyznana przez urząd."),
-          DB.fmtPLN(sObrot), "koszt całkowity z dopłatą, " + nazwaOkresu(okres), true) +
-      kpi('Prowizja naliczona' + tip("Prowizja LDIT policzona silnikiem progowym na całym okresie, po wszystkich instytucjach."),
-          DB.fmtPLN(sProw), sN + " projektów w " + wiersze.length + " instytucjach", true) +
-      kpi('Prowizja rozliczona' + tip("Część prowizji już objęta fakturą prowizyjną. Pasek pokazuje udział rozliczonej w naliczonej."),
-          DB.fmtPLN(sRozl),
+      kpi('Obrót objęty prowizją' + tip("Suma podstawy prowizji projektów z decyzją pozytywną w wybranym okresie (koszt całkowity z dopłatą albo bez, wg znacznika na wniosku). Faktury korygujące nie zmieniają obrotu."),
+          DB.fmtPLN(razem.obrot), "podstawa prowizji, " + nazwaOkresu(okres), true) +
+      kpi('Prowizja naliczona' + tip("Prowizja LDIT policzona silnikiem okresowym dla każdej instytucji wg warunków z daty faktury, z korektami i nadpisaniami per wniosek. To jedyne źródło tej liczby w systemie."),
+          DB.fmtPLN(razem.prow), razem.n + " projektów w " + poprawne.length + " instytucjach", true) +
+      kpi('Prowizja rozliczona' + tip("Część prowizji dotycząca projektów ze statusem Rozliczone. Pasek pokazuje udział rozliczonej w naliczonej."),
+          DB.fmtPLN(razem.rozl),
           '<div class="progress" style="flex:1"><i style="width:' +
-          (sProw ? Math.round(sRozl / sProw * 100) : 0) + '%"></i></div>', true) +
+          (razem.prow ? Math.round(razem.rozl / razem.prow * 100) : 0) + '%"></i></div>', true) +
       kpi('Do zafakturowania' + tip("Prowizja naliczona pomniejszona o rozliczoną, czyli kwota czekająca na fakturę prowizyjną."),
-          DB.fmtPLN(sProw - sRozl), "pozycje bez faktury prowizyjnej", true);
+          DB.fmtPLN(razem.prow - razem.rozl), "pozycje bez faktury prowizyjnej", true);
   }
 
+  /* ---------- Rozwiniecie instytucji ---------- */
   function tagRozl(w) {
-    if (w.rozliczenie === "Rozliczone") return '<span class="tag set">Rozliczone</span>';
-    if (w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
+    if (w && w.rozliczenie === "Rozliczone") return '<span class="tag set">Rozliczone</span>';
+    if (w && w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
     return '<span class="tag mute">Oczekuje</span>';
   }
 
-  function renderProjekty() {
-    var inst = mapInst[wybranaIS];
-    var okres = selOkres.value;
-    var lista = projektyIS(wybranaIS, okres);
+  function nazwaKlienta(id) {
+    var k = DB.KLIENCI.filter(function (x) { return x.id === id; })[0];
+    return k ? k.nazwa : "-";
+  }
 
-    document.getElementById("naglProjekty").innerHTML =
-      "Rozwinięcie: " + inst.nazwa + " " + pillModel(inst.prowizja.model);
-    document.getElementById("tagOkresProj").innerHTML =
-      nazwaOkresu(okres) + " &middot; kumulacja " + opisOkresu(inst.prowizja.kumulacja);
+  function stawkaHtml(p) {
+    var rozb = p.rozbicie && p.rozbicie.length > 1
+      ? '<div class="small muted">' + p.rozbicie.map(function (x) {
+          return DB.fmtPLN(x.kwota) + " po " + x.st + "%";
+        }).join(" + ") + '</div>' : "";
+    return pct2(p.stawka) + rozb;
+  }
 
-    if (!lista.length) {
-      document.getElementById("tabProjekty").innerHTML =
-        '<tr><td colspan="10"><div class="empty"><div class="ei">&#9744;</div>' +
-        '<div class="et">Brak projektów w wybranym okresie</div>' +
-        'Zmień okres rozliczeniowy albo wybierz inną instytucję w tabeli powyżej.</div></td></tr>';
-      return;
+  function opisNadpisania(w) {
+    var wartosc = w.prowizjaTyp === "procent" ? DB.fmtPct(w.prowizjaProcent) : DB.fmtPLN(w.prowizjaKwota);
+    return "reguła nadpisana, " + w.prowizjaTyp + ": " + wartosc;
+  }
+
+  function wierszPozycjiHtml(p) {
+    if (p.korekta) {
+      var f = p.faktura || {};
+      var pierwotna = FAKTURY_PO_ID[f.korygowana] || {};
+      return '<tr class="row-danger"><td class="strong">' + esc(f.nr) + '</td>' +
+        '<td class="strong nowrap">' + esc(nazwaKlienta(f.klient || pierwotna.klient)) + '<div class="small muted">korekta do ' + esc(pierwotna.nr || p.korygowana) + '</div></td>' +
+        '<td class="nowrap muted">' + esc(f.szkolenia || pierwotna.szkolenia) + '</td>' +
+        '<td class="mono">' + esc(p.data) + '</td>' +
+        '<td class="num">' + DB.fmtPLN(p.kwota) + '</td>' +
+        '<td class="num muted">bez zmiany obrotu</td>' +
+        '<td class="num">' + pct2(p.stawka) + '<div class="small muted">stawka faktury pierwotnej</div></td>' +
+        '<td class="num strong">' + DB.fmtPLN(p.prowizja) + '</td>' +
+        '<td><span class="tag neg">korekta</span><div class="small muted">korekta rozliczona w okresie wystawienia <span class="ref">D-161</span></div></td>' +
+        '<td></td></tr>';
     }
+    var w = p.wniosek;
+    return '<tr class="' + (w.rozliczenie === "Rozliczone" ? "row-set" : "") + '">' +
+      '<td class="strong">' + esc(w.nr) + '</td>' +
+      '<td class="strong nowrap">' + esc(w.klNazwa) + '<div class="small muted">' + esc(w.id) + '</div></td>' +
+      '<td class="nowrap muted">' + esc(w.szkolenie) + '</td>' +
+      '<td class="mono">' + esc(w.dataFaktury) + '</td>' +
+      '<td class="num">' + DB.fmtPLN(p.kwota) +
+        (w.doplata ? '<div class="small muted">w tym dopłata ' + DB.fmtPLN(w.doplata) + '</div>' : "") + '</td>' +
+      '<td class="num muted">' + DB.fmtPLN(p.przed) + '</td>' +
+      '<td class="num">' + stawkaHtml(p) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(p.prowizja) +
+        (p.nadpisana ? '<div class="small" style="color:var(--warn-ink)">' + esc(opisNadpisania(w)) +
+          '<br>wg reguły ' + DB.fmtPLN(p.wyliczona) + '</div>' : "") + '</td>' +
+      '<td>' + tagRozl(w) + '</td>' +
+      '<td class="right nowrap"><button class="btn xs" data-act="' + (p.nadpisana ? "przywroc" : "nadpisz") + '">' +
+        (p.nadpisana ? "Przywróć regułę" : "Nadpisz") + '</button></td></tr>';
+  }
 
-    document.getElementById("tabProjekty").innerHTML = lista.map(function (w, i) {
-      var r = WYNIK[w.id];
-      var nadpisany = i === 1;
-      var rozb = r.rozbicie.length > 1
-        ? '<div class="small muted">' + r.rozbicie.map(function (p) {
-            return DB.fmtPLN(p.kwota) + " po " + p.st + "%";
-          }).join(" + ") + '</div>'
-        : "";
-      return '<tr class="' + (w.rozliczenie === "Rozliczone" ? "row-set" : "") + '">' +
-        '<td class="strong">' + w.nr + '</td>' +
-        '<td class="strong nowrap">' + w.klNazwa + '<div class="small muted">' + w.id + '</div></td>' +
-        '<td class="nowrap muted">' + w.szkolenie + '</td>' +
-        '<td class="mono">' + w.dataFaktury + '</td>' +
-        '<td class="num">' + DB.fmtPLN(w.kosztZDoplata) +
-          (w.doplata ? '<div class="small muted">w tym dopłata ' + DB.fmtPLN(w.doplata) + '</div>' : "") + '</td>' +
-        '<td class="num muted">' + DB.fmtPLN(r.przed) + '</td>' +
-        '<td class="num">' + pct2(r.stawka) + rozb + '</td>' +
-        '<td class="num strong">' + DB.fmtPLN(r.kwota) +
-          (nadpisany ? '<div class="small" style="color:var(--warn-ink)">reguła nadpisana</div>' : "") + '</td>' +
-        '<td>' + tagRozl(w) + '</td>' +
-        '<td class="right nowrap"><button class="btn xs" data-act="' +
-          (nadpisany ? "przywroc" : "nadpisz") + '">' +
-          (nadpisany ? "Przywróć regułę" : "Nadpisz") + '</button></td></tr>';
-    }).join("");
-
+  function podlaczAkcjePozycji() {
     document.querySelectorAll("#tabProjekty button[data-act]").forEach(function (b) {
       b.addEventListener("click", function () {
         if (b.dataset.act === "przywroc") {
           alert("Przywrócenie reguły.\n\nProwizja wraca do wartości wyliczonej przez silnik. " +
                 "Zmiana trafia do rejestru aktywności z wartością przed i po (D-16).");
         } else {
-          alert("Ręczne nadpisanie prowizji dla tego projektu.\n\n" +
+          alert("Ręczne nadpisanie prowizji dla tego projektu, procent albo kwota (D-136).\n\n" +
                 "Jedyne miejsce nadpisania w systemie (D-93). Warunki negocjuje się przed złożeniem " +
-                "wniosku, nigdy w trakcie (D-25).\nNadpisanie kasuje regułę i jest odwracalne.\n\n" +
-                "Uprawnienie do tej akcji pozostaje nieokreślone, patrz P-06.");
+                "wniosku, nigdy w trakcie (D-25).\nNadpisany projekt wlicza się do puli progowej (D-137). " +
+                "Nadpisanie kasuje regułę i jest odwracalne.\n\nUprawnienie do tej akcji pozostaje nieokreślone, patrz P-06.");
         }
       });
     });
   }
 
+  function renderProjekty() {
+    var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === wybranaIS; })[0];
+    var okres = selOkres.value;
+    var wynik = WYNIKI[wybranaIS];
+    var akt = warunkiNaDzien(wynik.wersje, DZIS);
+    var lista = pozycjeIS(wybranaIS, okres);
+
+    document.getElementById("naglProjekty").innerHTML =
+      "Rozwinięcie: " + esc(inst.nazwa) + " " + (akt ? pillModel(akt.model) : '<span class="tag warn">brak warunków</span>');
+    document.getElementById("tagOkresProj").innerHTML =
+      nazwaOkresu(okres) + (akt ? " &middot; kumulacja " + opisOkresu(akt.kumulacja) : "");
+
+    if (wynik.blad) {
+      document.getElementById("tabProjekty").innerHTML =
+        brakDanych(10, "Nie można rozliczyć tej instytucji", esc(wynik.blad));
+      return;
+    }
+    document.getElementById("tabProjekty").innerHTML = lista.length
+      ? lista.map(wierszPozycjiHtml).join("")
+      : brakDanych(10, "Brak projektów w wybranym okresie",
+          "Zmień okres rozliczeniowy albo wybierz inną instytucję w tabeli powyżej.");
+    podlaczAkcjePozycji();
+  }
+
   /* ---------- Dashboard prowizji: miesiecznie + narastajaco (D-138) ---------- */
-  function renderDashboard() {
-    /* obrot objety prowizja per instytucja per miesiac */
+  function obrotMiesieczny() {
     var perInst = {};
-    POZ.forEach(function (w) {
-      var mc = parseInt(w.dataFaktury.slice(5, 7), 10) - 1;
-      if (!perInst[w.is]) perInst[w.is] = { inst: mapInst[w.is], mies: new Array(12).fill(0), suma: 0 };
-      perInst[w.is].mies[mc] += w.kosztZDoplata;
-      perInst[w.is].suma += w.kosztZDoplata;
+    DB.INSTYTUCJE.forEach(function (inst) {
+      WYNIKI[inst.id].pozycje.forEach(function (p) {
+        if (p.korekta || p.data.slice(0, 4) !== ROK) return;
+        var mc = parseInt(p.data.slice(5, 7), 10) - 1;
+        var r = perInst[inst.id] = perInst[inst.id] || { inst: inst, mies: new Array(12).fill(0), suma: 0 };
+        r.mies[mc] += p.kwota;
+        r.suma += p.kwota;
+      });
     });
-    var wiersze = Object.keys(perInst).map(function (k) { return perInst[k]; })
+    return Object.keys(perInst).map(function (k) { return perInst[k]; })
       .filter(function (r) { return r.suma > 0; })
       .sort(function (a, b) { return b.suma - a.suma; });
+  }
 
-    /* zakres miesiecy z danymi, zeby tabela nie mnozyla pustych kolumn */
+  function renderDashboard() {
+    var wiersze = obrotMiesieczny();
     var minM = 11, maxM = 0;
     wiersze.forEach(function (r) {
       r.mies.forEach(function (v, i) { if (v > 0) { if (i < minM) minM = i; if (i > maxM) maxM = i; } });
@@ -696,23 +830,19 @@
     if (minM > maxM) { minM = 0; maxM = 0; }
 
     var head = '<th>Instytucja</th>';
-    for (var m = minM; m <= maxM; m++) {
-      head += '<th class="num">' + MIES[m].slice(0, 3) + '</th>';
-    }
+    for (var m = minM; m <= maxM; m++) head += '<th class="num">' + MIES[m].slice(0, 3) + '</th>';
     head += '<th class="num">Narastająco' +
       tip("Suma obrotu od początku roku. W modelach z kumulacją roczną to narastająco decyduje, który próg jest aktywny, dlatego pokazujemy je obok słupków miesięcznych.") + '</th>';
     document.getElementById("dashHead").innerHTML = head;
 
     document.getElementById("dashBody").innerHTML = wiersze.map(function (r) {
-      var kum = r.inst.prowizja.kumulacja === "roczny";
-      var row = '<td class="strong nowrap">' + r.inst.nazwa +
-        ' ' + pillModel(r.inst.prowizja.model) + '</td>';
-      for (var m = minM; m <= maxM; m++) {
-        row += '<td class="num' + (r.mies[m] ? "" : " muted") + '">' +
-          (r.mies[m] ? DB.fmtPLN(r.mies[m]) : "&middot;") + '</td>';
+      var akt = warunkiNaDzien(WYNIKI[r.inst.id].wersje, DZIS);
+      var row = '<td class="strong nowrap">' + esc(r.inst.nazwa) + (akt ? ' ' + pillModel(akt.model) : "") + '</td>';
+      for (var i = minM; i <= maxM; i++) {
+        row += '<td class="num' + (r.mies[i] ? "" : " muted") + '">' + (r.mies[i] ? DB.fmtPLN(r.mies[i]) : "&middot;") + '</td>';
       }
       row += '<td class="num strong">' + DB.fmtPLN(r.suma) +
-        (kum ? '<div class="small muted">próg roczny</div>' : "") + '</td>';
+        (akt && akt.kumulacja === "roczny" ? '<div class="small muted">próg roczny</div>' : "") + '</td>';
       return '<tr>' + row + '</tr>';
     }).join("");
 
@@ -722,184 +852,113 @@
       sumTot += r.suma;
     });
     var foot = '<td class="strong">Razem</td>';
-    for (var mm = minM; mm <= maxM; mm++) {
-      foot += '<td class="num strong">' + (sumMies[mm] ? DB.fmtPLN(sumMies[mm]) : "&middot;") + '</td>';
-    }
-    foot += '<td class="num strong">' + DB.fmtPLN(sumTot) + '</td>';
-    document.getElementById("dashFoot").innerHTML = '<tr>' + foot + '</tr>';
+    for (var mm = minM; mm <= maxM; mm++) foot += '<td class="num strong">' + (sumMies[mm] ? DB.fmtPLN(sumMies[mm]) : "&middot;") + '</td>';
+    document.getElementById("dashFoot").innerHTML = '<tr>' + foot + '<td class="num strong">' + DB.fmtPLN(sumTot) + '</td></tr>';
   }
 
-  /* ---------- Statystyki per instytucja i zbiorczo (D-141) ---------- */
-  var VAT_STAT = 0.23;
-
-  function statystykiWg() {
-    var perInst = {};
-    INST8.forEach(function (i) {
-      perInst[i.id] = { inst: i, wnioski: 0, przeszlo: 0, odrzucono: 0, rezygnacje: 0, koszt: 0, przychod: 0 };
-    });
-    DB.WNIOSKI.forEach(function (w) {
-      var r = perInst[w.is];
-      if (!r) return;
-      r.wnioski++;
-      if (w.statusSkl === "Rezygnacja") r.rezygnacje++;
-      if (w.statusDec === "Pozytywna") r.przeszlo++;
-      if (w.statusDec === "Negatywna") r.odrzucono++;
-    });
-    POZ.forEach(function (w) {
-      var r = perInst[w.is];
-      if (!r) return;
-      r.koszt += w.kosztZDoplata;
-      r.przychod += WYNIK[w.id].kwota;
-    });
-    return Object.keys(perInst).map(function (k) { return perInst[k]; })
-      .filter(function (r) { return r.wnioski > 0; })
-      .sort(function (a, b) { return b.przychod - a.przychod; });
-  }
-
-  function renderStat() {
-    var wiersze = statystykiWg();
-    var lider = wiersze.length ? wiersze[0].inst.id : null;
-
-    document.getElementById("tabStat").innerHTML = wiersze.map(function (r) {
-      var rozstrzygniete = r.przeszlo + r.odrzucono;
-      var skut = rozstrzygniete ? Math.round(r.przeszlo / rozstrzygniete * 100) : 0;
-      var vat = r.przychod * VAT_STAT;
-      return '<tr class="' + (r.inst.id === lider ? "sel" : "") + '">' +
-        '<td class="strong nowrap">' + r.inst.nazwa +
-          '<div class="small muted">' + r.inst.miasto + '</div></td>' +
-        '<td class="num">' + r.wnioski + '</td>' +
-        '<td class="num"><span class="tag pos">' + r.przeszlo + '</span></td>' +
-        '<td class="num">' + (r.odrzucono ? '<span class="tag neg">' + r.odrzucono + '</span>' : '<span class="muted">0</span>') + '</td>' +
-        '<td class="num">' + (r.rezygnacje ? '<span class="tag warn">' + r.rezygnacje + '</span>' : '<span class="muted">0</span>') + '</td>' +
-        '<td class="num">' + skut + '%</td>' +
-        '<td class="num">' + DB.fmtPLN(r.koszt) + '</td>' +
-        '<td class="num strong">' + DB.fmtPLN(r.przychod) + '</td>' +
-        '<td class="num muted">' + DB.fmtPLN(vat) + '</td>' +
-        '<td class="c">' + (r.inst.id === lider ? '<span class="tag pos dot">top 1</span>' : "") + '</td></tr>';
-    }).join("");
-
-    var s = { wnioski: 0, przeszlo: 0, odrzucono: 0, rezygnacje: 0, koszt: 0, przychod: 0 };
-    wiersze.forEach(function (r) {
-      s.wnioski += r.wnioski; s.przeszlo += r.przeszlo; s.odrzucono += r.odrzucono;
-      s.rezygnacje += r.rezygnacje; s.koszt += r.koszt; s.przychod += r.przychod;
-    });
-    var sRozstrz = s.przeszlo + s.odrzucono;
-    var sSkut = sRozstrz ? Math.round(s.przeszlo / sRozstrz * 100) : 0;
-
-    document.getElementById("stopkaStat").innerHTML =
-      '<tr><td class="strong">Zbiorczo, ' + wiersze.length + ' instytucji</td>' +
-      '<td class="num strong">' + s.wnioski + '</td>' +
-      '<td class="num strong">' + s.przeszlo + '</td>' +
-      '<td class="num strong">' + s.odrzucono + '</td>' +
-      '<td class="num strong">' + s.rezygnacje + '</td>' +
-      '<td class="num strong">' + sSkut + '%</td>' +
-      '<td class="num strong">' + DB.fmtPLN(s.koszt) + '</td>' +
-      '<td class="num strong">' + DB.fmtPLN(s.przychod) + '</td>' +
-      '<td class="num strong">' + DB.fmtPLN(s.przychod * VAT_STAT) + '</td>' +
-      '<td></td></tr>';
-
-    document.getElementById("kpiStat").innerHTML =
-      kpi('Wnioski łącznie' + tip("Wszystkie wnioski 2026 po wszystkich instytucjach, niezależnie od decyzji."),
-          DB.fmtNum(s.wnioski), s.przeszlo + " przeszło, " + s.odrzucono + " odrzucono, " + s.rezygnacje + " rezygnacji", true) +
-      kpi('Skuteczność zbiorcza' + tip("Udział wniosków, które przeszły, w liczbie wniosków rozstrzygniętych, po wszystkich instytucjach."),
-          sSkut + "%", "z " + sRozstrz + " rozstrzygniętych", true) +
-      kpi('Koszt całkowity' + tip("Suma kosztu całkowitego z dopłatą projektów z decyzją pozytywną. Podstawa naliczenia prowizji."),
-          DB.fmtPLN(s.koszt), "zsumowany po instytucjach", true) +
-      kpi('Przychód i VAT' + tip("Prowizja LDIT jako przychód firmy oraz szacunkowy VAT 23% od niej."),
-          DB.fmtPLN(s.przychod), "VAT 23% " + DB.fmtPLN(s.przychod * VAT_STAT), true);
-  }
-
-  /* ---------- Przewidywana prowizja ---------- */
+  /* ---------- Przewidywana prowizja (D-26): terminy biezacego miesiaca ---------- */
   function prognozaWg() {
     var wg = {};
     DB.TERMINY.forEach(function (t) {
-      if (t.od.slice(0, 7) !== "2026-09" || t.status === "Odbyty") return;
+      if (t.od.slice(0, 7) !== DZIS.slice(0, 7) || t.status === "Odbyty") return;
       var s = mapSzk[t.szk];
-      if (!s || !mapInst[t.is]) return;
-      if (!wg[t.is]) wg[t.is] = { inst: mapInst[t.is], terminy: 0, osoby: 0, obrot: 0, poz: [] };
-      wg[t.is].terminy++;
-      wg[t.is].osoby += t.zapisani;
-      wg[t.is].obrot += t.zapisani * s.cena;
-      wg[t.is].poz.push({ nazwa: t.nazwa, osoby: t.zapisani, cena: s.cena });
+      var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === t.is; })[0];
+      var akt = inst ? warunkiNaDzien(WYNIKI[inst.id].wersje, DZIS) : null;
+      if (!s || !akt) return;
+      var g = wg[t.is] = wg[t.is] || { inst: inst, akt: akt, terminy: 0, osoby: 0, obrot: 0, poz: [] };
+      g.terminy++;
+      g.osoby += t.zapisani;
+      g.obrot += t.zapisani * s.cena;
+      g.poz.push({ nazwa: t.nazwa, osoby: t.zapisani, cena: s.cena });
     });
     return wg;
   }
 
-  function marginesDoProgu(inst, obrot) {
-    var p = inst.prowizja;
-    if (!p.progi || !p.progi.length) return '<span class="muted small">stawka stała, brak progów</span>';
+  function marginesDoProgu(p, obrot) {
+    if (!p.progi.length) return '<span class="muted small">stawka stała, brak progów</span>';
     var akt = p.progi[0], nast = null;
     p.progi.forEach(function (x) { if (obrot >= x.od) akt = x; });
     p.progi.forEach(function (x) { if (x.od > obrot && !nast) nast = x; });
     var out;
     if (akt.od > 0) {
       var zapas = obrot - akt.od;
-      out = '<span class="tag ' + (zapas < obrot * 0.2 ? "neg" : "warn") + ' dot">zapas ' +
+      out = '<span class="tag ' + (zapas < obrot * MARGINES_PROGU ? "neg" : "warn") + ' dot">zapas ' +
             DB.fmtPLN(zapas) + " nad progiem " + DB.fmtPLN(akt.od) + '</span>';
     } else {
       out = '<span class="tag mute">w progu bazowym</span>';
     }
-    if (nast) {
-      out += '<div class="small muted">do progu ' + DB.fmtPLN(nast.od) +
-             " brakuje " + DB.fmtPLN(nast.od - obrot) + '</div>';
-    }
+    if (nast) out += '<div class="small muted">do progu ' + DB.fmtPLN(nast.od) + " brakuje " + DB.fmtPLN(nast.od - obrot) + '</div>';
     return out;
+  }
+
+  /* Ostrzezenie: rezygnacja zbija stawke, gdy model liczy od calosci. Wybieramy pierwsza
+     instytucje z prognozy, ktora jest juz nad progiem modelu od calosci. */
+  function scenariuszRezygnacji(wg, klucze) {
+    var k = klucze.filter(function (id) {
+      var p = wg[id].akt;
+      return p.sposob === "od_calosci" && p.progi.length > 1 && wg[id].obrot >= p.progi[1].od;
+    })[0];
+    var el = document.getElementById("scenariusz");
+    if (!k) { el.style.display = "none"; return; }
+    el.style.display = "";
+    var g = wg[k], p = g.akt, prog = p.progi[1].od;
+    var poz = g.poz.slice().sort(function (a, b) { return b.cena - a.cena; })[0];
+    var ilu = Math.floor((g.obrot - prog) / poz.cena) + 1;
+    var poObrot = g.obrot - poz.cena * ilu;
+    var bazowa = liczProwizje(p, 0, g.obrot), po = liczProwizje(p, 0, poObrot);
+    el.innerHTML =
+      "<b>Ostrzeżenie: rezygnacja uczestnika zbija stawkę do niższego progu.</b><br>" +
+      esc(g.inst.nazwa) + " pracuje na modelu " + esc(p.model) + ", w którym próg " + DB.fmtPLN(prog) +
+      " przestawia stawkę z " + p.progi[0].st + "% na " + p.progi[1].st + "% <b>dla całego okresu</b>, a nie tylko dla nadwyżki. " +
+      "Obrót planowany to <b>" + DB.fmtPLN(g.obrot) + "</b>, czyli stawka <b>" + bazowa.stawka + "%</b> i prowizja przewidywana <b>" +
+      DB.fmtPLN(bazowa.kwota) + "</b>. Jeżeli ze szkolenia " + esc(poz.nazwa) + " zrezygnuje " + ilu +
+      " uczestników po " + DB.fmtPLN(poz.cena) + ", obrót spadnie do <b>" + DB.fmtPLN(poObrot) +
+      "</b>, czyli poniżej progu. Stawka spada z " + bazowa.stawka + "% na <b>" + po.stawka + "%</b>, a prowizja z " +
+      DB.fmtPLN(bazowa.kwota) + " na <b>" + DB.fmtPLN(po.kwota) + "</b>, czyli o " + DB.fmtPLN(bazowa.kwota - po.kwota) + " mniej. " +
+      "Klient opisał ten sam mechanizm na warsztacie na własnych liczbach: „czy to będzie 10 czy 12, " +
+      "no bo tutaj było 54000, a ten się odpadł, zrobiło się 48. No to ja nie mogę mieć 12% tylko 10” (26:58).";
   }
 
   function renderPrognoza() {
     var wg = prognozaWg();
     var klucze = Object.keys(wg).sort(function (a, b) { return wg[b].obrot - wg[a].obrot; });
+    document.getElementById("okresPrognozy").textContent = "okres prognozy: " + MIES[parseInt(DZIS.slice(5, 7), 10) - 1] + " " + ROK;
 
-    document.getElementById("tabPrognoza").innerHTML = klucze.map(function (k) {
+    document.getElementById("tabPrognoza").innerHTML = klucze.length ? klucze.map(function (k) {
       var g = wg[k];
-      var r = liczProwizje(g.inst.prowizja, 0, g.obrot);
+      var r = liczProwizje(g.akt, 0, g.obrot);
       return '<tr>' +
-        '<td class="strong nowrap">' + g.inst.nazwa + '</td>' +
-        '<td class="c">' + pillModel(g.inst.prowizja.model) + '</td>' +
+        '<td class="strong nowrap">' + esc(g.inst.nazwa) + '</td>' +
+        '<td class="c">' + pillModel(g.akt.model) + '</td>' +
         '<td class="num">' + g.terminy + '</td>' +
         '<td class="num">' + g.osoby + '</td>' +
         '<td class="num">' + DB.fmtPLN(g.obrot) + '<div class="small muted">' +
-          g.poz.map(function (p) { return p.nazwa + " " + p.osoby + " os."; }).join(", ") + '</div></td>' +
+          g.poz.map(function (p) { return esc(p.nazwa) + " " + p.osoby + " os."; }).join(", ") + '</div></td>' +
         '<td class="num"><span class="tag info">' + pct2(r.stawka) + '</span></td>' +
         '<td class="num strong">' + DB.fmtPLN(r.kwota) + '</td>' +
-        '<td>' + marginesDoProgu(g.inst, g.obrot) + '</td></tr>';
-    }).join("");
-
-    var g = wg["IS-02"];
-    if (!g) return;
-    var inst = mapInst["IS-02"];
-    var prog = inst.prowizja.progi[1].od;
-    var bazowa = liczProwizje(inst.prowizja, 0, g.obrot);
-    var cenaMag = mapSzk["SZ-201"].cena;
-    var ilu = Math.ceil((g.obrot - prog) / cenaMag);
-    var poObrot = g.obrot - cenaMag * ilu;
-    var po = liczProwizje(inst.prowizja, 0, poObrot);
-
-    document.getElementById("scenariusz").innerHTML =
-      "<b>Ostrzeżenie: rezygnacja uczestnika zbija stawkę do niższego progu.</b><br>" +
-      "Metal Maniak pracuje na modelu A, w którym próg " + DB.fmtPLN(prog) +
-      " przestawia stawkę z 10% na 12% <b>dla całego miesiąca</b>, a nie tylko dla nadwyżki. " +
-      "Obrót planowany na wrzesień to <b>" + DB.fmtPLN(g.obrot) + "</b>, czyli stawka <b>" +
-      bazowa.stawka + "%</b> i prowizja przewidywana <b>" + DB.fmtPLN(bazowa.kwota) + "</b>. " +
-      "Jeżeli ze szkolenia Spawanie MAG 135 zrezygnuje " + ilu + " uczestników po " +
-      DB.fmtPLN(cenaMag) + ", obrót spadnie do <b>" + DB.fmtPLN(poObrot) +
-      "</b>, czyli poniżej progu. Stawka spada z " + bazowa.stawka + "% na <b>" + po.stawka +
-      "%</b>, a prowizja z " + DB.fmtPLN(bazowa.kwota) + " na <b>" + DB.fmtPLN(po.kwota) +
-      "</b>, czyli o " + DB.fmtPLN(bazowa.kwota - po.kwota) + " mniej. " +
-      "Klient opisał ten sam mechanizm na warsztacie na własnych liczbach: „czy to będzie 10 czy 12, " +
-      "no bo tutaj było 54000, a ten się odpadł, zrobiło się 48. No to ja nie mogę mieć 12% tylko 10” (26:58).";
+        '<td>' + marginesDoProgu(g.akt, g.obrot) + '</td></tr>';
+    }).join("") : brakDanych(8, "Brak zaplanowanych terminów w tym miesiącu", "Prognoza powstaje z terminów szkoleń, które jeszcze się nie odbyły.");
+    scenariuszRezygnacji(wg, klucze);
   }
 
   /* ---------- Faktury ---------- */
   var selFIS = document.getElementById("fFIS");
-  INST8.forEach(function (i) {
-    selFIS.innerHTML += '<option value="' + i.id + '">' + i.nazwa + '</option>';
-  });
+  selFIS.innerHTML += DB.INSTYTUCJE.map(function (i) {
+    return '<option value="' + esc(i.id) + '">' + esc(i.nazwa) + '</option>';
+  }).join("");
 
   function tagFakt(s) {
     if (s === "Opłacona") return '<span class="tag pos dot">Opłacona</span>';
     if (s === "Po terminie") return '<span class="tag neg dot">Po terminie</span>';
     return '<span class="tag info dot">Oczekuje</span>';
+  }
+
+  function numerFakturyHtml(f) {
+    if (f.rodzaj !== "korygujaca") return esc(f.nr);
+    var pierwotna = FAKTURY_PO_ID[f.korygowana] || {};
+    return esc(f.nr) + ' <span class="tag neg">korekta</span>' +
+      '<div class="small muted">do ' + esc(pierwotna.nr || f.korygowana) + ', okres ' + esc(f.okres) +
+      '<br>korekta rozliczona w okresie wystawienia <span class="ref">D-161</span></div>';
   }
 
   function renderFaktury() {
@@ -910,25 +969,24 @@
     var lista = DB.FAKTURY.filter(function (f) {
       if (fis && f.isId !== fis) return false;
       if (fst && f.status !== fst) return false;
-      if (q && (f.nr + " " + f.is).toLowerCase().indexOf(q) < 0) return false;
-      return true;
+      return !q || (f.nr + " " + f.is).toLowerCase().indexOf(q) >= 0;
     });
+    var suma = function (a) { return a.reduce(function (s, f) { return s + f.kwota; }, 0); };
 
     document.getElementById("liczF").innerHTML =
-      "<b>" + lista.length + "</b> z " + DB.FAKTURY.length + " faktur &middot; " +
-      DB.fmtPLN(lista.reduce(function (s, f) { return s + f.kwota; }, 0));
+      "<b>" + lista.length + "</b> z " + DB.FAKTURY.length + " faktur &middot; " + DB.fmtPLN(suma(lista));
 
     document.getElementById("tabFakt").innerHTML = lista.map(function (f) {
       return '<tr class="' + (f.status === "Po terminie" ? "row-danger" : "") + '">' +
-        '<td class="strong mono">' + f.nr + '</td>' +
-        '<td class="nowrap">' + f.is + '</td>' +
+        '<td class="strong mono">' + numerFakturyHtml(f) + '</td>' +
+        '<td class="nowrap">' + esc(f.is) + '</td>' +
         '<td class="num strong">' + DB.fmtPLN2(f.kwota) + '</td>' +
-        '<td class="c muted">' + f.vat + '</td>' +
-        '<td class="mono">' + f.wystawiona + '</td>' +
-        '<td class="mono">' + f.termin + '</td>' +
+        '<td class="c muted">' + esc(f.vat) + '</td>' +
+        '<td class="mono">' + esc(f.wystawiona) + '</td>' +
+        '<td class="mono">' + esc(f.termin) + '</td>' +
         '<td>' + tagFakt(f.status) + '</td>' +
         '<td class="num">' + f.projekty + '</td>' +
-        '<td class="right"><button class="btn xs" data-pdf="' + f.nr + '">Podgląd PDF</button></td></tr>';
+        '<td class="right"><button class="btn xs" data-pdf="' + esc(f.nr) + '">Podgląd PDF</button></td></tr>';
     }).join("");
 
     document.querySelectorAll("#tabFakt button[data-pdf]").forEach(function (b) {
@@ -938,19 +996,21 @@
               "Główny przypadek użycia: sprawdzenie terminu płatności bez logowania do księgowości.");
       });
     });
+    renderKpiFaktur();
+  }
 
-    var wg = function (st) {
-      return DB.FAKTURY.filter(function (f) { return !st || f.status === st; });
-    };
+  function renderKpiFaktur() {
+    var rok = DB.FAKTURY.filter(function (f) { return (f.wystawiona || "").slice(0, 4) === ROK; });
+    var wg = function (st) { return rok.filter(function (f) { return f.status === st; }); };
     var kw = function (a) { return a.reduce(function (s, f) { return s + f.kwota; }, 0); };
-    var wsz = wg(null), opl = wg("Opłacona"), ocz = wg("Oczekuje"), pt = wg("Po terminie");
+    var opl = wg("Opłacona"), ocz = wg("Oczekuje"), pt = wg("Po terminie");
 
     document.getElementById("kpiFakt").innerHTML =
-      kpi('Wystawione w 2026' + tip("Wszystkie faktury zaimportowane z systemu księgowego w 2026, wraz z łączną kwotą."),
-          DB.fmtNum(wsz.length), "na kwotę " + DB.fmtPLN(kw(wsz)), true) +
+      kpi('Wystawione w ' + ROK + tip("Wszystkie faktury zaimportowane z systemu księgowego w bieżącym roku, wraz z łączną kwotą (korekty pomniejszają sumę)."),
+          DB.fmtNum(rok.length), "na kwotę " + DB.fmtPLN(kw(rok)), true) +
       kpi('Opłacone' + tip("Faktury ze statusem Opłacona zaczytanym z systemu księgowego, z udziałem w całości wolumenu."),
           DB.fmtNum(opl.length),
-          DB.fmtPLN(kw(opl)) + " &middot; " + Math.round(opl.length / wsz.length * 100) + "% wolumenu", true) +
+          DB.fmtPLN(kw(opl)) + " &middot; " + (rok.length ? Math.round(opl.length / rok.length * 100) : 0) + "% wolumenu", true) +
       kpi('Oczekujące' + tip("Faktury czekające na płatność, przed upływem terminu."),
           DB.fmtNum(ocz.length), "na kwotę " + DB.fmtPLN(kw(ocz)), true) +
       kpi('Po terminie' + tip("Faktury z przekroczonym terminem płatności. Główny powód sprawdzania terminów w tym module."),
@@ -969,6 +1029,90 @@
     document.getElementById(id).addEventListener("change", renderFaktury);
   });
 
+  /* ---------- Statystyki per instytucja i zbiorczo (D-141) ---------- */
+  var MIARY_NAGRODY = {
+    przychod: function (r) { return r.przychod; },
+    obrot: function (r) { return r.obrot; },
+    skutecznosc: function (r) { return r.rozstrzygniete ? r.poz / r.rozstrzygniete : -1; },
+    pozytywne: function (r) { return r.poz; }
+  };
+
+  /* VAT z kolumny faktury.vat: stawka liczbowa (kwota brutto) daje kwote, inne oznaczenia (ZW) pokazujemy wprost */
+  function vatInstytucji(isId) {
+    var faktury = DB.FAKTURY.filter(function (f) { return f.isId === isId && f.vat; });
+    if (!faktury.length) return "brak danych";
+    var kwota = 0, oznaczenia = {}, liczbowe = 0;
+    faktury.forEach(function (f) {
+      var stawka = parseFloat(String(f.vat).replace(",", "."));
+      if (isNaN(stawka)) { oznaczenia[f.vat] = true; return; }
+      liczbowe++;
+      kwota += f.kwota * stawka / (100 + stawka);
+    });
+    var opis = Object.keys(oznaczenia).map(esc).join(", ");
+    return (liczbowe ? DB.fmtPLN(kwota) : "") + (liczbowe && opis ? ", " : "") + opis;
+  }
+
+  function statystykiWg() {
+    var wnioski = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.rok === ROK; });
+    return DB.INSTYTUCJE.map(function (inst) {
+      var wsz = wnioski.filter(function (w) { return w.is === inst.id; });
+      var s = podsumujPozycje(pozycjeIS(inst.id, ""));
+      var poz = wsz.filter(function (w) { return w.statusDec === "Pozytywna"; }).length;
+      var odrz = wsz.filter(function (w) { return w.statusDec === "Negatywna"; }).length;
+      return { inst: inst, zlozone: wsz.filter(function (w) { return w.statusSkl === "Złożony"; }).length,
+               poz: poz, odrz: odrz, rozstrzygniete: poz + odrz,
+               rez: wsz.filter(function (w) { return w.statusSkl === "Rezygnacja"; }).length,
+               obrot: s.obrot, przychod: s.prow, wnioski: wsz.length, blad: WYNIKI[inst.id].blad };
+    }).filter(function (r) { return r.wnioski > 0; });
+  }
+
+  function wierszStatystykHtml(r, lider) {
+    var skut = r.rozstrzygniete ? Math.round(r.poz / r.rozstrzygniete * 100) : 0;
+    return '<tr class="' + (r === lider ? "sel" : "") + '">' +
+      '<td class="strong nowrap">' + esc(r.inst.nazwa) + '<div class="small muted">' + esc(r.inst.miasto) + '</div></td>' +
+      '<td class="num">' + r.zlozone + '</td>' +
+      '<td class="num"><span class="tag pos">' + r.poz + '</span></td>' +
+      '<td class="num">' + (r.odrz ? '<span class="tag neg">' + r.odrz + '</span>' : '<span class="muted">0</span>') + '</td>' +
+      '<td class="num">' + (r.rez ? '<span class="tag warn">' + r.rez + '</span>' : '<span class="muted">0</span>') + '</td>' +
+      '<td class="num">' + skut + '%</td>' +
+      '<td class="num">' + DB.fmtPLN(r.obrot) + '</td>' +
+      '<td class="num strong">' + (r.blad ? '<span class="tag neg">' + esc(r.blad) + '</span>' : DB.fmtPLN(r.przychod)) + '</td>' +
+      '<td class="num muted">' + vatInstytucji(r.inst.id) + '</td>' +
+      '<td class="c">' + (r === lider ? '<span class="tag pos dot">top 1</span>' : "") + '</td></tr>';
+  }
+
+  function renderStat() {
+    var wiersze = statystykiWg();
+    var miara = MIARY_NAGRODY[document.getElementById("miaraNagrody").value];
+    var lider = wiersze.slice().sort(function (a, b) { return miara(b) - miara(a); })[0];
+    wiersze.sort(function (a, b) { return b.przychod - a.przychod; });
+
+    document.getElementById("tabStat").innerHTML = wiersze.length
+      ? wiersze.map(function (r) { return wierszStatystykHtml(r, lider); }).join("")
+      : brakDanych(10, "Brak wniosków w roku " + ROK, "");
+
+    var s = { zlozone: 0, poz: 0, odrz: 0, rez: 0, obrot: 0, przychod: 0 };
+    wiersze.forEach(function (r) {
+      Object.keys(s).forEach(function (k) { s[k] += (r.blad && k === "przychod") ? 0 : r[k]; });
+    });
+    var rozstrz = s.poz + s.odrz;
+    var skutRazem = rozstrz ? Math.round(s.poz / rozstrz * 100) : 0;
+    document.getElementById("stopkaStat").innerHTML =
+      '<tr><td class="strong">Zbiorczo, ' + wiersze.length + ' instytucji</td><td class="num strong">' + s.zlozone + '</td>' +
+      '<td class="num strong">' + s.poz + '</td><td class="num strong">' + s.odrz + '</td><td class="num strong">' + s.rez + '</td>' +
+      '<td class="num strong">' + skutRazem + '%</td><td class="num strong">' + DB.fmtPLN(s.obrot) + '</td>' +
+      '<td class="num strong">' + DB.fmtPLN(s.przychod) + '</td><td></td><td></td></tr>';
+
+    document.getElementById("kpiStat").innerHTML =
+      kpi('Wnioski złożone' + tip("Wnioski o statusie Złożony w roku bieżącym, po wszystkich instytucjach."),
+          DB.fmtNum(s.zlozone), s.poz + " pozytywnych, " + s.odrz + " odrzuconych, " + s.rez + " rezygnacji", true) +
+      kpi('Skuteczność zbiorcza' + tip("Udział decyzji pozytywnych w rozstrzygniętych, po wszystkich instytucjach."),
+          skutRazem + "%", "z " + rozstrz + " rozstrzygniętych", true) +
+      kpi('Obrót' + tip("Suma podstawy prowizji projektów z decyzją pozytywną."), DB.fmtPLN(s.obrot), "zsumowany po instytucjach", true) +
+      kpi('Przychód LDIT' + tip("Suma prowizji z silnika okresowego, ta sama co w zakładce Prowizje."),
+          DB.fmtPLN(s.przychod), "suma prowizji naliczonej", true);
+  }
+
   /* ---------- Prowizje wewnetrzne ---------- */
   function fnRow(label, pct, val) {
     return '<div class="fn-row"><div class="fl">' + label + '</div>' +
@@ -976,56 +1120,60 @@
       '<div class="fv">' + val + '</div></div>';
   }
 
-  function renderWewnetrzne() {
-    var obrot = 0, prow = 0;
-    POZ.forEach(function (w) { obrot += w.kosztZDoplata; prow += WYNIK[w.id].kwota; });
-
+  function renderKaskada() {
+    var s = podsumujPozycje([].concat.apply([], DB.INSTYTUCJE.map(function (i) { return pozycjeIS(i.id, ""); })));
     document.getElementById("kaskada").innerHTML =
-      fnRow("Koszt szkoleń z dopłatą", 100, DB.fmtPLN(obrot)) +
-      fnRow("Prowizja LDIT, przychód firmy", Math.max(6, Math.round(prow / obrot * 100)), DB.fmtPLN(prow)) +
+      fnRow("Koszt szkoleń z dopłatą", 100, DB.fmtPLN(s.obrot)) +
+      fnRow("Prowizja LDIT, przychód firmy", s.obrot ? Math.max(6, Math.round(s.prow / s.obrot * 100)) : 0, DB.fmtPLN(s.prow)) +
       fnRow("Prowizja pracowników", 0, '<span class="tag warn">brak progów</span>');
+  }
 
+  function renderPracownicy() {
     var prac = DB.UZYTKOWNICY.filter(function (u) { return u.rola === "Pracownik LDIT"; });
-    var zlozone = DB.WNIOSKI.filter(function (w) { return w.statusSkl === "Złożony"; });
-    var razem = 0, razemN = 0;
+    var zlozone = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.rok === ROK && w.statusSkl === "Złożony"; });
+    var razem = 0, razemN = 0, uzycia = {};
 
     document.getElementById("tabPrac").innerHTML = prac.map(function (u) {
       var lista = u.inst.split(",").map(function (s) { return s.trim(); });
+      lista.forEach(function (n) { uzycia[n] = (uzycia[n] || 0) + 1; });
       var moje = zlozone.filter(function (w) { return lista.indexOf(w.isNazwa) >= 0; });
       var wart = moje.reduce(function (s, w) { return s + w.wartosc; }, 0);
       razem += wart;
       razemN += moje.length;
       return '<tr>' +
-        '<td class="strong nowrap">' + u.imie + '<div class="small muted">' + u.login + '</div></td>' +
-        '<td class="small">' + lista.map(function (n) {
-          return '<span class="tag mute">' + n + '</span>';
-        }).join(" ") + '</td>' +
+        '<td class="strong nowrap">' + esc(u.imie) + '<div class="small muted">' + esc(u.login) + '</div></td>' +
+        '<td class="small">' + lista.map(function (n) { return '<span class="tag mute">' + esc(n) + '</span>'; }).join(" ") + '</td>' +
         '<td class="num">' + moje.length + '</td>' +
         '<td class="num strong">' + DB.fmtPLN(wart) + '</td>' +
-        '<td class="num">' + DB.fmtPLN(wart) +
-          '<div class="small muted">wartość złożonych wniosków</div></td>' +
+        '<td class="num">' + DB.fmtPLN(wart) + '<div class="small muted">wartość złożonych wniosków</div></td>' +
         '<td class="num"><span class="tag warn">nie do policzenia</span></td></tr>';
     }).join("");
 
+    var wspolne = Object.keys(uzycia).filter(function (n) { return uzycia[n] > 1; });
     document.getElementById("stopkaPrac").innerHTML =
       '<tr><td class="strong">Razem, ' + prac.length + ' pracowników</td><td></td>' +
       '<td class="num strong">' + razemN + '</td>' +
       '<td class="num strong">' + DB.fmtPLN(razem) + '</td>' +
-      '<td class="num muted small">z podwójnym liczeniem Cognity Center</td>' +
+      '<td class="num muted small">' + (wspolne.length ? "z podwójnym liczeniem: " + esc(wspolne.join(", ")) : "") + '</td>' +
       '<td class="num"><span class="tag warn">P-02</span></td></tr>';
+    document.getElementById("uwagaWspolne").textContent = wspolne.length
+      ? wspolne.join(", ") + (wspolne.length > 1 ? " są przypisane" : " jest przypisane") +
+        " do więcej niż jednej osoby, więc wartość wniosków liczy się wielokrotnie. "
+      : "";
+  }
 
+  function renderCele() {
     document.getElementById("tabCele").innerHTML = DB.CELE.map(function (c) {
       var pct = Math.min(100, Math.round(c.obecnie / c.cel * 100));
       var ok = c.status === "osiągnięty";
       var kwotowy = c.cel > 1000;
       return '<tr>' +
-        '<td class="strong">' + c.nazwa + '</td>' +
+        '<td class="strong">' + esc(c.nazwa) + '</td>' +
         '<td class="num">' + (kwotowy ? DB.fmtPLN(c.cel) : c.cel + "%") + '</td>' +
         '<td class="num">' + (kwotowy ? DB.fmtPLN(c.obecnie) : c.obecnie + "%") + '</td>' +
-        '<td style="min-width:150px"><div class="progress' + (ok ? " pos" : "") +
-          '"><i style="width:' + pct + '%"></i></div></td>' +
-        '<td>' + c.premia + '</td>' +
-        '<td><span class="tag ' + (ok ? "pos" : "info") + ' dot">' + c.status + '</span></td></tr>';
+        '<td style="min-width:150px"><div class="progress' + (ok ? " pos" : "") + '"><i style="width:' + pct + '%"></i></div></td>' +
+        '<td>' + esc(c.premia) + '</td>' +
+        '<td><span class="tag ' + (ok ? "pos" : "info") + ' dot">' + esc(c.status) + '</span></td></tr>';
     }).join("");
   }
 
@@ -1054,10 +1202,13 @@
   renderProwizje();
   renderProjekty();
   renderDashboard();
-  renderStat();
   renderPrognoza();
   renderFaktury();
-  renderWewnetrzne();
+  document.getElementById("miaraNagrody").addEventListener("change", renderStat);
+  renderStat();
+  renderKaskada();
+  renderPracownicy();
+  renderCele();
 })();
 </script>
 </body>

@@ -65,7 +65,10 @@
 <script src="db/seed-db.js"></script>
 <script src="assets/sqlite.js"></script>
 <script src="assets/store.js"></script>
+<script src="assets/haslo.js"></script>
 <script src="assets/auth.js"></script>
+<script src="assets/straznik.js"></script>
+<script src="assets/html.js"></script>
 <script src="assets/boot.js" data-publiczna="tak"></script>
 
 <script type="text/kfs-strona">
@@ -87,7 +90,7 @@
 
   /* Lista kont prosto z bazy: to sa te same wiersze, ktore obsluguja logowanie */
   var konta = Store.query(
-    "SELECT u.login, u.imie_nazwisko, u.zablokowane, r.nazwa AS rola, " +
+    "SELECT u.login, u.imie_nazwisko, r.nazwa AS rola, " +
     "       COALESCE(i.nazwa, CASE WHEN u.wszystkie_instytucje = 1 " +
     "                              THEN 'wszystkie instytucje' ELSE '' END) AS zakres " +
     "FROM uzytkownicy u JOIN role r ON r.id = u.rola_id " +
@@ -95,12 +98,11 @@
     "ORDER BY r.id, u.imie_nazwisko");
 
   document.getElementById("listaKont").innerHTML = konta.map(function (k) {
-    return '<button type="button" class="konto" data-login="' + k.login + '"' +
-      (k.zablokowane ? ' disabled' : '') + '>' +
-      '<span class="konto-imie">' + k.imie_nazwisko + '</span>' +
-      '<span class="konto-rola">' + k.rola + '</span>' +
-      '<span class="konto-login">' + k.login + '</span>' +
-      (k.zakres ? '<span class="konto-zakres">' + k.zakres + '</span>' : '') +
+    return '<button type="button" class="konto" data-login="' + esc(k.login) + '">' +
+      '<span class="konto-imie">' + esc(k.imie_nazwisko) + '</span>' +
+      '<span class="konto-rola">' + esc(k.rola) + '</span>' +
+      '<span class="konto-login">' + esc(k.login) + '</span>' +
+      (k.zakres ? '<span class="konto-zakres">' + esc(k.zakres) + '</span>' : '') +
       '</button>';
   }).join("");
 

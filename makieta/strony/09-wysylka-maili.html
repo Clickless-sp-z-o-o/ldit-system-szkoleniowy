@@ -217,7 +217,7 @@
                     Potwierdzenie jest wymagane przed wysłaniem <span class="ref">D-106</span>.
                   </div>
                   <div class="btn-row mt16">
-                    <button class="btn primary" onclick="potwierdz()">Potwierdzam wysyłkę</button>
+                    <button class="btn primary" id="btnPotwierdz" onclick="potwierdz()">Potwierdzam wysyłkę</button>
                     <button class="btn" onclick="doKroku1()">Wróć do edycji</button>
                   </div>
                   <div id="wynikWysylki"></div>
@@ -276,12 +276,12 @@
                 musi dostarczyć harmonogram, wtedy ustawiamy datę, kiedy chcemy otrzymać alert i o co chodzi”</i>.
               </div>
               <div class="grid g2 mt16">
-                <div class="field mb0"><label>Data alertu</label><input class="inp" value="2026-09-02" readonly></div>
-                <div class="field mb0"><label>Odbiorca</label><input class="inp" value="Łucja Wierzbicka" readonly></div>
+                <div class="field mb0"><label>Data alertu (przykład)</label><input class="inp" value="2026-09-02" readonly></div>
+                <div class="field mb0"><label>Odbiorca (przykład)</label><input class="inp" value="pracownik LDIT" readonly></div>
               </div>
               <div class="field mt16 mb0">
-                <label>Treść</label>
-                <input class="inp" value="Marbud: harmonogram szkolenia do urzędu, 7 dni przed startem" readonly>
+                <label>Treść (przykład)</label>
+                <input class="inp" value="Harmonogram szkolenia do urzędu, 7 dni przed startem" readonly>
               </div>
             </div>
           </div>
@@ -303,8 +303,8 @@
                 <i>„Chciałbym, żeby alert był jako zadanie? Wykrzyknik przy Kliencie?
                 Do przemyślenia jak zrobić to najlepiej.”</i><br>
                 Trzy warianty do rozważenia: zadanie, znacznik przy kliencie, wpis w kolejce do obsłużenia.
-                Komplikacja: zadania zostały wykluczone z systemu <span class="ref">D-118</span>,
-                więc wariant „jako zadanie” wymagałby integracji zewnętrznej.
+                Zadania wróciły do zakresu <span class="ref">D-140</span>, więc wariant „jako zadanie”
+                jest technicznie możliwy, a wybór formy pozostaje decyzją klienta.
               </div>
               <div class="btn-row mt16">
                 <button class="btn sm" disabled>Zadanie</button>
@@ -330,11 +330,7 @@
               </div>
               <div class="field mt16 mb0">
                 <label>Odbiorcy alertu</label>
-                <div class="btn-row">
-                  <label class="chk"><input type="checkbox" checked> Bartłomiej Olejnik (admin)</label>
-                  <label class="chk"><input type="checkbox" checked> Martyna Kowal</label>
-                  <label class="chk"><input type="checkbox"> Łucjan Marek</label>
-                </div>
+                <div class="btn-row" id="odbiorcyAlertu"></div>
                 <div class="hint">
                   Uprawnienia do alertów są konfigurowalne per użytkownik:
                   <i>„zdecyduję, że za tydzień pracownik wystawia faktury, więc chcę mieć opcję nadania
@@ -408,11 +404,14 @@
 <script src="../db/seed-db.js"></script>
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
+<script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="komun"></script>
 <script type="text/kfs-strona">
@@ -475,8 +474,8 @@ var TRESCI = {
 "- Termin: {termin.od} do {termin.do}\n\n" +
 "Pozdrawiam\n{opiekun.imie}\nLDIT",
     uwaga:
-      'Klauzula w dokumencie klienta mówi o finansowaniu w 90%, co odpowiada mikroprzedsiębiorcy. ' +
-      'Przy firmach powyżej mikro wskaźnik wynosi 70%, dlatego procent jest tu placeholderem ' +
+      'Klauzula w dokumencie klienta zakłada jeden procent finansowania. Wskaźnik zależy jednak od wielkości firmy ' +
+      'i progu z tabeli progów dofinansowania, dlatego procent jest tu placeholderem ' +
       '<code>{projekt.procentDofinansowania}</code>. Parametryzacja do potwierdzenia u klienta.'
   },
   "SZB-04": {
@@ -598,14 +597,14 @@ function renderSzablony() {
   document.getElementById("tbSzablony").innerHTML = DB.SZABLONY.map(function (s) {
     var sel = s.id === wybranySzablon ? ' class="sel"' : "";
     return "<tr" + sel + ">" +
-      '<td class="strong">' + s.nazwa + '<div class="small muted mono">' + s.id + "</div></td>" +
-      '<td class="small">' + s.odbiorca + "</td>" +
+      '<td class="strong">' + esc(s.nazwa) + '<div class="small muted mono">' + esc(s.id) + "</div></td>" +
+      '<td class="small">' + esc(s.odbiorca) + "</td>" +
       "<td>" + (s.autor === "LDIT" ? '<span class="pill">LDIT</span>' : '<span class="pill w">IS</span>') + "</td>" +
       '<td class="num">' + (s.uzyc ? DB.fmtNum(s.uzyc) : '<span class="muted">0</span>') + "</td>" +
       '<td class="right nowrap">' +
-        '<button class="btn xs" onclick="pokaz(\'' + s.id + '\')">Podgląd</button> ' +
-        '<button class="btn xs" onclick="alert(\'Edytor szablonu ' + s.id + '\')">Edytuj</button> ' +
-        '<button class="btn xs" onclick="pokaz(\'' + s.id + '\');idzDoWysylki()">Wyślij</button>' +
+        '<button class="btn xs" onclick="pokaz(\'' + escJs(s.id) + '\')">Podgląd</button> ' +
+        '<button class="btn xs" onclick="alert(\'Edytor szablonu ' + escJs(s.id) + '\')">Edytuj</button> ' +
+        '<button class="btn xs" onclick="pokaz(\'' + escJs(s.id) + '\');idzDoWysylki()">Wyślij</button>' +
       "</td></tr>";
   }).join("");
 }
@@ -619,8 +618,8 @@ function pokaz(id) {
   document.getElementById("podglad").innerHTML = mailHtml("powiadomienia@ldit.pl", t.do, t.temat, t.tresc);
   document.getElementById("podgMeta").innerHTML =
     '<div class="grid g3 mt16">' +
-    '<div class="kpi"><div class="k-label">Odbiorca</div><div class="k-value" style="font-size:14px">' + s.odbiorca + "</div></div>" +
-    '<div class="kpi"><div class="k-label">Autor treści</div><div class="k-value" style="font-size:14px">' + s.autor + "</div></div>" +
+    '<div class="kpi"><div class="k-label">Odbiorca</div><div class="k-value" style="font-size:14px">' + esc(s.odbiorca) + "</div></div>" +
+    '<div class="kpi"><div class="k-label">Autor treści</div><div class="k-value" style="font-size:14px">' + esc(s.autor) + "</div></div>" +
     '<div class="kpi"><div class="k-label">Użyć</div><div class="k-value">' + DB.fmtNum(s.uzyc) + "</div></div>" +
     "</div>" +
     (t.uwaga ? '<div class="note warn mt16 mb0">' + t.uwaga + "</div>" : "") +
@@ -629,7 +628,6 @@ function pokaz(id) {
 }
 
 /* ---------- Podgląd maila ---------- */
-function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function mailHtml(od, dokogo, temat, tresc) {
   return '<div class="mail-preview">' +
     '<div class="mh">' +
@@ -642,28 +640,36 @@ function mailHtml(od, dokogo, temat, tresc) {
 
 /* ---------- Zakładka 2: wysyłka ---------- */
 document.getElementById("wySzablon").innerHTML = DB.SZABLONY.map(function (s) {
-  return '<option value="' + s.id + '">' + s.nazwa + " (" + s.odbiorca + ")</option>";
+  return '<option value="' + esc(s.id) + '">' + esc(s.nazwa + " (" + s.odbiorca + ")") + '</option>';
 }).join("");
 
 function adresaci() {
   var k = document.getElementById("wyKontekst").value;
-  var lista = DB.WNIOSKI.filter(function (w) {
+  return DB.WNIOSKI_WSZYSTKIE.filter(function (w) {
     if (k === "poz") return w.statusDec === "Pozytywna" && w.rozliczenie === "Oczekuje";
     if (k === "zlozone") return w.statusSkl === "Złożony" && !w.statusDec;
     return w.rozliczenie === "Rozliczone";
-  }).slice(0, 24);
-  return lista;
+  });
+}
+
+/* Adres mailowy adresata (D-178): najpierw e-mail osoby kontaktowej z wniosku,
+   a gdy wniosek go nie ma, e-mail klienta. Wniosek i klient sa laczeni po kluczu klient_id. */
+function klientWniosku(w) {
+  return DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0] || {};
+}
+function adresMaila(w) {
+  var zWniosku = w.kontakty.filter(function (c) { return c.mail; })[0];
+  return (zWniosku && zWniosku.mail) || klientWniosku(w).mail || "";
 }
 
 function renderOdb() {
   var lista = adresaci();
-  document.getElementById("odbList").innerHTML = lista.length ? lista.map(function (w, i) {
-    var kl = DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0];
+  document.getElementById("odbList").innerHTML = lista.length ? lista.map(function (w) {
     return '<label class="odb-row">' +
-      '<input type="checkbox" class="odbCh" ' + (i < 8 ? "checked" : "") + ' data-i="' + w.id + '">' +
-      '<span class="on"><b>' + w.klNazwa + "</b>" +
-      '<div class="om mono">' + (kl ? kl.mail : "brak adresu") + "</div></span>" +
-      '<span class="pill">' + w.id + "</span></label>";
+      '<input type="checkbox" class="odbCh" data-i="' + esc(w.id) + '">' +
+      '<span class="on"><b>' + esc(w.klNazwa) + "</b>" +
+      '<div class="om mono">' + esc(adresMaila(w) || "brak adresu") + "</div></span>" +
+      '<span class="pill">' + esc(w.id) + "</span></label>";
   }).join("") : '<div class="empty"><div class="ei">&#9993;</div><div class="et">Brak adresatów</div>W tym kontekście nie ma projektów.</div>';
   Array.prototype.forEach.call(document.querySelectorAll(".odbCh"), function (c) {
     c.addEventListener("change", licz);
@@ -685,21 +691,33 @@ function zaznacz(v) {
 
 function wybrane() {
   return Array.prototype.map.call(document.querySelectorAll(".odbCh:checked"), function (c) {
-    return DB.WNIOSKI.filter(function (w) { return w.id === c.dataset.i; })[0];
+    return DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.id === c.dataset.i; })[0];
   });
+}
+
+/* Termin szkolenia wniosku: ten na szkolenie glowne, a gdy go nie ma, najblizszy termin instytucji */
+function terminWniosku(w) {
+  var terminy = DB.TERMINY.filter(function (x) { return x.is === w.is; })
+    .sort(function (a, b) { return a.od < b.od ? -1 : 1; });
+  return terminy.filter(function (x) { return x.szk === w.szkId; })[0] || terminy[0] || null;
+}
+/* Nabor w urzedzie wniosku (po nazwie urzedu) */
+function naborWniosku(w) {
+  return DB.NABORY.filter(function (n) { return n.pup === w.pupNazwa; })[0] || null;
 }
 
 function podstaw(txt, w) {
   if (!w) return txt;
-  var kl = DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0] || {};
+  var kl = klientWniosku(w);
   var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0] || {};
   var szk = DB.SZKOLENIA.filter(function (s) { return s.id === w.szkId; })[0] || {};
-  var proc = Math.round(DB.wskaznik(w.wielkosc) * 100) + "%";
+  var termin = terminWniosku(w), nabor = naborWniosku(w);
+  var proc = DB.fmtPct(w.procent);
   var mapa = {
     "{klient.nazwa}": w.klNazwa,
     "{klient.nip}": w.nip,
-    "{klient.mail}": kl.mail || "",
-    "{klient.adres}": (kl.miasto || "") + ", ul. Przykładowa 12",
+    "{klient.mail}": adresMaila(w),
+    "{klient.adres}": kl.miasto || undefined,
     "{projekt.nr}": w.id,
     "{projekt.pup}": w.pupNazwa,
     "{projekt.szkolenie}": w.szkolenie,
@@ -707,7 +725,6 @@ function podstaw(txt, w) {
     "{projekt.cenaJednostkowa}": DB.fmtPLN2(szk.cena || 0),
     "{projekt.cenaCalkowita}": DB.fmtPLN2(w.calkowita),
     "{projekt.odbiorcaFV}": kl.osoba || "",
-    "{projekt.terminPlatnosci}": "14 dni od daty wystawienia",
     "{projekt.procentDofinansowania}": proc,
     "{projekt.listaUczestnikow}": w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; })
                                     .map(function (u) { return u.imie; }).join(", "),
@@ -717,15 +734,14 @@ function podstaw(txt, w) {
     "{szkolenie.tryb}": szk.tryb || "",
     "{szkolenie.godziny}": String(szk.godz || ""),
     "{szkolenie.dni}": String(szk.dni || ""),
-    "{termin.od}": "08.09.2026",
-    "{termin.do}": "09.09.2026",
-    "{termin.miejsce}": kl.miasto || "",
-    "{nabor.do}": "04.09.2026",
-    "{uczestnik.mail}": kl.mail || "",
-    "{opiekun.imie}": w.opiekun,
-    "{link.opinieGoogle}": "https://g.page/r/ldit-kfs/review"
+    "{termin.od}": termin ? termin.od : undefined,
+    "{termin.do}": termin ? termin.do : undefined,
+    "{termin.miejsce}": termin ? termin.miejsce : undefined,
+    "{nabor.do}": nabor ? nabor.do : undefined,
+    "{uczestnik.mail}": adresMaila(w),
+    "{opiekun.imie}": w.opiekun
   };
-  return txt.replace(/\{[a-zA-Z.]+\}/g, function (m) { return mapa[m] != null ? mapa[m] : m; });
+  return txt.replace(/\{[a-zA-Z.]+\}/g, function (m) { return mapa[m] != null ? String(mapa[m]) : m; });
 }
 
 function podgladWysylki() {
@@ -753,22 +769,22 @@ function doKroku2() {
   var s = DB.SZABLONY.filter(function (x) { return x.id === id; })[0];
 
   document.getElementById("tbPotw").innerHTML = lista.map(function (w) {
-    var kl = DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0] || {};
-    return "<tr><td class='strong'>" + w.klNazwa + "</td>" +
-      "<td class='mono small'>" + (kl.mail || "brak") + "</td>" +
-      "<td><span class='pill'>" + w.id + "</span></td>" +
-      "<td class='small muted'>" + w.isNazwa + "</td></tr>";
+    return "<tr><td class='strong'>" + esc(w.klNazwa) + "</td>" +
+      "<td class='mono small'>" + esc(adresMaila(w) || "brak") + "</td>" +
+      "<td><span class='pill'>" + esc(w.id) + "</span></td>" +
+      "<td class='small muted'>" + esc(w.isNazwa) + "</td></tr>";
   }).join("");
 
   document.getElementById("potwPodsum").innerHTML =
-    "<dt>Szablon</dt><dd>" + s.nazwa + "</dd>" +
+    "<dt>Szablon</dt><dd>" + esc(s.nazwa) + "</dd>" +
     "<dt>Nadawca</dt><dd class='mono'>powiadomienia@ldit.pl</dd>" +
     "<dt>Liczba adresatów</dt><dd><b>" + lista.length + "</b></dd>" +
     "<dt>Kanał</dt><dd>e-mail <span class='tag mute'>SMS wyłączony</span></dd>" +
-    "<dt>Zatwierdza</dt><dd>Bartłomiej Olejnik</dd>" +
-    "<dt>Data</dt><dd>29.08.2026, 11:04</dd>";
+    "<dt>Zatwierdza</dt><dd>" + esc(Auth.sesja().imie) + "</dd>" +
+    "<dt>Data</dt><dd>" + esc(new Date().toLocaleString("pl-PL")) + "</dd>";
 
   document.getElementById("wynikWysylki").innerHTML = "";
+  document.getElementById("btnPotwierdz").disabled = false;
   document.getElementById("krok1").style.display = "none";
   document.getElementById("krok2").style.display = "block";
   document.getElementById("st1").classList.remove("on");
@@ -782,12 +798,25 @@ function doKroku1() {
   document.getElementById("st1").classList.add("on");
 }
 
+function czasTeraz() {
+  var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+/* Kazdy adresat = jeden wpis typu "Wysylka maila" w rejestrze aktywnosci, autor z sesji (D-122) */
 function potwierdz() {
-  var n = wybrane().length;
+  var lista = wybrane();
+  var s = DB.SZABLONY.filter(function (x) { return x.id === document.getElementById("wySzablon").value; })[0];
+  document.getElementById("btnPotwierdz").disabled = true;
+  lista.forEach(function (w) {
+    Store.insert("rejestr_aktywnosci", {
+      czas: czasTeraz(), kto: Auth.sesja().imie, typ: "Wysyłka maila", obiekt: w.klient,
+      pole: "Szablon", przed: "", po: s.nazwa
+    }, "AKT-");
+  });
   document.getElementById("wynikWysylki").innerHTML =
     '<div class="note mt16 mb0" style="border-left-color:var(--pos-ink);background:var(--pos-bg)">' +
-    "<b>Wysłano " + n + " wiadomości.</b> Wpis trafił do rejestru aktywności. " +
-    "Kopie są widoczne w korespondencji przy każdym projekcie.</div>";
+    "<b>Zatwierdzono wysyłkę do " + lista.length + " adresatów.</b> Wpisy trafiły do rejestru aktywności.</div>";
 }
 
 /* ---------- Zakładka 3: automatyzacje ---------- */
@@ -810,13 +839,20 @@ document.getElementById("tagAuto").textContent =
   AUTOMATY.filter(function (a) { return a.tryb === "Auto"; }).length + " automatycznych, " +
   AUTOMATY.filter(function (a) { return a.tryb === "Ręczny"; }).length + " ręcznych";
 
+document.getElementById("odbiorcyAlertu").innerHTML = DB.UZYTKOWNICY.filter(function (u) {
+  return u.rolaId === "admin" || u.rolaId === "pracownik";
+}).map(function (u) {
+  return '<label class="chk"><input type="checkbox"' + (u.rolaId === "admin" ? " checked" : "") + "> " +
+    esc(u.imie) + (u.rolaId === "admin" ? " (admin)" : "") + "</label>";
+}).join("");
+
 document.getElementById("tbAuto").innerHTML = AUTOMATY.map(function (a, i) {
   var ostatni = i === AUTOMATY.length - 1;
   return "<tr>" +
-    '<td class="small">' + a.wyz + "</td>" +
-    '<td class="strong">' + a.pow + (ostatni ? ' <span class="ref p">P-52</span>' : "") + "</td>" +
-    '<td class="small">' + a.odb + "</td>" +
-    '<td class="small muted nowrap">' + a.kiedy + "</td>" +
+    '<td class="small">' + esc(a.wyz) + "</td>" +
+    '<td class="strong">' + esc(a.pow) + (ostatni ? ' <span class="ref p">P-52</span>' : "") + "</td>" +
+    '<td class="small">' + esc(a.odb) + "</td>" +
+    '<td class="small muted nowrap">' + esc(a.kiedy) + "</td>" +
     '<td class="c">' + (a.tryb === "Auto" ? '<span class="tag info">Auto</span>' : '<span class="tag mute">Ręczny</span>') + "</td>" +
     '<td class="c"><label class="switch"><input type="checkbox" ' + (a.on ? "checked" : "") + ">" +
       (a.on ? "włączone" : "wyłączone") + "</label></td></tr>";
@@ -832,8 +868,8 @@ document.getElementById("tbAlert8").innerHTML = DB.TERMINY
   .sort(function (a, b) { return a.od < b.od ? -1 : 1; })
   .slice(0, 5).map(function (t) {
     var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === t.is; })[0];
-    return "<tr><td class='nowrap'>" + t.od + '<div class="small muted">' + t.nazwa + "</div></td>" +
-      "<td class='small'>" + (inst ? inst.nazwa : t.is) + "</td>" +
+    return "<tr><td class='nowrap'>" + esc(t.od) + '<div class="small muted">' + esc(t.nazwa) + "</div></td>" +
+      "<td class='small'>" + esc(inst ? inst.nazwa : t.is) + "</td>" +
       "<td class='nowrap'><span class='tag warn dot'>" + minus8(t.od) + "</span></td></tr>";
   }).join("");
 
