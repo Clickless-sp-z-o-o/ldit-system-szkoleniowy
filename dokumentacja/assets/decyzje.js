@@ -1,10 +1,12 @@
 /* ============================================================================
    Punkty decyzyjne projektu KFS/LDIT.
 
-   STAN NA 2026-09-29: PANEL JEST PUSTY. Wszystkie 38 punktow zostalo rozstrzygnietych
+   STAN NA 2026-09-29: punkty z rundy D-161 - D-206 sa rozstrzygniete, a nowe pytania
+   Z-01 do Z-38 (obszar "Mapa zakladek", docs/19-mapa-zakladek.md) czekaja na klienta.
+   Stan sprzed dopisania Z-xx: panel byl pusty. Wszystkie 38 punktow zostalo rozstrzygnietych
    w rundzie decyzji z 29.09.2026 (decyzje D-161 - D-206 w docs/13-rejestr-decyzji.md).
-   window.DECYZJE zawiera wylacznie punkty NIEROZSTRZYGNIETE, wiec jest teraz pusta
-   i panel pokazuje 0 otwartych. Nowe pytanie dopisuje sie do window.DECYZJE, a po
+   window.DECYZJE zawiera wylacznie punkty NIEROZSTRZYGNIETE, wiec zawiera teraz tylko Z-xx
+   i panel pokazuje 38 otwartych. Nowe pytanie dopisuje sie do window.DECYZJE, a po
    rozstrzygnieciu przenosi do rejestru decyzji jako D-xx i usuwa z tej listy.
 
    Tresc wariantow, skutkow i kosztow rozstrzygnietych punktow zachowano ponizej jako
@@ -28,8 +30,1451 @@
    Dane sa tylko danymi. Logika panelu siedzi w sekcje/17-panel-decyzji.html.
    ============================================================================ */
 
-/* Punkty nierozstrzygniete: brak. */
-window.DECYZJE = [];
+/* Punkty nierozstrzygniete: 38 pytan o mape zakladek (Z-01 do Z-38), zrodlo docs/19-mapa-zakladek.md. Wszystkie odpowiada klient. */
+window.DECYZJE = [
+
+  /* ====================== MAPA ZAKLADEK: DASHBOARD ====================== */
+
+  {
+    id: "Z-01",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "screen Dashboard/Przegląd",
+    pytanie: "Co zostaje z sekcji „Wymaga działania” na dashboardzie",
+    kontekst: "Dashboard zawiera tabelę pięciu kolejek: formularze do akceptacji, nabory kończące się w tygodniu, szkolenia w ciągu 8 dni, faktury po terminie, projekty pozytywne nierozliczone. W kolumnie Kontekst są wypisane nazwy urzędów. Klient chciał samych statystyk [D-114], a ta sekcja jest listą spraw i dubluje moduł Zadania i powiadomienia [D-140]. Rekomendacja wykonawcy: wariant B, liczniki zostają jako skrót, a lista spraw żyje w Zadaniach.",
+    opcje: [
+      {
+        id: "a",
+        label: "Zostaje jak dziś: tabela z kontekstem (nazwy urzędów, terminy)",
+        skutki: [
+          { typ: "zysk", t: "Jedno miejsce na start dnia, wszystko widać bez klikania" },
+          { typ: "ryzyko", t: "Lista spraw na dashboardzie kłóci się z [D-114] i z modułem Zadań [D-140]" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Zostaje pięć liczników, każdy klikalny (bez nazw urzędów i kontekstu), klik prowadzi do listy z filtrem",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Jest statystyka i szybki dostęp, ale bez rozpiski" },
+          { typ: "koszt", t: "Znika informacja, który urząd kończy nabór, trzeba ją sprawdzić na liście" },
+          { typ: "wymusza", t: "Licznik formularzy do akceptacji pokazany także jako dzwonek w pasku górnym [D-105]" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Sekcja przenosi się w całości do Zadań i powiadomień, dashboard jest czysto statystyczny",
+        skutki: [
+          { typ: "zysk", t: "Dashboard w pełni jak portfel kryptowalut (analogia klienta), bez żadnych spraw do zrobienia" },
+          { typ: "koszt", t: "Pierwszy ekran po zalogowaniu nie mówi, co jest pilne" },
+          { typ: "wymusza", t: "Zadanie automatyczne dla każdej z pięciu kolejek [D-185]" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-02",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "screeny Dashboard/Skuteczność, Administracja/Statystyki",
+    pytanie: "Statystyki są w czterech miejscach. Jaki podział przyjmujemy",
+    kontekst: "Skuteczność, liczbę złożonych i pozytywnych wniosków oraz przyznane kwoty pokazują: Dashboard/Przegląd, Dashboard/Skuteczność i lejki, Administracja/Statystyki (z przychodem i VAT) oraz panel instytucji. Każde miejsce liczy definicję osobno. Decyzja [D-141] mówi, że statystyki per instytucja są w Administracji, a [D-114], że dashboard jest czysto statystyczny. Rekomendacja wykonawcy: wariant A, dwa miejsca, ale o rozłącznych rolach i połączone linkami.",
+    opcje: [
+      {
+        id: "a",
+        label: "Podział wg rodzaju: Dashboard to statystyki ilościowe i lejki (filtr instytucji), Administracja/Statystyki to kwotowe (obrót, przychód LDIT, VAT); linki „Zobacz kwoty” i „Zobacz skuteczność” między nimi",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Zgodne z [D-114] i [D-141], niewiele zmian w makiecie" },
+          { typ: "wymusza", t: "Jedna definicja każdej liczby i linki między dwiema stronami" },
+          { typ: "koszt", t: "Nadal dwa miejsca ze statystykami" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Jedno miejsce: Dashboard/Skuteczność (dla admina także z kwotami), zakładka Statystyki w Administracji znika",
+        skutki: [
+          { typ: "zysk", t: "Jedna zakładka mniej i jedna prawda o liczbach" },
+          { typ: "ryzyko", t: "Odwraca [D-141], statystyki miały być w Administracji" },
+          { typ: "koszt", t: "Dashboard admina robi się gęstszy, a klient prosił o prostotę" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Wszystkie statystyki w Administracji, dashboard tylko kafelki",
+        skutki: [
+          { typ: "zysk", t: "Dashboard najprostszy z możliwych" },
+          { typ: "koszt", t: "Pracownik nie widzi statystyk, bo Administracja jest tylko dla admina [D-34]" },
+          { typ: "wymusza", t: "Osobny widok statystyk dla pracownika poza Administracją [D-30]" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-03",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "screeny Dashboard i Administracja/Prowizje wewnętrzne",
+    pytanie: "Gdzie są Cele i premie i kto je widzi",
+    kontekst: "Dokumentacja opisuje cele zespołu i postęp ich realizacji jako część dashboardu oraz cele widoczne dla pracowników [D-23]. W makiecie Cele i premie są na dole zakładki Prowizje wewnętrzne w Administracji, więc widzi je tylko administrator, a dashboard pracownika ich nie ma. Rekomendacja wykonawcy: wariant A, kafelek na dashboardzie, edycja w Administracji.",
+    opcje: [
+      {
+        id: "a",
+        label: "Kafelek postępu celu na dashboardzie (admin i pracownik), edycja celów i premii w Administracji",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Pracownik widzi cel i swój postęp, zgodnie z [D-23]" },
+          { typ: "wymusza", t: "Kafelek celu bez kwot premii dla pracownika [D-34]" },
+          { typ: "koszt", t: "Cel liczony w dwóch miejscach, trzeba jedno źródło" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Tylko w Administracji (jak dziś)",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian, kwoty premii pod kontrolą admina" },
+          { typ: "ryzyko", t: "Cele nie motywują, jeśli zespół ich nie widzi, a [D-23] zakładał widoczność" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Osobna zakładka „Cele” w module Zadania",
+        skutki: [
+          { typ: "zysk", t: "Cele obok planu dnia, blisko codziennej pracy" },
+          { typ: "koszt", t: "Nowa zakładka i nowy zakres widoczności, cele nie są zadaniami" }
+        ]
+      }
+    ]
+  },
+
+  /* ============ MAPA ZAKLADEK: DOFINANSOWANIA, BAZA KLIENTOW, WNIOSKI ============ */
+
+  {
+    id: "Z-04",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "mapa menu, screeny Dofinansowań",
+    pytanie: "Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień",
+    kontekst: "Dokumentacja (docs/11) ma dwie pozycje menu: Dofinansowania (rozwija instytucje) i Zestawienia (drzewo lat). Makieta scala je w jedną pozycję „Dofinansowania”, a lata są paskami nad tabelą. Ten sam ekran nazywa się w makiecie czterema sposobami: „Dofinansowania” w menu, „Zestawienie 2026” w tytule, „Wnioski” na zakładce i „Projekty” na pasku ekranu Terminów. Klient żąda zachowania nazw z Excela [D-55]. Rekomendacja wykonawcy: wariant A, z jednoznaczną nazwą „Wnioski” na zakładce i „Zestawienie [rok]” w tytule wszędzie.",
+    opcje: [
+      {
+        id: "a",
+        label: "Jedna pozycja „Dofinansowania” (rozwija: Wszystkie instytucje i lista instytucji), w środku zakładki Wnioski, Baza klientów, Terminy szkoleń; lata jako arkusze nad tabelą; tytuł „Zestawienie 2026”",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Najmniej pozycji w menu, całe miejsce pracy operacyjnej w jednym" },
+          { typ: "koszt", t: "Nazwa „Zestawienia” znika z menu i zostaje w tytule i na paskach lat" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Dwie pozycje jak w docs/11: Dofinansowania (lista instytucji) i Zestawienia (2025 / 2026 / 2027)",
+        skutki: [
+          { typ: "zysk", t: "Dokładnie jak w słowach klienta i w Excelu" },
+          { typ: "koszt", t: "Pozycji o jedną więcej, a instytucja i rok to dwa niezależne wybory do połączenia" },
+          { typ: "ryzyko", t: "Niejasne, czym różni się „Zestawienia” od „Dofinansowań”, skoro to ta sama tabela z innym filtrem" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Jedna pozycja „Zestawienia” (lata), instytucja tylko jako filtr w tabeli, bez listy w menu",
+        skutki: [
+          { typ: "zysk", t: "Bardzo proste menu" },
+          { typ: "ryzyko", t: "Odwraca [D-112] i [D-127], klient chciał listy instytucji w menu" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-05",
+    obszar: "Mapa zakładek",
+    waga: "niska",
+    kto: "klient",
+    blokuje: "menu administratora",
+    pytanie: "Lista instytucji w menu przy ok. 20 instytucjach",
+    kontekst: "Pod „Dofinansowaniami” menu pokazuje „Wszystkie instytucje” i jedną pozycję na każdą instytucję z konta [D-127]. Pracownik ma od 1 do 3 instytucji [D-113], administrator ok. 20 (tyle kopii formularza [D-70]), więc lista administratora ma ponad 20 pozycji w lewym menu i wypycha pozostałe pozycje poza ekran. Rekomendacja wykonawcy: wariant B.",
+    opcje: [
+      {
+        id: "a",
+        label: "Wszystkie instytucje jako pozycje menu, menu przewijane",
+        skutki: [
+          { typ: "zysk", t: "Dokładnie jak ustalono [D-127]" },
+          { typ: "koszt", t: "Administrator przewija długą listę, a kolejne pozycje menu uciekają poza ekran" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Lista z polem szukania, przy więcej niż ośmiu pozycjach zwinięta do „ostatnio używane” plus „Wszystkie instytucje”",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Krótkie menu, nadal zgodne z [D-127]" },
+          { typ: "koszt", t: "Prosty mechanizm „ostatnio używane” do zbudowania" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Lista w menu tylko dla pracownika, administrator używa filtra Instytucja w tabeli",
+        skutki: [
+          { typ: "zysk", t: "Krótkie menu administratora" },
+          { typ: "ryzyko", t: "Dwa różne menu dla dwóch ról, odstępstwo od [D-112]" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-06",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "nazwy w menu i na wszystkich screenach",
+    pytanie: "Co oznacza nazwa „Nabory”",
+    kontekst: "Słownik i docs/11 mówią: „Wnioski” to „Nabory” (główne okno robocze), czyli lista wniosków w Excelu klienta. Jednocześnie [D-109] wprowadza moduł z naborami urzędów pracy z aplikacji prognozującej. Makieta nazwała „Nabory” listę urzędów, a listę wniosków „Wnioski”, co łamie zapis słownika [D-55]. Rekomendacja wykonawcy: wariant A, o ile klient potwierdzi, że w zespole „nabór” oznacza okno urzędu, a nie wniosek.",
+    opcje: [
+      {
+        id: "a",
+        label: "„Nabory” zostają listą naborów urzędów pracy (jak makieta), lista wniosków to „Wnioski” i „Zestawienie [rok]”; poprawiamy słownik",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Nazwa odpowiada temu, co ekran robi, nie ma pomyłek nabór/wniosek" },
+          { typ: "wymusza", t: "Klient potwierdza, że zespół nie nazywa wniosków „naborami”; poprawka słownika i docs/11" }
+        ]
+      },
+      {
+        id: "b",
+        label: "„Nabory” to lista wniosków (jak w Excelu), lista urzędów dostaje nową nazwę (np. „Kalendarz naborów” albo „Urzędy”)",
+        skutki: [
+          { typ: "zysk", t: "Zgodne ze słowami klienta z Excela [D-55]" },
+          { typ: "koszt", t: "Trzeba zmienić nazwę modułu z [D-109] i wszystkich ekranów makiety" },
+          { typ: "ryzyko", t: "Nabór (okno urzędu) i wniosek to różne rzeczy, nazwa myli nowych pracowników" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Obie nazwy współistnieją: „Nabory” (urzędy) w menu i „Wnioski” na zakładce, w słowniku opis różnicy",
+        skutki: [
+          { typ: "zysk", t: "Nic nie zmieniamy w makiecie" },
+          { typ: "ryzyko", t: "Rozjazd, który wykonawca zgłaszał już na warsztacie („mieszają mi się nazwy”)" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-07",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "etykieta zakładki",
+    pytanie: "Nazwa zakładki z klientami: „Baza klientów” czy „Baza danych”",
+    kontekst: "Słownik i docs/11 używają nazwy „Baza klientów” (w Excelu „Niezłożone”), a decyzja [D-128] i makieta „Baza danych”. Ta sama zakładka ma w dokumentacji dwie nazwy. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "„Baza klientów”",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Nazwa mówi, co jest w środku, słownik bez zmian" },
+          { typ: "koszt", t: "Zmiana etykiety w makiecie i w opisie [D-128]" }
+        ]
+      },
+      {
+        id: "b",
+        label: "„Baza danych”",
+        skutki: [
+          { typ: "zysk", t: "Zgodne z [D-128] i ostatnim słowem klienta z 04.09" },
+          { typ: "ryzyko", t: "Nazwa techniczna, nie mówi, czy to klienci, czy wnioski" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Inna nazwa podana przez klienta (np. z jego Excela)",
+        skutki: [
+          { typ: "zysk", t: "Zgodność z przyzwyczajeniami zespołu [D-55]" },
+          { typ: "koszt", t: "Wymaga ustalenia i zmiany słownika" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-08",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "zakładki lat na ekranie Wnioski",
+    pytanie: "Lata jako zakładki: czy potrzebny jest też widok „Wszystkie lata”",
+    kontekst: "Każdy rok to osobna zakładka jak arkusz Excela [D-129, D-159]: 2025 (pusta), 2026, 2027, plus „Nieprzypisane” (wnioski bez roku) i przycisk +. Numeracja klientów jest ciągła w roku i trafia na fakturę [D-112]. Wyszukiwarka i drill through z dashboardu (np. „wszystkie decyzje pozytywne”) nie mają jednego roku. Rekomendacja wykonawcy: wariant A, a globalna wyszukiwarka przeszukuje wszystkie lata.",
+    opcje: [
+      {
+        id: "a",
+        label: "Same zakładki lat jak dziś; drill through i wyszukiwarka otwierają zakładkę właściwego roku",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Numeracja zawsze jednoznaczna, jak w Excelu" },
+          { typ: "koszt", t: "Filtr obejmujący dwa lata wymaga dwóch kliknięć" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Zakładki lat plus zakładka „Wszystkie lata” tylko do odczytu, z kolumną Rok",
+        skutki: [
+          { typ: "zysk", t: "Jedna lista do szukania klienta wstecz i do porównań" },
+          { typ: "koszt", t: "Kolejna zakładka, a numery klientów powtarzają się między latami" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Selektor roku (lista rozwijana) zamiast zakładek",
+        skutki: [
+          { typ: "zysk", t: "Skalowalne na kolejne lata" },
+          { typ: "ryzyko", t: "Odstępstwo od „arkuszy” Excela [D-129], zespół widzi rok jako zakładkę" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-09",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "screeny Bazy klientów, karty klienta, mapa linków",
+    pytanie: "Czy klient ma własną kartę (osobny ekran)",
+    kontekst: "Dokumentacja mówi o „karcie klienta” z korespondencją [D-52] i danymi stałymi [D-54], ale makieta jej nie ma: przycisk Edytuj w Bazie otwiera formularz, a korespondencja jest tylko na karcie wniosku. Przy ok. 400 mailach na klienta i wielu wnioskach potrzeba miejsca, do którego prowadzą nazwa klienta na każdej liście i wynik wyszukiwania. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Tak, ekran „Klient” z trzema zakładkami: Dane i kontakty, Projekty, Korespondencja i notatki",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Jedno miejsce na historię klienta i cel każdego linku z nazwy klienta" },
+          { typ: "koszt", t: "Nowy ekran do zaprojektowania i utrzymania" },
+          { typ: "wymusza", t: "Korespondencja przypisana do klienta po adresie e-mail [D-178]" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Nie, klient to rozwinięty wiersz w Bazie, korespondencja tylko na karcie wniosku",
+        skutki: [
+          { typ: "zysk", t: "Zero nowych ekranów" },
+          { typ: "ryzyko", t: "Mail niedopasowany do wniosku nie ma gdzie leżeć, a 400 maili nie zmieści się w rozwinięciu wiersza" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Panel boczny wysuwany z listy z danymi klienta, skrótem projektów i maili",
+        skutki: [
+          { typ: "zysk", t: "Nie opuszcza się listy, dobre przy pracy seryjnej" },
+          { typ: "koszt", t: "Trzeci sposób pokazywania rekordu obok listy i karty" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-10",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "filtry listy Wnioski, kolumna daty złożenia",
+    pytanie: "Jakie filtry musi mieć lista Wnioski",
+    kontekst: "Filtry dziś: instytucja, urząd, status i wyszukiwanie tekstowe. Drill through z dashboardu i statystyk potrzebuje też: roku, rozliczenia, szkolenia, miesiąca złożenia, wielkości firmy, klienta, numeru faktury i opiekuna. Scenariusz z warsztatu: filtr po PUP i masowa zmiana statusów po ogłoszeniu wyników [D-110]. Rekomendacja wykonawcy: wariant A, zapisywane widoki jako ewentualne rozszerzenie później.",
+    opcje: [
+      {
+        id: "a",
+        label: "Zestaw rozszerzony: rok, instytucja, urząd, status, rozliczenie, szkolenie, miesiąc złożenia, wielkość, klient, opiekun; aktywne filtry widoczne jako chipy z krzyżykiem",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Każda liczba z dashboardu ma swoją listę" },
+          { typ: "koszt", t: "Więcej pól w pasku filtrów, trzeba dbać o czytelność (chipy, zwijany pasek)" },
+          { typ: "wymusza", t: "Kolumna daty złożenia wniosku, której dziś lista nie ma" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Minimalny zestaw (instytucja, urząd, status) plus wyszukiwarka",
+        skutki: [
+          { typ: "zysk", t: "Prosty pasek, jak dziś" },
+          { typ: "ryzyko", t: "Część wykresów (miesiąc, wielkość, szkolenie) nie ma dokąd prowadzić" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Zestaw rozszerzony plus zapisywane widoki (np. „Warszawa, czekamy”)",
+        skutki: [
+          { typ: "zysk", t: "Powtarzalna praca po ogłoszeniu wyników jednym kliknięciem" },
+          { typ: "koszt", t: "Dodatkowa funkcja poza dotychczasowym zakresem" }
+        ]
+      }
+    ]
+  },
+
+  /* ====================== MAPA ZAKLADEK: KARTA WNIOSKU ====================== */
+
+  {
+    id: "Z-11",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "screeny karty wniosku",
+    pytanie: "Karta wniosku: jedna długa strona czy zakładki",
+    kontekst: "Karta ma dziś jedną stronę i siedem bloków naraz: model finansowy (dziewięć pól), uczestnicy (do 50), korespondencja, dane projektu, osoby kontaktowe, prowizja (admin), przebieg. Klient krytykował Excel za nadmiar informacji jednocześnie (docs/11). Przy 130 wnioskach w dwa tygodnie karta jest najczęściej otwieranym ekranem. Rekomendacja wykonawcy: wariant B.",
+    cytat: { tresc: "za ciężko się skupić mi na czymś konkretnym, z bardzo dużo tych informacji jednocześnie wyskakuje", kto: "Bartek, warsztat 25.08.2026, 1:32:18" },
+    opcje: [
+      {
+        id: "a",
+        label: "Jedna strona jak dziś",
+        skutki: [
+          { typ: "zysk", t: "Wszystko widać bez klikania" },
+          { typ: "ryzyko", t: "To wada Excela, na którą skarży się klient" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Stały nagłówek (klient, status, kluczowe kwoty, przyciski Poprzedni i Następny) i cztery zakładki: Finanse i dane, Uczestnicy, Korespondencja i notatki, Przebieg i zadania",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Skupienie na jednej rzeczy, nagłówek zawsze pod ręką" },
+          { typ: "koszt", t: "Więcej kliknięć do uczestników i maili" },
+          { typ: "wymusza", t: "Prowizja LDIT (tylko admin) jako sekcja zakładki Finanse i dane" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Jedna strona z sekcjami zwijanymi (akordeon)",
+        skutki: [
+          { typ: "zysk", t: "Bez zakładek, użytkownik sam zwija zbędne" },
+          { typ: "ryzyko", t: "Stan zwinięcia trzeba pamiętać, a strona bywa bardzo długa" }
+        ]
+      }
+    ]
+  },
+
+  /* ================== MAPA ZAKLADEK: INSTYTUCJE I KATALOG ================== */
+
+  {
+    id: "Z-12",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "screeny Instytucji i Konfiguratora",
+    pytanie: "Struktura modułu Instytucje szkoleniowe",
+    kontekst: "Moduł ma dziś dwa paski (Przegląd instytucji, Konfigurator warunków) oraz zakładki wewnętrzne: karta instytucji (Dane firmy, Katalog szkoleń, Szkoleniowcy, Osoby i konta, Korespondencja) i konfigurator (Warunki prowizyjne, Wzór certyfikatu, Dane do faktury, Formularz zgłoszeniowy). To dziewięć zakładek w jednym module, w tym cztery tylko dla administratora [D-07]. Rekomendacja wykonawcy: wariant B.",
+    opcje: [
+      {
+        id: "a",
+        label: "Jak dziś: dwa paski oraz 5 + 4 zakładek wewnętrznych",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian w makiecie" },
+          { typ: "ryzyko", t: "Dziewięć miejsc do przejścia, „wszystko naraz” w formie zakładek" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Lista instytucji (tabela jak w Excelu) i karta instytucji z czterema zakładkami: Dane i osoby, Katalog i szkoleniowcy, Korespondencja, Warunki (tylko admin: prowizja, certyfikat, faktura, formularz jako sekcje)",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Cztery zakładki zamiast dziewięciu, warunki admina nie zaśmiecają widoku pracownika" },
+          { typ: "koszt", t: "Zakładka Warunki jest długa i wymaga porządnych nagłówków sekcji" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Instytucje (Dane, Katalog, Zespół) w menu, a konfiguracja (warunki, certyfikat, faktura, formularz) w Ustawieniach",
+        skutki: [
+          { typ: "zysk", t: "Instytucje dla wszystkich ról, konfiguracja w miejscu admina" },
+          { typ: "ryzyko", t: "Warunki prowizyjne oddalone od instytucji, admin skacze między modułami" }
+        ]
+      }
+    ]
+  },
+
+  /* ========================= MAPA ZAKLADEK: TERMINY ========================= */
+
+  {
+    id: "Z-13",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "mapa menu, uprawnienia do Terminów",
+    pytanie: "Gdzie w menu są Terminy szkoleń i kto je widzi",
+    kontekst: "Terminy są w trzech miejscach: pozycja menu (widzą ją administrator i instytucja, nie pracownik LDIT), zakładka „Terminy szkoleń” pod Dofinansowaniami (widoczna dla pracownika, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień) i przycisk w panelu instytucji. Pasek na ekranie Terminów nazywa te same ekrany inaczej („Projekty”, „Oczekujące na nabór”). Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Zakładka „Terminy szkoleń” w Dofinansowaniach dla ról LDIT (pracownik z uprawnieniem) i osobna pozycja menu tylko dla instytucji; to ten sam ekran",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "LDIT ma terminy obok wniosków, instytucja we własnym menu" },
+          { typ: "wymusza", t: "Nadanie pracownikowi uprawnienia do modułu Terminy [D-36]" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Osobna pozycja menu dla wszystkich ról",
+        skutki: [
+          { typ: "zysk", t: "Jedna reguła, widoczne wszędzie" },
+          { typ: "koszt", t: "Dodatkowa pozycja w menu LDIT" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Tylko zakładka w Dofinansowaniach, instytucja wchodzi przez swój panel",
+        skutki: [
+          { typ: "zysk", t: "Najmniej pozycji" },
+          { typ: "ryzyko", t: "Instytucja ma jedną zakładkę [D-76], a terminy to jej główny widok operacyjny" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-14",
+    obszar: "Mapa zakładek",
+    waga: "niska",
+    kto: "klient",
+    blokuje: "screeny Terminów",
+    pytanie: "Kalendarz i Lista terminów: dwie zakładki czy przełącznik widoku",
+    kontekst: "Ekran Terminów ma dwie zakładki wewnętrzne, Kalendarz i Lista terminów. Każda ma własny filtr instytucji, więc po przełączeniu trzeba ustawić go drugi raz. Uczestnicy terminu rozwijają się w liście, a w kalendarzu po kliknięciu. Rekomendacja wykonawcy: wariant B.",
+    opcje: [
+      {
+        id: "a",
+        label: "Dwie zakładki jak dziś",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Rozdzielone filtry, zakładka w zakładce" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Jeden ekran z przełącznikiem widoku Kalendarz / Tabela, wspólne filtry, zapamiętany wybór",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Bez zakładek wewnętrznych, filtr ustawia się raz" },
+          { typ: "koszt", t: "Niewielka przebudowa widoków" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Tylko tabela, kalendarz jako mały podgląd miesiąca obok",
+        skutki: [
+          { typ: "zysk", t: "Bliżej Excela" },
+          { typ: "ryzyko", t: "Odstępstwo od [D-142], klient chciał kalendarza i tabeli" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-15",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "linki karta wniosku i Terminy",
+    pytanie: "Jak przypisywać projekt do terminu",
+    kontekst: "Termin jest przypisany do wniosku [D-142]. Na karcie wniosku nie ma wyboru terminu, a z listy Terminów nie ma przejścia do projektu uczestnika: lista pokazuje klienta i projekt bez linku. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Dwukierunkowo: na karcie wniosku wybór wolnego terminu instytucji, na liście Terminów lista zapisanych z linkami do projektów",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Model A i B [D-12] obsłużone z obu stron, zmiana terminu widoczna w obu miejscach" },
+          { typ: "wymusza", t: "Po zmianie terminu przypomnienie o piśmie do PUP (docs/05)" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Tylko z Terminów (dopisz projekt do terminu)",
+        skutki: [
+          { typ: "zysk", t: "Jedno miejsce operacji" },
+          { typ: "ryzyko", t: "W modelu B instytucja ustala termin telefonicznie, a wpisuje go LDIT z karty wniosku" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Tylko z karty wniosku",
+        skutki: [
+          { typ: "zysk", t: "Jedno miejsce operacji" },
+          { typ: "ryzyko", t: "Instytucja nie może dopisywać uczestników bez wchodzenia we wniosek" }
+        ]
+      }
+    ]
+  },
+
+  /* ========================== MAPA ZAKLADEK: NABORY ========================== */
+
+  {
+    id: "Z-16",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "mapa menu",
+    pytanie: "Nabory: osobna pozycja menu czy zakładka w Dofinansowaniach",
+    kontekst: "Nabory (urzędy, prognozy, 340 urzędów) są osobną pozycją menu [D-109]. Praca na nich jest ściśle związana z Bazą klientów (priorytet po ostatnim dniu naboru [D-130]), więc użytkownik przełącza się między dwiema pozycjami menu. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Osobna pozycja menu „Nabory” (jak makieta i struktura klienta)",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Zgodne ze strukturą menu klienta i z „nabory w jednym miejscu” [D-109]" },
+          { typ: "koszt", t: "Osobna pozycja obok Dofinansowań" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Zakładka „Nabory” obok Wnioski, Baza klientów, Terminy w Dofinansowaniach",
+        skutki: [
+          { typ: "zysk", t: "Cała praca operacyjna w jednym miejscu i o pozycję mniej w menu" },
+          { typ: "koszt", t: "Cztery zakładki w Dofinansowaniach, moduł traci własne miejsce w menu" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-17",
+    obszar: "Mapa zakładek",
+    waga: "niska",
+    kto: "klient",
+    blokuje: "screeny Naborów",
+    pytanie: "Ekran Nabory: ile bloków naraz",
+    kontekst: "Nabory to jeden ekran z czterema kafelkami, tabelą urzędów, dwoma wykresami prognoz (urzędy i klienci wg miesiąca) i osią czasu 14 dni: pięć bloków jeden pod drugim. To ten sam wzorzec „wszystko naraz”, którego klient nie lubi w Excelu. Rekomendacja wykonawcy: wariant B.",
+    opcje: [
+      {
+        id: "a",
+        label: "Jak dziś",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Długi ekran, tabela ucieka pod wykresy" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Dwie zakładki: Lista (kafelki, tabela, oś 14 dni) i Prognozy (dwa wykresy miesięczne); klik w słupek prognozy filtruje listę na miesiąc",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Codzienna praca na liście, analityka osobno" },
+          { typ: "koszt", t: "Dodatkowa zakładka w module" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Tylko lista naborów, wykresy prognoz przeniesione do Dashboardu/Skuteczność",
+        skutki: [
+          { typ: "zysk", t: "Nabory bez wykresów" },
+          { typ: "ryzyko", t: "Prognozy służą do planowania kontaktu, a dashboard ma być statystyką [D-114]" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-18",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "uprawnienia instytucji do Naborów",
+    pytanie: "Czy instytucja widzi nabory",
+    kontekst: "Macierz uprawnień makiety daje roli instytucji podgląd Naborów, a strona sama pisze, że moduł jest wyłącznie dla ról LDIT. Klient nie potwierdził widoczności naborów dla instytucji [P-34] i wykluczył informowanie handlowca instytucji o naborach [D-91]. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Nie, Nabory tylko dla ról LDIT; instytucja dostaje informacje o swoich terminach",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Zgodne z tym, co ustalono ([D-91]) i z opisem strony" },
+          { typ: "koszt", t: "Instytucja nie widzi, kiedy urzędy otwierają nabory" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Instytucja widzi listę naborów urzędów, w których ma klientów, bez liczby klientów LDIT",
+        skutki: [
+          { typ: "zysk", t: "Instytucja planuje pracę handlowców" },
+          { typ: "ryzyko", t: "Zawęża kontakt LDIT z klientem wbrew [D-91], wymaga osobnej separacji per urząd" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Instytucja widzi całą listę naborów (jak w makiecie dziś)",
+        skutki: [
+          { typ: "zysk", t: "Najprościej" },
+          { typ: "ryzyko", t: "Ujawnia 340 urzędów i pośrednio wolumeny LDIT" }
+        ]
+      }
+    ]
+  },
+
+  /* ======================= MAPA ZAKLADEK: KOMUNIKACJA ======================= */
+
+  {
+    id: "Z-19",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "mapa menu, screeny Komunikacji",
+    pytanie: "Wysyłka maili: pozycja w menu czy funkcja przy rekordach",
+    kontekst: "Moduł nazywa się w makiecie „Komunikacja” (w docs „Wysyłka maili”) i ma trzy zakładki: Biblioteka szablonów, Wysyłka, Automatyzacje i alerty. Karty wniosku i instytucji mają osobno sekcje Korespondencja [D-52], a lista wniosków nie ma akcji „wyślij mail do zaznaczonych”. Automatyzacje i alerty dublują zadania automatyczne i alerty na datę z modułu Zadania [D-140]. Rekomendacja wykonawcy: wariant B, a jeśli klient chce zachować pozycję w menu, wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Pozycja „Wysyłka maili” w menu z dwiema zakładkami (Szablony, Historia wysyłek); wysyłka z rekordów i z zaznaczonych wierszy list; automatyzacje w Zadaniach",
+        skutki: [
+          { typ: "zysk", t: "Zgodne z listą menu klienta, jedno miejsce szablonów i historii" },
+          { typ: "koszt", t: "Pozycja menu, z której rzadko się startuje" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Bez pozycji w menu: szablony w Ustawieniach, wysyłka z kart i list, historia wysyłek w Rejestrze aktywności [D-122], automatyzacje w Zadaniach",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Menu krótsze o jedną pozycję, mail tam, gdzie pracuje się z klientem" },
+          { typ: "koszt", t: "Odstępstwo od struktury menu klienta (pozycja „Wysyłka maili”), wymaga jego zgody" },
+          { typ: "wymusza", t: "Akcja zbiorcza „Wyślij z szablonu” na listach Wnioski i Baza klientów, z potwierdzeniem [D-106]" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Jak dziś: Komunikacja z trzema zakładkami",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Automatyzacje w dwóch modułach, mail oderwany od rekordu" }
+        ]
+      }
+    ]
+  },
+
+  /* =================== MAPA ZAKLADEK: ZADANIA I POWIADOMIENIA =================== */
+
+  {
+    id: "Z-20",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "mapa menu, pasek górny",
+    pytanie: "Zadania i powiadomienia: jedna pozycja, dwie czy dzwonek",
+    kontekst: "Decyzja [D-195] mówi o dwóch modułach. Makieta ma jedną pozycję „Zadania i powiadomienia” z dwiema sekcjami na ekranie. Licznik wniosków do akceptacji z [D-105] i [D-140] („kółko w prawym górnym rogu”) nie istnieje w powłoce makiety, jest tylko kafelek na ekranie Zadań i wiersz na dashboardzie. Rekomendacja wykonawcy: wariant C.",
+    opcje: [
+      {
+        id: "a",
+        label: "Jedna pozycja menu z dwiema zakładkami: Plan dnia i Powiadomienia",
+        skutki: [
+          { typ: "zysk", t: "Jedna pozycja menu" },
+          { typ: "koszt", t: "Powiadomienia niewidoczne, dopóki nie wejdzie się w zakładkę" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Dwie pozycje menu: Zadania i Powiadomienia",
+        skutki: [
+          { typ: "zysk", t: "Dosłownie zgodne z [D-195]" },
+          { typ: "koszt", t: "Kolejna pozycja menu" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Dzwonek z licznikiem w pasku górnym otwiera listę powiadomień, pozycja menu „Zadania” zawiera plan dnia i pełną listę powiadomień jako zakładkę",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Licznik zawsze widoczny (jak w [D-105]), a menu ma jedną pozycję" },
+          { typ: "koszt", t: "Dzwonek to nowy element powłoki, poza listą menu" }
+        ]
+      }
+    ]
+  },
+
+  /* =================== MAPA ZAKLADEK: ADMINISTRACJA I PROWIZJE =================== */
+
+  {
+    id: "Z-21",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "screeny Administracji",
+    pytanie: "Administracja: ile zakładek",
+    kontekst: "Administracja ma pasek (Prowizje i faktury, Kalkulator prowizji [prototyp]) i cztery zakładki: Prowizje, Faktury, Statystyki, Prowizje wewnętrzne (razem z Celami i premiami). Kalkulator jest prototypem do walidacji z klientem, nie funkcją docelową. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Cztery zakładki, bez Kalkulatora w pasku: Prowizje, Faktury, Statystyki, Prowizje wewnętrzne i cele",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Zgodne z [D-141], każda zakładka ma jeden temat" },
+          { typ: "koszt", t: "Cztery to górna granica proponowanego limitu" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Trzy zakładki: Prowizje, Faktury, Prowizje wewnętrzne i cele; statystyki kwotowe jako kolumny w Prowizjach",
+        skutki: [
+          { typ: "zysk", t: "Mniej zakładek, jedna tabela per instytucja" },
+          { typ: "ryzyko", t: "Odwraca część [D-141], tabela Prowizji rośnie o kolumny" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Jak dziś plus Kalkulator w stałym pasku",
+        skutki: [
+          { typ: "zysk", t: "Kalkulator pod ręką" },
+          { typ: "ryzyko", t: "Prototyp zostaje w produkcie" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-22",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "screen Administracja/Prowizje",
+    pytanie: "Zakładka Prowizje: cztery bloki naraz",
+    kontekst: "Prowizje to cztery bloki jeden pod drugim: tabela per instytucja (dziesięć kolumn), dashboard miesięczny, rozwinięcie instytucji (lista projektów) i Przewidywana prowizja, do tego dwa opisy blokad. To najcięższy ekran w systemie. Rekomendacja wykonawcy: wariant B.",
+    opcje: [
+      {
+        id: "a",
+        label: "Jak dziś",
+        skutki: [
+          { typ: "ryzyko", t: "Wszystko naraz, dokładnie to, na co klient narzeka w Excelu" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Jedna tabela naraz: przełączniki Rzeczywista / Przewidywana [D-164] oraz Miesięcznie / Narastająco; klik w wiersz instytucji otwiera panel z projektami; opisy blokad w tooltipach",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Skupienie, dwa widoki prowizji się nie mieszają [D-164]" },
+          { typ: "koszt", t: "Przełączniki trzeba wyraźnie oznaczyć, żeby nikt nie zafakturował z prognozy" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Podział na zakładki: Rzeczywista, Przewidywana, Miesięczna",
+        skutki: [
+          { typ: "zysk", t: "Każdy widok osobno" },
+          { typ: "koszt", t: "Zakładek w Administracji robi się sześć, ponad limit" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-23",
+    obszar: "Mapa zakładek",
+    waga: "niska",
+    kto: "klient",
+    blokuje: "Konfigurator warunków, zakładka Kalkulator",
+    pytanie: "Co dzieje się z Kalkulatorem prowizji po walidacji",
+    kontekst: "Kalkulator to prototyp wymagany przed kodowaniem silnika prowizji: klient wpisuje liczby i mówi, czy dobrze się liczy. Nie ustalono, czy po walidacji zostaje w systemie. Rekomendacja wykonawcy: wariant C.",
+    opcje: [
+      {
+        id: "a",
+        label: "Zostaje jako symulator „co jeśli” w Administracji",
+        skutki: [
+          { typ: "zysk", t: "Test nowych warunków bez wpływu na dane" },
+          { typ: "koszt", t: "Dodatkowa zakładka do utrzymania" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Znika po walidacji",
+        skutki: [
+          { typ: "zysk", t: "Mniej zakładek i mniej kodu" },
+          { typ: "koszt", t: "Brak narzędzia do ustalania warunków z instytucją" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Podgląd na żywo w Konfiguratorze warunków instytucji (Instytucje, zakładka Warunki), bez osobnej zakładki",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Symulacja tam, gdzie ustawia się progi" },
+          { typ: "wymusza", t: "Ten sam silnik liczy podgląd i prowizję, żeby była jedna liczba" }
+        ]
+      }
+    ]
+  },
+
+  /* ================== MAPA ZAKLADEK: USTAWIENIA I KONTA ================== */
+
+  {
+    id: "Z-24",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "mapa menu, screeny Ustawień",
+    pytanie: "Ustawienia: konta, uprawnienia i rejestr",
+    kontekst: "Docs/11 ma dla admina dwie pozycje: Konta i uprawnienia oraz Rejestr aktywności. Makieta scala je w jedną pozycję „Ustawienia” z paskiem (Konta i role, Rejestr aktywności) i zakładkami: Użytkownicy, Konfigurator ról, Macierz uprawnień (to samo, co konfigurator, w widoku do odczytu), Przypisanie do instytucji; rejestr ma trzy zakładki. Razem siedem miejsc. Rekomendacja wykonawcy: wariant B.",
+    opcje: [
+      {
+        id: "a",
+        label: "Dwie pozycje menu jak w docs/11: Konta i uprawnienia oraz Rejestr aktywności",
+        skutki: [
+          { typ: "zysk", t: "Zgodne ze strukturą klienta" },
+          { typ: "koszt", t: "Dwie pozycje administratora więcej" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Jedna pozycja „Ustawienia”, zakładki: Użytkownicy (z kolumną Instytucje), Role i uprawnienia (Konfigurator i Macierz w jednym), Rejestr aktywności (z filtrem typu zdarzenia); czwarta zakładka „Szablony maili”, jeśli szablony przeniosą się z Komunikacji",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Trzy do czterech zakładek zamiast siedmiu" },
+          { typ: "koszt", t: "Rejestr zmienia znaczenie z pozycji menu na zakładkę" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Jak w makiecie: Konta (cztery zakładki) i Rejestr (trzy zakładki) pod jedną pozycją",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Siedem miejsc, Konfigurator i Macierz dublują się" }
+        ]
+      }
+    ]
+  },
+
+  /* ===================== MAPA ZAKLADEK: PANEL INSTYTUCJI ===================== */
+
+  {
+    id: "Z-25",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "screeny panelu instytucji, menu instytucji",
+    pytanie: "Struktura panelu instytucji szkoleniowej",
+    kontekst: "Decyzja [D-76]: instytucja widzi jedną zakładkę opisaną nazwą swojej spółki. Makieta daje jej cztery pozycje menu: Dashboard (podgląd), „Nazwa spółki”, Terminy szkoleń i Nabory (podgląd). Panel „Nazwa spółki” to ekran z ośmioma kartami: klienci i projekty, terminy, katalog, szkoleniowcy, szablony maili, formularz i inne. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Jedna pozycja menu (nazwa spółki) i cztery zakładki: Klienci i projekty (ze statystykami na górze), Terminy szkoleń, Katalog i zespół, Formularz i maile",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Zgodne z [D-76], osiem kart uporządkowane w cztery zakładki" },
+          { typ: "koszt", t: "Dashboard instytucji staje się paskiem statystyk zamiast osobnej strony" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Trzy pozycje menu: Przegląd (statystyki [D-193]), Nazwa spółki (klienci, katalog, zespół, formularz), Terminy szkoleń",
+        skutki: [
+          { typ: "zysk", t: "Terminy jako główny widok operacyjny osobno" },
+          { typ: "ryzyko", t: "Odstępstwo od „jednej zakładki” z [D-76]" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Jak makieta: cztery pozycje menu",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Nabory i Dashboard nie wynikają z [D-76], szersza powierzchnia separacji" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-26",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "karta projektu w widoku instytucji",
+    pytanie: "Czy instytucja może otworzyć kartę projektu swojego klienta",
+    kontekst: "W panelu instytucji tabela „Moi klienci i ich projekty” nie ma przycisku Otwórz, a rola instytucji nie ma dostępu do modułu Dofinansowania, w którym leży karta wniosku. Instytucja widzi kwoty wniosku, nie widzi prowizji [D-07]. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Tak: podgląd karty projektu (uczestnicy, kwoty wniosku, termin, przebieg), bez prowizji, korespondencji LDIT i notatek wewnętrznych",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Instytucja sprawdza etap bez telefonu do LDIT" },
+          { typ: "wymusza", t: "Osobny widok karty dla tej roli i testy separacji per pole [D-149]" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Nie, tylko wiersz z podstawowymi danymi (jak dziś)",
+        skutki: [
+          { typ: "zysk", t: "Minimalne ryzyko wycieku" },
+          { typ: "koszt", t: "Pytania „na jakim etapie” wracają telefonem do LDIT" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Tak, z edycją uczestników i terminu",
+        skutki: [
+          { typ: "zysk", t: "Mniej pracy po stronie LDIT" },
+          { typ: "ryzyko", t: "Instytucja modyfikuje dane wniosku, choć dane prowadzi LDIT" }
+        ]
+      }
+    ]
+  },
+
+  /* ====================== MAPA ZAKLADEK: PANEL KLIENTA ====================== */
+
+  {
+    id: "Z-27",
+    obszar: "Mapa zakładek",
+    waga: "niska",
+    kto: "klient",
+    blokuje: "screeny panelu klienta (etap IV)",
+    pytanie: "Panel klienta: nawigacja w minimalnym zakresie",
+    kontekst: "Panel klienta jest w etapie IV w minimalnym zakresie [D-192]. Makieta ma jedną stronę „Mój wniosek” (status, szkolenie, uczestnicy, materiały). Klient może mieć kilka projektów w roku i w kolejnych latach. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Jedna pozycja „Mój wniosek”: przy jednym projekcie od razu widok statusu, przy kilku lista projektów z wyborem",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Prosto, bez zakładek" },
+          { typ: "koszt", t: "Wybór projektu musi być prosty (lista dwóch do czterech pozycji)" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Zawsze najpierw lista projektów, dopiero z niej karta",
+        skutki: [
+          { typ: "zysk", t: "Jedna zasada dla wszystkich" },
+          { typ: "koszt", t: "Dodatkowy klik przy jednym projekcie" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Decyzja o nawigacji panelu po zatwierdzeniu jego zakresu [P-33]",
+        skutki: [
+          { typ: "zysk", t: "Bez pracy teraz" },
+          { typ: "ryzyko", t: "Do Miro nie trafi ekran panelu klienta" }
+        ]
+      }
+    ]
+  },
+
+  /* ==================== MAPA ZAKLADEK: NAWIGACJA OGOLNA ==================== */
+
+  {
+    id: "Z-28",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "cała mapa zakładek i lista screenów do Miro",
+    pytanie: "Limit zakładek i zasada jednego paska",
+    kontekst: "Dziś istnieją trzy poziomy zakładek: menu (12 pozycji), pasek modułu (11 zakładek w 5 grupach) i zakładki wewnętrzne (25) plus lata (3). Razem 38 różnych widoków do przejścia. Wykonawca proponuje limit: LDIT do 8 pozycji menu, w module jeden pasek zakładek do 4, karta rekordu do 4 zakładek, nic głębiej niż menu, zakładka, rekord. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Limit: LDIT do 8 pozycji menu, w module jeden pasek do 4 zakładek, karta rekordu do 4 zakładek, brak zakładek w zakładkach",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Zwarta i przewidywalna mapa, łatwa do nauczenia" },
+          { typ: "koszt", t: "Część treści trafia do sekcji zamiast do zakładek" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Limit luźniejszy: do 6 zakładek na moduł",
+        skutki: [
+          { typ: "zysk", t: "Mniej scalania treści" },
+          { typ: "ryzyko", t: "Zbliża się do dzisiejszej gęstości" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Bez limitu, jak dziś",
+        skutki: [
+          { typ: "zysk", t: "Bez pracy" },
+          { typ: "ryzyko", t: "Wada Excela („wszystko naraz”) w formie zakładek" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-29",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "wyszukiwarka w pasku górnym, ekran wyników",
+    pytanie: "Wyszukiwarka globalna: co pokazuje wynik",
+    kontekst: "Wyszukiwarka w pasku górnym po Enter otwiera Bazę klientów z parametrem q, którego Baza nie czyta (czyta go tylko lista Wnioski). Kryteria: NIP, nazwa klienta, PUP [D-110]. Dla instytucji tylko własni klienci [D-111]. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Ekran wyników pogrupowany: Klienci, Projekty, Urzędy (nabory), Instytucje (LDIT); każdy wynik jest linkiem do rekordu; podpowiedzi rozwijane pod polem",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Jedno pole na NIP, nazwę i PUP, prowadzi wprost do rekordu" },
+          { typ: "koszt", t: "Nowy ekran wyników, przeszukiwanie wszystkich lat" },
+          { typ: "wymusza", t: "Wyniki tylko z zakresu konta [D-111] [D-148]" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Zawsze Baza klientów z filtrem tekstu (jak dziś, ale działa)",
+        skutki: [
+          { typ: "zysk", t: "Prosto" },
+          { typ: "ryzyko", t: "Szukanie po PUP i po numerze projektu nie ma sensu w Bazie" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Wyszukiwanie ograniczone do bieżącej zakładki (filtr zamiast wyszukiwarki globalnej)",
+        skutki: [
+          { typ: "zysk", t: "Bez nowego ekranu" },
+          { typ: "ryzyko", t: "Sprzeczne z [D-110], wyszukiwarka miała być dostępna wszędzie" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-30",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "pasek górny, okruszki, przyciski powrotu",
+    pytanie: "Okruszki i powrót z drill through",
+    kontekst: "Okruszek w pasku górnym pokazuje tylko nazwę modułu (np. „Dofinansowania”), nie zakładkę ani rekord. Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek. Karta wniosku wraca do listy bez filtrów, roku i pozycji przewinięcia. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Okruszki Moduł, Zakładka, Rekord (klikalne); „Wróć do listy” przywraca filtry, sortowanie, rok, zaznaczenie i pozycję; przycisk Wstecz przeglądarki działa tak samo",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Praca seryjna (130 wniosków w dwa tygodnie) bez gubienia miejsca" },
+          { typ: "koszt", t: "Stan listy musi być trzymany w adresie i w pamięci" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Same okruszki, powrót do listy od zera",
+        skutki: [
+          { typ: "zysk", t: "Prościej" },
+          { typ: "ryzyko", t: "Po każdym wejściu w projekt filtr PUP trzeba ustawiać od nowa" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Jak dziś",
+        skutki: [
+          { typ: "zysk", t: "Bez pracy" },
+          { typ: "ryzyko", t: "Zaznaczenie menu rozjeżdża się z ekranem, utrata miejsca na liście" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-31",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "widoki mobilne",
+    pytanie: "Telefon: co z zakładek jest dostępne",
+    kontekst: "Wymaganie przedwarsztatowe: interfejs użyteczny na telefonie. Warsztat go nie omawiał. Układ tabelaryczny na telefonie wymaga osobnych widoków, a osiem pozycji menu i pasek zakładek się nie mieszczą. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Telefon to odczyt i szybkie akcje: Dashboard, wyszukiwarka, karta wniosku i klienta (odczyt, zmiana statusu), Zadania i powiadomienia; tabele jako karty; reszta tylko na komputerze",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Realny zakres do wykonania i przetestowania" },
+          { typ: "koszt", t: "Administracja i szerokie tabele bez telefonu" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Pełna funkcjonalność na telefonie",
+        skutki: [
+          { typ: "zysk", t: "Wszystko wszędzie" },
+          { typ: "koszt", t: "Osobny projekt widoków dla każdego ekranu, znacząco wyższa wycena" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Telefon poza etapem I, później",
+        skutki: [
+          { typ: "zysk", t: "Tańszy etap I" },
+          { typ: "ryzyko", t: "Wymaganie z dokumentacji przedwarsztatowej pozostaje niespełnione" }
+        ]
+      }
+    ]
+  },
+
+  /* ======================= MAPA ZAKLADEK: DRILL THROUGH ======================= */
+
+  {
+    id: "Z-32",
+    obszar: "Mapa zakładek",
+    waga: "wysoka",
+    kto: "klient",
+    blokuje: "wszystkie listy i dashboard, cała tabela drill through",
+    pytanie: "Dokąd prowadzi kliknięcie w liczbę, wykres lub kafelek",
+    kontekst: "Dziś żaden kafelek KPI, słupek, wiersz statusów ani komórka agregatu nie jest klikalny. Działają tylko przyciski Otwórz w tabeli „Wymaga działania”, ale bez filtra (otwierają ekran, nie listę tych rekordów), oraz kafelek Prowizja. Dashboard ma być wyłącznie statystyką [D-114], więc klik nie może rozwijać listy klientów na dashboardzie. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Klik otwiera właściwą listę operacyjną (Wnioski, Baza klientów, Nabory, Terminy, Faktury) z ustawionym filtrem, a licznik na liście zgadza się z liczbą z kafelka",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Dashboard zostaje czysto statystyczny, a każda liczba jest sprawdzalna jednym kliknięciem" },
+          { typ: "wymusza", t: "Listy czytają filtry z adresu (status, urząd, instytucja, okres), dziś tego nie robią" },
+          { typ: "koszt", t: "Jedna definicja każdej liczby (dziś „klienci z otwartym naborem” liczą trzy ekrany osobno)" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Klik otwiera okno szczegółów agregatu na dashboardzie (lista tylko do odczytu)",
+        skutki: [
+          { typ: "zysk", t: "Nie opuszcza się dashboardu" },
+          { typ: "ryzyko", t: "Wraca rozpiska klientów na dashboardzie, wbrew [D-114]" },
+          { typ: "koszt", t: "Druga wersja list do utrzymania obok list operacyjnych" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Bez klikania, dashboard jak dziś",
+        skutki: [
+          { typ: "zysk", t: "Zero prac" },
+          { typ: "ryzyko", t: "Liczby są niesprawdzalne, a wykonawca wymaga, żeby agregacja prowadziła do szczegółów" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-33",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "zakładki Baza klientów i Wnioski",
+    pytanie: "Jak przechodzić między Bazą klientów a Wnioskami",
+    kontekst: "W Bazie klient jest jednym wierszem, a jego wnioski rozwijają się plusem [D-128]. Przycisk Otwórz prowadzi na kartę wniosku, ale nie ma przejścia do listy Wnioski z filtrem tego klienta ani z powrotem. Licznik „Wnioski (n)” w zakładce liczy tylko bieżący rok i nie reaguje na filtry. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Plus rozwija wnioski w wierszu (jak dziś), a nazwa klienta i liczba wniosków są linkami: do karty klienta i do Wniosków z filtrem klient; na liście Wnioski nazwa klienta prowadzi do Bazy",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Dwukierunkowo, obie tabele zsynchronizowane [D-128]" },
+          { typ: "wymusza", t: "Filtr „klient” na liście Wnioski" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Tylko rozwijanie plusem, bez linków",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Praca na dwóch tabelach wymaga ręcznego szukania tego samego klienta" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Link tylko z Bazy do Wniosków, w drugą stronę nie",
+        skutki: [
+          { typ: "zysk", t: "Połowa pracy" },
+          { typ: "ryzyko", t: "Asymetria, użytkownik nie wie, dlaczego działa w jedną stronę" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-34",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "karta wniosku, Nabory, Terminy, Faktury",
+    pytanie: "Które nazwy na karcie wniosku i w listach są linkami",
+    kontekst: "Na karcie nie ma żadnego linku poza okruszkiem „Zestawienia”, który wraca do listy bez filtrów. Klient, instytucja, urząd, szkolenie, faktura i prowizja są zwykłym tekstem. Na listach Wnioski i Baza nazwa klienta, instytucji i urzędu też nie prowadzi nigdzie. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Wszystkie powiązania: klient do karty klienta, instytucja do karty instytucji (tylko LDIT), urząd do Naborów, szkolenie do terminu, faktura do Faktur, prowizja do Administracji, przebieg do Rejestru aktywności; link znika, gdy rola nie ma dostępu",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Rekord osiągalny z każdego miejsca, w którym jest wymieniony" },
+          { typ: "koszt", t: "Każdy link trzeba przetestować per rola [D-148]" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Tylko klient, urząd i termin",
+        skutki: [
+          { typ: "zysk", t: "Najczęstsze przejścia, mniej testów uprawnień" },
+          { typ: "ryzyko", t: "Faktura i prowizja nadal wymagają ręcznego szukania" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Bez linków, jak dziś",
+        skutki: [
+          { typ: "zysk", t: "Zero prac" },
+          { typ: "ryzyko", t: "Drill through kończy się na karcie i nie idzie dalej" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-35",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "Administracja/Prowizje i Faktury, karta wniosku",
+    pytanie: "Skąd projekt i faktura w Administracji prowadzą dalej",
+    kontekst: "W rozwinięciu instytucji w Administracji są projekty z podstawą prowizji. Nie mają linku do karty wniosku, a przy projekcie jest przycisk „Nadpisz”, chociaż [D-138] i opis strony mówią, że nadpisanie robi się na karcie wniosku. Faktura na liście nie prowadzi do projektów, których dotyczy, a karta wniosku nie pokazuje numeru faktury [D-139]. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Projekt w Administracji otwiera kartę wniosku (zakładka Finanse), nadpisanie tylko tam; numer faktury na karcie prowadzi do Faktur, a kolumna Projekty (n) w Fakturach do Wniosków z filtrem faktura",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Zgodne z [D-138] i [D-139], przejścia w obie strony" },
+          { typ: "koszt", t: "Filtr „faktura” na liście Wnioski i usunięcie przycisku Nadpisz z Administracji" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Nadpisanie także w Administracji (jak dziś)",
+        skutki: [
+          { typ: "zysk", t: "Szybciej dla admina" },
+          { typ: "ryzyko", t: "Dwa miejsca zmiany wartości finansowej, wbrew ochronie przed przypadkową zmianą [D-16]" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Administracja tylko do odczytu, bez linków",
+        skutki: [
+          { typ: "zysk", t: "Prosto" },
+          { typ: "ryzyko", t: "Zafakturowanie wymaga ręcznego szukania wniosku" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-36",
+    obszar: "Mapa zakładek",
+    waga: "niska",
+    kto: "klient",
+    blokuje: "karta wniosku, Rejestr aktywności",
+    pytanie: "Historia rekordu: skąd wejść do Rejestru aktywności",
+    kontekst: "Rejestr aktywności jest osobnym ekranem admina. Karta wniosku ma „Przebieg” (oś etapów), ale nie ma przejścia do wpisów rejestru tego wniosku (kto zmienił kwotę, wartość przed i po) [D-116]. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Na karcie wniosku i klienta link „Historia zmian” otwiera Rejestr z filtrem rekordu (tylko admin), a wpis rejestru linkuje z powrotem do rekordu",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Odpowiedź „kto zmienił kwotę” w dwóch kliknięciach" },
+          { typ: "wymusza", t: "Rejestr czyta filtr rekordu z adresu" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Historia w panelu bocznym karty, bez opuszczania karty, także dla pracownika (bez wartości finansowych)",
+        skutki: [
+          { typ: "zysk", t: "Bez zmiany ekranu" },
+          { typ: "ryzyko", t: "Wartości finansowe w historii dostępne pracownikowi wbrew [D-34]" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Bez przejścia, szukanie w Rejestrze po numerze projektu",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Wolne i podatne na pomyłkę" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-37",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "karta klienta, instytucji i wniosku, Zgłoszenia",
+    pytanie: "Ostrzeżenie o zgłoszeniach na kartach klienta, instytucji i wniosku",
+    kontekst: "Zgłoszenia to osobna pozycja menu [D-107], a przycisk „Otwórz kartę podmiotu” w ekranie Zgłoszeń nie ma dokąd prowadzić. Cel modułu to historia „ta firma już 2 razy coś takiego zrobiła”, ale handlowiec nie wejdzie do Zgłoszeń przed rozmową z klientem. Rekomendacja wykonawcy: wariant A.",
+    opcje: [
+      {
+        id: "a",
+        label: "Znacznik „Zgłoszenia: n” na karcie klienta, instytucji i wniosku (role LDIT), klik otwiera Zgłoszenia z filtrem podmiotu",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Ostrzeżenie w momencie pracy z klientem" },
+          { typ: "wymusza", t: "Znacznik niewidoczny dla instytucji i klienta (separacja [D-148])" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Bez znacznika, tylko wyszukiwanie w Zgłoszeniach",
+        skutki: [
+          { typ: "zysk", t: "Bez zmian" },
+          { typ: "ryzyko", t: "Historia incydentów nie jest widoczna tam, gdzie zapada decyzja o współpracy" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Znacznik tylko na karcie instytucji (incydenty klientów zostają w module)",
+        skutki: [
+          { typ: "zysk", t: "Prosto i bezpiecznie" },
+          { typ: "ryzyko", t: "Nie chroni przed klientami z historią nadużyć" }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "Z-38",
+    obszar: "Mapa zakładek",
+    waga: "srednia",
+    kto: "klient",
+    blokuje: "adresy list, filtry, schemat parametrów",
+    pytanie: "Filtry w adresie i zapisane widoki",
+    kontekst: "Filtr po PUP i masowa zmiana statusów to główny scenariusz operacyjny [D-110]. Dziś filtr żyje tylko w polach ekranu i znika po wyjściu. Nie da się wysłać koledze linku „wszystkie wnioski na Warszawę czekające” ani wrócić do niego jednym kliknięciem. Rekomendacja wykonawcy: wariant A, zapisane widoki jako rozszerzenie po etapie I.",
+    opcje: [
+      {
+        id: "a",
+        label: "Każdy filtr i sortowanie w adresie: link do listy można skopiować i zapisać w zakładkach przeglądarki",
+        rekomendowana: true,
+        skutki: [
+          { typ: "zysk", t: "Wspólne linki w zespole, powrót do dowolnego widoku" },
+          { typ: "koszt", t: "Trwały schemat nazw parametrów, do utrzymania przy każdej nowej liście" }
+        ]
+      },
+      {
+        id: "b",
+        label: "Adres plus zapisane widoki użytkownika (np. „Warszawa, czekamy”) w menu pod tabelą",
+        skutki: [
+          { typ: "zysk", t: "Powtarzalne zadania jednym kliknięciem" },
+          { typ: "koszt", t: "Nowa funkcja poza dotychczasowym zakresem" }
+        ]
+      },
+      {
+        id: "c",
+        label: "Filtry pamiętane per użytkownik (ostatni stan), bez adresów",
+        skutki: [
+          { typ: "zysk", t: "Prosto" },
+          { typ: "ryzyko", t: "Nie da się udostępnić widoku, a niejawny filtr myli („gdzie są moje wnioski”)" }
+        ]
+      }
+    ]
+  }
+
+];
 
 window.DECYZJE_ARCHIWUM = [
 

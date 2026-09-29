@@ -115,6 +115,7 @@ erDiagram
     klient_instytucja {
         string klient_id PK
         string instytucja_id PK
+        string handlowiec_id FK
     }
 
     nabory {
@@ -146,6 +147,7 @@ erDiagram
     wnioski {
         string id PK
         int numer
+        string handlowiec_id FK
         string rok FK "NULL = nieprzypisany, ON DELETE SET NULL"
         string klient_id FK
         string instytucja_id FK
@@ -204,16 +206,17 @@ erDiagram
         int kolejnosc
     }
 
-    uprawnienia {
-        string rola_id PK
-        string modul_id PK
-        string poziom "brak/podglad/edycja"
+    funkcje {
+        string id PK "modul.akcja"
+        string modul_id FK
+        string rodzaj "modul/pole"
+        string opis
+        string zalezy_od FK
     }
 
-    uprawnienia_pol {
+    role_funkcje {
         string rola_id PK
-        string klucz PK
-        int widoczne
+        string funkcja PK "feature albo modul.*"
     }
 
     uzytkownicy {
@@ -295,6 +298,7 @@ erDiagram
         int osob
         string szkolenie
         string wypelnil "klient/handlowiec"
+        string handlowiec_id FK
         string status "oczekuje/zaakceptowany/odrzucony"
     }
 
@@ -376,9 +380,12 @@ erDiagram
     wnioski ||--o{ uczestnicy : "obejmuje"
     katalog_szkolen |o--o{ uczestnicy : "szkolenie uczestnika"
     terminy |o--o{ uczestnicy : "termin uczestnika"
-    role ||--o{ uprawnienia : "ma dostep do modulow"
-    moduly ||--o{ uprawnienia : "jest przedmiotem uprawnienia"
-    role ||--o{ uprawnienia_pol : "ma widocznosc pol"
+    role ||--o{ role_funkcje : "ma nadane funkcje"
+    moduly |o--o{ funkcje : "funkcje modulu"
+    funkcje |o--o{ funkcje : "zalezy od"
+    uzytkownicy |o--o{ klient_instytucja : "handlowiec"
+    uzytkownicy |o--o{ wnioski : "handlowiec"
+    uzytkownicy |o--o{ formularze_oczekujace : "handlowiec"
     role ||--o{ uzytkownicy : "przypisana do konta"
     instytucje |o--o{ uzytkownicy : "konto macierzyste"
     klienci |o--o{ uzytkownicy : "konto klienta koncowego"
@@ -615,6 +622,7 @@ Dane stałe w czasie. **Liczba zatrudnionych przeniosła się z klienta do wnios
 |---|---|---|
 | klient_id | PK, FK -> klienci, `ON DELETE CASCADE` | |
 | instytucja_id | PK, FK -> instytucje, `ON DELETE CASCADE` | |
+| **handlowiec_id** | FK -> uzytkownicy, nullable, `ON DELETE SET NULL` | Handlowiec prowadzący klienta. Konto bez `zakres.cala_instytucja` widzi tylko swoich klientów [D-210] |
 
 Klucz główny złożony z obu kolumn. Jeden klient może być przypisany do **wielu instytucji** jednocześnie, każda widzi go wyłącznie we własnym kontekście [D-144]. To jest tabela **egzekwująca separację danych** dla klientów współdzielonych - komentarz w `schema.sql` mówi to wprost. Uzupełnia ją decyzja wykonawcza D-150: informacja, która instytucja pozyskała klienta (`klienci.instytucja_id`), **nie może wyciec** do innej instytucji widzącej tego samego klienta, bo sama w sobie jest przewagą konkurencyjną.
 
@@ -656,6 +664,7 @@ Kompletna specyfikacja pól finansowych i przykłady liczbowe w [06. Model finan
 | Pole | Typ | Ręczne / wyliczane |
 |---|---|---|
 | klient_id, instytucja_id | FK, wymagane | |
+| **handlowiec_id** | FK -> uzytkownicy, nullable, `ON DELETE SET NULL` | Handlowiec prowadzący wniosek [D-210] |
 | pup_id, nabor_id, szkolenie_glowne_id, faktura_id | FK, opcjonalne | Numer faktury trzymany bezpośrednio przy wniosku [D-139] |
 | numer | liczba | |
 | **rok** | tekst, FK -> lata_zestawien, nullable | Klucz zakładki rocznej. `NULL` = wniosek nieprzypisany, usunięcie roku odpina wnioski (`ON DELETE SET NULL`) [D-165] |
@@ -691,7 +700,7 @@ Kompletna specyfikacja pól finansowych i przykłady liczbowe w [06. Model finan
 |---|---|---|
 | wniosek_id | FK -> wnioski, `ON DELETE CASCADE` | |
 | imie_nazwisko | tekst | Trafia na certyfikat i do urzędu |
-| pesel | tekst | Z formularza. Dane wrażliwe, widoczność sterowana przez `uprawnienia_pol` |
+| pesel | tekst | Z formularza. Dane wrażliwe, widoczność sterowana feature `klient.pesel` (rodzaj `pole`, tabela `funkcje`) |
 | **szkolenie_id** | FK -> katalog_szkolen, nullable | **Jeden wniosek może obejmować kilka różnych szkoleń** [D-78] |
 | termin_id | FK -> terminy, nullable | Przypisany termin realizacji |
 | kwota | kwota | Cena szkolenia dla tej osoby |
@@ -723,27 +732,30 @@ Pełna semantyka ról i konfiguratora uprawnień jest opisana w [02. Aktorzy i u
 | grupa | tekst | Grupowanie w menu |
 | kolejnosc | liczba | Kolejność w menu |
 
-#### UPRAWNIENIA (`uprawnienia`) [NOWA TABELA]
+#### FUNKCJE (`funkcje`) [NOWA TABELA, D-210, D-211]
 
-Macierz rola x moduł [D-36].
+Katalog features w modelu Open Mercato (odpowiednik `acl.ts`). Zastępuje dawne tabele `uprawnienia` i `uprawnienia_pol`.
+
+| Pole | Typ | Uwagi |
+|---|---|---|
+| id | PK, tekst `modul.akcja` | Np. `zestawienia.view`, `klient.pesel`, `zakres.cala_instytucja` |
+| modul_id | FK -> moduly, nullable, `ON DELETE CASCADE` | |
+| rodzaj | enum | `modul` (dostęp do modułu i akcji) / `pole` (widoczność pola wrażliwego) |
+| opis | tekst | |
+| zalezy_od | FK -> funkcje, nullable | Feature wymagana wcześniej |
+
+Poziom modułu: podgląd = `<m>.view`, edycja = `<m>.*`. Brak nadania = brak dostępu, pozycja znika z menu. Dopasowanie z wildcardem: `makieta/assets/funkcje.js`, sprawdzenie przez `Auth.maFunkcje`, `Auth.poziom`, `Auth.moze`.
+
+#### ROLE_FUNKCJE (`role_funkcje`) [NOWA TABELA, D-210, D-211]
+
+Nadania rolom, odpowiednik `role_acls.features_json` [D-36].
 
 | Pole | Typ | Uwagi |
 |---|---|---|
 | rola_id | PK, FK -> role, `ON DELETE CASCADE` | |
-| modul_id | PK, FK -> moduly, `ON DELETE CASCADE` | |
-| poziom | enum | `brak` / `podglad` / `edycja`. `brak` = pozycja znika z menu |
+| funkcja | PK, tekst `modul.akcja` | Feature albo wildcard `modul.*`. Bez klucza obcego, bo wildcard nie jest wpisem katalogu |
 
-#### UPRAWNIENIA_POL (`uprawnienia_pol`) [NOWA TABELA]
-
-Widoczność pól wrażliwych per rola, niezależna od widoczności modułu.
-
-| Pole | Typ | Uwagi |
-|---|---|---|
-| rola_id | PK, FK -> role, `ON DELETE CASCADE` | |
-| klucz | PK, tekst | Identyfikator pola (np. stawka prowizji, PESEL, zysk firmy) |
-| widoczne | flaga | |
-
-Tu egzekwowane jest, że pracownik LDIT nie widzi zysków firmy ani stawek prowizji [D-114, D-34], że instytucja nie widzi własnej ani cudzej stawki [D-76], oraz że konfigurator prowizji jest widoczny wyłącznie dla administratora [D-07]. Decyzja wykonawcza D-149 mówi wprost: uprawnienia działają na **trzech niezależnych poziomach** - moduł (ta tabela wyżej), pole (ta tabela) i wiersz (kto czyje instytucje i czyich klientów widzi, realizowane przez `klient_instytucja` i `uzytkownik_instytucja`). Żadnego poziomu nie da się obejść ustawieniem innego.
+Features rodzaju `pole` egzekwują, że pracownik LDIT nie widzi zysków firmy ani stawek prowizji [D-114, D-34], że instytucja nie widzi własnej ani cudzej stawki [D-76], oraz że konfigurator prowizji jest widoczny wyłącznie dla administratora [D-07]. Feature `zakres.cala_instytucja` (tylko rola `is`) rozróżnia konto instytucji od handlowca: bez niej konto widzi tylko swoich klientów i wnioski [D-210]. Decyzja D-149: uprawnienia działają na **trzech niezależnych poziomach**: moduł i pole (`funkcje`, `role_funkcje`) oraz wiersz (kto czyje instytucje i czyich klientów widzi, realizowane przez `klient_instytucja`, `uzytkownik_instytucja` i `handlowiec_id`). Żadnego poziomu nie da się obejść ustawieniem innego.
 
 #### UŻYTKOWNICY (`uzytkownicy`)
 
@@ -820,6 +832,7 @@ Moduł zadań i powiadomień **wrócił do zakresu** [D-140], po tym jak wcześn
 | szkolenie | tekst | Wybór z katalogu szkoleń [D-188] |
 | kontakt | tekst | |
 | **wypelnil** | enum | `klient` / `handlowiec`, system zapisuje kto wypełnił [D-181] |
+| **handlowiec_id** | FK -> uzytkownicy, nullable, `ON DELETE SET NULL` | Handlowiec, do którego należy zgłoszenie [D-210] |
 | status | enum | `oczekuje` / `zaakceptowany` / `odrzucony` |
 
 To jest **bramka ręcznej akceptacji formularza elektronicznego przed wejściem rekordu do bazy** - mechanizm anty-spam [D-105]. Rekordy oczekujące zasilają licznik "wniosków oczekujących na akceptację" pokazywany w interfejsie [D-140]. Po akceptacji rekord przestaje być formularzem oczekującym i staje się parą klient + wniosek.

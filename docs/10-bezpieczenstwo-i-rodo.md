@@ -146,7 +146,7 @@ obcej instytucji.
 ## Zabezpieczenia makiety (stan 2026-09-29)
 
 Po rundzie decyzji makieta dostała mechanizmy, które odwzorowują reguły bezpieczeństwa
-aplikacji. Testy: `node tools/test-bezpieczenstwo.mjs`.
+aplikacji. Testy: `node tools/test-bezpieczenstwo.mjs`, `node tools/test-uprawnienia.mjs`, `node tools/test-walidacja.mjs`.
 
 | Mechanizm | Jak działa | Plik |
 |---|---|---|
@@ -158,6 +158,10 @@ aplikacji. Testy: `node tools/test-bezpieczenstwo.mjs`.
 | Strażnik zapisów | Każdy zapis przechodzi kontrolę trzech poziomów: moduł, wiersz, pole [D-149]. Rejestr aktywności jest tylko do dopisywania | `makieta/assets/straznik.js` |
 | Ochrona przed XSS | Wszystkie wartości z bazy trafiają do HTML przez `esc()` | `makieta/assets/html.js` |
 | Log logowań | Tabela `logowania`, każda próba z wynikiem | `makieta/db/schema.sql` |
+| Features zamiast macierzy uprawnień | Tabele `funkcje` i `role_funkcje` (moduł i pole jako feature `modul.akcja`, wildcard `modul.*`) [D-211] | `makieta/assets/funkcje.js`, `auth.js` |
+| Filtr handlowca | Konto instytucji bez feature `zakres.cala_instytucja` widzi tylko swoich klientów i wnioski (`handlowiec_id`), handlowiec bez statystyk [D-209, D-210] | `makieta/assets/zakres.js` |
+| Walidacja na granicy zapisu | E-mail, telefon, NIP i PESEL z cyfrą kontrolną, URL, daty, kwoty nieujemne, pola wymagane, `data_do >= data_od`. Przy edycji sprawdzane tylko zmieniane pola. Błąd to `StraznikError` z kodem `walidacja`. Odpowiednik Zod | `makieta/assets/walidacja.js` |
+| Tryb systemowy nieupubliczniony | `Store.odbierzTrybSystemowy` oddaje tryb jednorazowo dla `auth.js`, eksport całej bazy tylko dla `ustaw.manage` | `makieta/assets/store.js` |
 
 ### Uczciwe ograniczenie makiety
 
@@ -179,7 +183,7 @@ Stos docelowy to framework Open Mercato (wersja v0.8.0, przed 1.0, patrz
 | Obszar | Z frameworka | Do dobudowania |
 |---|---|---|
 | Uwierzytelnianie | Sesje JWT, `bcryptjs` (koszt co najmniej 10), błąd logowania nie zdradza, czy e-mail istnieje, tabele `users`, `roles`, `sessions`, `password_resets`. MFA w warstwie enterprise | Weryfikacja, czy MFA jest dostępne w naszej licencji (wymaganie 2FA jest MUST) |
-| Uprawnienia | Features `modul.akcja` w `acl.ts`, przypisanie do ról w `setup.ts`, `role_acls` i `user_acls`, wildcardy `modul.*`, sprawdzanie przez `requireFeatures` | **Uprawnienia per pole** (odpowiednik `uprawnienia_pol`): framework ich nie ma [D-149] |
+| Uprawnienia | Features `modul.akcja` w `acl.ts`, przypisanie do ról w `setup.ts`, `role_acls` i `user_acls`, wildcardy `modul.*`, sprawdzanie przez `requireFeatures` | **Uprawnienia per pole** (features rodzaju `pole` w `funkcje` już działają w makiecie): framework ich nie ma [D-149]. Odwzorowane w makiecie: features i wildcardy (`funkcje`, `role_funkcje`), walidacja na granicy zapisu, filtr handlowca, rejestr tylko do dopisywania [D-211] |
 | Separacja instytucji | Tenant (LDIT) i organizacje (instytucja szkoleniowa), `organization_id` w każdej encji, obowiązkowy filtr w zapytaniach | **RLS w PostgreSQL** jako druga bariera. Framework filtruje organizacje w aplikacji, więc jedno zapomniane zapytanie bez filtra to wyciek |
 | Rejestr zmian | Moduł `audit_logs`, tabela `action_logs` (aktor, zasób, `snapshot_before`, `snapshot_after`, `changes_json`, cofnij/ponów) | Lista zdarzeń wg D-189, ograniczenie features `audit_logs.*` |
 | Szyfrowanie | AES-GCM z kluczem per tenant, mapy szyfrowania per pole | Włączenie dla PESEL (kandydat) |
@@ -196,7 +200,7 @@ więc może zawierać stawki prowizji i dane innych organizacji. Należy ogranic
 wrażliwe w migawkach. Bez tego log stałby się obejściem separacji.
 
 **Ryzyko: PESEL.** Kandydat do szyfrowania per pole kluczem tenanta (AES-GCM). Widoczność
-per rola przez dobudowany mechanizm pól, szyfrowanie chroni dodatkowo przed odczytem kopii
+per rola przez feature `klient.pesel` (w aplikacji dobudowany mechanizm pól), szyfrowanie chroni dodatkowo przed odczytem kopii
 zapasowej i bezpośrednim dostępem do bazy.
 
 **Retencja [D-186].** Kolumny `utworzono` przy klientach i uczestnikach wyznaczają początek

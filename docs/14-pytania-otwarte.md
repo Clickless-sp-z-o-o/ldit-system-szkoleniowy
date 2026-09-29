@@ -141,7 +141,7 @@ Klient chce widoku celów i historii ich realizacji, ale nie zdefiniował ani je
 
 ### P-12. Jakie dane statystyczne widzi instytucja szkoleniowa
 
-> **Rozstrzygnięte 2026-09-29: D-193** (wstępnie, wybór wykonawcy w panelu, do potwierdzenia przez klienta).
+> **Rozstrzygnięte 2026-09-29: D-193, skorygowane tego samego dnia przez D-209** (instytucja widzi statystyki własnych klientów BEZ rozbicia per handlowiec; wybór wykonawcy, do potwierdzenia przez klienta). Filtrowanie danych per handlowiec: D-210.
 **Klient odroczył decyzję wprost.**
 
 > **Bartek (2:54:45):** "Dobra, ja będę musiał się nad tym zastanowić, czy chcę takie szczegóły."
@@ -212,7 +212,7 @@ Z katalogu w systemie czy konfigurowana przez instytucję.
 
 ### P-24. Technologia formularza zgłoszeniowego
 
-> **Rozstrzygnięte 2026-09-29: D-187** (decyzja wykonawcy z panelu decyzyjnego, siła TWARDA).
+> **Rozstrzygnięte 2026-09-29: D-187, potwierdzone przez D-207** (decyzja wykonawcy, siła TWARDA).
 Google Forms z arkuszem czy formularz natywny. Wykonawca sam się wycofał z Google Sheets, nie doprecyzował alternatywy.
 
 **Rekomendacja** w [09. Integracje](09-integracje-i-architektura.md): formularz natywny, ze względu na RODO (PESEL), utrzymanie 20 kopii i integrację z katalogiem szkoleń.
@@ -277,7 +277,7 @@ Pytanie z dokumentacji przedwarsztatowej, nierozstrzygnięte. Ma wpływ na model
 
 ### P-54. Zakres zdarzeń w logu akcji (kliknięć)
 
-> **Rozstrzygnięte 2026-09-29: D-189** (decyzja wykonawcy z panelu decyzyjnego, siła TWARDA).
+> **Rozstrzygnięte 2026-09-29: D-189, potwierdzone przez D-208** (decyzja wykonawcy, siła TWARDA).
 Klient określił, że logi mają obejmować "wszystkie akcje", w tym kliknięcia [D-122]. Do doprecyzowania **lista zdarzeń**, które faktycznie trafiają do logu akcji. Logowanie dosłownie każdego kliknięcia generuje ogromny wolumen i szum, więc rekomendacja wykonawcy to lista istotnych akcji (otwarcie karty, eksport, wejście w moduł finansowy, uruchomienie wysyłki), a nie każde zdarzenie interfejsu. Ma wpływ na wolumen danych i retencję [P-26].
 
 ---
@@ -428,7 +428,7 @@ z Excelem klienta na uzgodnionym zestawie przypadków plus przejście testów z 
 
 ## Podsumowanie
 
-**Stan po rundzie 2026-09-29: 37 pytań rozstrzygniętych w panelu decyzyjnym plus P-56 (przez D-177), zostaje 20 otwartych, zero blokad.** Każde rozstrzygnięte pytanie ma odnośnik do decyzji D-161 - D-206 w [13. Rejestrze decyzji](13-rejestr-decyzji.md). Tam, gdzie w panelu odpowiadał klient, rozstrzygnięcie jest **wstępne i czeka na jego potwierdzenie**.
+**Stan po rundzie 2026-09-29: 37 pytań rozstrzygniętych w panelu decyzyjnym plus P-56 (przez D-177), zostaje 20 otwartych, zero blokad.** Każde rozstrzygnięte pytanie ma odnośnik do decyzji D-161 - D-212 w [13. Rejestrze decyzji](13-rejestr-decyzji.md). Tam, gdzie w panelu odpowiadał klient, rozstrzygnięcie jest **wstępne i czeka na jego potwierdzenie**.
 
 | Blokada | Status | Decyzja |
 |---|---|---|

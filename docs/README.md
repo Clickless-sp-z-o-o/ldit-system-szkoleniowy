@@ -66,6 +66,7 @@ flowchart TD
 | [11. UX i nawigacja](11-ux-i-nawigacja.md) | Układ "jak Excel", edycja inline, nazewnictwo, dashboard |
 | [12. Zakres i etapowanie](12-zakres-i-etapowanie.md) | Co wchodzi, co wypada, kolejność prac, harmonogram |
 | [18. Od makiety do aplikacji](18-od-makiety-do-aplikacji.md) | Co jest gotowe, co trzeba napisać, czego brakuje, w jakiej kolejności |
+| [19. Mapa zakładek](19-mapa-zakladek.md) | Inwentaryzacja menu i zakładek makiety, mapa drill through, propozycja mapy docelowej, 38 pytań do klienta (Z-01 - Z-38), plan screenów do Miro |
 
 ### Rejestry
 | Plik | Zawartość |
@@ -112,7 +113,7 @@ Szczegóły i pełna lista kto komu co jest winien: [14. Pytania otwarte](14-pyt
 | Schemat bazy | [`makieta/db/schema.sql`](../makieta/db/schema.sql) | **Źródło prawdy o strukturze danych** [D-151] |
 | Reguły wyliczeń | [`makieta/db/views.sql`](../makieta/db/views.sql) | Pola wyliczane zapisane jako widoki SQL |
 | Dokumentacja jako strona | [`dokumentacja/index.html`](../dokumentacja/index.html) | Ta sama treść w formie klikalnej, do pokazania klientowi |
-| **Panel decyzyjny** | [`dokumentacja/sekcje/17-panel-decyzji.html`](../dokumentacja/sekcje/17-panel-decyzji.html) | Po rundzie 29.09.2026 pusty (0 otwartych). Warianty i konsekwencje 38 rozstrzygniętych punktów zostały w `decyzje.js` jako archiwum, a wyniki są w rejestrze decyzji D-161 - D-206 |
+| **Panel decyzyjny** | [`dokumentacja/sekcje/17-panel-decyzji.html`](../dokumentacja/sekcje/17-panel-decyzji.html) | Po rundzie 29.09.2026 zawiera 38 pytań o mapę zakładek (Z-01 - Z-38, [19](19-mapa-zakladek.md)). Warianty i konsekwencje 38 rozstrzygniętych wcześniej punktów zostały w `decyzje.js` jako archiwum, a wyniki są w rejestrze decyzji D-161 - D-206 |
 
 ---
 

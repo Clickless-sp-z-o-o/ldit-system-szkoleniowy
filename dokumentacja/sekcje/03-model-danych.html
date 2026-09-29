@@ -130,6 +130,7 @@ erDiagram
     klient_instytucja {
         string klient_id PK
         string instytucja_id PK
+        string handlowiec_id FK
     }
 
     nabory {
@@ -161,6 +162,7 @@ erDiagram
     wnioski {
         string id PK
         int numer
+        string handlowiec_id FK
         string rok FK "NULL = nieprzypisany, ON DELETE SET NULL"
         string klient_id FK
         string instytucja_id FK
@@ -219,16 +221,17 @@ erDiagram
         int kolejnosc
     }
 
-    uprawnienia {
-        string rola_id PK
-        string modul_id PK
-        string poziom "brak/podglad/edycja"
+    funkcje {
+        string id PK "modul.akcja"
+        string modul_id FK
+        string rodzaj "modul/pole"
+        string opis
+        string zalezy_od FK
     }
 
-    uprawnienia_pol {
+    role_funkcje {
         string rola_id PK
-        string klucz PK
-        int widoczne
+        string funkcja PK "feature albo modul.*"
     }
 
     uzytkownicy {
@@ -310,6 +313,7 @@ erDiagram
         int osob
         string szkolenie
         string wypelnil "klient/handlowiec"
+        string handlowiec_id FK
         string status "oczekuje/zaakceptowany/odrzucony"
     }
 
@@ -391,9 +395,12 @@ erDiagram
     wnioski ||--o{ uczestnicy : "obejmuje"
     katalog_szkolen |o--o{ uczestnicy : "szkolenie uczestnika"
     terminy |o--o{ uczestnicy : "termin uczestnika"
-    role ||--o{ uprawnienia : "ma dostep do modulow"
-    moduly ||--o{ uprawnienia : "jest przedmiotem uprawnienia"
-    role ||--o{ uprawnienia_pol : "ma widocznosc pol"
+    role ||--o{ role_funkcje : "ma nadane funkcje"
+    moduly |o--o{ funkcje : "funkcje modulu"
+    funkcje |o--o{ funkcje : "zalezy od"
+    uzytkownicy |o--o{ klient_instytucja : "handlowiec"
+    uzytkownicy |o--o{ wnioski : "handlowiec"
+    uzytkownicy |o--o{ formularze_oczekujace : "handlowiec"
     role ||--o{ uzytkownicy : "przypisana do konta"
     instytucje |o--o{ uzytkownicy : "konto macierzyste"
     klienci |o--o{ uzytkownicy : "konto klienta koncowego"

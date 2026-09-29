@@ -21,7 +21,7 @@ To przesuwa najdroższą część pracy, czyli **rozstrzyganie, jak dane mają w
 | Struktura danych, 33 tabele | `makieta/db/schema.sql` | Zmiana typów `TEXT` na `text`/`varchar` i `REAL` na `numeric`. Klucze obce, `CHECK` i indeksy przechodzą bez zmian |
 | Reguły pól wyliczanych | `makieta/db/views.sql` | Widoki przenoszą się wprost, stają się warstwą domenową |
 | Silnik prowizji | `makieta/assets/prowizja.js` | Czysta funkcja bez zależności. Przenosi się jako moduł albo jako funkcja w bazie |
-| Macierz uprawnień | tabele `role`, `moduly`, `uprawnienia`, `uprawnienia_pol` | Przenosi się jako dane, nie jako kod |
+| Macierz uprawnień | tabele `role`, `moduly`, `funkcje`, `role_funkcje` | Przenosi się niemal 1:1 do `acl.ts` (katalog features) i `role_acls` (nadania), jako dane, nie jako kod [D-211] |
 | Zakres widzialności per konto | tabela `uzytkownik_instytucja`, widok `v_zakres_uzytkownika` | Staje się podstawą polityk bezpieczeństwa na wierszach |
 | Osiemnaście ekranów | `makieta/strony/` | Specyfikacja układu, kolejności kolumn, zachowania filtrów i akcji |
 | Dane w realnych wolumenach | `makieta/db/seed.sql` | Zestaw do testów wydajnościowych i do pokazania klientowi |
@@ -97,7 +97,7 @@ Punkt 1 jest rozstrzygnięty co do zasady [D-180]: powstaje specyfikacja ekranó
 |---|---|---|---|
 | 1 | **Specyfikacja ekranów pole po polu.** Dla każdego z 18 widoków: jakie pola, które są edytowalne, jakie mają walidacje, jakie akcje, co widzi która rola | Bez tego model odtworzy układ z makiety, ale zgadnie zachowanie | duża, ale mechaniczna, bo makieta jest wzorem |
 | 2 | **Lista operacji domenowych.** Co system potrafi zrobić z danymi: dodaj wniosek, przejdź do następnego etapu, przelicz okres prowizyjny, przywróć regułę. Z warunkami wstępnymi i skutkami | Bez tego każdy ekran wymyśla własny sposób zapisu | średnia |
-| 3 | **Reguły walidacji.** NIP z sumą kontrolną, PESEL, zakresy dat, kwoty nieujemne, kolejność etapów | Dziś walidacje są tylko tam, gdzie wymusza je schemat bazy | mała |
+| 3 | **Reguły walidacji.** NIP z sumą kontrolną, PESEL, zakresy dat, kwoty nieujemne, kolejność etapów | Częściowo gotowe: `makieta/assets/walidacja.js` (NIP i PESEL z cyfrą kontrolną, daty, kwoty, pola wymagane) przenosi się do `validators.ts` z Zod. Brakuje kolejności etapów | mała |
 | 4 | **Polityka dostępu do wierszy w bazie.** Formalny zapis tego, co dziś robi `zakres.js`, w formie nadającej się do wdrożenia po stronie serwera | To jest punkt, w którym najłatwiej o wyciek | średnia, wysokie ryzyko |
 | 5 | **Scenariusz importu starej bazy** [D-147]. Jakie kolumny, jak mapowane, co z duplikatami i brakami | Klient ma realne dane do przeniesienia | średnia, zależna od klienta |
 | 6 | **Treści szablonów maili** [D-106] i **wzór certyfikatu** [D-98] | Dziś są nazwy szablonów, nie ma treści | mała, zależna od klienta |
@@ -161,9 +161,10 @@ Po rundzie decyzji z 29.09.2026 stos docelowy to framework **Open Mercato** (Typ
 |---|---|
 | Tabele `schema.sql` | Encje MikroORM we własnym module (np. `applications`) z migracjami `yarn db:generate`. Kolumny kwotowe `NUMERIC(12,2)` [D-184], `INTEGER` jako flagi na `boolean` |
 | `tenant` i `organization_id` w każdej encji | Tenant = LDIT, organizacja = instytucja szkoleniowa. Framework dodaje `tenant_id` i `organization_id` do encji |
-| Uprawnienia do modułu (`uprawnienia`) | Features `modul.akcja` deklarowane w `acl.ts`, domyślne przypisanie do ról w `setup.ts`, sprawdzanie przez `requireFeatures` w metadanych tras. Zakaz sprawdzania po nazwach ról |
-| Uprawnienia do pola (`uprawnienia_pol`) | **Własny mechanizm.** Framework nie ma widoczności per pole i rola. Dobudowujemy warstwę serializacji, która wycina pola wg features (prowizja, PESEL, zysk firmy) |
+| Uprawnienia do modułu (`funkcje`, `role_funkcje`) | Features `modul.akcja` deklarowane w `acl.ts`, domyślne przypisanie do ról w `setup.ts`, sprawdzanie przez `requireFeatures` w metadanych tras. Zakaz sprawdzania po nazwach ról |
+| Uprawnienia do pola (features rodzaju `pole` w `funkcje`) | **Własny mechanizm.** Framework nie ma widoczności per pole i rola. Dobudowujemy warstwę serializacji, która wycina pola wg features (prowizja, PESEL, zysk firmy) |
 | `uzytkownik_instytucja` (poziom wiersza) | `organizations_json` w `user_acls` i drzewo organizacji. Filtr organizacji obowiązkowy w każdym zapytaniu |
+| `walidacja.js` | `data/validators.ts` ze schematami Zod per encja, walidacja na granicy API |
 | `rejestr_aktywnosci` | Moduł `audit_logs`, tabela `action_logs` (migawki przed i po, `changes_json`). Lista zdarzeń wg D-189, tylko dopisywanie |
 | Widoki `views.sql` | Warstwa domenowa (serwisy w module) albo moduł `business_rules`. Reguły pól wyliczanych z flagą reguły i "Przywróć regułę" [D-19, D-153] muszą zostać zachowane |
 | Silnik `prowizja.js` | Czysty moduł TypeScript, testy z `docs/07` (przypadki 1-24) przeniesione bez zmian |

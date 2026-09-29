@@ -26,7 +26,8 @@ var SECTIONS = [
   { grupa: "Realizacja", items: [
     { id: "10-bezpieczenstwo", ikona: "&#9911;", label: "Bezpieczeństwo i RODO" },
     { id: "11-zakres",         ikona: "&#9707;", label: "Zakres i etapy" },
-    { id: "16-od-makiety",     ikona: "&#9881;", label: "Od makiety do aplikacji" }
+    { id: "16-od-makiety",     ikona: "&#9881;", label: "Od makiety do aplikacji" },
+    { id: "19-mapa-zakladek",  ikona: "&#9776;", label: "Mapa zakładek" }
   ] },
   { grupa: "Rejestry", items: [
     { id: "12-pytania-ryzyka", ikona: "&#9873;", label: "Pytania otwarte i ryzyka" },

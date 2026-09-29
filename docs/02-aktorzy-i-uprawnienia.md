@@ -8,8 +8,8 @@ Warsztat rozszerzył model z 4 do **5 ról bazowych**, plus możliwość tworzen
 |---|---|---|
 | **Administrator** | Bartek | Wszystko: wszystkie instytucje, wszyscy klienci, finanse, konfiguracja, prowizje |
 | **Pracownik LDIT** | Łucja, Martyna, Asia | Klienci **przypisanych mu instytucji**. Bez zysków firmy i bez stawek prowizyjnych |
-| **Instytucja szkoleniowa** (admin IS) | np. Odczaruj, Metal Maniak | Wyłącznie własna zakładka i własni klienci. Nie widzi swojej stawki prowizji |
-| **Pracownik IS** (handlowiec) | np. Mirka z Fortech | Tylko dane klientów IS, dodatkowo przefiltrowane (np. tylko najnowszy nabór) |
+| **Instytucja szkoleniowa** (admin IS, rola `is`) | np. Odczaruj, Metal Maniak | Wyłącznie własna zakładka i **wszyscy** klienci swojej instytucji [D-210]. Nie widzi swojej stawki prowizji. Statystyki własnych klientów bez rozbicia per handlowiec [D-209] |
+| **Pracownik IS** (handlowiec) | np. Mirka z Fortech | Wyłącznie klienci i wnioski **przypisani do siebie** (`handlowiec_id`) [D-210], dodatkowo może być przefiltrowany (np. tylko najnowszy nabór) [D-73] |
 | **Klient końcowy** | firma / uczestnik | OTWARTE, patrz niżej |
 
 ### Hierarchia ról i zakres widzialności danych
@@ -96,8 +96,10 @@ Blokery: skokowy wzrost bazy użytkowników (z kilkunastu do kilkuset), koszt ut
 
 - **Płaski, nie hierarchiczny.** Menedżer nie musi widzieć więcej niż pracownik. Dowolna kombinacja.
 - **Uprawnienia per rola, nie per pracownik** [D-35].
-- **Jednostka uprawnienia = zakładka (moduł)** z lewej nawigacji.
-- **Dwa poziomy: podgląd i edycja.**
+- **Jednostka uprawnienia = feature `modul.akcja`** [D-211]. Dla zakładki z lewej nawigacji są to dwa features: `modul.view` (podgląd) i `modul.manage` (edycja). Zachowuje to układ "zakładka x podgląd/edycja" z warsztatu.
+- **Uprawnienia do pól** to też features (np. pole kwot lub prowizji jako osobny feature), nie osobna tabela [D-211, zastępuje `uprawnienia_pol` z D-149].
+- **Wildcard:** `modul.*` daje wszystkie akcje modułu, `*` wszystko (wzór Open Mercato `acl.ts`).
+- **Tabele w makiecie:** `funkcje` (słownik features) i `role_funkcje` (przypisanie do roli), zamiast `uprawnienia` i `uprawnienia_pol` [D-211].
 - **Menu boczne renderowane dynamicznie** na podstawie roli zalogowanego użytkownika.
 
 > **Bartek (58:19):** "docelowo mówię, żebyśmy te role mogli nadawać co kto widzi, cały konfigurator roli, żebyśmy mieli powiedzmy checkboxy, że ty masz dostęp do tego i tego, ale pracownik już inny ma dostęp tylko do spisu klientów i kontaktów."
@@ -118,8 +120,21 @@ Konsekwencja: zakładka **Dofinansowania** rozwija listę instytucji ograniczon�
 
 Uprawnienia muszą działać nie tylko na poziomie modułu, ale też na poziomie **wierszy**:
 - po instytucji szkoleniowej
+- po handlowcu instytucji [D-210]
 - po etapie procesu (np. tylko klienci na etapie początkowym)
 - po naborze (np. tylko najnowszy nabór) [D-73]
+
+### Filtr handlowca [D-210, TWARDA, [W]]
+
+| Konto | Kogo widzi |
+|---|---|
+| Administrator LDIT, Pracownik LDIT | Zgodnie z przydziałem instytucji [D-113]. Filtr handlowca ich nie dotyczy |
+| Administrator instytucji (rola `is`) | Wszystkich klientów i wnioski swojej instytucji |
+| Pracownik IS (handlowiec) | Wyłącznie klientów i wnioski przypisane do jego konta |
+
+Przypisanie zapisują kolumny `klient_instytucja.handlowiec_id`, `wnioski.handlowiec_id` i `formularze_oczekujace.handlowiec_id`, wszystkie wskazują `uzytkownicy`. Filtr egzekwuje warstwa danych (`makieta/assets/zakres.js`), nie interfejs. W aplikacji docelowej dochodzi do polityk RLS [D-179].
+
+**Statystyki:** instytucja nie dostaje rozbicia per handlowiec [D-209, koryguje D-193]. Filtr handlowca dotyczy danych operacyjnych, nie statystyk. Do potwierdzenia przez klienta, bo klient odroczył temat (2:54:45).
 
 ---
 
@@ -129,10 +144,10 @@ Wersja robocza do potwierdzenia. Pola oznaczone `?` wymagają rozstrzygnięcia.
 
 | Moduł | Administrator | Pracownik LDIT | Instytucja szkoleniowa | Pracownik IS | Klient końcowy |
 |---|---|---|---|---|---|
-| Dashboard (statystyki) | Pełny, wszystkie IS | Bez marżowości i zysków | Własne wskaźniki (zakres `?`) | Brak | Brak |
+| Dashboard (statystyki) | Pełny, wszystkie IS | Bez marżowości i zysków | Statystyki własnych klientów, **bez rozbicia per handlowiec** [D-209] | Brak | Brak |
 | Dofinansowania / Zestawienia | Wszystkie IS | Przypisane IS | Własna zakładka | Brak | Brak |
-| Baza klientów (Niezłożone) | Pełna | Przypisane IS | Własni klienci | Własni, przefiltrowani | Brak |
-| Karta klienta i wniosku | Pełna edycja | Edycja w kontekście | Odczyt statusu | Odczyt ograniczony | Własny status (`?`) |
+| Baza klientów (Niezłożone) | Pełna | Przypisane IS | Wszyscy klienci instytucji | **Tylko przypisani do siebie** [D-210] | Brak |
+| Karta klienta i wniosku | Pełna edycja | Edycja w kontekście | Odczyt statusu | Odczyt ograniczony, tylko przypisani do siebie [D-210] | Własny status (`?`) |
 | Katalog szkoleń | Pełny | Odczyt | Własny, pełna edycja | Brak | Brak |
 | Terminy i kalendarz | Pełny | W kontekście | Własne terminy | Brak | Własne (`?`) |
 | Konfigurator IS (prowizje) | **Wyłącznie admin** | Brak | **Brak** | Brak | Brak |
@@ -144,7 +159,7 @@ Wersja robocza do potwierdzenia. Pola oznaczone `?` wymagają rozstrzygnięcia.
 | Konta i uprawnienia | Pełny | Brak | Użytkownicy własnej IS | Brak | Brak |
 | Rejestr aktywności | Pełny | Brak | Brak | Brak | Brak |
 
-Macierz ma 14 modułów i 5 ról, więc zostaje jako tabela, tego zestawienia nie da się czytelnie zamienić na diagram. Sam mechanizm sprawdzania dostępu do pojedynczego rekordu daje się jednak pokazać jako przepływ decyzji, patrz diagram niżej.
+Macierz jest projekcją features `modul.view` i `modul.manage` na role [D-211], a wiersze filtruje D-210. Ma 14 modułów i 5 ról, więc zostaje jako tabela, tego zestawienia nie da się czytelnie zamienić na diagram. Sam mechanizm sprawdzania dostępu do pojedynczego rekordu daje się jednak pokazać jako przepływ decyzji, patrz diagram niżej.
 
 ### Diagram: czy ten użytkownik zobaczy ten rekord
 
@@ -191,7 +206,7 @@ Instytucja widzi wyłącznie własnych klientów. Dotyczy interfejsu, wyszukiwar
 >
 > **Bartek (3:06:43):** "instytucje szkoleniowe też mogą [mieć wyszukiwarkę], tylko żeby nie zdarzyło się, że wpiszą przypadkowo jakiegoś klienta i im się to wyświetli. Więc tutaj też na to trzeba będzie uważać."
 
-### Napięcie architektoniczne, NIEROZSTRZYGNIĘTE
+### Napięcie architektoniczne, ROZSTRZYGNIĘTE [D-177]
 
 Wykonawca dwukrotnie sygnalizował implementację przez **osobne bazy pod spodem**:
 
@@ -205,7 +220,7 @@ Wykonawca dwukrotnie sygnalizował implementację przez **osobne bazy pod spodem
 - dashboard z przekrojem przez wszystkie instytucje
 - zestawienia roczne na żądanie
 
-Rekomendacja do rozstrzygnięcia w [09. Integracje i architektura](09-integracje-i-architektura.md): **jedna baza z egzekwowaną separacją na poziomie wierszy (Row Level Security)**, a nie osobne bazy. Osobne bazy uniemożliwiają zbiorczy widok bez budowania warstwy agregacji, która i tak łączyłaby dane w jednym miejscu.
+Rozstrzygnięcie [D-177, D-179] w [09. Integracje i architektura](09-integracje-i-architektura.md): **jedna baza z egzekwowaną separacją na poziomie wierszy (Row Level Security)**, a nie osobne bazy. Osobne bazy uniemożliwiają zbiorczy widok bez budowania warstwy agregacji, która i tak łączyłaby dane w jednym miejscu.
 
 ### Separacja w makiecie: stan zaimplementowany
 
@@ -215,11 +230,11 @@ Trzy poziomy kontroli, każdy w osobnej tabeli lub widoku bazy:
 
 | Poziom | Co ogranicza | Tabela / widok |
 |---|---|---|
-| Moduł | Czy rola w ogóle widzi zakładkę, i czy ma podgląd czy edycję | `uprawnienia` |
-| Pole | Czy rola widzi konkretne pole w module (np. kwoty, prowizję) | `uprawnienia_pol` |
-| Wiersz | Do których instytucji, klientów i wniosków ma dostęp zalogowany użytkownik | `uzytkownik_instytucja` i widok `v_zakres_uzytkownika` |
+| Moduł | Czy rola w ogóle widzi zakładkę, i czy ma podgląd (`modul.view`) czy edycję (`modul.manage`) | `funkcje`, `role_funkcje` [D-211] |
+| Pole | Czy rola widzi konkretne pole w module (np. kwoty, prowizję), feature pola | `funkcje`, `role_funkcje` [D-211] |
+| Wiersz | Do których instytucji, klientów i wniosków ma dostęp zalogowany użytkownik, w tym filtr handlowca | `uzytkownik_instytucja`, `handlowiec_id` [D-210] i widok `v_zakres_uzytkownika` |
 
-Rola wynika z zalogowanego konta, nie z ręcznego przełącznika [D-125]. Panel logowania jest w `makieta/login.html`. Przełącznik ról widoczny w samej makiecie ma charakter wyłącznie demonstracyjny, w docelowym systemie go nie ma.
+Tabele `uprawnienia` i `uprawnienia_pol` z D-149 zastąpione przez `funkcje` i `role_funkcje` [D-211]. Zapis przechodzi przez walidację na granicy (`assets/walidacja.js`), błędy mają format `{ data, error: { code, message } }`, a logowanie zwraca ogólny komunikat, bez wskazywania czy błędny był login czy hasło [D-211]. Rola wynika z zalogowanego konta, nie z ręcznego przełącznika [D-125]. Panel logowania jest w `makieta/login.html`. Przełącznik ról widoczny w samej makiecie ma charakter wyłącznie demonstracyjny, w docelowym systemie go nie ma.
 
 ---
 

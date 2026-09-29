@@ -2,6 +2,8 @@
 
 > **Aktualizacja po warsztacie 2026-09-04.** **Moduł zadań i powiadomień wraca do zakresu** [D-140], odwracając wykluczenie D-118 (zadania nie idą już do Projectly). Ma być ostatnim modułem w kolejności prac. Szczegóły i pozostałe zmiany: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
 
+> **Aktualizacja po rundzie 2026-09-29 (D-161 - D-212).** Wszystkie cztery blokady projektowe mają rozstrzygnięcie wykonawcy: P-25 ostatecznie [D-177], P-01, P-02 i P-09 wstępnie [D-164, D-162, D-163], do potwierdzenia przez klienta. Stos: Open Mercato [D-176]. Zadania i powiadomienia to dwa osobne moduły [D-195, wstępna]. Mapa zakładek i ograniczenie ich liczby: [D-212, wstępna], `docs/19-mapa-zakladek.md`.
+
 ## Stan po warsztacie
 
 | | |
@@ -35,7 +37,7 @@
 | 8 | **Potwierdzenie eksportu CSV z systemu księgowego** | Klient | pilne | Blokada modułu faktur |
 | 9 | Szablony maili | Klient | po postawieniu szkieletu | Biblioteka treści |
 
-**Kroki 7 i 8 są blokadami projektowymi.** Bez nich odpowiednie moduły nie mogą być zaprojektowane.
+**Kroki 7 i 8 były blokadami projektowymi.** Wykonawca rozstrzygnął je wstępnie 29.09: progi wewnętrzne startują na stałej stawce, progi później [D-162], import CSV robimy [D-163]. Klient musi obie decyzje potwierdzić, zanim moduł prowizji wewnętrznej i moduł faktur wejdą do implementacji. Blokady P-01 i P-25 rozstrzygnięte przez D-164 (wstępnie) i D-177.
 
 ---
 
@@ -76,7 +78,7 @@ flowchart TD
   style W fill:#fde68a
 ```
 
-Czerwone to blokady z [14. Pytania otwarte](14-pytania-otwarte.md), żółte to warunek wstępny
+Czerwone to blokady z [14. Pytania otwarte](14-pytania-otwarte.md) (po 29.09 wszystkie rozstrzygnięte przez wykonawcę, trzy z nich wstępnie, do potwierdzenia przez klienta), żółte to warunek wstępny
 ustalony na warsztacie [D-20]. Etap, do którego prowadzi strzałka z blokady, nie może ruszyć
 przed jej domknięciem.
 
@@ -88,12 +90,16 @@ Cel: zastąpić Excel w codziennej pracy.
 |---|---|
 | Konta, role i uprawnienia | Fundament wszystkiego, wpływa na każdy widok |
 | Instytucje szkoleniowe + katalog szkoleń | Nadrzędne wobec klientów i wniosków |
-| Baza klientów (formularz + akceptacja) | Wejście do procesu |
+| Baza klientów (formularz natywny + akceptacja) | Wejście do procesu, formularz w systemie [D-187, D-207] |
 | Wnioski / Zestawienia z rocznikami | Główne miejsce pracy |
 | Statusy, kolory, filtry, wyszukiwarka | Bez tego nie da się pracować operacyjnie |
 | Model finansowy KFS (kwoty, kwalifikacja) | Rdzeń merytoryczny |
 | Podstawowe powiadomienia mailowe | Realizuje priorytet klienta |
-| Rejestr aktywności i log logowań | Wymóg bezpieczeństwa, tanio dodać od początku |
+| Rejestr aktywności i log logowań | Wymóg bezpieczeństwa, tanio dodać od początku. Log istotnych zdarzeń, nie każdego kliknięcia [D-189, D-208] |
+
+**Po etapie I, przed wpuszczeniem instytucji:** zewnętrzny audyt bezpieczeństwa [D-201, wstępna] i audyt separacji [D-177].
+
+**Zakres uprawnień w etapie I:** features `modul.akcja` [D-211] i filtr handlowca [D-210].
 
 **Priorytet wskazany przez klienta w dokumentacji przedwarsztatowej:** informowanie instytucji o statusach, żeby przestały dopytywać i przestały potrzebować własnych systemów.
 
@@ -104,7 +110,7 @@ Cel: zastąpić Excel w codziennej pracy.
 | **Silnik prowizji** (po walidacji prototypem) | Wymaga danych z etapu I |
 | Konfigurator warunków prowizyjnych | |
 | Przewidywana prowizja | |
-| Moduł faktur (import CSV, podgląd PDF) | Zależy od potwierdzenia eksportu CSV |
+| Moduł faktur (import CSV, podgląd PDF) | Zależy od potwierdzenia eksportu CSV [D-163], korekty w okresie wystawienia [D-161] |
 | Administracja (prowizje szczegółowe) | |
 
 > **Uwaga:** silnik prowizji to najtrudniejszy element projektu. Warto rozważyć przesunięcie prototypu konfiguratora przed etap I, bo jego walidacja może zmienić model danych.
@@ -116,7 +122,7 @@ Cel: zastąpić Excel w codziennej pracy.
 | **Certyfikaty** (generowanie wsadowe, ZIP) | Wysoka, eliminuje ręczną pracę przy 50 uczestnikach |
 | **Dane do faktury** (przycisk generujący mail) | Wysoka, powtarzalna czynność |
 | Biblioteka szablonów maili | |
-| Integracja poczty Microsoft 365 (odczyt) | |
+| Integracja poczty Microsoft 365 (odczyt) | Jawna lista skrzynek [D-198] |
 | Nabory (osadzenie aplikacji) | |
 | Terminy i kalendarz szkoleń | |
 
@@ -124,11 +130,11 @@ Cel: zastąpić Excel w codziennej pracy.
 
 | Moduł | Status |
 |---|---|
-| Statystyki i dashboardy rozbudowane | Zakres dla IS sporny |
+| Statystyki i dashboardy rozbudowane | IS widzi statystyki własnych klientów bez rozbicia per handlowiec [D-209] (koryguje D-193, wstępna); każda agregacja prowadzi do szczegółów [D-212] |
 | Zgłoszenia (incydenty) | SHOULD |
-| Prowizja wewnętrzna dla pracowników | Zablokowane brakiem progów |
+| Prowizja wewnętrzna dla pracowników | Stała stawka, progi później [D-162, wstępna], do potwierdzenia przez klienta |
 | Cele i premie | Brak zdefiniowanej metryki |
-| Panel klienta końcowego | OTWARTE |
+| Panel klienta końcowego | Etap IV, minimalny zakres [D-192, wstępna], osobny cykl testów separacji przed udostępnieniem |
 | Wersja premium dla IS | Odłożone "docelowo w przyszłości" |
 | Eksport do Excela | |
 
@@ -138,15 +144,18 @@ Cel: zastąpić Excel w codziennej pracy.
 
 | Element | Decyzja | Gdzie trafia |
 |---|---|---|
-| ~~**Zadania pracowników**~~ | **Wróciły do zakresu** [D-140], odwraca [D-118]. Ostatni moduł w kolejności prac | w systemie, etap IV |
+| ~~**Zadania pracowników**~~ | **Wróciły do zakresu** [D-140], odwraca [D-118]. Ostatni moduł w kolejności prac. Zadania i powiadomienia to dwa osobne moduły [D-195, wstępna], zadania automatyczne tylko z daty i statusu [D-185] | w systemie, etap IV |
 | **Integracja kalendarza Outlook** | Wykluczone [D-118] | poza systemem |
-| **SMS** | Odrzucone w etapie I [D-04] | Furtka na przyszłość |
+| **SMS** | Odrzucone [D-04], także dla uczestników [D-196, wstępna] | Wyłącznie mail |
 | **API systemu księgowego** | Odrzucone (10-15 h vs 1 h) [D-39] | Import CSV |
 | **Foldery i pliki klientów** | Poza zakresem [D-41] | Eksplorator Windows, OneDrive |
 | **Wewnętrzny komunikator** | Odrzucone [D-33] | Integracja maili |
 | **Dowolne formuły w konfiguratorze prowizji** | Odrzucone [D-15] | Szablony parametryczne |
 | **Wysyłka powiadomień przez IS** | Zakazane [D-87] | Szablon otwierany w Outlooku |
 | **Informacja o naborach dla handlowca IS** | Odrzucone [D-91] | - |
+| **Statystyki per handlowiec dla instytucji** | Odrzucone [D-209] | - |
+| **Google Forms** | Zastąpione formularzem natywnym [D-187, D-207] | formularz w systemie |
+| **Log każdego kliknięcia** | Zawężone do istotnych zdarzeń [D-189, D-208] | log akcji |
 
 ---
 
@@ -154,10 +163,11 @@ Cel: zastąpić Excel w codziennej pracy.
 
 | Element | Blokada |
 |---|---|
-| **Panel klienta końcowego** | Klient wątpi w użyteczność, wykonawca chce, koszt utrzymania nierozstrzygnięty |
-| **Zakres statystyk dla IS** | Klient odroczył decyzję wprost |
+| **Panel klienta końcowego** | Wstępnie etap IV [D-192], klient wątpi w użyteczność, koszt utrzymania nierozstrzygnięty |
+| **Zakres statystyk dla IS** | Klient odroczył decyzję wprost (2:54:45), wykonawca wstępnie: bez rozbicia per handlowiec [D-209], do potwierdzenia |
+| **Mapa zakładek** | Ustalana z klientem pytaniami Z-01 i dalszymi [D-212, wstępna] |
 | **Wersja premium dla IS** | Kierunek zaakceptowany, warunki nieustalone |
-| **Kalendarz terminów w systemie** | Nie potwierdzono, czy zostaje po wykluczeniu Outlooka |
+| **Kalendarz terminów w systemie** | Zamknięte [P-10, 2026-09-04], terminy zostają w systemie |
 | **MCP** | Przewidziane w dokumentacji przedwarsztatowej, warsztat nie potwierdził |
 | **Szkolenia komercyjne IS w systemie** | Zamknięte słowami "bez decyzji" |
 

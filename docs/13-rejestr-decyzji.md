@@ -341,13 +341,13 @@ potwierdzić D-162, D-163 i D-164.
 | **D-184** | **Typ stałoprzecinkowy, zaokrąglenie do 2 miejsc, wkład własny liczony jako reszta.** W bazie docelowej kolumny kwotowe `NUMERIC(12,2)`, makieta (SQLite) liczy na REAL z ROUND w widokach. Do potwierdzenia: czy urząd stosuje te same zaokrąglenia | TWARDA | [W] | rozstrzyga P-51, [06](06-model-finansowy-kfs.md) |
 | **D-185** | **Zadania automatyczne tylko z daty i statusu, reszta ręczna.** Wymusza spisanie listy wyzwalaczy (342 urzędy o różnych zasadach) | TWARDA | [W] | rozstrzyga P-57, zgodne z D-140, D-145 |
 | **D-186** | **Jawne okresy retencji per kategoria danych.** Kolumny daty utworzenia przy klientach i uczestnikach już są. Wymusza proces czyszczenia | WSTĘPNA | [W]\* | rozstrzyga P-26, [10](10-bezpieczenstwo-i-rodo.md) |
-| **D-187** | **Formularz zgłoszeniowy natywny w systemie**, nie Google Forms. Wymusza zabezpieczenie publicznego formularza przed nadużyciem (limit zgłoszeń, bramka akceptacji D-105). Odwraca preferencję klienta z D-147, wymaga rozmowy | TWARDA | [W] | rozstrzyga P-24, **koryguje D-147**, zgodne z D-105 |
+| **D-187** | **Formularz zgłoszeniowy natywny w systemie**, nie Google Forms. Wymusza zabezpieczenie publicznego formularza przed nadużyciem (limit zgłoszeń, bramka akceptacji D-105). Odwraca preferencję klienta z D-147, wymaga rozmowy | TWARDA | [W] | rozstrzyga P-24, **koryguje D-147**, zgodne z D-105, **potwierdzona D-207** |
 | **D-188** | **Lista szkoleń w formularzu pochodzi z katalogu szkoleń w systemie** | TWARDA | [W] | rozstrzyga P-23 |
-| **D-189** | **Do logu akcji trafia lista istotnych zdarzeń:** otwarcie karty, eksport, wejście w moduł finansowy, wysyłka, zmiana statusu, zmiana uprawnień. Rejestr tylko do dopisywania. **Zawęża wymaganie klienta z D-122 ("każde kliknięcie"), wymaga jego zgody** | TWARDA | [W] | rozstrzyga P-54, zawęża D-122 |
+| **D-189** | **Do logu akcji trafia lista istotnych zdarzeń:** otwarcie karty, eksport, wejście w moduł finansowy, wysyłka, zmiana statusu, zmiana uprawnień. Rejestr tylko do dopisywania. **Zawęża wymaganie klienta z D-122 ("każde kliknięcie"), wymaga jego zgody** | TWARDA | [W] | rozstrzyga P-54, zawęża D-122, **potwierdzona D-208** |
 | **D-190** | **Progi skali rocznej konfiguruje administrator, nic nie jest zaszyte w kodzie.** Odpowiedzialność za poprawną stawkę trzeciego progu przechodzi na administratora | WSTĘPNA | [W]\* | rozstrzyga P-32, zgodne z D-155, D-168 |
 | **D-191** | **Zostaje nazwa "koszt całkowity".** Ryzyko pomyłki z "kosztem całkowitym z dopłatą" | WSTĘPNA | [W]\* | rozstrzyga P-13, zgodne z D-10, D-55 |
 | **D-192** | **Panel klienta końcowego w etapie IV, w minimalnym zakresie.** Wymusza osobny cykl testów separacji przed udostępnieniem | WSTĘPNA | [W]\* | rozstrzyga P-33, zgodne z D-154 |
-| **D-193** | **Instytucja widzi pełne statystyki własnych klientów, w tym rozbicie per handlowiec.** Koszt: instytucja widzi swoją skuteczność, co jest argumentem w negocjacjach prowizji. Klient odroczył tę decyzję wprost (2:54:45), więc wybór wykonawcy wymaga szczególnego potwierdzenia | WSTĘPNA | [W]\* | rozstrzyga P-12, konflikt interesów wykonawcy opisany w P-12 |
+| **D-193** | **Instytucja widzi pełne statystyki własnych klientów, w tym rozbicie per handlowiec.** Koszt: instytucja widzi swoją skuteczność, co jest argumentem w negocjacjach prowizji. Klient odroczył tę decyzję wprost (2:54:45), więc wybór wykonawcy wymaga szczególnego potwierdzenia | WSTĘPNA, **skorygowana D-209** | [W]\* | rozstrzyga P-12, konflikt interesów wykonawcy opisany w P-12, **rozbicie per handlowiec wycofane przez D-209** |
 | **D-194** | **Dashboard to statystyka, zbiorcze zestawienie to osobny widok operacyjny** ("Wszystkie instytucje") | WSTĘPNA | [W]\* | rozstrzyga P-08, zgodne z D-114, D-127 |
 | **D-195** | **Zadania i powiadomienia to dwa osobne moduły** | WSTĘPNA | [W]\* | rozstrzyga P-55, zgodne z D-140 |
 | **D-196** | **Bez SMS, wyłącznie mail**, także dla uczestników | WSTĘPNA | [W]\* | rozstrzyga P-17, zgodne z D-04 |
@@ -363,6 +363,23 @@ potwierdzić D-162, D-163 i D-164.
 | **D-206** | **Kolumny widoku wniosku zatwierdzone wg makiety**, klient zgłasza poprawki | WSTĘPNA | [W]\* | rozstrzyga P-43, dotyczy też P-44 |
 
 [W]\* = wybór wykonawcy w panelu 29.09, do potwierdzenia przez klienta.
+
+---
+
+## Decyzje wykonawcy z 29.09.2026 (po przeglądzie makiety): D-207 - D-212
+
+Wykonawca zapisał tego dnia: "decyzje: formularz natywny, log tylko istotne, statystyk per handlowiec nie trzeba, filtrowanie danych per handlowiec IS zrób". Wszystkie sześć to ustalenia wykonawcy [W], bez udziału klienta. D-207 i D-208 potwierdzają D-187 i D-189, które stoją w rejestrze jako TWARDA, ale dotykają wymagań klienta (D-147, D-122), więc jego zgoda na zawężenie nadal jest wymagana. D-209 wycofuje część D-193.
+
+| ID | Decyzja | Siła | Kto | Dotyczy |
+|---|---|---|---|---|
+| **D-207** | **Formularz zgłoszeniowy natywny w systemie, potwierdzony.** Google Forms odpada ostatecznie po stronie wykonawcy | TWARDA | [W] | potwierdza D-187, rozstrzyga P-24, nadal koryguje D-147 |
+| **D-208** | **Log akcji wyłącznie istotnych zdarzeń, potwierdzony** (lista z D-189, nie "każde kliknięcie") | TWARDA | [W] | potwierdza D-189, rozstrzyga P-54, nadal zawęża D-122 |
+| **D-209** | **Instytucja NIE dostaje statystyk w rozbiciu per handlowiec.** Widzi statystyki własnych klientów bez rozbicia | TWARDA | [W] | koryguje D-193 (rozbicie usunięte), rozstrzyga P-12 |
+| **D-210** | **Filtrowanie danych per handlowiec instytucji.** Konto Pracownik IS (handlowiec) widzi wyłącznie klientów i wnioski przypisane do siebie (kolumny `klient_instytucja.handlowiec_id`, `wnioski.handlowiec_id`, `formularze_oczekujace.handlowiec_id` wskazują `uzytkownicy`). Administrator instytucji (rola `is`) widzi wszystkich klientów swojej instytucji. Egzekwowane w warstwie danych (`zakres.js`), nie w interfejsie | TWARDA | [W] | realizuje D-72, D-73, D-148, patrz [02](02-aktorzy-i-uprawnienia.md) |
+| **D-211** | **Standardy Open Mercato wprowadzone w makiecie:** uprawnienia jako features `modul.akcja` (tabele `funkcje` i `role_funkcje` zamiast `uprawnienia` i `uprawnienia_pol`, wzór `acl.ts` i `role_acls`, obsługa wildcard `modul.*`), walidacja danych na granicy zapisu (`assets/walidacja.js`, odpowiednik `data/validators.ts` z Zod), format błędów `{ data, error: { code, message } }`, blokada wersji przy zapisie (optimistic locking) w trybie serwera, ogólny komunikat logowania, rejestr tylko do dopisywania | TWARDA | [W] | rozszerza D-176, zastępuje mechanizm z D-149, patrz [02](02-aktorzy-i-uprawnienia.md), [10](10-bezpieczenstwo-i-rodo.md) |
+| **D-212** | **Każda agregacja (liczba, wykres, kafelek, licznik) prowadzi do szczegółów (drill through).** Mapa zakładek ustalana z klientem pytaniami Z-01 i dalszymi w `docs/19-mapa-zakladek.md`, liczba zakładek ograniczona | WSTĘPNA | [W] | do potwierdzenia mapy przez klienta, patrz [11](11-ux-i-nawigacja.md) |
+
+**Sprzeczność do zgłoszenia.** Polecenie wykonawcy opisuje D-187 i D-189 jako WSTĘPNE, a rejestr od 29.09 trzyma je jako TWARDA. Siłę zostawiono TWARDA i dopisano potwierdzenie. Odwrócenie wymagań klienta z D-147 i D-122 nie jest jednak potwierdzone przez klienta.
 
 ---
 
@@ -392,13 +409,13 @@ potwierdzić D-162, D-163 i D-164.
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 147 |
-| WSTĘPNA | 50 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 152 |
+| WSTĘPNA | 51 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **206** |
+| **Razem** | **212** |
 
-Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**. Liczby dotyczą D-01 - D-160. Wszystkie 46 decyzji D-161 - D-206 to rozstrzygnięcia wykonawcy: 19 TWARDYCH i 27 WSTĘPNYCH czekających na potwierdzenie klienta.
+Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**. Liczby dotyczą D-01 - D-160. Wszystkie 46 decyzji D-161 - D-206 to rozstrzygnięcia wykonawcy: 19 TWARDYCH i 27 WSTĘPNYCH czekających na potwierdzenie klienta (po D-209 wiersz D-193 jest skorygowany, więc czeka 26). Sześć decyzji D-207 - D-212 to także ustalenia wykonawcy: 5 TWARDYCH i 1 WSTĘPNA (D-212). Razem czeka na klienta 27 pozycji.
 
 Skąd te liczby:
 
@@ -410,6 +427,7 @@ Skąd te liczby:
 | Budowa makiety na bazie danych 23.09.2026 | D-148 - D-157 | 10 |
 | Feedback klienta 29.09.2026 | D-158 - D-160 | 3 |
 | Panel decyzyjny i przegląd modelu 29.09.2026 | D-161 - D-206 | 46 |
+| Decyzje wykonawcy po przeglądzie makiety 29.09.2026 | D-207 - D-212 | 6 |
 
 Warsztat 04.09 przyniósł 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md). Runda budowy makiety nie odwróciła żadnej decyzji klienta, tylko rozstrzygnęła, gdzie ustalenia mają być egzekwowane.
 

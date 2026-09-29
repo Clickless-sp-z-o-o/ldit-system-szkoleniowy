@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Mapa zakładek</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="doc">
+
+  <div class="doc-head">
+    <div class="doc-kicker">Realizacja</div>
+    <h1 class="doc-title">Mapa zakładek</h1>
+    <p class="doc-lead">
+      Mapa zakładek systemu do ustalenia z klientem, zanim wykonawca zrobi screeny każdej zakładki do Miro. Dokument inwentaryzuje to, co jest w makiecie v2, wskazuje duplikaty i agregacje, które nie prowadzą do szczegółów (drill through), proponuje docelową mapę z połączeniami między zakładkami i zbiera 38 pytań do klienta (<a href="#z-01">Z-01</a> do <a href="#z-38">Z-38</a>). Klient odpowiada na nie w <a href="17-panel-decyzji.html" onclick="if(parent!==window){parent.docNav('17-panel-decyzji');return false}">panelu decyzyjnym</a> i pobiera podsumowanie.
+    </p>
+  </div>
+
+  <div class="callout">
+    <span class="ct">Wymaganie wykonawcy</span>
+    „Zastanowiłbym się nad liczbą zakładek i zakładek pomocniczych, bo wszystko co wyświetlamy w agregacji powinno nas też przekierowywać do szczegółów, takie drill through, teraz tego nie mam na makiecie, a powinno być. Pytania o zakładki bardzo szczegółowe, nie może być ich za dużo, powinny się łączyć między sobą, powinny przekierowywać jedna do drugiej.”
+  </div>
+
+  <div class="callout warn">
+    <span class="ct">Uwaga o nazewnictwie</span>
+    Nazwy dla użytkownika są ustalone i nienegocjowalne <span class="ref">D-55</span>: Zestawienia, Nabory, Projekt, Baza klientów, Administracja. Dwa pytania w tym dokumencie (<a href="#z-06">Z-06</a> i <a href="#z-07">Z-07</a>) dotyczą miejsc, w których dokumentacja i makieta same się rozjeżdżają. Nazw nie zmieniamy bez decyzji klienta.
+  </div>
+
+  <h2>Skrót</h2>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Miara</th><th>Dziś (makieta v2)</th><th>Propozycja</th></tr></thead>
+      <tbody>
+        <tr><td>Elementy nawigacji (menu, paski, zakładki wewnętrzne, lata)</td><td>51</td><td>45</td></tr>
+        <tr><td>Pozycje menu administratora LDIT</td><td>10</td><td>8</td></tr>
+        <tr><td>Poziomy zakładek</td><td>3 (menu, pasek modułu, zakładki wewnętrzne)</td><td>2 (menu, zakładka) plus karta rekordu</td></tr>
+        <tr><td>Miejsca ze statystykami</td><td>4</td><td>2, połączone linkami</td></tr>
+        <tr><td>Agregacje, z których da się przejść do szczegółów</td><td>3 działa i 18 częściowo z 90</td><td>wszystkie 90</td></tr>
+        <tr><td>Pytania do klienta</td><td></td><td>38</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Stan obecny</h2>
+  <p>Inwentaryzacja makiety v2 (18 ekranów w <code>makieta/strony/</code>, menu z tabeli <code>moduly</code> w <code>tools/sqlite-migracja.mjs</code>). Stan z 29.09.2026.</p>
+
+  <h3>Liczby</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Element</th><th>Liczba</th><th>Uwagi</th></tr></thead>
+      <tbody>
+        <tr><td>Pozycje menu (tabela <code>moduly</code>)</td><td>12</td><td>administrator widzi 10, pracownik LDIT 7, instytucja 4, handlowiec instytucji 1, klient 1</td></tr>
+        <tr><td>Podmenu Dofinansowań</td><td>„Wszystkie instytucje” plus po jednej pozycji na instytucję</td><td>u administratora do ok. 20 pozycji</td></tr>
+        <tr><td>Ekrany z paskiem zakładek modułu</td><td>11 ekranów w 5 grupach</td><td>11 różnych zakładek oraz 2 nazwy zastępcze na ekranie Terminów</td></tr>
+        <tr><td>Zakładki wewnętrzne</td><td>25 w 7 ekranach</td><td>Instytucje 5, Konfigurator 4, Administracja 4, Konta 4, Komunikacja 3, Rejestr 3, Terminy 2</td></tr>
+        <tr><td>Zakładki lat</td><td>3</td><td>2025, 2026, 2027 oraz „Nieprzypisane”, gdy są wnioski bez roku</td></tr>
+        <tr><td>Razem elementów nawigacji</td><td>51</td><td>12 + 11 + 25 + 3</td></tr>
+        <tr><td>Ekrany (pliki)</td><td>18</td><td>sześć z nich nie ma pozycji w menu i jest osiągalnych tylko z zakładek lub z rekordu</td></tr>
+        <tr><td>Widoki do przejścia w Miro</td><td>38</td><td>13 ekranów bez zakładek wewnętrznych (z trzema latami) plus 25 zakładek wewnętrznych</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Pozycje menu (12)</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Etykieta w menu</th><th>Ekran</th><th>Kto widzi</th><th>Pasek zakładek modułu</th><th>Zakładki wewnętrzne</th><th>Co pokazuje</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Dashboard</td><td>01-dashboard</td><td>administrator i pracownik (edycja), instytucja (podgląd)</td><td>Przegląd; Skuteczność i lejki</td><td>brak</td><td>4 kafelki operacyjne, 3 finansowe (admin), tabela „Wymaga działania” (5 kolejek), statusy wniosków</td></tr>
+        <tr><td>2</td><td>Dofinansowania (rozwija instytucje)</td><td>02-zestawienia</td><td>administrator, pracownik</td><td>Baza danych; Wnioski (n); Terminy szkoleń</td><td>lata: 2025; 2026; 2027; Nieprzypisane</td><td>tabela wniosków (14 kolumn), statusy kolorami, masowa zmiana statusów</td></tr>
+        <tr><td>3</td><td>Nabory</td><td>05-nabory</td><td>administrator, pracownik, instytucja (podgląd)</td><td>brak</td><td>brak</td><td>4 kafelki, tabela urzędów, 2 wykresy prognoz, oś 14 dni</td></tr>
+        <tr><td>4</td><td>Zadania i powiadomienia</td><td>18-zadania</td><td>administrator, pracownik</td><td>brak</td><td>brak (dwie sekcje na ekranie)</td><td>plan dnia, formularze do akceptacji</td></tr>
+        <tr><td>5</td><td>Instytucje szkoleniowe</td><td>06-instytucje</td><td>administrator (edycja), pracownik (podgląd)</td><td>Przegląd instytucji; Konfigurator warunków (admin)</td><td>Dane firmy; Katalog szkoleń; Szkoleniowcy; Osoby i konta; Korespondencja</td><td>kafelki instytucji, karta instytucji</td></tr>
+        <tr><td>6</td><td>Komunikacja</td><td>09-wysylka-maili</td><td>administrator, pracownik</td><td>brak</td><td>Biblioteka szablonów; Wysyłka; Automatyzacje i alerty</td><td>szablony, wysyłka z potwierdzeniem, reguły automatyczne</td></tr>
+        <tr><td>7</td><td>Administracja</td><td>08-administracja</td><td>administrator</td><td>Prowizje i faktury; Kalkulator prowizji (prototyp)</td><td>Prowizje; Faktury; Statystyki; Prowizje wewnętrzne</td><td>4 bloki prowizji, faktury, statystyki per instytucja, prowizje pracownicze i cele</td></tr>
+        <tr><td>8</td><td>Zgłoszenia</td><td>10-zgloszenia</td><td>administrator, pracownik</td><td>brak</td><td>brak</td><td>4 kafelki, lista incydentów</td></tr>
+        <tr><td>9</td><td>Ustawienia</td><td>11-konta-uprawnienia</td><td>administrator</td><td>Konta i role; Rejestr aktywności</td><td>Użytkownicy; Konfigurator ról; Macierz uprawnień; Przypisanie do instytucji</td><td>konta, role, uprawnienia</td></tr>
+        <tr><td>10</td><td>Nazwa własnej spółki (w makiecie „Moja instytucja”)</td><td>16-panel-is</td><td>instytucja (edycja), handlowiec instytucji (podgląd)</td><td>brak</td><td>brak (filtr chipami)</td><td>4 kafelki, klienci i projekty, terminy, katalog, szkoleniowcy, szablony, formularz</td></tr>
+        <tr><td>11</td><td>Terminy szkoleń</td><td>13-terminy</td><td>administrator, instytucja</td><td>Projekty; Oczekujące na nabór; Terminy szkoleń</td><td>Kalendarz; Lista terminów</td><td>4 kafelki, kalendarz, lista z uczestnikami</td></tr>
+        <tr><td>12</td><td>Mój wniosek</td><td>17-panel-klienta</td><td>klient (podgląd)</td><td>brak</td><td>brak</td><td>status, szkolenie, uczestnicy (etap IV)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Ekrany bez własnej pozycji w menu: karta projektu (03), Baza danych (04), Konfigurator warunków (07), Rejestr aktywności (12), Skuteczność i lejki (14), Kalkulator prowizji (15).</p>
+
+  <h3>Zakładki pomocnicze: paski modułu</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Grupa</th><th>Ekrany</th><th>Zakładki na pasku</th><th>Uwagi</th></tr></thead>
+      <tbody>
+        <tr><td>Dashboard</td><td>01, 14</td><td>Przegląd; Skuteczność i lejki</td><td>dwa ekrany pod jedną pozycją menu</td></tr>
+        <tr><td>Dofinansowania</td><td>02, 04</td><td>Baza danych; Wnioski (n); Terminy szkoleń</td><td>licznik „Wnioski (n)” liczy tylko rok bieżący</td></tr>
+        <tr><td>Dofinansowania (ekran Terminów)</td><td>13</td><td>Projekty (n); Oczekujące na nabór; Terminy szkoleń</td><td>te same trzy cele, ale pod innymi nazwami: „Projekty” to Wnioski, „Oczekujące na nabór” to Baza danych</td></tr>
+        <tr><td>Instytucje</td><td>06, 07</td><td>Przegląd instytucji; Konfigurator warunków (admin)</td><td>Konfigurator ma własne 4 zakładki wewnętrzne</td></tr>
+        <tr><td>Administracja</td><td>08, 15</td><td>Prowizje i faktury; Kalkulator prowizji (prototyp)</td><td>prototyp do walidacji stoi w stałym pasku</td></tr>
+        <tr><td>Ustawienia</td><td>11, 12</td><td>Konta i role; Rejestr aktywności</td><td>dwa ekrany, razem 7 zakładek wewnętrznych</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Zakładki wewnętrzne (25)</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Ekran</th><th>Zakładki</th><th>Co pokazują</th></tr></thead>
+      <tbody>
+        <tr><td>Instytucje (06)</td><td>Dane firmy; Katalog szkoleń; Szkoleniowcy; Osoby i konta; Korespondencja</td><td>dane i siedziba, szablony szkoleń z ceną, 2 do 4 szkoleniowców, osoby kontaktowe i konta, maile instytucji</td></tr>
+        <tr><td>Konfigurator (07)</td><td>Warunki prowizyjne; Wzór certyfikatu; Dane do faktury; Formularz zgłoszeniowy</td><td>progi i modele prowizji (admin), szablon certyfikatu, dane do faktury, formularz instytucji</td></tr>
+        <tr><td>Administracja (08)</td><td>Prowizje; Faktury; Statystyki; Prowizje wewnętrzne</td><td>podstawa fakturowania, lista i import faktur, statystyki per instytucja, prowizje pracownicze z celami</td></tr>
+        <tr><td>Komunikacja (09)</td><td>Biblioteka szablonów; Wysyłka; Automatyzacje i alerty</td><td>szablony maili, wysyłka, reguły automatyczne</td></tr>
+        <tr><td>Konta (11)</td><td>Użytkownicy; Konfigurator ról; Macierz uprawnień; Przypisanie do instytucji</td><td>konta, role z checkboxami, ta sama macierz do odczytu, przydział instytucji</td></tr>
+        <tr><td>Rejestr (12)</td><td>Rejestr zmian danych; Istotne zdarzenia; Log logowań</td><td>kto, co, kiedy zmienił; zdarzenia; logowania</td></tr>
+        <tr><td>Terminy (13)</td><td>Kalendarz; Lista terminów</td><td>ta sama lista terminów w dwóch formach</td></tr>
+        <tr><td>Wnioski (02), lata</td><td>2025; 2026; 2027; Nieprzypisane</td><td>ten sam układ tabeli, inny rok</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Duplikaty i zakładki, które pokazują to samo w innej formie</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Temat</th><th>Gdzie występuje</th><th>Problem</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Jeden ekran, cztery nazwy</td><td>menu „Dofinansowania”; tytuł „Zestawienie 2026”; zakładka „Wnioski”; pasek Terminów „Projekty”</td><td>zespół nie wie, czy to to samo miejsce <span class="ref">D-55</span></td></tr>
+        <tr><td>2</td><td>Dwa różne paski dla tych samych celów</td><td>ekrany 02 i 04 kontra 13</td><td>„Oczekujące na nabór” to Baza danych; różne etykiety, różna kolejność</td></tr>
+        <tr><td>3</td><td>Statystyki w czterech miejscach</td><td>Dashboard/Przegląd, Dashboard/Skuteczność, Administracja/Statystyki, panel instytucji</td><td>każde miejsce liczy definicję osobno</td></tr>
+        <tr><td>4</td><td>Skuteczność i złożone wnioski w pięciu miejscach</td><td>Dashboard (2 razy), Administracja/Statystyki, panel instytucji, „widok instytucji” w ekranie Skuteczność</td><td>ten sam procent w kilku miejscach, brak linków między nimi</td></tr>
+        <tr><td>5</td><td>Prowizja w pięciu miejscach</td><td>Administracja/Prowizje (4 bloki), Kalkulator, Konfigurator/Warunki, karta wniosku, kafelki na obu dashboardach</td><td>jedna liczba prowizji, wiele wejść</td></tr>
+        <tr><td>6</td><td>Terminy w trzech wejściach</td><td>pozycja menu, zakładka pod Dofinansowaniami, przycisk w panelu instytucji</td><td>pracownik ma zakładkę bez uprawnień do modułu</td></tr>
+        <tr><td>7</td><td>Wnioski w trzech formach</td><td>tabela Wnioski, rozwinięcie w Bazie danych, „Moi klienci i ich projekty” w panelu instytucji</td><td>brak przejść między formami</td></tr>
+        <tr><td>8</td><td>„Klienci z otwartym naborem” w trzech miejscach</td><td>Dashboard („do obdzwonienia”), Baza danych, Nabory („do obsłużenia”)</td><td>trzy definicje jednej liczby</td></tr>
+        <tr><td>9</td><td>Uprawnienia: konfigurator i macierz</td><td>Konta: Konfigurator ról oraz Macierz uprawnień</td><td>dwie zakładki tej samej macierzy, jedna do edycji, druga do odczytu</td></tr>
+        <tr><td>10</td><td>Przydział pracownik i instytucja</td><td>Konta/Przypisanie do instytucji; Administracja/Prowizje wewnętrzne („Przypisane instytucje”); Instytucje/Osoby i konta</td><td>trzy miejsca jednego powiązania</td></tr>
+        <tr><td>11</td><td>Korespondencja w trzech miejscach</td><td>karta wniosku, karta instytucji <span class="ref">D-52</span>, Komunikacja/Wysyłka</td><td>brak jednego miejsca na historię klienta (400 maili)</td></tr>
+        <tr><td>12</td><td>Alerty i zadania automatyczne</td><td>Komunikacja/Automatyzacje i alerty oraz Zadania i powiadomienia</td><td>ten sam mechanizm w dwóch modułach <span class="ref">D-140</span></td></tr>
+        <tr><td>13</td><td>Katalog szkoleń</td><td>Instytucje/Katalog, panel instytucji „Katalog moich szkoleń”, „Moje szkolenia” w statystykach</td><td>trzy widoki jednej listy</td></tr>
+        <tr><td>14</td><td>Formularz zgłoszeniowy</td><td>Konfigurator/Formularz, panel instytucji „Mój formularz”, Zadania/Powiadomienia (kolejka)</td><td>trzy miejsca tej samej rzeczy</td></tr>
+        <tr><td>15</td><td>Cele i premie</td><td>Administracja/Prowizje wewnętrzne</td><td>dokumentacja umieszcza cele na dashboardzie, a pracownik ich w makiecie nie widzi <span class="ref">D-23</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Rozjazdy z dokumentacją i słownikiem</h3>
+  <ol>
+    <li><b>„Komunikacja”</b> w menu makiety, <b>„Wysyłka maili”</b> w docs/11.</li>
+    <li><b>„Ustawienia”</b> w makiecie, w docs/11 dwie pozycje: „Konta i uprawnienia” i „Rejestr aktywności”.</li>
+    <li><b>Dofinansowania i Zestawienia:</b> docs/11 ma dwie pozycje menu, makieta jedną.</li>
+    <li><b>„Nabory”</b>: słownik i docs/11 zapisują „Wnioski = Nabory (główne okno robocze)”, a makieta nazywa „Nabory” listę urzędów <span class="ref">D-109</span>.</li>
+    <li><b>„Baza klientów”</b> w słowniku, <b>„Baza danych”</b> w <span class="ref">D-128</span> i makiecie.</li>
+    <li><b>Zadania i powiadomienia:</b> <span class="ref">D-195</span> mówi o dwóch modułach, makieta ma jedną pozycję.</li>
+    <li><b>Instytucja:</b> <span class="ref">D-76</span> mówi o jednej zakładce z nazwą spółki, makieta daje instytucji 4 pozycje menu (Dashboard, nazwa spółki, Terminy szkoleń, Nabory).</li>
+    <li><b>Nabory dla instytucji:</b> macierz uprawnień daje instytucji podgląd Naborów, a strona pisze, że moduł jest tylko dla ról LDIT (<span class="ref p">P-34</span>, <span class="ref">D-91</span>).</li>
+    <li><b>Cele zespołu:</b> docs/05 zapisuje je na dashboardzie, makieta w Administracji (tylko admin).</li>
+    <li><b>Karta klienta:</b> <span class="ref">D-52</span> i <span class="ref">D-54</span> zakładają kartę klienta, makieta jej nie ma.</li>
+  </ol>
+
+  <h3>Usterki nawigacji do poprawy niezależnie od odpowiedzi klienta</h3>
+  <ol>
+    <li>Nabory, przycisk „Pokaż klientów”: link do Bazy z parametrem <code>pup</code>, którego Baza nie czyta, więc pokazuje wszystkich klientów.</li>
+    <li>Wyszukiwarka globalna: przekazuje <code>q</code> do Bazy, która go nie czyta (czyta go tylko lista Wnioski).</li>
+    <li>Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek w pasku górnym.</li>
+    <li>Pracownik LDIT ma na pasku Dofinansowań zakładkę „Terminy szkoleń”, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień.</li>
+    <li>Instytucja ma dostęp do Naborów mimo opisu strony (tylko role LDIT).</li>
+    <li>Dashboard: „Faktury po terminie” otwiera Prowizje, nie Faktury.</li>
+    <li>Karta wniosku: okruszek „Zestawienia” wraca do domyślnego roku bez filtrów i pozycji na liście.</li>
+    <li>Licznik „Wnioski (n)” w pasku zakładek liczy tylko rok bieżący i nie reaguje na filtry.</li>
+    <li>Kalkulator prowizji (prototyp) stoi w produkcyjnym pasku Administracji.</li>
+    <li>Administracja: przycisk „Nadpisz” przy projekcie, choć <span class="ref">D-138</span> przenosi nadpisanie na kartę wniosku.</li>
+    <li>Licznik wniosków do akceptacji („kółko w prawym górnym rogu” z <span class="ref">D-105</span> i <span class="ref">D-140</span>) nie istnieje w powłoce makiety.</li>
+    <li>Zgłoszenia: przycisk „Otwórz kartę podmiotu” nie ma celu.</li>
+  </ol>
+
+  <h2>Mapa agregacji i drill through</h2>
+  <p>Zasada wykonawcy: <b>każda liczba, wykres i kafelek prowadzi do rekordów, z których się składa</b>. Tabela wymienia wszystkie agregacje makiety v2 (dashboard, statystyki, Administracja, panel instytucji, liczniki w zakładkach i w menu), miejsce docelowe i filtr. Nazwy parametrów filtrów: patrz słownik w sekcji o zasadach nawigacji. Klik ma otwierać listę <b>poza dashboardem</b>, bo dashboard nie zawiera rozpisek klientów <span class="ref">D-114</span>, a licznik na liście musi zgadzać się z liczbą z kafelka.</p>
+  <p>Stan: <b>działa</b> (klik prowadzi tam, gdzie trzeba), <b>częściowo</b> (link jest, ale bez filtra albo z utratą stanu), <b>brak</b> (donikąd).</p>
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Ekran</th><th>Agregacja</th><th>Dziś</th><th>Dokąd powinien prowadzić (ekran i filtr)</th><th>Stan</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Dashboard/Przegląd</td><td>Kafelek „Klienci do obdzwonienia”</td><td>Nie jest klikalny</td><td>Baza klientów: nabor=ogloszony, sortowanie po końcu naboru rosnąco</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>2</td><td>Dashboard/Przegląd</td><td>Kafelek „Wnioski złożone” i różnica rok do roku</td><td>Nie jest klikalny</td><td>Wnioski: rok=bieżący, status złożone (czekamy, pozytywna, negatywna); różnica prowadzi do Skuteczność i lejki, porównanie lat</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>3</td><td>Dashboard/Przegląd</td><td>Kafelek „Decyzje pozytywne” i procent skuteczności</td><td>Nie jest klikalny</td><td>Wnioski: status=pozytywna; procent prowadzi do Skuteczność i lejki</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>4</td><td>Dashboard/Przegląd</td><td>Kafelek „Oczekuje na rozpatrzenie” i kwota</td><td>Nie jest klikalny</td><td>Wnioski: status=czekamy</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>5</td><td>Dashboard/Przegląd</td><td>Kafelek „Wartość wniosków” (admin)</td><td>Nie jest klikalny</td><td>Wnioski: rok=bieżący, sortowanie po wartości malejąco</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>6</td><td>Dashboard/Przegląd</td><td>Kafelek „Przyznane dofinansowania” (admin)</td><td>Nie jest klikalny</td><td>Wnioski: status=pozytywna, sortowanie po kolumnie Przyznano</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>7</td><td>Dashboard/Przegląd</td><td>Kafelek „Prowizja” (admin)</td><td>Link do Administracji, bez okresu</td><td>Administracja/Prowizje: okres=bieżący rok</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>8</td><td>Dashboard/Przegląd</td><td>Wymaga działania: formularze do akceptacji</td><td>Przycisk Otwórz otwiera Zadania bez zawężenia</td><td>Zadania/Powiadomienia (zakładka), oraz dzwonek w pasku górnym</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>9</td><td>Dashboard/Przegląd</td><td>Wymaga działania: nabory kończące się w tygodniu</td><td>Przycisk Otwórz otwiera Nabory bez filtra</td><td>Nabory/Lista: nabor=ogloszony, dni=7</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>10</td><td>Dashboard/Przegląd</td><td>Wymaga działania: szkolenia w ciągu 8 dni</td><td>Przycisk Otwórz otwiera Terminy bez filtra</td><td>Terminy: termin=zaplanowany, dni=8</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>11</td><td>Dashboard/Przegląd</td><td>Wymaga działania: faktury po terminie</td><td>Przycisk Otwórz otwiera pierwszą zakładkę Administracji (Prowizje), nie Faktury</td><td>Administracja/Faktury: status=po terminie</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>12</td><td>Dashboard/Przegląd</td><td>Wymaga działania: projekty pozytywne nierozliczone</td><td>Przycisk Otwórz otwiera Wnioski bez filtra</td><td>Wnioski: status=pozytywna, rozl=oczekuje</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>13</td><td>Dashboard/Przegląd</td><td>Statusy wniosków (sześć wierszy z licznikami)</td><td>Nie są klikalne</td><td>Wnioski: status=pozytywna, negatywna, czekamy, niezlozony, nw, rezygnacja</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>14</td><td>Dashboard/Skuteczność</td><td>Kafelek „Projekty” (w tym złożone)</td><td>Nie jest klikalny</td><td>Wnioski: rok, is (z filtra ekranu)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>15</td><td>Dashboard/Skuteczność</td><td>Kafelek „Skuteczność” (pozytywne, negatywne)</td><td>Nie jest klikalny</td><td>Wnioski: status=pozytywna albo negatywna, is</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>16</td><td>Dashboard/Skuteczność</td><td>Kafelek „Przyznane dofinansowania”</td><td>Nie jest klikalny</td><td>Wnioski: status=pozytywna, sortowanie po kolumnie Przyznano</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>17</td><td>Dashboard/Skuteczność</td><td>Kafelek „Prowizja naliczona” (admin)</td><td>Link do Administracji, bez okresu i instytucji</td><td>Administracja/Prowizje: okres, is</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>18</td><td>Dashboard/Skuteczność</td><td>Wykres „Wnioski w kolejnych miesiącach” (słupki wg decyzji)</td><td>Słupki nie są klikalne</td><td>Wnioski: mies=RRRR-MM i status zgodny z kolorem słupka</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>19</td><td>Dashboard/Skuteczność</td><td>Lejek osób w projektach (leady, BUR, wnioski, szkolenia)</td><td>Etapy nie są klikalne</td><td>Etap leadów: Baza klientów; wnioski: Wnioski; szkolenia: Terminy termin=odbyty</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>20</td><td>Dashboard/Skuteczność</td><td>Skuteczność wg wielkości firmy</td><td>Nie jest klikalna</td><td>Wnioski: wielkosc=mikro, maly, sredni, duzy, inny</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>21</td><td>Dashboard/Skuteczność</td><td>Najczęstsze urzędy (liczba wniosków, skuteczność)</td><td>Nie jest klikalne</td><td>Wnioski: pup=... (scenariusz masowej zmiany statusów); nazwa urzędu prowadzi do Nabory</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>22</td><td>Dashboard/Skuteczność</td><td>Kontrola kompletności danych (liczniki braków)</td><td>Nie jest klikalna</td><td>Wnioski albo Baza klientów: brak=pole (np. brak NIP, brak urzędu)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>23</td><td>Dashboard/Skuteczność</td><td>Najpopularniejsze szkolenia (projekty, uczestnicy, wartość)</td><td>Nie jest klikalne</td><td>Wnioski: szkolenie=...; nazwa instytucji prowadzi do karty instytucji</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>24</td><td>Dashboard/Skuteczność</td><td>Widok instytucji: „Szkolenia zrealizowane”, „Łączna wartość”, „Skuteczność moich klientów”</td><td>Nie są klikalne</td><td>Terminy: termin=odbyty; Wnioski: status (zakres tylko własne wiersze)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>25</td><td>Dashboard/Skuteczność</td><td>Widok instytucji: tabela „Moje szkolenia”</td><td>Nie jest klikalna</td><td>Wnioski (własne): szkolenie=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>26</td><td>Dofinansowania/Wnioski</td><td>Zakładki lat z licznikami i „Nieprzypisane”</td><td>Przełączają rok w tym samym ekranie</td><td>Bez zmian, rok zapisany w adresie (rok=RRRR)</td><td><span class="pill tw">działa</span></td></tr>
+        <tr><td>27</td><td>Dofinansowania/Wnioski</td><td>Podmenu instytucji pod „Dofinansowania”</td><td>Filtruje ekran do jednej instytucji (parametr is)</td><td>Bez zmian, plus zapamiętanie przy powrocie</td><td><span class="pill tw">działa</span></td></tr>
+        <tr><td>28</td><td>Dofinansowania/Wnioski</td><td>Nazwy w wierszu: klient, instytucja, urząd, szkolenie</td><td>Zwykły tekst</td><td>Klient: karta klienta; instytucja: karta instytucji (LDIT); urząd: Nabory; szkolenie: Terminy z filtrem</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>29</td><td>Dofinansowania/Wnioski</td><td>Kolumna „Osób” (zakwalifikowani / zgłoszeni)</td><td>Zwykły tekst</td><td>Karta wniosku, zakładka Uczestnicy</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>30</td><td>Dofinansowania/Wnioski</td><td>Kolumna „Rozliczenie” (Zafakturowany, Rozliczone)</td><td>Znacznik bez linku</td><td>Administracja/Faktury: faktura=numer</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>31</td><td>Dofinansowania/Wnioski</td><td>Przycisk „Otwórz” (karta wniosku)</td><td>Otwiera kartę; powrót z karty gubi filtry i rok</td><td>Karta wniosku i powrót z zachowaniem filtra, sortowania, roku i pozycji</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>32</td><td>Dofinansowania/Baza klientów</td><td>Kafelek „Klienci z otwartym naborem”</td><td>Nie jest klikalny (jest osobny filtr Nabór w pasku)</td><td>Ten ekran: nabor=ogloszony</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>33</td><td>Dofinansowania/Baza klientów</td><td>Kafelek „Czekają na nabór prognozowany”</td><td>Nie jest klikalny</td><td>Ten ekran: nabor=kontakt albo brak</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>34</td><td>Dofinansowania/Baza klientów</td><td>Kafelek „Bez naboru w tym momencie”</td><td>Nie jest klikalny</td><td>Ten ekran: nabor=po albo brak danych</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>35</td><td>Dofinansowania/Baza klientów</td><td>Kafelek „Klienci w bazie łącznie”</td><td>Nie jest klikalny</td><td>Ten ekran bez filtrów</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>36</td><td>Dofinansowania/Baza klientów</td><td>Kolumna „Wnioski” (liczba) i plus</td><td>Plus rozwija wnioski w wierszu, otwórz prowadzi do karty</td><td>Bez zmian, plus link do Wnioski: klient=...</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>37</td><td>Dofinansowania/Baza klientów</td><td>Kolumny „Status naboru”, „Koniec naboru”, „Urząd pracy”</td><td>Zwykły tekst</td><td>Nabory/Lista: wiersz urzędu klienta</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>38</td><td>Dofinansowania/Baza klientów</td><td>Kolumny „Klient” i „Instytucja”</td><td>Zwykły tekst (Edytuj otwiera formularz)</td><td>Karta klienta; karta instytucji (LDIT)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>39</td><td>Dofinansowania/Baza klientów</td><td>Licznik „Wnioski (n)” w pasku zakładek</td><td>Jest zakładką, liczy tylko bieżący rok, nie reaguje na filtry</td><td>Wnioski z tymi samymi filtrami co lista klientów</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>40</td><td>Dofinansowania/Terminy</td><td>Kafelki „Terminy w miesiącu”, „Terminy wolne”, „Uczestnicy przypisani”, „Terminy w bazie”</td><td>Nie są klikalne</td><td>Terminy: mies=, termin=wolny, is=</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>41</td><td>Dofinansowania/Terminy</td><td>Termin w kalendarzu i kolumna „Zapisani”</td><td>Pokazują listę uczestników; uczestnik bez linku</td><td>Uczestnik prowadzi do karty wniosku (zakładka Uczestnicy)</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>42</td><td>Karta wniosku</td><td>Okruszek „Zestawienia, Projekt”</td><td>Wraca do listy bez filtrów, roku i pozycji</td><td>Lista Wnioski w poprzednim stanie (filtry, sortowanie, rok, pozycja)</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>43</td><td>Karta wniosku</td><td>Dane projektu: klient, instytucja, urząd, szkolenie</td><td>Zwykły tekst</td><td>Karta klienta; karta instytucji (LDIT); Nabory (urząd); Terminy (szkolenie)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>44</td><td>Karta wniosku</td><td>Blok „Prowizja LDIT” (admin)</td><td>Bez linku</td><td>Administracja/Prowizje: wiersz tego projektu</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>45</td><td>Karta wniosku</td><td>Blok „Przebieg” (oś etapów)</td><td>Bez linku</td><td>Rejestr aktywności: filtr rekordu (admin)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>46</td><td>Karta wniosku</td><td>Blok „Korespondencja i notatki”</td><td>Bez linku</td><td>Karta klienta, zakładka Korespondencja; akcja „Wyślij z szablonu”</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>47</td><td>Nabory</td><td>Kafelek „Nabory ogłoszone teraz” i „klientów do obsłużenia”</td><td>Nie jest klikalny</td><td>Nabory/Lista: status=ogloszony; liczba klientów prowadzi do Baza klientów: nabor=ogloszony</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>48</td><td>Nabory</td><td>Kafelek „Urzędy w trakcie kontaktu”</td><td>Nie jest klikalny</td><td>Nabory/Lista: status=kontakt</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>49</td><td>Nabory</td><td>Kafelek „Nabory prognozowane”</td><td>Nie jest klikalny</td><td>Nabory/Lista: status=kontakt albo brak, sortowanie po prognozie</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>50</td><td>Nabory</td><td>Kafelek „Klientów przypisanych do urzędów”</td><td>Nie jest klikalny</td><td>Baza klientów: urzędy z naborem</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>51</td><td>Nabory</td><td>Kolumna „Klientów czeka” i przycisk „Pokaż klientów”</td><td>Link do Bazy z parametrem pup, którego Baza nie czyta: pokazuje wszystkich klientów</td><td>Baza klientów: pup=...</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>52</td><td>Nabory</td><td>Wykres „Prognozy na kolejne miesiące”</td><td>Słupki nie są klikalne</td><td>Nabory/Lista: prognoza=RRRR-MM</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>53</td><td>Nabory</td><td>Wykres „Klienci czekający wg miesiąca”</td><td>Słupki nie są klikalne</td><td>Baza klientów: urzędy z prognozą w danym miesiącu</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>54</td><td>Nabory</td><td>Oś czasu naborów kończących się w 14 dni</td><td>Tekst bez linków</td><td>Nabory/Lista: wiersz urzędu; Baza klientów: pup=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>55</td><td>Instytucje</td><td>Kolumna „Realizacje 2026” w katalogu szkoleń</td><td>Zwykły tekst</td><td>Wnioski: szkolenie=..., rok=2026, is=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>56</td><td>Instytucje</td><td>Kafelek instytucji</td><td>Otwiera szczegół pod listą</td><td>Bez zmian; docelowo karta instytucji z zakładkami</td><td><span class="pill tw">działa</span></td></tr>
+        <tr><td>57</td><td>Zadania</td><td>Kafelki „Zadania na dziś” i „Zaległe”</td><td>Nie są klikalne</td><td>Ten ekran: lista zadań z filtrem termin=dzis albo zalegle</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>58</td><td>Zadania</td><td>Kafelek „Wnioski do akceptacji”</td><td>Nie jest klikalny</td><td>Zakładka Powiadomienia (formularze oczekujące)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>59</td><td>Zadania</td><td>Zadanie i powiadomienie w wierszu</td><td>Opis wniosku jako tekst</td><td>Zadanie: karta wniosku; zaakceptowany formularz: karta klienta</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>60</td><td>Zgłoszenia</td><td>Kafelki „Zgłoszenia otwarte”, „O wysokiej wadze”, „Dotyczące instytucji”, „Dotyczące klientów”</td><td>Nie są klikalne</td><td>Ten ekran: waga=wysoka, podmiot=instytucja albo klient</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>61</td><td>Zgłoszenia</td><td>Przycisk „Otwórz kartę podmiotu”</td><td>Przycisk bez celu (nie ma karty klienta)</td><td>Karta klienta albo karta instytucji</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>62</td><td>Komunikacja</td><td>„Użyć” przy szablonie</td><td>Nie jest klikalne</td><td>Historia wysyłek: szablon=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>63</td><td>Administracja/Prowizje</td><td>Kafelek „Obrót objęty prowizją”</td><td>Nie jest klikalny</td><td>Wnioski: status=pozytywna, okres=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>64</td><td>Administracja/Prowizje</td><td>Kafelek „Prowizja naliczona”</td><td>Nie jest klikalny</td><td>Tabela per instytucja na tym ekranie</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>65</td><td>Administracja/Prowizje</td><td>Kafelek „Prowizja rozliczona”</td><td>Nie jest klikalny</td><td>Wnioski: rozl=rozliczone, okres=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>66</td><td>Administracja/Prowizje</td><td>Kafelek „Do zafakturowania”</td><td>Nie jest klikalny</td><td>Wnioski: status=pozytywna, rozl=oczekuje, okres=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>67</td><td>Administracja/Prowizje</td><td>Wiersz instytucji w tabeli prowizji</td><td>Przycisk otwiera rozwinięcie projektów na tym ekranie</td><td>Bez zmian; nazwa prowadzi do karty instytucji, model do zakładki Warunki</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>68</td><td>Administracja/Prowizje</td><td>Kolumna „Projekty” (liczba) w tabeli prowizji</td><td>Zwykły tekst</td><td>Wnioski: is=..., status=pozytywna, okres=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>69</td><td>Administracja/Prowizje</td><td>Komórka miesiąc x instytucja w dashboardzie prowizji</td><td>Nie jest klikalna</td><td>Rozwinięcie projektów: is=..., mies=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>70</td><td>Administracja/Prowizje</td><td>Wiersz projektu w rozwinięciu instytucji</td><td>Bez linku do karty (jest przycisk „Nadpisz”)</td><td>Karta wniosku, zakładka Finanse i dane</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>71</td><td>Administracja/Prowizje</td><td>Kolumny „Terminy” i „Osoby” w Przewidywanej prowizji</td><td>Zwykły tekst</td><td>Terminy: is=..., okres=..., termin=zaplanowany</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>72</td><td>Administracja/Faktury</td><td>Kafelki „Wystawione”, „Opłacone”, „Oczekujące”, „Po terminie”</td><td>Nie są klikalne (jest osobny filtr statusu)</td><td>Ten ekran: status=oplacona, oczekuje, po terminie</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>73</td><td>Administracja/Faktury</td><td>Numer faktury, „Projekty” (liczba), instytucja</td><td>Zwykły tekst</td><td>Podgląd PDF; Wnioski: faktura=numer; karta instytucji</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>74</td><td>Administracja/Statystyki</td><td>Kafelki „Wnioski złożone”, „Skuteczność zbiorcza”, „Obrót”, „Przychód LDIT”</td><td>Nie są klikalne</td><td>Wnioski z filtrem; Administracja/Prowizje</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>75</td><td>Administracja/Statystyki</td><td>Komórki „Złożone”, „Pozytywne”, „Odrzucone”, „Rezygnacje” per instytucja</td><td>Nie są klikalne</td><td>Wnioski: is=..., status=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>76</td><td>Administracja/Prowizje wewnętrzne</td><td>Wnioski złożone i wartość per pracownik</td><td>Nie są klikalne</td><td>Wnioski: opiekun=..., status złożone</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>77</td><td>Administracja/Prowizje wewnętrzne</td><td>Kolumna „Przypisane instytucje”</td><td>Zwykły tekst</td><td>Ustawienia/Użytkownicy: instytucje pracownika</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>78</td><td>Administracja/Prowizje wewnętrzne</td><td>Pasek postępu w Celach i premiach</td><td>Nie jest klikalny</td><td>Wnioski z filtrem odpowiadającym definicji celu</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>79</td><td>Panel instytucji</td><td>Kafelek „Moi klienci”</td><td>Nie jest klikalny</td><td>Zakładka Klienci i projekty (ta sama tabela)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>80</td><td>Panel instytucji</td><td>Kafelki „Wnioski złożone” i „Decyzje pozytywne”</td><td>Nie są klikalne (jest osobny filtr chipami)</td><td>Ta sama tabela z ustawionym chipem statusu</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>81</td><td>Panel instytucji</td><td>Kafelek „Szkolenia zrealizowane”</td><td>Nie jest klikalny</td><td>Terminy: termin=odbyty (tylko własne)</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>82</td><td>Panel instytucji</td><td>Tabela klientów: klient i termin szkolenia</td><td>Zwykły tekst, bez przycisku Otwórz</td><td>Karta projektu (podgląd bez prowizji); Terminy: wiersz terminu</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>83</td><td>Panel instytucji</td><td>„Moje terminy” i przyciski „Terminy szkoleń”</td><td>Link do Terminów bez filtra</td><td>Terminy: termin=zaplanowany</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>84</td><td>Panel instytucji</td><td>Kolumna „Projekty” w katalogu szkoleń</td><td>Zwykły tekst</td><td>Tabela klientów z filtrem szkolenie=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>85</td><td>Ustawienia/Użytkownicy</td><td>Kolumny „Instytucja” i „Ostatnie logowanie”</td><td>Zwykły tekst</td><td>Karta instytucji; Rejestr: log logowań, użytkownik=...</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>86</td><td>Ustawienia/Użytkownicy</td><td>Przycisk „Historia zmian w rejestrze aktywności”</td><td>Otwiera Rejestr bez filtra</td><td>Rejestr aktywności: użytkownik=...</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>87</td><td>Ustawienia/Rejestr aktywności</td><td>Wpis rejestru (rekord, którego dotyczy zmiana)</td><td>Zwykły tekst</td><td>Karta wniosku albo karta klienta</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>88</td><td>Powłoka</td><td>Licznik wniosków do akceptacji (dzwonek w prawym górnym rogu)</td><td>Nie istnieje w powłoce makiety</td><td>Zadania/Powiadomienia</td><td><span class="pill od">brak</span></td></tr>
+        <tr><td>89</td><td>Powłoka</td><td>Wyszukiwarka globalna (Enter)</td><td>Otwiera Bazę klientów z parametrem q, którego Baza nie czyta</td><td>Ekran wyników: klienci, projekty, urzędy, instytucje</td><td><span class="pill ws">częściowo</span></td></tr>
+        <tr><td>90</td><td>Powłoka</td><td>Okruszek w pasku górnym</td><td>Pokazuje nazwę modułu; nie zmienia się po linkach w ekranie</td><td>Moduł, zakładka, rekord, klikalne</td><td><span class="pill ws">częściowo</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Podsumowanie: z 90 agregacji <b>69 nie prowadzi donikąd</b>, 18 prowadzi częściowo (link bez filtra albo z utratą stanu), a tylko 3 działają jak trzeba.</p>
+
+  <h2>Propozycja mapy docelowej</h2>
+  <p>Założenia: LDIT do 8 pozycji menu (pracownik do 6), instytucja jedna pozycja z czterema zakładkami <span class="ref">D-76</span>, w module jeden pasek zakładek nie dłuższy niż 4, karta rekordu do 4 zakładek. Nazwy bez zmian <span class="ref">D-55</span>. Propozycja zależy od odpowiedzi klienta na pytania z części „Pytania do klienta”: rekomendowane warianty są tu przyjęte jako założenie robocze.</p>
+
+  <h3>Menu i zakładki</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>#</th><th>Pozycja menu</th><th>Zakładki (max 4)</th><th>Kto</th><th>Zastępuje</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>Dashboard</b></td><td>Przegląd; Skuteczność i lejki</td><td>administrator, pracownik (wariant bez finansów)</td><td>ekrany 01 i 14</td></tr>
+        <tr><td>2</td><td><b>Dofinansowania</b> (rozwija: Wszystkie instytucje i lista)</td><td>Wnioski (lata jako arkusze); Baza klientów; Terminy szkoleń</td><td>administrator, pracownik</td><td>ekrany 02, 04, 13</td></tr>
+        <tr><td>3</td><td><b>Nabory</b></td><td>Lista; Prognozy</td><td>administrator, pracownik</td><td>ekran 05</td></tr>
+        <tr><td>4</td><td><b>Zadania</b></td><td>Plan dnia; Powiadomienia</td><td>administrator, pracownik</td><td>ekran 18 oraz dzwonek w pasku górnym</td></tr>
+        <tr><td>5</td><td><b>Instytucje szkoleniowe</b></td><td>lista instytucji; karta instytucji: Dane i osoby; Katalog i szkoleniowcy; Korespondencja; Warunki (tylko admin)</td><td>administrator (edycja), pracownik (podgląd, bez Warunków)</td><td>ekrany 06 i 07, Kalkulator jako podgląd w Warunkach</td></tr>
+        <tr><td>6</td><td><b>Zgłoszenia</b></td><td>brak</td><td>administrator, pracownik</td><td>ekran 10</td></tr>
+        <tr><td>7</td><td><b>Administracja</b></td><td>Prowizje; Faktury; Statystyki; Prowizje wewnętrzne i cele</td><td>administrator</td><td>ekran 08</td></tr>
+        <tr><td>8</td><td><b>Ustawienia</b></td><td>Użytkownicy; Role i uprawnienia; Szablony maili; Rejestr aktywności</td><td>administrator</td><td>ekrany 11, 12 i szablony z 09</td></tr>
+        <tr><td>IS</td><td><b>Nazwa własnej spółki</b></td><td>Klienci i projekty; Terminy szkoleń; Katalog i zespół; Formularz i maile</td><td>instytucja (edycja), handlowiec instytucji (odczyt klientów bez kwot <span class="ref">D-75</span>)</td><td>ekrany 16 i 13</td></tr>
+        <tr><td>K</td><td><b>Mój wniosek</b></td><td>brak</td><td>klient (etap IV)</td><td>ekran 17</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Karty rekordów są osobnymi ekranami, nie pozycjami menu: <b>karta wniosku</b> (Finanse i dane; Uczestnicy; Korespondencja i notatki; Przebieg i zadania), <b>karta klienta</b> (Dane i kontakty; Projekty; Korespondencja i notatki, nowa) oraz <b>ekran wyników wyszukiwania</b> (nowy). W tym wariancie „Wysyłka maili” nie jest osobną pozycją w menu. Jeśli klient wybierze inaczej (pytanie o Wysyłkę maili, <a href="#z-19">Z-19</a>), pozycji jest 9.</p>
+
+  <h3>Liczby przed i po</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Miara</th><th>Dziś</th><th>Propozycja</th></tr></thead>
+      <tbody>
+        <tr><td>Pozycje menu administratora</td><td>10</td><td>8</td></tr>
+        <tr><td>Pozycje menu pracownika</td><td>7</td><td>6</td></tr>
+        <tr><td>Pozycje menu instytucji</td><td>4</td><td>1 i 4 zakładki</td></tr>
+        <tr><td>Ekrany z paskiem zakładek</td><td>11 (w 5 grupach)</td><td>6 modułów z jednym paskiem: Dashboard, Dofinansowania, Nabory, Zadania, Administracja, Ustawienia</td></tr>
+        <tr><td>Zakładki wewnętrzne</td><td>25</td><td>11, wyłącznie w kartach rekordów (wniosku 4, klienta 3, instytucji 4)</td></tr>
+        <tr><td>Największa liczba zakładek w module</td><td>9 (Instytucje)</td><td>4</td></tr>
+        <tr><td>Poziomy zakładek</td><td>3</td><td>2 plus karta rekordu</td></tr>
+        <tr><td>Elementy nawigacji razem</td><td>51</td><td>45 (LDIT 39, instytucja 5, klient 1)</td></tr>
+        <tr><td>Widoki do przejścia w Miro</td><td>38</td><td>37 (LDIT 32, instytucja 4, klient 1)</td></tr>
+        <tr><td>Miejsca ze statystykami</td><td>4</td><td>2 (ilościowe w Dashboardzie, kwotowe w Administracji), linki między nimi</td></tr>
+        <tr><td>Miejsca, w których liczy się prowizję</td><td>5</td><td>3 (Administracja/Prowizje, karta wniosku, Warunki instytucji); kafelki tylko jako linki</td></tr>
+        <tr><td>Agregacje z drill through</td><td>3 z 90</td><td>wszystkie</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Liczba widoków nie spada radykalnie, bo w miejsce zakładek wewnętrznych w Instytucjach i długich ekranów pojawiają się karty klienta i wniosku z zakładkami. Zmienia się to, że każdy widok ma jedno miejsce w mapie, a liczby prowadzą do szczegółów.</p>
+
+  <h3>Diagram nawigacji LDIT</h3>
+  <p>Strzałki to drill through: kliknięcie w liczbę, nazwę albo przycisk na ekranie źródłowym otwiera ekran docelowy z ustawionym filtrem.</p>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart LR
+  SZ["Wyszukiwarka globalna<br/>NIP, nazwa, PUP"]
+  DZW["Dzwonek w pasku górnym<br/>licznik powiadomień"]
+
+  subgraph M1["1. Dashboard"]
+    DASH["Przegląd / Skuteczność i lejki"]
+  end
+  subgraph M2["2. Dofinansowania"]
+    DOFW["Wnioski<br/>lata jako arkusze"]
+    DOFB["Baza klientów"]
+    DOFT["Terminy szkoleń"]
+  end
+  subgraph M3["3. Nabory"]
+    NAB["Lista / Prognozy"]
+  end
+  subgraph M4["4. Zadania"]
+    ZAD["Plan dnia / Powiadomienia"]
+  end
+  subgraph M5["5. Instytucje szkoleniowe"]
+    INS["Lista instytucji"]
+    KI["Karta instytucji<br/>4 zakładki"]
+  end
+  ZGL["6. Zgłoszenia"]
+  subgraph M7["7. Administracja (admin)"]
+    ADM["Prowizje / Faktury / Statystyki / Wewnętrzne"]
+  end
+  UST["8. Ustawienia (admin)<br/>Użytkownicy / Role / Szablony / Rejestr"]
+  subgraph REK["Karty rekordów"]
+    WN["Karta wniosku<br/>4 zakładki"]
+    KL["Karta klienta<br/>3 zakładki"]
+  end
+
+  DASH -->|"status, rok, instytucja"| DOFW
+  DASH -->|"nabór trwa"| DOFB
+  DASH -->|"nabory do 7 dni"| NAB
+  DASH -->|"szkolenia do 8 dni"| DOFT
+  DASH -->|"prowizja, faktury po terminie"| ADM
+  DASH -->|"formularze"| ZAD
+  DOFW -->|"Otwórz projekt"| WN
+  DOFW -->|"klient"| KL
+  DOFB -->|"klient i jego wnioski"| KL
+  DOFB -->|"status naboru, urząd"| NAB
+  NAB -->|"Pokaż klientów"| DOFB
+  WN -->|"klient"| KL
+  KL -->|"projekty"| DOFW
+  WN -->|"instytucja"| KI
+  WN -->|"urząd"| NAB
+  WN -->|"termin"| DOFT
+  DOFT -->|"zapisani"| WN
+  WN -->|"prowizja, faktura"| ADM
+  ADM -->|"projekt, faktura"| WN
+  ADM -->|"liczba projektów"| DOFW
+  INS --> KI
+  KI -->|"projekty i terminy instytucji"| DOFW
+  ZAD -->|"zadanie"| WN
+  ZAD -->|"zaakceptowany formularz"| KL
+  ZGL -->|"podmiot"| KL
+  ZGL -->|"podmiot"| KI
+  KL -->|"znacznik zgłoszeń"| ZGL
+  WN -->|"Historia zmian"| UST
+  UST -->|"instytucje użytkownika"| KI
+  SZ --> KL
+  SZ --> WN
+  SZ --> NAB
+  DZW --> ZAD
+
+  style ADM fill:#fde68a
+  style UST fill:#fde68a
+</pre>
+<!-- diagram:do -->
+  <p>Żółte pozycje widzi wyłącznie administrator.</p>
+
+  <h3>Diagram nawigacji instytucji i klienta</h3>
+
+  <!-- diagram:od -->
+<pre class="mermaid">
+flowchart LR
+  subgraph IS["Instytucja: jedna pozycja menu, nazwa spółki"]
+    K1["Klienci i projekty<br/>statystyki na górze"]
+    T1["Terminy szkoleń<br/>Kalendarz / Tabela"]
+    C1["Katalog i zespół"]
+    F1["Formularz i maile"]
+    P1["Karta projektu klienta<br/>podgląd bez prowizji"]
+  end
+  K1 -->|"projekt"| P1
+  K1 -->|"kafelek Szkolenia zrealizowane"| T1
+  K1 -->|"szkolenie"| C1
+  P1 -->|"termin"| T1
+  T1 -->|"zapisani"| P1
+  subgraph KLI["Klient końcowy, etap IV"]
+    W1["Mój wniosek<br/>status, szkolenie, uczestnicy"]
+  end
+</pre>
+<!-- diagram:do -->
+  <p>Każdy widok instytucji jest ograniczony do jej własnych danych na poziomie danych, nie interfejsu <span class="ref">D-148</span>. Link do ekranu, do którego rola nie ma dostępu, nie jest pokazywany.</p>
+
+  <h3>Trzy scenariusze pracy przez połączone zakładki</h3>
+  <ol>
+    <li><b>Po ogłoszeniu wyników.</b> Dashboard, kafelek „Oczekuje na rozpatrzenie: 47” prowadzi do Wnioski z filtrem <code>status=czekamy</code>. Dokładam filtr <code>pup=Warszawa</code>, zaznaczam wiersze, „Oznacz pozytywne”. Klik w numer klienta otwiera kartę wniosku, „Wróć do listy” przywraca filtr i pozycję.</li>
+    <li><b>Początek dnia.</b> Dzwonek pokazuje 3 powiadomienia. Akceptuję formularz, system otwiera nowego klienta w Bazie klientów. Z karty klienta dodaję zadanie „kontakt za 4 dni”, które ląduje w Zadaniach.</li>
+    <li><b>Koniec miesiąca (administrator).</b> Administracja/Prowizje, kafelek „Do zafakturowania” prowadzi do Wnioski z filtrem <code>status=pozytywna&amp;rozl=oczekuje&amp;okres=2026-09</code>. Otwieram projekt, sprawdzam zakładkę Finanse i dane, wracam do listy, filtr zostaje.</li>
+  </ol>
+
+  <h3>Zasady nawigacji</h3>
+  <ol>
+    <li><b>Każda liczba jest linkiem.</b> Kafelek, słupek wykresu, komórka agregatu, licznik w zakładce prowadzą do listy rekordów, z których się składają. Licznik na liście zgadza się z liczbą, która do niej prowadziła. Nie wolno mieć dwóch definicji jednej liczby.</li>
+    <li><b>Dashboard nie zawiera list.</b> Klik prowadzi poza dashboard, do listy operacyjnej <span class="ref">D-114</span>.</li>
+    <li><b>Filtry w adresie.</b> Każdy filtr i sortowanie są w adresie (słownik poniżej), więc link do listy można skopiować, wysłać koledze i zapisać w zakładkach przeglądarki. Filtry z drill through są widoczne jako chipy z krzyżykiem („PUP: Warszawa”, „status: czekamy”), żeby było wiadomo, dlaczego lista jest krótka.</li>
+    <li><b>Okruszki.</b> Moduł, zakładka, rekord, każdy element klikalny. Głębokość nie większa niż menu, zakładka, rekord.</li>
+    <li><b>Powrót zachowuje stan.</b> „Wróć do listy” i przycisk Wstecz przeglądarki przywracają filtry, sortowanie, rok, zaznaczenie i pozycję przewinięcia. Przy pracy seryjnej (130 wniosków w dwa tygodnie) karta wniosku ma przyciski Poprzedni i Następny w kolejności listy.</li>
+    <li><b>Link do rekordu z każdego miejsca, w którym rekord jest wymieniony.</b> Klient, instytucja, urząd, projekt, szkolenie, termin, faktura to linki wszędzie: w tabelach, na kartach, w powiadomieniach, w rejestrze, w wynikach wyszukiwania.</li>
+    <li><b>Uprawnienia w linkach.</b> Link do miejsca, do którego rola nie ma dostępu, nie jest pokazywany (tekst zamiast linku). Filtr i zakres wynikają z konta na poziomie danych <span class="ref">D-148</span>, a nie z parametru w adresie.</li>
+    <li><b>Jeden pasek zakładek na moduł</b>, najwyżej 4 zakładki, bez zakładek w zakładkach. Karta rekordu ma własne zakładki, najwyżej 4.</li>
+    <li><b>Menu i pasek zawsze zgodne z ekranem.</b> Klik w link wewnątrz ekranu zmienia zaznaczenie w menu, zakładkę i okruszek (dziś zmienia tylko zawartość ramki).</li>
+    <li><b>Ta sama zakładka, jedna nazwa.</b> Nazwy wg słownika <span class="ref">D-55</span>, bez wariantów typu „Projekty” i „Wnioski” dla tej samej listy.</li>
+    <li><b>Filtr instytucji z menu i z drill through jest tym samym filtrem.</b> Wybór „Dofinansowania, Metal Maniak” ustawia <code>is=</code> w adresie i jest zachowany przy przejściach.</li>
+    <li><b>Eksport bierze aktualny filtr.</b> „Eksport do Excela” na liście eksportuje dokładnie to, co widać.</li>
+  </ol>
+
+  <h3>Słownik parametrów adresu</h3>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Parametr</th><th>Wartości</th><th>Gdzie działa</th></tr></thead>
+      <tbody>
+        <tr><td><code>rok</code></td><td>RRRR</td><td>Wnioski, Baza klientów (licznik), Administracja</td></tr>
+        <tr><td><code>is</code></td><td>identyfikator instytucji</td><td>wszystkie listy, zakres konta zawęża dodatkowo <span class="ref">D-148</span></td></tr>
+        <tr><td><code>pup</code></td><td>identyfikator urzędu</td><td>Wnioski, Baza klientów, Nabory</td></tr>
+        <tr><td><code>status</code></td><td>czekamy, pozytywna, negatywna, rezygnacja, niezlozony, nw</td><td>Wnioski, Baza klientów (wnioski klienta)</td></tr>
+        <tr><td><code>rozl</code></td><td>oczekuje, zafakturowany, rozliczone</td><td>Wnioski</td></tr>
+        <tr><td><code>nabor</code></td><td>ogloszony, kontakt, brak, po</td><td>Baza klientów, Nabory</td></tr>
+        <tr><td><code>prognoza</code></td><td>RRRR-MM</td><td>Nabory</td></tr>
+        <tr><td><code>dni</code></td><td>liczba dni do końca naboru albo do terminu</td><td>Nabory, Terminy</td></tr>
+        <tr><td><code>termin</code></td><td>wolny, zaplanowany, odbyty</td><td>Terminy</td></tr>
+        <tr><td><code>szkolenie</code></td><td>identyfikator szkolenia z katalogu</td><td>Wnioski, Terminy</td></tr>
+        <tr><td><code>mies</code></td><td>RRRR-MM (miesiąc złożenia wniosku albo terminu)</td><td>Wnioski, Terminy, Prowizje</td></tr>
+        <tr><td><code>wielkosc</code></td><td>mikro, maly, sredni, duzy, inny</td><td>Wnioski</td></tr>
+        <tr><td><code>klient</code></td><td>identyfikator klienta</td><td>Wnioski, Zgłoszenia, Rejestr</td></tr>
+        <tr><td><code>opiekun</code></td><td>użytkownik LDIT</td><td>Wnioski</td></tr>
+        <tr><td><code>faktura</code></td><td>numer faktury</td><td>Wnioski, Faktury</td></tr>
+        <tr><td><code>okres</code></td><td>RRRR albo RRRR-MM</td><td>Administracja</td></tr>
+        <tr><td><code>brak</code></td><td>nazwa pola</td><td>Wnioski, Baza klientów</td></tr>
+        <tr><td><code>q</code></td><td>tekst (NIP, nazwa, PUP)</td><td>wszystkie listy i ekran wyników</td></tr>
+        <tr><td><code>sort</code></td><td>kolumna i kierunek</td><td>wszystkie listy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Pytania do klienta</h2>
+  <p>Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wariantów z konsekwencjami, rekomendację wykonawcy i powiązane decyzje. Klient odpowiada w panelu decyzyjnym (sekcja 17, obszar „Mapa zakładek”): wybiera wariant, a panel składa podsumowanie do pobrania. Waga: <b>wysoka</b> zmienia strukturę menu albo liczbę ekranów, <b>średnia</b> zmienia układ ekranu lub przejścia, <b>niska</b> jest szczegółem. Typy konsekwencji: zysk (co daje), koszt (czym za to płacimy), wymusza (co trzeba dołożyć), ryzyko (co może pójść źle).</p>
+
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>Nr</th><th>Obszar</th><th>Pytanie</th><th>Waga</th><th>Rekomendacja</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#z-01">Z-01</a></td><td>Dashboard</td><td>Co zostaje z sekcji „Wymaga działania” na dashboardzie</td><td>średnia</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-02">Z-02</a></td><td>Dashboard</td><td>Statystyki są w czterech miejscach. Jaki podział przyjmujemy</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-03">Z-03</a></td><td>Dashboard</td><td>Gdzie są Cele i premie i kto je widzi</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-04">Z-04</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-05">Z-05</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Lista instytucji w menu przy ok. 20 instytucjach</td><td>niska</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-06">Z-06</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Co oznacza nazwa „Nabory”</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-07">Z-07</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Nazwa zakładki z klientami: „Baza klientów” czy „Baza danych”</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-08">Z-08</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Lata jako zakładki: czy potrzebny jest też widok „Wszystkie lata”</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-09">Z-09</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Czy klient ma własną kartę (osobny ekran)</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-10">Z-10</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Jakie filtry musi mieć lista Wnioski</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-11">Z-11</a></td><td>Karta wniosku</td><td>Karta wniosku: jedna długa strona czy zakładki</td><td>wysoka</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-12">Z-12</a></td><td>Instytucje i katalog</td><td>Struktura modułu Instytucje szkoleniowe</td><td>wysoka</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-13">Z-13</a></td><td>Terminy</td><td>Gdzie w menu są Terminy szkoleń i kto je widzi</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-14">Z-14</a></td><td>Terminy</td><td>Kalendarz i Lista terminów: dwie zakładki czy przełącznik widoku</td><td>niska</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-15">Z-15</a></td><td>Terminy</td><td>Jak przypisywać projekt do terminu</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-16">Z-16</a></td><td>Nabory</td><td>Nabory: osobna pozycja menu czy zakładka w Dofinansowaniach</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-17">Z-17</a></td><td>Nabory</td><td>Ekran Nabory: ile bloków naraz</td><td>niska</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-18">Z-18</a></td><td>Nabory</td><td>Czy instytucja widzi nabory</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-19">Z-19</a></td><td>Komunikacja</td><td>Wysyłka maili: pozycja w menu czy funkcja przy rekordach</td><td>wysoka</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-20">Z-20</a></td><td>Zadania i powiadomienia</td><td>Zadania i powiadomienia: jedna pozycja, dwie czy dzwonek</td><td>średnia</td><td>wariant C</td></tr>
+        <tr><td><a href="#z-21">Z-21</a></td><td>Administracja i prowizje</td><td>Administracja: ile zakładek</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-22">Z-22</a></td><td>Administracja i prowizje</td><td>Zakładka Prowizje: cztery bloki naraz</td><td>średnia</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-23">Z-23</a></td><td>Administracja i prowizje</td><td>Co dzieje się z Kalkulatorem prowizji po walidacji</td><td>niska</td><td>wariant C</td></tr>
+        <tr><td><a href="#z-24">Z-24</a></td><td>Ustawienia i konta</td><td>Ustawienia: konta, uprawnienia i rejestr</td><td>średnia</td><td>wariant B</td></tr>
+        <tr><td><a href="#z-25">Z-25</a></td><td>Panel instytucji</td><td>Struktura panelu instytucji szkoleniowej</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-26">Z-26</a></td><td>Panel instytucji</td><td>Czy instytucja może otworzyć kartę projektu swojego klienta</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-27">Z-27</a></td><td>Panel klienta</td><td>Panel klienta: nawigacja w minimalnym zakresie</td><td>niska</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-28">Z-28</a></td><td>Nawigacja ogólna</td><td>Limit zakładek i zasada jednego paska</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-29">Z-29</a></td><td>Nawigacja ogólna</td><td>Wyszukiwarka globalna: co pokazuje wynik</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-30">Z-30</a></td><td>Nawigacja ogólna</td><td>Okruszki i powrót z drill through</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-31">Z-31</a></td><td>Nawigacja ogólna</td><td>Telefon: co z zakładek jest dostępne</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-32">Z-32</a></td><td>Drill through</td><td>Dokąd prowadzi kliknięcie w liczbę, wykres lub kafelek</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-33">Z-33</a></td><td>Drill through</td><td>Jak przechodzić między Bazą klientów a Wnioskami</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-34">Z-34</a></td><td>Drill through</td><td>Które nazwy na karcie wniosku i w listach są linkami</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-35">Z-35</a></td><td>Drill through</td><td>Skąd projekt i faktura w Administracji prowadzą dalej</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-36">Z-36</a></td><td>Drill through</td><td>Historia rekordu: skąd wejść do Rejestru aktywności</td><td>niska</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-37">Z-37</a></td><td>Drill through</td><td>Ostrzeżenie o zgłoszeniach na kartach klienta, instytucji i wniosku</td><td>średnia</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-38">Z-38</a></td><td>Drill through</td><td>Filtry w adresie i zapisane widoki</td><td>średnia</td><td>wariant A</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Dashboard</h3>
+
+  <details class="acc" open id="z-01"><summary>Z-01. Co zostaje z sekcji „Wymaga działania” na dashboardzie</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> screen Dashboard/Przegląd. <b>Powiązane decyzje:</b> <span class="ref">D-105</span>, <span class="ref">D-114</span>, <span class="ref">D-140</span>, <span class="ref">D-185</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Dashboard zawiera tabelę pięciu kolejek: formularze do akceptacji, nabory kończące się w tygodniu, szkolenia w ciągu 8 dni, faktury po terminie, projekty pozytywne nierozliczone. W kolumnie Kontekst są wypisane nazwy urzędów. Klient chciał samych statystyk <span class="ref">D-114</span>, a ta sekcja jest listą spraw i dubluje moduł Zadania i powiadomienia <span class="ref">D-140</span>.</p>
+  <p><b>A. Zostaje jak dziś: tabela z kontekstem (nazwy urzędów, terminy)</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedno miejsce na start dnia, wszystko widać bez klikania</li>
+    <li><b>ryzyko:</b> Lista spraw na dashboardzie kłóci się z <span class="ref">D-114</span> i z modułem Zadań <span class="ref">D-140</span></li>
+  </ul>
+  <p><b>B. Zostaje pięć liczników, każdy klikalny (bez nazw urzędów i kontekstu), klik prowadzi do listy z filtrem</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Jest statystyka i szybki dostęp, ale bez rozpiski</li>
+    <li><b>koszt:</b> Znika informacja, który urząd kończy nabór, trzeba ją sprawdzić na liście</li>
+    <li><b>wymusza:</b> Licznik formularzy do akceptacji pokazany także jako dzwonek w pasku górnym <span class="ref">D-105</span></li>
+  </ul>
+  <p><b>C. Sekcja przenosi się w całości do Zadań i powiadomień, dashboard jest czysto statystyczny</b></p>
+  <ul>
+    <li><b>zysk:</b> Dashboard w pełni jak portfel kryptowalut (analogia klienta), bez żadnych spraw do zrobienia</li>
+    <li><b>koszt:</b> Pierwszy ekran po zalogowaniu nie mówi, co jest pilne</li>
+    <li><b>wymusza:</b> Zadanie automatyczne dla każdej z pięciu kolejek <span class="ref">D-185</span></li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B: liczniki zostają jako skrót, a lista spraw żyje w Zadaniach.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-02"><summary>Z-02. Statystyki są w czterech miejscach. Jaki podział przyjmujemy</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> screeny Dashboard/Skuteczność, Administracja/Statystyki. <b>Powiązane decyzje:</b> <span class="ref">D-30</span>, <span class="ref">D-34</span>, <span class="ref">D-114</span>, <span class="ref">D-141</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Skuteczność, liczbę złożonych i pozytywnych wniosków oraz przyznane kwoty pokazują: Dashboard/Przegląd, Dashboard/Skuteczność i lejki, Administracja/Statystyki (z przychodem i VAT) oraz panel instytucji. Każde miejsce liczy definicję osobno. Decyzja <span class="ref">D-141</span> mówi, że statystyki per instytucja są w Administracji, a <span class="ref">D-114</span>, że dashboard jest czysto statystyczny.</p>
+  <p><b>A. Podział wg rodzaju: Dashboard to statystyki ilościowe i lejki (filtr instytucji), Administracja/Statystyki to kwotowe (obrót, przychód LDIT, VAT); linki „Zobacz kwoty” i „Zobacz skuteczność” między nimi</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Zgodne z <span class="ref">D-114</span> i <span class="ref">D-141</span>, niewiele zmian w makiecie</li>
+    <li><b>wymusza:</b> Jedna definicja każdej liczby i linki między dwiema stronami</li>
+    <li><b>koszt:</b> Nadal dwa miejsca ze statystykami</li>
+  </ul>
+  <p><b>B. Jedno miejsce: Dashboard/Skuteczność (dla admina także z kwotami), zakładka Statystyki w Administracji znika</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedna zakładka mniej i jedna prawda o liczbach</li>
+    <li><b>ryzyko:</b> Odwraca <span class="ref">D-141</span>, statystyki miały być w Administracji</li>
+    <li><b>koszt:</b> Dashboard admina robi się gęstszy, a klient prosił o prostotę</li>
+  </ul>
+  <p><b>C. Wszystkie statystyki w Administracji, dashboard tylko kafelki</b></p>
+  <ul>
+    <li><b>zysk:</b> Dashboard najprostszy z możliwych</li>
+    <li><b>koszt:</b> Pracownik nie widzi statystyk, bo Administracja jest tylko dla admina <span class="ref">D-34</span></li>
+    <li><b>wymusza:</b> Osobny widok statystyk dla pracownika poza Administracją <span class="ref">D-30</span></li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A: dwa miejsca, ale o rozłącznych rolach i połączone linkami.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-03"><summary>Z-03. Gdzie są Cele i premie i kto je widzi</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> screeny Dashboard i Administracja/Prowizje wewnętrzne. <b>Powiązane decyzje:</b> <span class="ref">D-23</span>, <span class="ref">D-34</span>, <span class="ref">D-114</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Dokumentacja opisuje cele zespołu i postęp ich realizacji jako część dashboardu (docs/05) oraz cele widoczne dla pracowników <span class="ref">D-23</span>. W makiecie Cele i premie są na dole zakładki Prowizje wewnętrzne w Administracji, więc widzi je tylko administrator, a dashboard pracownika ich nie ma.</p>
+  <p><b>A. Kafelek postępu celu na dashboardzie (admin i pracownik), edycja celów i premii w Administracji</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Pracownik widzi cel i swój postęp, zgodnie z <span class="ref">D-23</span></li>
+    <li><b>wymusza:</b> Kafelek celu bez kwot premii dla pracownika <span class="ref">D-34</span></li>
+    <li><b>koszt:</b> Cel liczony w dwóch miejscach, trzeba jedno źródło</li>
+  </ul>
+  <p><b>B. Tylko w Administracji (jak dziś)</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian, kwoty premii pod kontrolą admina</li>
+    <li><b>ryzyko:</b> Cele nie motywują, jeśli zespół ich nie widzi, a <span class="ref">D-23</span> zakładał widoczność</li>
+  </ul>
+  <p><b>C. Osobna zakładka „Cele” w module Zadania</b></p>
+  <ul>
+    <li><b>zysk:</b> Cele obok planu dnia, blisko codziennej pracy</li>
+    <li><b>koszt:</b> Nowa zakładka i nowy zakres widoczności, cele nie są zadaniami</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A: kafelek na dashboardzie, edycja w Administracji.</div>
+  </div>
+  </details>
+
+  <h3>Dofinansowania, Zestawienia, Baza klientów, Wnioski</h3>
+
+  <details class="acc" open id="z-04"><summary>Z-04. Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> mapa menu, screeny Dofinansowań. <b>Powiązane decyzje:</b> <span class="ref">D-55</span>, <span class="ref">D-112</span>, <span class="ref">D-127</span>, <span class="ref">D-129</span>, <span class="ref">D-159</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Dokumentacja (docs/11) ma dwie pozycje menu: Dofinansowania (rozwija instytucje) i Zestawienia (drzewo lat). Makieta scala je w jedną pozycję „Dofinansowania”, a lata są paskami nad tabelą. Ten sam ekran nazywa się w makiecie czterema sposobami: „Dofinansowania” w menu, „Zestawienie 2026” w tytule, „Wnioski” na zakładce i „Projekty” na pasku ekranu Terminów. Klient żąda zachowania nazw z Excela <span class="ref">D-55</span>.</p>
+  <p><b>A. Jedna pozycja „Dofinansowania” (rozwija: Wszystkie instytucje i lista instytucji), w środku zakładki Wnioski, Baza klientów, Terminy szkoleń; lata jako arkusze nad tabelą; tytuł „Zestawienie 2026”</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Najmniej pozycji w menu, całe miejsce pracy operacyjnej w jednym</li>
+    <li><b>koszt:</b> Nazwa „Zestawienia” znika z menu i zostaje w tytule i na paskach lat</li>
+  </ul>
+  <p><b>B. Dwie pozycje jak w docs/11: Dofinansowania (lista instytucji) i Zestawienia (2025 / 2026 / 2027)</b></p>
+  <ul>
+    <li><b>zysk:</b> Dokładnie jak w słowach klienta i w Excelu</li>
+    <li><b>koszt:</b> Pozycji o jedną więcej, a instytucja i rok to dwa niezależne wybory do połączenia</li>
+    <li><b>ryzyko:</b> Niejasne, czym różni się „Zestawienia” od „Dofinansowań”, skoro to ta sama tabela z innym filtrem</li>
+  </ul>
+  <p><b>C. Jedna pozycja „Zestawienia” (lata), instytucja tylko jako filtr w tabeli, bez listy w menu</b></p>
+  <ul>
+    <li><b>zysk:</b> Bardzo proste menu</li>
+    <li><b>ryzyko:</b> Odwraca <span class="ref">D-112</span> i <span class="ref">D-127</span>, klient chciał listy instytucji w menu</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A, z jednoznaczną nazwą „Wnioski” na zakładce i „Zestawienie [rok]” w tytule wszędzie.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-05"><summary>Z-05. Lista instytucji w menu przy ok. 20 instytucjach</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> niska. <b>Blokuje:</b> menu administratora. <b>Powiązane decyzje:</b> <span class="ref">D-70</span>, <span class="ref">D-112</span>, <span class="ref">D-113</span>, <span class="ref">D-127</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Pod „Dofinansowaniami” menu pokazuje „Wszystkie instytucje” i jedną pozycję na każdą instytucję z konta <span class="ref">D-127</span>. Pracownik ma od 1 do 3 instytucji <span class="ref">D-113</span>, administrator ok. 20 (tyle kopii formularza <span class="ref">D-70</span>), więc lista administratora ma ponad 20 pozycji w lewym menu i wypycha pozostałe pozycje poza ekran.</p>
+  <p><b>A. Wszystkie instytucje jako pozycje menu, menu przewijane</b></p>
+  <ul>
+    <li><b>zysk:</b> Dokładnie jak ustalono <span class="ref">D-127</span></li>
+    <li><b>koszt:</b> Administrator przewija długą listę, a kolejne pozycje menu uciekają poza ekran</li>
+  </ul>
+  <p><b>B. Lista z polem szukania, przy więcej niż ośmiu pozycjach zwinięta do „ostatnio używane” plus „Wszystkie instytucje”</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Krótkie menu, nadal zgodne z <span class="ref">D-127</span></li>
+    <li><b>koszt:</b> Prosty mechanizm „ostatnio używane” do zbudowania</li>
+  </ul>
+  <p><b>C. Lista w menu tylko dla pracownika, administrator używa filtra Instytucja w tabeli</b></p>
+  <ul>
+    <li><b>zysk:</b> Krótkie menu administratora</li>
+    <li><b>ryzyko:</b> Dwa różne menu dla dwóch ról, odstępstwo od <span class="ref">D-112</span></li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-06"><summary>Z-06. Co oznacza nazwa „Nabory”</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> nazwy w menu i na wszystkich screenach. <b>Powiązane decyzje:</b> <span class="ref">D-55</span>, <span class="ref">D-109</span>, <span class="ref">D-128</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Słownik i docs/11 mówią: „Wnioski” to „Nabory” (główne okno robocze), czyli lista wniosków w Excelu klienta. Jednocześnie <span class="ref">D-109</span> wprowadza moduł z naborami urzędów pracy z aplikacji prognozującej. Makieta nazwała „Nabory” listę urzędów, a listę wniosków „Wnioski”, co łamie zapis słownika <span class="ref">D-55</span>.</p>
+  <p><b>A. „Nabory” zostają listą naborów urzędów pracy (jak makieta), lista wniosków to „Wnioski” i „Zestawienie [rok]”; poprawiamy słownik</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Nazwa odpowiada temu, co ekran robi, nie ma pomyłek nabór/wniosek</li>
+    <li><b>wymusza:</b> Klient potwierdza, że zespół nie nazywa wniosków „naborami”; poprawka słownika i docs/11</li>
+  </ul>
+  <p><b>B. „Nabory” to lista wniosków (jak w Excelu), lista urzędów dostaje nową nazwę (np. „Kalendarz naborów” albo „Urzędy”)</b></p>
+  <ul>
+    <li><b>zysk:</b> Zgodne ze słowami klienta z Excela <span class="ref">D-55</span></li>
+    <li><b>koszt:</b> Trzeba zmienić nazwę modułu z <span class="ref">D-109</span> i wszystkich ekranów makiety</li>
+    <li><b>ryzyko:</b> Nabór (okno urzędu) i wniosek to różne rzeczy, nazwa myli nowych pracowników</li>
+  </ul>
+  <p><b>C. Obie nazwy współistnieją: „Nabory” (urzędy) w menu i „Wnioski” na zakładce, w słowniku opis różnicy</b></p>
+  <ul>
+    <li><b>zysk:</b> Nic nie zmieniamy w makiecie</li>
+    <li><b>ryzyko:</b> Rozjazd, który wykonawca zgłaszał już na warsztacie („mieszają mi się nazwy”)</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A, o ile klient potwierdzi, że w zespole „nabór” oznacza okno urzędu, a nie wniosek.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-07"><summary>Z-07. Nazwa zakładki z klientami: „Baza klientów” czy „Baza danych”</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> etykieta zakładki. <b>Powiązane decyzje:</b> <span class="ref">D-43</span>, <span class="ref">D-55</span>, <span class="ref">D-128</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Słownik i docs/11 używają nazwy „Baza klientów” (w Excelu „Niezłożone”), a decyzja <span class="ref">D-128</span> i makieta „Baza danych”. Ta sama zakładka ma w dokumentacji dwie nazwy.</p>
+  <p><b>A. „Baza klientów”</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Nazwa mówi, co jest w środku, słownik bez zmian</li>
+    <li><b>koszt:</b> Zmiana etykiety w makiecie i w opisie <span class="ref">D-128</span></li>
+  </ul>
+  <p><b>B. „Baza danych”</b></p>
+  <ul>
+    <li><b>zysk:</b> Zgodne z <span class="ref">D-128</span> i ostatnim słowem klienta z 04.09</li>
+    <li><b>ryzyko:</b> Nazwa techniczna, nie mówi, czy to klienci, czy wnioski</li>
+  </ul>
+  <p><b>C. Inna nazwa podana przez klienta (np. z jego Excela)</b></p>
+  <ul>
+    <li><b>zysk:</b> Zgodność z przyzwyczajeniami zespołu <span class="ref">D-55</span></li>
+    <li><b>koszt:</b> Wymaga ustalenia i zmiany słownika</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-08"><summary>Z-08. Lata jako zakładki: czy potrzebny jest też widok „Wszystkie lata”</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> zakładki lat na ekranie Wnioski. <b>Powiązane decyzje:</b> <span class="ref">D-112</span>, <span class="ref">D-129</span>, <span class="ref">D-159</span>, <span class="ref">D-165</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Każdy rok to osobna zakładka jak arkusz Excela <span class="ref">D-129</span> <span class="ref">D-159</span>: 2025 (pusta), 2026, 2027, plus „Nieprzypisane” (wnioski bez roku) i przycisk +. Numeracja klientów jest ciągła w roku i trafia na fakturę <span class="ref">D-112</span>. Wyszukiwarka i drill through z dashboardu (np. „wszystkie decyzje pozytywne”) nie mają jednego roku.</p>
+  <p><b>A. Same zakładki lat jak dziś; drill through i wyszukiwarka otwierają zakładkę właściwego roku</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Numeracja zawsze jednoznaczna, jak w Excelu</li>
+    <li><b>koszt:</b> Filtr obejmujący dwa lata wymaga dwóch kliknięć</li>
+  </ul>
+  <p><b>B. Zakładki lat plus zakładka „Wszystkie lata” tylko do odczytu, z kolumną Rok</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedna lista do szukania klienta wstecz i do porównań</li>
+    <li><b>koszt:</b> Kolejna zakładka, a numery klientów powtarzają się między latami</li>
+  </ul>
+  <p><b>C. Selektor roku (lista rozwijana) zamiast zakładek</b></p>
+  <ul>
+    <li><b>zysk:</b> Skalowalne na kolejne lata</li>
+    <li><b>ryzyko:</b> Odstępstwo od „arkuszy” Excela <span class="ref">D-129</span>, zespół widzi rok jako zakładkę</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A, a globalna wyszukiwarka przeszukuje wszystkie lata.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-09"><summary>Z-09. Czy klient ma własną kartę (osobny ekran)</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> screeny Bazy klientów, karty klienta, mapa linków. <b>Powiązane decyzje:</b> <span class="ref">D-52</span>, <span class="ref">D-54</span>, <span class="ref">D-133</span>, <span class="ref">D-178</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Dokumentacja mówi o „karcie klienta” z korespondencją <span class="ref">D-52</span> i danymi stałymi <span class="ref">D-54</span>, ale makieta jej nie ma: przycisk Edytuj w Bazie otwiera formularz, a korespondencja jest tylko na karcie wniosku. Przy ok. 400 mailach na klienta i wielu wnioskach potrzeba miejsca, do którego prowadzą nazwa klienta na każdej liście i wynik wyszukiwania.</p>
+  <p><b>A. Tak, ekran „Klient” z trzema zakładkami: Dane i kontakty, Projekty, Korespondencja i notatki</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Jedno miejsce na historię klienta i cel każdego linku z nazwy klienta</li>
+    <li><b>koszt:</b> Nowy ekran do zaprojektowania i utrzymania</li>
+    <li><b>wymusza:</b> Korespondencja przypisana do klienta po adresie e-mail <span class="ref">D-178</span></li>
+  </ul>
+  <p><b>B. Nie, klient to rozwinięty wiersz w Bazie, korespondencja tylko na karcie wniosku</b></p>
+  <ul>
+    <li><b>zysk:</b> Zero nowych ekranów</li>
+    <li><b>ryzyko:</b> Mail niedopasowany do wniosku nie ma gdzie leżeć, a 400 maili nie zmieści się w rozwinięciu wiersza</li>
+  </ul>
+  <p><b>C. Panel boczny wysuwany z listy z danymi klienta, skrótem projektów i maili</b></p>
+  <ul>
+    <li><b>zysk:</b> Nie opuszcza się listy, dobre przy pracy seryjnej</li>
+    <li><b>koszt:</b> Trzeci sposób pokazywania rekordu obok listy i karty</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-10"><summary>Z-10. Jakie filtry musi mieć lista Wnioski</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> filtry listy Wnioski, kolumna daty złożenia. <b>Powiązane decyzje:</b> <span class="ref">D-110</span>, <span class="ref">D-115</span>, <span class="ref">D-128</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Filtry dziś: instytucja, urząd, status i wyszukiwanie tekstowe. Drill through z dashboardu i statystyk potrzebuje też: roku, rozliczenia, szkolenia, miesiąca złożenia, wielkości firmy, klienta, numeru faktury i opiekuna. Scenariusz z warsztatu: filtr po PUP i masowa zmiana statusów po ogłoszeniu wyników <span class="ref">D-110</span>.</p>
+  <p><b>A. Zestaw rozszerzony: rok, instytucja, urząd, status, rozliczenie, szkolenie, miesiąc złożenia, wielkość, klient, opiekun; aktywne filtry widoczne jako chipy z krzyżykiem</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Każda liczba z dashboardu ma swoją listę</li>
+    <li><b>koszt:</b> Więcej pól w pasku filtrów, trzeba dbać o czytelność (chipy, zwijany pasek)</li>
+    <li><b>wymusza:</b> Kolumna daty złożenia wniosku, której dziś lista nie ma</li>
+  </ul>
+  <p><b>B. Minimalny zestaw (instytucja, urząd, status) plus wyszukiwarka</b></p>
+  <ul>
+    <li><b>zysk:</b> Prosty pasek, jak dziś</li>
+    <li><b>ryzyko:</b> Część wykresów (miesiąc, wielkość, szkolenie) nie ma dokąd prowadzić</li>
+  </ul>
+  <p><b>C. Zestaw rozszerzony plus zapisywane widoki (np. „Warszawa, czekamy”)</b></p>
+  <ul>
+    <li><b>zysk:</b> Powtarzalna praca po ogłoszeniu wyników jednym kliknięciem</li>
+    <li><b>koszt:</b> Dodatkowa funkcja poza dotychczasowym zakresem</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A, zapisywane widoki jako ewentualne rozszerzenie później.</div>
+  </div>
+  </details>
+
+  <h3>Karta wniosku</h3>
+
+  <details class="acc" open id="z-11"><summary>Z-11. Karta wniosku: jedna długa strona czy zakładki</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> screeny karty wniosku. <b>Powiązane decyzje:</b> <span class="ref">D-53</span>, <span class="ref">D-115</span>, <span class="ref">D-133</span>, <span class="ref">D-145</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Karta ma dziś jedną stronę i siedem bloków naraz: model finansowy (dziewięć pól), uczestnicy (do 50), korespondencja, dane projektu, osoby kontaktowe, prowizja (admin), przebieg. Klient krytykował Excel za nadmiar informacji jednocześnie (docs/11). Przy 130 wnioskach w dwa tygodnie karta jest najczęściej otwieranym ekranem.</p>
+  <div class="q">„za ciężko się skupić mi na czymś konkretnym, z bardzo dużo tych informacji jednocześnie wyskakuje”<span class="who">Bartek, warsztat 25.08.2026, 1:32:18</span></div>
+  <p><b>A. Jedna strona jak dziś</b></p>
+  <ul>
+    <li><b>zysk:</b> Wszystko widać bez klikania</li>
+    <li><b>ryzyko:</b> To wada Excela, na którą skarży się klient</li>
+  </ul>
+  <p><b>B. Stały nagłówek (klient, status, kluczowe kwoty, przyciski Poprzedni i Następny) i cztery zakładki: Finanse i dane, Uczestnicy, Korespondencja i notatki, Przebieg i zadania</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Skupienie na jednej rzeczy, nagłówek zawsze pod ręką</li>
+    <li><b>koszt:</b> Więcej kliknięć do uczestników i maili</li>
+    <li><b>wymusza:</b> Prowizja LDIT (tylko admin) jako sekcja zakładki Finanse i dane</li>
+  </ul>
+  <p><b>C. Jedna strona z sekcjami zwijanymi (akordeon)</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zakładek, użytkownik sam zwija zbędne</li>
+    <li><b>ryzyko:</b> Stan zwinięcia trzeba pamiętać, a strona bywa bardzo długa</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B.</div>
+  </div>
+  </details>
+
+  <h3>Instytucje i katalog</h3>
+
+  <details class="acc" open id="z-12"><summary>Z-12. Struktura modułu Instytucje szkoleniowe</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> screeny Instytucji i Konfiguratora. <b>Powiązane decyzje:</b> <span class="ref">D-07</span>, <span class="ref">D-42</span>, <span class="ref">D-52</span>, <span class="ref">D-98</span>, <span class="ref">D-166</span>, <span class="ref">D-167</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Moduł ma dziś dwa paski (Przegląd instytucji, Konfigurator warunków) oraz zakładki wewnętrzne: karta instytucji (Dane firmy, Katalog szkoleń, Szkoleniowcy, Osoby i konta, Korespondencja) i konfigurator (Warunki prowizyjne, Wzór certyfikatu, Dane do faktury, Formularz zgłoszeniowy). To dziewięć zakładek w jednym module, w tym cztery tylko dla administratora <span class="ref">D-07</span>.</p>
+  <p><b>A. Jak dziś: dwa paski oraz 5 + 4 zakładek wewnętrznych</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian w makiecie</li>
+    <li><b>ryzyko:</b> Dziewięć miejsc do przejścia, „wszystko naraz” w formie zakładek</li>
+  </ul>
+  <p><b>B. Lista instytucji (tabela jak w Excelu) i karta instytucji z czterema zakładkami: Dane i osoby, Katalog i szkoleniowcy, Korespondencja, Warunki (tylko admin: prowizja, certyfikat, faktura, formularz jako sekcje)</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Cztery zakładki zamiast dziewięciu, warunki admina nie zaśmiecają widoku pracownika</li>
+    <li><b>koszt:</b> Zakładka Warunki jest długa i wymaga porządnych nagłówków sekcji</li>
+  </ul>
+  <p><b>C. Instytucje (Dane, Katalog, Zespół) w menu, a konfiguracja (warunki, certyfikat, faktura, formularz) w Ustawieniach</b></p>
+  <ul>
+    <li><b>zysk:</b> Instytucje dla wszystkich ról, konfiguracja w miejscu admina</li>
+    <li><b>ryzyko:</b> Warunki prowizyjne oddalone od instytucji, admin skacze między modułami</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B.</div>
+  </div>
+  </details>
+
+  <h3>Terminy</h3>
+
+  <details class="acc" open id="z-13"><summary>Z-13. Gdzie w menu są Terminy szkoleń i kto je widzi</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> mapa menu, uprawnienia do Terminów. <b>Powiązane decyzje:</b> <span class="ref">D-36</span>, <span class="ref">D-76</span>, <span class="ref">D-142</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Terminy są w trzech miejscach: pozycja menu (widzą ją administrator i instytucja, nie pracownik LDIT), zakładka „Terminy szkoleń” pod Dofinansowaniami (widoczna dla pracownika, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień) i przycisk w panelu instytucji. Pasek na ekranie Terminów nazywa te same ekrany inaczej („Projekty”, „Oczekujące na nabór”).</p>
+  <p><b>A. Zakładka „Terminy szkoleń” w Dofinansowaniach dla ról LDIT (pracownik z uprawnieniem) i osobna pozycja menu tylko dla instytucji; to ten sam ekran</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> LDIT ma terminy obok wniosków, instytucja we własnym menu</li>
+    <li><b>wymusza:</b> Nadanie pracownikowi uprawnienia do modułu Terminy <span class="ref">D-36</span></li>
+  </ul>
+  <p><b>B. Osobna pozycja menu dla wszystkich ról</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedna reguła, widoczne wszędzie</li>
+    <li><b>koszt:</b> Dodatkowa pozycja w menu LDIT</li>
+  </ul>
+  <p><b>C. Tylko zakładka w Dofinansowaniach, instytucja wchodzi przez swój panel</b></p>
+  <ul>
+    <li><b>zysk:</b> Najmniej pozycji</li>
+    <li><b>ryzyko:</b> Instytucja ma jedną zakładkę <span class="ref">D-76</span>, a terminy to jej główny widok operacyjny</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-14"><summary>Z-14. Kalendarz i Lista terminów: dwie zakładki czy przełącznik widoku</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> niska. <b>Blokuje:</b> screeny Terminów. <b>Powiązane decyzje:</b> <span class="ref">D-142</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Ekran Terminów ma dwie zakładki wewnętrzne, Kalendarz i Lista terminów. Każda ma własny filtr instytucji, więc po przełączeniu trzeba ustawić go drugi raz. Uczestnicy terminu rozwijają się w liście, a w kalendarzu po kliknięciu.</p>
+  <p><b>A. Dwie zakładki jak dziś</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Rozdzielone filtry, zakładka w zakładce</li>
+  </ul>
+  <p><b>B. Jeden ekran z przełącznikiem widoku Kalendarz / Tabela, wspólne filtry, zapamiętany wybór</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Bez zakładek wewnętrznych, filtr ustawia się raz</li>
+    <li><b>koszt:</b> Niewielka przebudowa widoków</li>
+  </ul>
+  <p><b>C. Tylko tabela, kalendarz jako mały podgląd miesiąca obok</b></p>
+  <ul>
+    <li><b>zysk:</b> Bliżej Excela</li>
+    <li><b>ryzyko:</b> Odstępstwo od <span class="ref">D-142</span>, klient chciał kalendarza i tabeli</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-15"><summary>Z-15. Jak przypisywać projekt do terminu</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> linki karta wniosku i Terminy. <b>Powiązane decyzje:</b> <span class="ref">D-12</span>, <span class="ref">D-142</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Termin jest przypisany do wniosku <span class="ref">D-142</span>. Na karcie wniosku nie ma wyboru terminu, a z listy Terminów nie ma przejścia do projektu uczestnika: lista pokazuje klienta i projekt bez linku.</p>
+  <p><b>A. Dwukierunkowo: na karcie wniosku wybór wolnego terminu instytucji, na liście Terminów lista zapisanych z linkami do projektów</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Model A i B <span class="ref">D-12</span> obsłużone z obu stron, zmiana terminu widoczna w obu miejscach</li>
+    <li><b>wymusza:</b> Po zmianie terminu przypomnienie o piśmie do PUP (docs/05)</li>
+  </ul>
+  <p><b>B. Tylko z Terminów (dopisz projekt do terminu)</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedno miejsce operacji</li>
+    <li><b>ryzyko:</b> W modelu B instytucja ustala termin telefonicznie, a wpisuje go LDIT z karty wniosku</li>
+  </ul>
+  <p><b>C. Tylko z karty wniosku</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedno miejsce operacji</li>
+    <li><b>ryzyko:</b> Instytucja nie może dopisywać uczestników bez wchodzenia we wniosek</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <h3>Nabory</h3>
+
+  <details class="acc" open id="z-16"><summary>Z-16. Nabory: osobna pozycja menu czy zakładka w Dofinansowaniach</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> mapa menu. <b>Powiązane decyzje:</b> <span class="ref">D-109</span>, <span class="ref">D-130</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Nabory (urzędy, prognozy, 340 urzędów) są osobną pozycją menu <span class="ref">D-109</span>. Praca na nich jest ściśle związana z Bazą klientów (priorytet po ostatnim dniu naboru <span class="ref">D-130</span>), więc użytkownik przełącza się między dwiema pozycjami menu.</p>
+  <p><b>A. Osobna pozycja menu „Nabory” (jak makieta i struktura klienta)</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Zgodne ze strukturą menu klienta i z „nabory w jednym miejscu” <span class="ref">D-109</span></li>
+    <li><b>koszt:</b> Osobna pozycja obok Dofinansowań</li>
+  </ul>
+  <p><b>B. Zakładka „Nabory” obok Wnioski, Baza klientów, Terminy w Dofinansowaniach</b></p>
+  <ul>
+    <li><b>zysk:</b> Cała praca operacyjna w jednym miejscu i o pozycję mniej w menu</li>
+    <li><b>koszt:</b> Cztery zakładki w Dofinansowaniach, moduł traci własne miejsce w menu</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-17"><summary>Z-17. Ekran Nabory: ile bloków naraz</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> niska. <b>Blokuje:</b> screeny Naborów. <b>Powiązane decyzje:</b> <span class="ref">D-90</span>, <span class="ref">D-109</span>, <span class="ref">D-114</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Nabory to jeden ekran z czterema kafelkami, tabelą urzędów, dwoma wykresami prognoz (urzędy i klienci wg miesiąca) i osią czasu 14 dni: pięć bloków jeden pod drugim. To ten sam wzorzec „wszystko naraz”, którego klient nie lubi w Excelu.</p>
+  <p><b>A. Jak dziś</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Długi ekran, tabela ucieka pod wykresy</li>
+  </ul>
+  <p><b>B. Dwie zakładki: Lista (kafelki, tabela, oś 14 dni) i Prognozy (dwa wykresy miesięczne); klik w słupek prognozy filtruje listę na miesiąc</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Codzienna praca na liście, analityka osobno</li>
+    <li><b>koszt:</b> Dodatkowa zakładka w module</li>
+  </ul>
+  <p><b>C. Tylko lista naborów, wykresy prognoz przeniesione do Dashboardu/Skuteczność</b></p>
+  <ul>
+    <li><b>zysk:</b> Nabory bez wykresów</li>
+    <li><b>ryzyko:</b> Prognozy służą do planowania kontaktu, a dashboard ma być statystyką <span class="ref">D-114</span></li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-18"><summary>Z-18. Czy instytucja widzi nabory</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> uprawnienia instytucji do Naborów. <b>Powiązane decyzje:</b> <span class="ref">D-91</span>, <span class="ref">D-111</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Macierz uprawnień makiety daje roli instytucji podgląd Naborów, a strona sama pisze, że moduł jest wyłącznie dla ról LDIT. Klient nie potwierdził widoczności naborów dla instytucji <span class="ref p">P-34</span> i wykluczył informowanie handlowca instytucji o naborach <span class="ref">D-91</span>.</p>
+  <p><b>A. Nie, Nabory tylko dla ról LDIT; instytucja dostaje informacje o swoich terminach</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Zgodne z tym, co ustalono (<span class="ref">D-91</span>) i z opisem strony</li>
+    <li><b>koszt:</b> Instytucja nie widzi, kiedy urzędy otwierają nabory</li>
+  </ul>
+  <p><b>B. Instytucja widzi listę naborów urzędów, w których ma klientów, bez liczby klientów LDIT</b></p>
+  <ul>
+    <li><b>zysk:</b> Instytucja planuje pracę handlowców</li>
+    <li><b>ryzyko:</b> Zawęża kontakt LDIT z klientem wbrew <span class="ref">D-91</span>, wymaga osobnej separacji per urząd</li>
+  </ul>
+  <p><b>C. Instytucja widzi całą listę naborów (jak w makiecie dziś)</b></p>
+  <ul>
+    <li><b>zysk:</b> Najprościej</li>
+    <li><b>ryzyko:</b> Ujawnia 340 urzędów i pośrednio wolumeny LDIT</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <h3>Komunikacja</h3>
+
+  <details class="acc" open id="z-19"><summary>Z-19. Wysyłka maili: pozycja w menu czy funkcja przy rekordach</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> mapa menu, screeny Komunikacji. <b>Powiązane decyzje:</b> <span class="ref">D-52</span>, <span class="ref">D-87</span>, <span class="ref">D-106</span>, <span class="ref">D-119</span>, <span class="ref">D-122</span>, <span class="ref">D-140</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Moduł nazywa się w makiecie „Komunikacja” (w docs „Wysyłka maili”) i ma trzy zakładki: Biblioteka szablonów, Wysyłka, Automatyzacje i alerty. Karty wniosku i instytucji mają osobno sekcje Korespondencja <span class="ref">D-52</span>, a lista wniosków nie ma akcji „wyślij mail do zaznaczonych”. Automatyzacje i alerty dublują zadania automatyczne i alerty na datę z modułu Zadania <span class="ref">D-140</span>.</p>
+  <p><b>A. Pozycja „Wysyłka maili” w menu z dwiema zakładkami (Szablony, Historia wysyłek); wysyłka z rekordów i z zaznaczonych wierszy list; automatyzacje w Zadaniach</b></p>
+  <ul>
+    <li><b>zysk:</b> Zgodne z listą menu klienta, jedno miejsce szablonów i historii</li>
+    <li><b>koszt:</b> Pozycja menu, z której rzadko się startuje</li>
+  </ul>
+  <p><b>B. Bez pozycji w menu: szablony w Ustawieniach, wysyłka z kart i list, historia wysyłek w Rejestrze aktywności <span class="ref">D-122</span>, automatyzacje w Zadaniach</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Menu krótsze o jedną pozycję, mail tam, gdzie pracuje się z klientem</li>
+    <li><b>koszt:</b> Odstępstwo od struktury menu klienta (pozycja „Wysyłka maili”), wymaga jego zgody</li>
+    <li><b>wymusza:</b> Akcja zbiorcza „Wyślij z szablonu” na listach Wnioski i Baza klientów, z potwierdzeniem <span class="ref">D-106</span></li>
+  </ul>
+  <p><b>C. Jak dziś: Komunikacja z trzema zakładkami</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Automatyzacje w dwóch modułach, mail oderwany od rekordu</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B, a jeśli klient chce zachować pozycję w menu, wariant A.</div>
+  </div>
+  </details>
+
+  <h3>Zadania i powiadomienia</h3>
+
+  <details class="acc" open id="z-20"><summary>Z-20. Zadania i powiadomienia: jedna pozycja, dwie czy dzwonek</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> mapa menu, pasek górny. <b>Powiązane decyzje:</b> <span class="ref">D-105</span>, <span class="ref">D-140</span>, <span class="ref">D-195</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Decyzja <span class="ref">D-195</span> mówi o dwóch modułach. Makieta ma jedną pozycję „Zadania i powiadomienia” z dwiema sekcjami na ekranie. Licznik wniosków do akceptacji z <span class="ref">D-105</span> i <span class="ref">D-140</span> („kółko w prawym górnym rogu”) nie istnieje w powłoce makiety, jest tylko kafelek na ekranie Zadań i wiersz na dashboardzie.</p>
+  <p><b>A. Jedna pozycja menu z dwiema zakładkami: Plan dnia i Powiadomienia</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedna pozycja menu</li>
+    <li><b>koszt:</b> Powiadomienia niewidoczne, dopóki nie wejdzie się w zakładkę</li>
+  </ul>
+  <p><b>B. Dwie pozycje menu: Zadania i Powiadomienia</b></p>
+  <ul>
+    <li><b>zysk:</b> Dosłownie zgodne z <span class="ref">D-195</span></li>
+    <li><b>koszt:</b> Kolejna pozycja menu</li>
+  </ul>
+  <p><b>C. Dzwonek z licznikiem w pasku górnym otwiera listę powiadomień, pozycja menu „Zadania” zawiera plan dnia i pełną listę powiadomień jako zakładkę</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Licznik zawsze widoczny (jak w <span class="ref">D-105</span>), a menu ma jedną pozycję</li>
+    <li><b>koszt:</b> Dzwonek to nowy element powłoki, poza listą menu</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant C.</div>
+  </div>
+  </details>
+
+  <h3>Administracja i prowizje</h3>
+
+  <details class="acc" open id="z-21"><summary>Z-21. Administracja: ile zakładek</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> screeny Administracji. <b>Powiązane decyzje:</b> <span class="ref">D-23</span>, <span class="ref">D-34</span>, <span class="ref">D-138</span>, <span class="ref">D-141</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Administracja ma pasek (Prowizje i faktury, Kalkulator prowizji [prototyp]) i cztery zakładki: Prowizje, Faktury, Statystyki, Prowizje wewnętrzne (razem z Celami i premiami). Kalkulator jest prototypem do walidacji z klientem, nie funkcją docelową.</p>
+  <p><b>A. Cztery zakładki, bez Kalkulatora w pasku: Prowizje, Faktury, Statystyki, Prowizje wewnętrzne i cele</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Zgodne z <span class="ref">D-141</span>, każda zakładka ma jeden temat</li>
+    <li><b>koszt:</b> Cztery to górna granica proponowanego limitu</li>
+  </ul>
+  <p><b>B. Trzy zakładki: Prowizje, Faktury, Prowizje wewnętrzne i cele; statystyki kwotowe jako kolumny w Prowizjach</b></p>
+  <ul>
+    <li><b>zysk:</b> Mniej zakładek, jedna tabela per instytucja</li>
+    <li><b>ryzyko:</b> Odwraca część <span class="ref">D-141</span>, tabela Prowizji rośnie o kolumny</li>
+  </ul>
+  <p><b>C. Jak dziś plus Kalkulator w stałym pasku</b></p>
+  <ul>
+    <li><b>zysk:</b> Kalkulator pod ręką</li>
+    <li><b>ryzyko:</b> Prototyp zostaje w produkcie</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-22"><summary>Z-22. Zakładka Prowizje: cztery bloki naraz</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> screen Administracja/Prowizje. <b>Powiązane decyzje:</b> <span class="ref">D-137</span>, <span class="ref">D-138</span>, <span class="ref">D-164</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Prowizje to cztery bloki jeden pod drugim: tabela per instytucja (dziesięć kolumn), dashboard miesięczny, rozwinięcie instytucji (lista projektów) i Przewidywana prowizja, do tego dwa opisy blokad. To najcięższy ekran w systemie.</p>
+  <p><b>A. Jak dziś</b></p>
+  <ul>
+    <li><b>ryzyko:</b> Wszystko naraz, dokładnie to, na co klient narzeka w Excelu</li>
+  </ul>
+  <p><b>B. Jedna tabela naraz: przełączniki Rzeczywista / Przewidywana <span class="ref">D-164</span> oraz Miesięcznie / Narastająco; klik w wiersz instytucji otwiera panel z projektami; opisy blokad w tooltipach</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Skupienie, dwa widoki prowizji się nie mieszają <span class="ref">D-164</span></li>
+    <li><b>koszt:</b> Przełączniki trzeba wyraźnie oznaczyć, żeby nikt nie zafakturował z prognozy</li>
+  </ul>
+  <p><b>C. Podział na zakładki: Rzeczywista, Przewidywana, Miesięczna</b></p>
+  <ul>
+    <li><b>zysk:</b> Każdy widok osobno</li>
+    <li><b>koszt:</b> Zakładek w Administracji robi się sześć, ponad limit</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-23"><summary>Z-23. Co dzieje się z Kalkulatorem prowizji po walidacji</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> niska. <b>Blokuje:</b> Konfigurator warunków, zakładka Kalkulator. <b>Powiązane decyzje:</b> <span class="ref">D-138</span>, <span class="ref">D-168</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Kalkulator to prototyp wymagany przed kodowaniem silnika prowizji: klient wpisuje liczby i mówi, czy dobrze się liczy. Nie ustalono, czy po walidacji zostaje w systemie.</p>
+  <p><b>A. Zostaje jako symulator „co jeśli” w Administracji</b></p>
+  <ul>
+    <li><b>zysk:</b> Test nowych warunków bez wpływu na dane</li>
+    <li><b>koszt:</b> Dodatkowa zakładka do utrzymania</li>
+  </ul>
+  <p><b>B. Znika po walidacji</b></p>
+  <ul>
+    <li><b>zysk:</b> Mniej zakładek i mniej kodu</li>
+    <li><b>koszt:</b> Brak narzędzia do ustalania warunków z instytucją</li>
+  </ul>
+  <p><b>C. Podgląd na żywo w Konfiguratorze warunków instytucji (Instytucje, zakładka Warunki), bez osobnej zakładki</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Symulacja tam, gdzie ustawia się progi</li>
+    <li><b>wymusza:</b> Ten sam silnik liczy podgląd i prowizję, żeby była jedna liczba</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant C.</div>
+  </div>
+  </details>
+
+  <h3>Ustawienia i konta</h3>
+
+  <details class="acc" open id="z-24"><summary>Z-24. Ustawienia: konta, uprawnienia i rejestr</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> mapa menu, screeny Ustawień. <b>Powiązane decyzje:</b> <span class="ref">D-36</span>, <span class="ref">D-116</span>, <span class="ref">D-122</span>, <span class="ref">D-126</span>, <span class="ref">D-189</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Docs/11 ma dla admina dwie pozycje: Konta i uprawnienia oraz Rejestr aktywności. Makieta scala je w jedną pozycję „Ustawienia” z paskiem (Konta i role, Rejestr aktywności) i zakładkami: Użytkownicy, Konfigurator ról, Macierz uprawnień (to samo, co konfigurator, w widoku do odczytu), Przypisanie do instytucji; rejestr ma trzy zakładki. Razem siedem miejsc.</p>
+  <p><b>A. Dwie pozycje menu jak w docs/11: Konta i uprawnienia oraz Rejestr aktywności</b></p>
+  <ul>
+    <li><b>zysk:</b> Zgodne ze strukturą klienta</li>
+    <li><b>koszt:</b> Dwie pozycje administratora więcej</li>
+  </ul>
+  <p><b>B. Jedna pozycja „Ustawienia”, zakładki: Użytkownicy (z kolumną Instytucje), Role i uprawnienia (Konfigurator i Macierz w jednym), Rejestr aktywności (z filtrem typu zdarzenia); czwarta zakładka „Szablony maili”, jeśli szablony przeniosą się z Komunikacji</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Trzy do czterech zakładek zamiast siedmiu</li>
+    <li><b>koszt:</b> Rejestr zmienia znaczenie z pozycji menu na zakładkę</li>
+  </ul>
+  <p><b>C. Jak w makiecie: Konta (cztery zakładki) i Rejestr (trzy zakładki) pod jedną pozycją</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Siedem miejsc, Konfigurator i Macierz dublują się</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant B.</div>
+  </div>
+  </details>
+
+  <h3>Panel instytucji</h3>
+
+  <details class="acc" open id="z-25"><summary>Z-25. Struktura panelu instytucji szkoleniowej</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> screeny panelu instytucji, menu instytucji. <b>Powiązane decyzje:</b> <span class="ref">D-76</span>, <span class="ref">D-111</span>, <span class="ref">D-126</span>, <span class="ref">D-193</span>, <span class="ref">D-204</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Decyzja <span class="ref">D-76</span>: instytucja widzi jedną zakładkę opisaną nazwą swojej spółki. Makieta daje jej cztery pozycje menu: Dashboard (podgląd), „Nazwa spółki”, Terminy szkoleń i Nabory (podgląd). Panel „Nazwa spółki” to ekran z ośmioma kartami: klienci i projekty, terminy, katalog, szkoleniowcy, szablony maili, formularz i inne.</p>
+  <p><b>A. Jedna pozycja menu (nazwa spółki) i cztery zakładki: Klienci i projekty (ze statystykami na górze), Terminy szkoleń, Katalog i zespół, Formularz i maile</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Zgodne z <span class="ref">D-76</span>, osiem kart uporządkowane w cztery zakładki</li>
+    <li><b>koszt:</b> Dashboard instytucji staje się paskiem statystyk zamiast osobnej strony</li>
+  </ul>
+  <p><b>B. Trzy pozycje menu: Przegląd (statystyki <span class="ref">D-193</span>), Nazwa spółki (klienci, katalog, zespół, formularz), Terminy szkoleń</b></p>
+  <ul>
+    <li><b>zysk:</b> Terminy jako główny widok operacyjny osobno</li>
+    <li><b>ryzyko:</b> Odstępstwo od „jednej zakładki” z <span class="ref">D-76</span></li>
+  </ul>
+  <p><b>C. Jak makieta: cztery pozycje menu</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Nabory i Dashboard nie wynikają z <span class="ref">D-76</span>, szersza powierzchnia separacji</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-26"><summary>Z-26. Czy instytucja może otworzyć kartę projektu swojego klienta</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> karta projektu w widoku instytucji. <b>Powiązane decyzje:</b> <span class="ref">D-07</span>, <span class="ref">D-76</span>, <span class="ref">D-149</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> W panelu instytucji tabela „Moi klienci i ich projekty” nie ma przycisku Otwórz, a rola instytucji nie ma dostępu do modułu Dofinansowania, w którym leży karta wniosku. Instytucja widzi kwoty wniosku, nie widzi prowizji <span class="ref">D-07</span>.</p>
+  <p><b>A. Tak: podgląd karty projektu (uczestnicy, kwoty wniosku, termin, przebieg), bez prowizji, korespondencji LDIT i notatek wewnętrznych</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Instytucja sprawdza etap bez telefonu do LDIT</li>
+    <li><b>wymusza:</b> Osobny widok karty dla tej roli i testy separacji per pole <span class="ref">D-149</span></li>
+  </ul>
+  <p><b>B. Nie, tylko wiersz z podstawowymi danymi (jak dziś)</b></p>
+  <ul>
+    <li><b>zysk:</b> Minimalne ryzyko wycieku</li>
+    <li><b>koszt:</b> Pytania „na jakim etapie” wracają telefonem do LDIT</li>
+  </ul>
+  <p><b>C. Tak, z edycją uczestników i terminu</b></p>
+  <ul>
+    <li><b>zysk:</b> Mniej pracy po stronie LDIT</li>
+    <li><b>ryzyko:</b> Instytucja modyfikuje dane wniosku, choć dane prowadzi LDIT</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <h3>Panel klienta</h3>
+
+  <details class="acc" open id="z-27"><summary>Z-27. Panel klienta: nawigacja w minimalnym zakresie</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> niska. <b>Blokuje:</b> screeny panelu klienta (etap IV). <b>Powiązane decyzje:</b> <span class="ref">D-192</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Panel klienta jest w etapie IV w minimalnym zakresie <span class="ref">D-192</span>. Makieta ma jedną stronę „Mój wniosek” (status, szkolenie, uczestnicy, materiały). Klient może mieć kilka projektów w roku i w kolejnych latach.</p>
+  <p><b>A. Jedna pozycja „Mój wniosek”: przy jednym projekcie od razu widok statusu, przy kilku lista projektów z wyborem</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Prosto, bez zakładek</li>
+    <li><b>koszt:</b> Wybór projektu musi być prosty (lista dwóch do czterech pozycji)</li>
+  </ul>
+  <p><b>B. Zawsze najpierw lista projektów, dopiero z niej karta</b></p>
+  <ul>
+    <li><b>zysk:</b> Jedna zasada dla wszystkich</li>
+    <li><b>koszt:</b> Dodatkowy klik przy jednym projekcie</li>
+  </ul>
+  <p><b>C. Decyzja o nawigacji panelu po zatwierdzeniu jego zakresu <span class="ref p">P-33</span></b></p>
+  <ul>
+    <li><b>zysk:</b> Bez pracy teraz</li>
+    <li><b>ryzyko:</b> Do Miro nie trafi ekran panelu klienta</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <h3>Nawigacja ogólna</h3>
+
+  <details class="acc" open id="z-28"><summary>Z-28. Limit zakładek i zasada jednego paska</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> cała mapa zakładek i lista screenów do Miro. <b>Powiązane decyzje:</b> <span class="ref">D-55</span>, <span class="ref">D-108</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Dziś istnieją trzy poziomy zakładek: menu (12 pozycji), pasek modułu (11 zakładek w 5 grupach) i zakładki wewnętrzne (25) plus lata (3). Razem 38 różnych widoków do przejścia. Wykonawca proponuje limit: LDIT do 8 pozycji menu, w module jeden pasek zakładek do 4, karta rekordu do 4 zakładek, nic głębiej niż menu, zakładka, rekord.</p>
+  <p><b>A. Limit: LDIT do 8 pozycji menu, w module jeden pasek do 4 zakładek, karta rekordu do 4 zakładek, brak zakładek w zakładkach</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Zwarta i przewidywalna mapa, łatwa do nauczenia</li>
+    <li><b>koszt:</b> Część treści trafia do sekcji zamiast do zakładek</li>
+  </ul>
+  <p><b>B. Limit luźniejszy: do 6 zakładek na moduł</b></p>
+  <ul>
+    <li><b>zysk:</b> Mniej scalania treści</li>
+    <li><b>ryzyko:</b> Zbliża się do dzisiejszej gęstości</li>
+  </ul>
+  <p><b>C. Bez limitu, jak dziś</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez pracy</li>
+    <li><b>ryzyko:</b> Wada Excela („wszystko naraz”) w formie zakładek</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-29"><summary>Z-29. Wyszukiwarka globalna: co pokazuje wynik</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> wyszukiwarka w pasku górnym, ekran wyników. <b>Powiązane decyzje:</b> <span class="ref">D-110</span>, <span class="ref">D-111</span>, <span class="ref">D-148</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Wyszukiwarka w pasku górnym po Enter otwiera Bazę klientów z parametrem q, którego Baza nie czyta (czyta go tylko lista Wnioski). Kryteria: NIP, nazwa klienta, PUP <span class="ref">D-110</span>. Dla instytucji tylko własni klienci <span class="ref">D-111</span>.</p>
+  <p><b>A. Ekran wyników pogrupowany: Klienci, Projekty, Urzędy (nabory), Instytucje (LDIT); każdy wynik jest linkiem do rekordu; podpowiedzi rozwijane pod polem</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Jedno pole na NIP, nazwę i PUP, prowadzi wprost do rekordu</li>
+    <li><b>koszt:</b> Nowy ekran wyników, przeszukiwanie wszystkich lat</li>
+    <li><b>wymusza:</b> Wyniki tylko z zakresu konta <span class="ref">D-111</span> <span class="ref">D-148</span></li>
+  </ul>
+  <p><b>B. Zawsze Baza klientów z filtrem tekstu (jak dziś, ale działa)</b></p>
+  <ul>
+    <li><b>zysk:</b> Prosto</li>
+    <li><b>ryzyko:</b> Szukanie po PUP i po numerze projektu nie ma sensu w Bazie</li>
+  </ul>
+  <p><b>C. Wyszukiwanie ograniczone do bieżącej zakładki (filtr zamiast wyszukiwarki globalnej)</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez nowego ekranu</li>
+    <li><b>ryzyko:</b> Sprzeczne z <span class="ref">D-110</span>, wyszukiwarka miała być dostępna wszędzie</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-30"><summary>Z-30. Okruszki i powrót z drill through</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> pasek górny, okruszki, przyciski powrotu. <b>Powiązane decyzje:</b> <span class="ref">D-108</span>, <span class="ref">D-110</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Okruszek w pasku górnym pokazuje tylko nazwę modułu (np. „Dofinansowania”), nie zakładkę ani rekord. Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek. Karta wniosku wraca do listy bez filtrów, roku i pozycji przewinięcia.</p>
+  <p><b>A. Okruszki Moduł, Zakładka, Rekord (klikalne); „Wróć do listy” przywraca filtry, sortowanie, rok, zaznaczenie i pozycję; przycisk Wstecz przeglądarki działa tak samo</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Praca seryjna (130 wniosków w dwa tygodnie) bez gubienia miejsca</li>
+    <li><b>koszt:</b> Stan listy musi być trzymany w adresie i w pamięci</li>
+  </ul>
+  <p><b>B. Same okruszki, powrót do listy od zera</b></p>
+  <ul>
+    <li><b>zysk:</b> Prościej</li>
+    <li><b>ryzyko:</b> Po każdym wejściu w projekt filtr PUP trzeba ustawiać od nowa</li>
+  </ul>
+  <p><b>C. Jak dziś</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez pracy</li>
+    <li><b>ryzyko:</b> Zaznaczenie menu rozjeżdża się z ekranem, utrata miejsca na liście</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-31"><summary>Z-31. Telefon: co z zakładek jest dostępne</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> widoki mobilne.</p>
+  <p><b>Stan dziś i kontekst.</b> Wymaganie przedwarsztatowe: interfejs użyteczny na telefonie. Warsztat go nie omawiał. Układ tabelaryczny na telefonie wymaga osobnych widoków, a osiem pozycji menu i pasek zakładek się nie mieszczą.</p>
+  <p><b>A. Telefon to odczyt i szybkie akcje: Dashboard, wyszukiwarka, karta wniosku i klienta (odczyt, zmiana statusu), Zadania i powiadomienia; tabele jako karty; reszta tylko na komputerze</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Realny zakres do wykonania i przetestowania</li>
+    <li><b>koszt:</b> Administracja i szerokie tabele bez telefonu</li>
+  </ul>
+  <p><b>B. Pełna funkcjonalność na telefonie</b></p>
+  <ul>
+    <li><b>zysk:</b> Wszystko wszędzie</li>
+    <li><b>koszt:</b> Osobny projekt widoków dla każdego ekranu, znacząco wyższa wycena</li>
+  </ul>
+  <p><b>C. Telefon poza etapem I, później</b></p>
+  <ul>
+    <li><b>zysk:</b> Tańszy etap I</li>
+    <li><b>ryzyko:</b> Wymaganie z dokumentacji przedwarsztatowej pozostaje niespełnione</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <h3>Drill through</h3>
+
+  <details class="acc" open id="z-32"><summary>Z-32. Dokąd prowadzi kliknięcie w liczbę, wykres lub kafelek</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> wysoka. <b>Blokuje:</b> wszystkie listy i dashboard, cała tabela drill through. <b>Powiązane decyzje:</b> <span class="ref">D-110</span>, <span class="ref">D-114</span>, <span class="ref">D-194</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Dziś żaden kafelek KPI, słupek, wiersz statusów ani komórka agregatu nie jest klikalny. Działają tylko przyciski Otwórz w tabeli „Wymaga działania”, ale bez filtra (otwierają ekran, nie listę tych rekordów), oraz kafelek Prowizja. Dashboard ma być wyłącznie statystyką <span class="ref">D-114</span>, więc klik nie może rozwijać listy klientów na dashboardzie.</p>
+  <p><b>A. Klik otwiera właściwą listę operacyjną (Wnioski, Baza klientów, Nabory, Terminy, Faktury) z ustawionym filtrem, a licznik na liście zgadza się z liczbą z kafelka</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Dashboard zostaje czysto statystyczny, a każda liczba jest sprawdzalna jednym kliknięciem</li>
+    <li><b>wymusza:</b> Listy czytają filtry z adresu (status, urząd, instytucja, okres), dziś tego nie robią</li>
+    <li><b>koszt:</b> Jedna definicja każdej liczby (dziś „klienci z otwartym naborem” liczą trzy ekrany osobno)</li>
+  </ul>
+  <p><b>B. Klik otwiera okno szczegółów agregatu na dashboardzie (lista tylko do odczytu)</b></p>
+  <ul>
+    <li><b>zysk:</b> Nie opuszcza się dashboardu</li>
+    <li><b>ryzyko:</b> Wraca rozpiska klientów na dashboardzie, wbrew <span class="ref">D-114</span></li>
+    <li><b>koszt:</b> Druga wersja list do utrzymania obok list operacyjnych</li>
+  </ul>
+  <p><b>C. Bez klikania, dashboard jak dziś</b></p>
+  <ul>
+    <li><b>zysk:</b> Zero prac</li>
+    <li><b>ryzyko:</b> Liczby są niesprawdzalne, a wykonawca wymaga, żeby agregacja prowadziła do szczegółów</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-33"><summary>Z-33. Jak przechodzić między Bazą klientów a Wnioskami</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> zakładki Baza klientów i Wnioski. <b>Powiązane decyzje:</b> <span class="ref">D-128</span>, <span class="ref">D-130</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> W Bazie klient jest jednym wierszem, a jego wnioski rozwijają się plusem <span class="ref">D-128</span>. Przycisk Otwórz prowadzi na kartę wniosku, ale nie ma przejścia do listy Wnioski z filtrem tego klienta ani z powrotem. Licznik „Wnioski (n)” w zakładce liczy tylko bieżący rok i nie reaguje na filtry.</p>
+  <p><b>A. Plus rozwija wnioski w wierszu (jak dziś), a nazwa klienta i liczba wniosków są linkami: do karty klienta i do Wniosków z filtrem klient; na liście Wnioski nazwa klienta prowadzi do Bazy</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Dwukierunkowo, obie tabele zsynchronizowane <span class="ref">D-128</span></li>
+    <li><b>wymusza:</b> Filtr „klient” na liście Wnioski</li>
+  </ul>
+  <p><b>B. Tylko rozwijanie plusem, bez linków</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Praca na dwóch tabelach wymaga ręcznego szukania tego samego klienta</li>
+  </ul>
+  <p><b>C. Link tylko z Bazy do Wniosków, w drugą stronę nie</b></p>
+  <ul>
+    <li><b>zysk:</b> Połowa pracy</li>
+    <li><b>ryzyko:</b> Asymetria, użytkownik nie wie, dlaczego działa w jedną stronę</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-34"><summary>Z-34. Które nazwy na karcie wniosku i w listach są linkami</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> karta wniosku, Nabory, Terminy, Faktury. <b>Powiązane decyzje:</b> <span class="ref">D-138</span>, <span class="ref">D-139</span>, <span class="ref">D-142</span>, <span class="ref">D-148</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Na karcie nie ma żadnego linku poza okruszkiem „Zestawienia”, który wraca do listy bez filtrów. Klient, instytucja, urząd, szkolenie, faktura i prowizja są zwykłym tekstem. Na listach Wnioski i Baza nazwa klienta, instytucji i urzędu też nie prowadzi nigdzie.</p>
+  <p><b>A. Wszystkie powiązania: klient do karty klienta, instytucja do karty instytucji (tylko LDIT), urząd do Naborów, szkolenie do terminu, faktura do Faktur, prowizja do Administracji, przebieg do Rejestru aktywności; link znika, gdy rola nie ma dostępu</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Rekord osiągalny z każdego miejsca, w którym jest wymieniony</li>
+    <li><b>koszt:</b> Każdy link trzeba przetestować per rola <span class="ref">D-148</span></li>
+  </ul>
+  <p><b>B. Tylko klient, urząd i termin</b></p>
+  <ul>
+    <li><b>zysk:</b> Najczęstsze przejścia, mniej testów uprawnień</li>
+    <li><b>ryzyko:</b> Faktura i prowizja nadal wymagają ręcznego szukania</li>
+  </ul>
+  <p><b>C. Bez linków, jak dziś</b></p>
+  <ul>
+    <li><b>zysk:</b> Zero prac</li>
+    <li><b>ryzyko:</b> Drill through kończy się na karcie i nie idzie dalej</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-35"><summary>Z-35. Skąd projekt i faktura w Administracji prowadzą dalej</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> Administracja/Prowizje i Faktury, karta wniosku. <b>Powiązane decyzje:</b> <span class="ref">D-16</span>, <span class="ref">D-138</span>, <span class="ref">D-139</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> W rozwinięciu instytucji w Administracji są projekty z podstawą prowizji. Nie mają linku do karty wniosku, a przy projekcie jest przycisk „Nadpisz”, chociaż <span class="ref">D-138</span> i opis strony mówią, że nadpisanie robi się na karcie wniosku. Faktura na liście nie prowadzi do projektów, których dotyczy, a karta wniosku nie pokazuje numeru faktury <span class="ref">D-139</span>.</p>
+  <p><b>A. Projekt w Administracji otwiera kartę wniosku (zakładka Finanse), nadpisanie tylko tam; numer faktury na karcie prowadzi do Faktur, a kolumna Projekty (n) w Fakturach do Wniosków z filtrem faktura</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Zgodne z <span class="ref">D-138</span> i <span class="ref">D-139</span>, przejścia w obie strony</li>
+    <li><b>koszt:</b> Filtr „faktura” na liście Wnioski i usunięcie przycisku Nadpisz z Administracji</li>
+  </ul>
+  <p><b>B. Nadpisanie także w Administracji (jak dziś)</b></p>
+  <ul>
+    <li><b>zysk:</b> Szybciej dla admina</li>
+    <li><b>ryzyko:</b> Dwa miejsca zmiany wartości finansowej, wbrew ochronie przed przypadkową zmianą <span class="ref">D-16</span></li>
+  </ul>
+  <p><b>C. Administracja tylko do odczytu, bez linków</b></p>
+  <ul>
+    <li><b>zysk:</b> Prosto</li>
+    <li><b>ryzyko:</b> Zafakturowanie wymaga ręcznego szukania wniosku</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-36"><summary>Z-36. Historia rekordu: skąd wejść do Rejestru aktywności</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> niska. <b>Blokuje:</b> karta wniosku, Rejestr aktywności. <b>Powiązane decyzje:</b> <span class="ref">D-34</span>, <span class="ref">D-116</span>, <span class="ref">D-122</span>, <span class="ref">D-189</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Rejestr aktywności jest osobnym ekranem admina. Karta wniosku ma „Przebieg” (oś etapów), ale nie ma przejścia do wpisów rejestru tego wniosku (kto zmienił kwotę, wartość przed i po) <span class="ref">D-116</span>.</p>
+  <p><b>A. Na karcie wniosku i klienta link „Historia zmian” otwiera Rejestr z filtrem rekordu (tylko admin), a wpis rejestru linkuje z powrotem do rekordu</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Odpowiedź „kto zmienił kwotę” w dwóch kliknięciach</li>
+    <li><b>wymusza:</b> Rejestr czyta filtr rekordu z adresu</li>
+  </ul>
+  <p><b>B. Historia w panelu bocznym karty, bez opuszczania karty, także dla pracownika (bez wartości finansowych)</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmiany ekranu</li>
+    <li><b>ryzyko:</b> Wartości finansowe w historii dostępne pracownikowi wbrew <span class="ref">D-34</span></li>
+  </ul>
+  <p><b>C. Bez przejścia, szukanie w Rejestrze po numerze projektu</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Wolne i podatne na pomyłkę</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-37"><summary>Z-37. Ostrzeżenie o zgłoszeniach na kartach klienta, instytucji i wniosku</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> karta klienta, instytucji i wniosku, Zgłoszenia. <b>Powiązane decyzje:</b> <span class="ref">D-107</span>, <span class="ref">D-121</span>, <span class="ref">D-148</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Zgłoszenia to osobna pozycja menu <span class="ref">D-107</span>, a przycisk „Otwórz kartę podmiotu” w ekranie Zgłoszeń nie ma dokąd prowadzić. Cel modułu to historia „ta firma już 2 razy coś takiego zrobiła”, ale handlowiec nie wejdzie do Zgłoszeń przed rozmową z klientem.</p>
+  <p><b>A. Znacznik „Zgłoszenia: n” na karcie klienta, instytucji i wniosku (role LDIT), klik otwiera Zgłoszenia z filtrem podmiotu</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Ostrzeżenie w momencie pracy z klientem</li>
+    <li><b>wymusza:</b> Znacznik niewidoczny dla instytucji i klienta (separacja <span class="ref">D-148</span>)</li>
+  </ul>
+  <p><b>B. Bez znacznika, tylko wyszukiwanie w Zgłoszeniach</b></p>
+  <ul>
+    <li><b>zysk:</b> Bez zmian</li>
+    <li><b>ryzyko:</b> Historia incydentów nie jest widoczna tam, gdzie zapada decyzja o współpracy</li>
+  </ul>
+  <p><b>C. Znacznik tylko na karcie instytucji (incydenty klientów zostają w module)</b></p>
+  <ul>
+    <li><b>zysk:</b> Prosto i bezpiecznie</li>
+    <li><b>ryzyko:</b> Nie chroni przed klientami z historią nadużyć</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A.</div>
+  </div>
+  </details>
+
+  <details class="acc" open id="z-38"><summary>Z-38. Filtry w adresie i zapisane widoki</summary>
+  <div class="acc-body">
+  <p><b>Waga:</b> średnia. <b>Blokuje:</b> adresy list, filtry, schemat parametrów. <b>Powiązane decyzje:</b> <span class="ref">D-110</span>, <span class="ref">D-115</span>.</p>
+  <p><b>Stan dziś i kontekst.</b> Filtr po PUP i masowa zmiana statusów to główny scenariusz operacyjny <span class="ref">D-110</span>. Dziś filtr żyje tylko w polach ekranu i znika po wyjściu. Nie da się wysłać koledze linku „wszystkie wnioski na Warszawę czekające” ani wrócić do niego jednym kliknięciem.</p>
+  <p><b>A. Każdy filtr i sortowanie w adresie: link do listy można skopiować i zapisać w zakładkach przeglądarki</b> (rekomendowany)</p>
+  <ul>
+    <li><b>zysk:</b> Wspólne linki w zespole, powrót do dowolnego widoku</li>
+    <li><b>koszt:</b> Trwały schemat nazw parametrów, do utrzymania przy każdej nowej liście</li>
+  </ul>
+  <p><b>B. Adres plus zapisane widoki użytkownika (np. „Warszawa, czekamy”) w menu pod tabelą</b></p>
+  <ul>
+    <li><b>zysk:</b> Powtarzalne zadania jednym kliknięciem</li>
+    <li><b>koszt:</b> Nowa funkcja poza dotychczasowym zakresem</li>
+  </ul>
+  <p><b>C. Filtry pamiętane per użytkownik (ostatni stan), bez adresów</b></p>
+  <ul>
+    <li><b>zysk:</b> Prosto</li>
+    <li><b>ryzyko:</b> Nie da się udostępnić widoku, a niejawny filtr myli („gdzie są moje wnioski”)</li>
+  </ul>
+  <div class="callout ok"><b>Rekomendacja wykonawcy:</b> Wariant A, zapisane widoki jako rozszerzenie po etapie I.</div>
+  </div>
+  </details>
+
+  <h2>Następny krok</h2>
+  <p>Po ustaleniu mapy wykonawca robi screeny albo PDF każdej zakładki do Miro.</p>
+  <ol>
+    <li><b>Klient odpowiada</b> na pytania w panelu decyzyjnym i odsyła pobrane podsumowanie. Pytania o wadze wysokiej domykamy w pierwszej kolejności, bo zmieniają liczbę screenów.</li>
+    <li><b>Wykonawca aktualizuje dokumentację:</b> mapa (ta sekcja), docs/05 (moduły), docs/11 (nawigacja), słownik, a wybory wpisuje do rejestru decyzji jako kolejne D-xx.</li>
+    <li><b>Makieta v2 dostaje drill through</b> zgodny z mapą: filtry z adresu na listach, linki między zakładkami, okruszki i powrót ze stanem. Bez tego screeny pokazywałyby liczby, które donikąd nie prowadzą.</li>
+    <li><b>Screeny do Miro.</b> Tablica ma jedną ramkę na jedną zakładkę. Układ: kolumna na każdą pozycję menu, w kolumnie ramki zakładek od lewej do prawej, karty rekordów pod modułem. Ramka zawiera: screen albo PDF zakładki, listę agregacji z miejscem docelowym drill through, rolę (kto widzi) i numery pytań Z-xx, które jej dotyczą. Strzałki między ramkami odpowiadają wierszom tabeli drill through.</li>
+    <li><b>Komentarze klienta</b> w ramkach, w trzech kolorach: zgoda, zmiana, pytanie. Zgoda na wszystkie ramki modułu zamyka ten moduł.</li>
+    <li><b>Kolejność ramek:</b> Dashboard, Dofinansowania (Wnioski, Baza klientów, Terminy, karta wniosku, karta klienta), Nabory, Zadania, Instytucje, Zgłoszenia, Administracja, Ustawienia, panel instytucji, panel klienta.</li>
+    <li><b>Kryterium zamknięcia:</b> klient zaakceptował mapę i wszystkie pytania o wadze wysokiej są rozstrzygnięte.</li>
+  </ol>
+
+  <div class="doc-foot">
+    Źródło: <a href="../../docs/19-mapa-zakladek.md">19-mapa-zakladek.md</a>. Pytania Z-01 do Z-38 są też w <a href="17-panel-decyzji.html" onclick="if(parent!==window){parent.docNav('17-panel-decyzji');return false}">panelu decyzyjnym</a>.
+    Powiązane: <a href="05-zakladki.html" onclick="if(parent!==window){parent.docNav('05-zakladki');return false}">Zakładki systemu</a>,
+    <a href="16-od-makiety.html" onclick="if(parent!==window){parent.docNav('16-od-makiety');return false}">Od makiety do aplikacji</a>.
+  </div>
+
+</div>
+<script src="../assets/mermaid.min.js"></script>
+<script>
+  /* Diagramy renderuja sie lokalnie, bez internetu. Zrodlo: docs/*.md */
+  mermaid.initialize({ startOnLoad: true, theme: "base", securityLevel: "loose",
+    themeVariables: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', fontSize: '13px' } });
+</script>
+</body>
+</html>

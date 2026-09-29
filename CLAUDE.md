@@ -63,7 +63,7 @@ Nie zaczynaj implementacji silnika prowizji bez tego.
 
 ## Stos docelowy: Open Mercato
 
-Decyzja D-176: framework Open Mercato (TypeScript, Next.js, PostgreSQL, MikroORM, Zod, licencja MIT, wersja v0.8.0, przed 1.0). Z frameworka bierzemy uwierzytelnianie, role, uprawnienia jako features `modul.akcja` w `acl.ts`, organizacje (tenant = LDIT, organizacja = instytucja) i log akcji (`action_logs`). Czego nie ma i dobudowujemy: uprawnienia per pole (odpowiednik `uprawnienia_pol`) oraz RLS w PostgreSQL jako druga bariera separacji (D-179), bo framework filtruje organizacje tylko w aplikacji. Mapowanie makiety na framework i ryzyka: `docs/18-od-makiety-do-aplikacji.md`.
+Decyzja D-176: framework Open Mercato (TypeScript, Next.js, PostgreSQL, MikroORM, Zod, licencja MIT, wersja v0.8.0, przed 1.0). Z frameworka bierzemy uwierzytelnianie, role, uprawnienia jako features `modul.akcja` w `acl.ts`, organizacje (tenant = LDIT, organizacja = instytucja) i log akcji (`action_logs`). Czego nie ma i dobudowujemy: uprawnienia per pole (w makiecie features pól w tabeli `funkcje`, np. `finanse.prowizja`) oraz RLS w PostgreSQL jako druga bariera separacji (D-179), bo framework filtruje organizacje tylko w aplikacji. Makieta już stosuje features (`funkcje`, `role_funkcje`), walidację na granicy zapisu i rejestr tylko do dopisywania (D-211). Mapowanie makiety na framework i ryzyka: `docs/18-od-makiety-do-aplikacji.md`.
 
 ---
 
@@ -77,7 +77,7 @@ Decyzja D-176: framework Open Mercato (TypeScript, Next.js, PostgreSQL, MikroORM
 
 **Podstawa prowizji LDIT:** koszt całkowity **z dopłatą**, nie kwota przyznana.
 
-**Separacja danych:** instytucje szkoleniowe są wobec siebie konkurencyjne. Wyciek do niewłaściwego katalogu to scenariusz krytyczny. Separacja egzekwowana **na poziomie danych, nie interfejsu** [D-148]. Trzy poziomy kontroli: moduł (tabela `uprawnienia`), pole (tabela `uprawnienia_pol`), wiersz (tabela `uzytkownik_instytucja`) [D-149]. Ukrycie kolumny w widoku nie jest zabezpieczeniem.
+**Separacja danych:** instytucje szkoleniowe są wobec siebie konkurencyjne. Wyciek do niewłaściwego katalogu to scenariusz krytyczny. Separacja egzekwowana **na poziomie danych, nie interfejsu** [D-148]. Trzy poziomy kontroli: moduł (features `modul.view` / `modul.manage`), pole (features pól, np. `finanse.prowizja`), obie w tabelach `funkcje` i `role_funkcje` [D-211], wiersz (tabela `uzytkownik_instytucja` oraz handlowiec `handlowiec_id` [D-210]) [D-149]. Ukrycie kolumny w widoku nie jest zabezpieczeniem.
 
 **Konfigurator prowizji widoczny wyłącznie dla administratora.** Instytucja nie widzi ani swojej, ani cudzej stawki.
 
@@ -151,6 +151,8 @@ node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus kore
 node tools/test-bezpieczenstwo.mjs   # hasła, sesja, strażnik zapisów, XSS
 node tools/test-lata.mjs          # zakładki roczne, dodawanie roku, brak wniosków z 2025
 node tools/test-model.mjs         # dane interaktywnego diagramu tabel zgodne ze schematem
+node tools/test-walidacja.mjs        # walidacja danych na granicy zapisu
+node tools/test-serwer.mjs          # lokalny serwer bazy
 ```
 
 Po zmianie schematu bazy przebuduj ją: `node tools/build-sqlite.mjs`.

@@ -7,14 +7,14 @@ flowchart LR
   SYS[("System KFS<br/>LDIT")]
 
   M365["Microsoft 365<br/>skrzynki pracownikow"]
-  FORM["Formularz zgloszeniowy<br/>per instytucja"]
+  FORM["Formularz zgloszeniowy<br/>natywny w systemie<br/>D-187, D-207"]
   KSIEG["System ksiegowy<br/>eSzokBR"]
   NAB["Aplikacja naborow<br/>340 urzedow"]
-  PROJ["Projectly<br/>zadania wrocily do systemu<br/>D-140"]
+  PROJ["Projectly<br/>zadania wrocily do systemu<br/>D-140, D-195"]
 
   M365 -->|"odczyt korespondencji"| SYS
   SYS -->|"wysylka powiadomien<br/>z domeny klienta"| M365
-  FORM -->|"dane klienta koncowego<br/>synchronizacja cykliczna"| SYS
+  FORM -->|"dane klienta koncowego<br/>zapis wprost do bazy"| SYS
   KSIEG -->|"faktury, import CSV<br/>nie API"| SYS
   NAB -->|"nabory aktualne<br/>i prognozowane"| SYS
   SYS -.->|"forma dostepu<br/>nieustalona"| PROJ
@@ -25,16 +25,16 @@ flowchart LR
 ```
 
 Szare pozycje zostały świadomie wykluczone z etapu I. SMS jako kanał powiadomień [D-04],
-API systemu księgowego z powodu kosztu i bezpieczeństwa.
+API systemu księgowego z powodu kosztu i bezpieczeństwa. SMS pozostaje wykluczony także dla uczestników [D-196, wstępna].
 
 | Integracja | Zakres | Mechanizm | Status |
 |---|---|---|---|
 | **Microsoft 365, wysyłka** | Powiadomienia z domeny klienta | Aplikacja z uprawnieniem Send Mail | Ustalone |
-| **Microsoft 365, odczyt** | Historia korespondencji przy kliencie | Ta sama aplikacja, uprawnienie do odczytu | Ustalone, zakres skrzynek do potwierdzenia |
-| **Formularze zgłoszeniowe** | Dane klienta końcowego | Formularz webowy per instytucja, synchronizacja cykliczna | Kierunek ustalony, technologia otwarta |
-| **System księgowy** | Faktury LDIT | **Import CSV**, nie API | Ustalone, zależne od potwierdzenia eksportu |
+| **Microsoft 365, odczyt** | Historia korespondencji przy kliencie | Ta sama aplikacja, uprawnienie do odczytu | Ustalone, jawna lista skrzynek przed konfiguracją [D-198, wstępna] |
+| **Formularze zgłoszeniowe** | Dane klienta końcowego | **Formularz natywny w systemie**, per instytucja, bez synchronizacji zewnętrznej [D-187, D-207] | Ustalone (wymaga zgody klienta na odejście od Google Forms z D-147) |
+| **System księgowy** | Faktury LDIT | **Import CSV**, nie API [D-25, D-163] | Wstępnie ustalone: wykonawca przyjął, że eksport istnieje, do potwierdzenia u księgowej |
 | **Aplikacja naborów** | Nabory aktualne i prognozowane | Osadzenie w systemie | Ustalone |
-| **Projectly** | Zadania. **Moduł wrócił do systemu** [D-140], więc integracja przestaje być potrzebna | Forma dostępu niedoprecyzowana | Do zamknięcia, patrz [P-37] |
+| **Projectly** | Zadania. **Moduł wrócił do systemu** [D-140], zadania i powiadomienia to dwa moduły [D-195], więc integracja przestaje być potrzebna | Brak | Przesądzone, do formalnego zamknięcia [P-37] |
 | ~~SMS~~ | ~~Powiadomienia~~ | Odrzucone w etapie I | Wykluczone |
 | ~~API systemu księgowego~~ | ~~Faktury~~ | Odrzucone (koszt i bezpieczeństwo) | Wykluczone |
 
@@ -62,7 +62,7 @@ Powód: klienci i instytucje mają przypisane opiekunki (Łucja, Martyna). Insty
 
 > **Bartek (1:34:58):** "Nie chciałbym, żeby wszystkie to były maile, bo moje szkolenia wyglądają inaczej. Maile pracowników, czasami sprawy z nimi porozmawiam. Nie chcę, żeby każdy miał do tego wgląd."
 
-> **[P-20] Wypowiedź klienta jest niepełna.** Bartek (1:35:32): "zróbmy tak, zrobimy klientów wszystkie skrzynki, a [instytucji] szkoleniowych tylko [wybrane]." Najbardziej prawdopodobna interpretacja: korespondencja z **klientami** zaciągana ze wszystkich skrzynek pracowniczych, korespondencja z **instytucjami** tylko z wybranych. Wymaga potwierdzenia.
+> **[P-20] Wypowiedź klienta jest niepełna.** Wykonawca rozstrzygnął wstępnie: jawna lista skrzynek objętych integracją, ustalona przed konfiguracją aplikacji [D-198, do potwierdzenia przez klienta]. Bartek (1:35:32): "zróbmy tak, zrobimy klientów wszystkie skrzynki, a [instytucji] szkoleniowych tylko [wybrane]." Najbardziej prawdopodobna interpretacja: korespondencja z **klientami** zaciągana ze wszystkich skrzynek pracowniczych, korespondencja z **instytucjami** tylko z wybranych. Wymaga potwierdzenia.
 
 ### Priorytet: korespondencja z klientami
 
@@ -74,7 +74,9 @@ Do systemu trafiają **tylko maile z wybranymi kontaktami**, nie cała zawartoś
 
 **Maile z pola DW są również zaciągane** (zweryfikowane na żywo podczas dema).
 
-### Powiązanie maila z klientem: PROBLEM NIEROZWIĄZANY [P-21]
+### Powiązanie maila z klientem [P-21, rozstrzygnięte D-178]
+
+**Rozstrzygnięcie wykonawcy [D-178, TWARDA]:** mail jest dopasowywany do klienta po adresie e-mail (klienta i wniosku), temat służy jako uzupełnienie, możliwe jest ręczne przypięcie. Poniżej stan z warsztatu, zachowany jako źródło.
 
 Przyjęto **obejście procesowe**: nazwa klienta w temacie maila.
 
@@ -82,12 +84,12 @@ Przyjęto **obejście procesowe**: nazwa klienta w temacie maila.
 
 Przykład konwencji: `pielesiak - zapytanie`.
 
-**To jest zależność od dyscypliny ludzi, nie mechanizm systemowy.** Jeden zapomniany prefiks oznacza, że mail nie trafi do rekordu. Skaluje się źle przy 130 wnioskach w dwa tygodnie.
+**Na warsztacie było to zależność od dyscypliny ludzi, nie mechanizm systemowy.** Jeden zapomniany prefiks oznacza, że mail nie trafi do rekordu. Skaluje się źle przy 130 wnioskach w dwa tygodnie.
 
 Wykonawca zasygnalizował potrzebę identyfikatora klienta:
 > **Paweł (1:35:52):** "skąd będziemy widzieli, jakiego klienta mail dotyczył? Czy zrobimy jakiś identyfikator klienta?" i odpowiedział sam: "No zobaczę czy będzie [możliwe]."
 
-**Rekomendacja do rozważenia:** dopasowanie po adresie e-mail nadawcy lub odbiorcy jako mechanizm podstawowy, konwencja tematu jako uzupełnienie dla przypadków niejednoznacznych (mail od instytucji dotyczący konkretnego klienta).
+**Rekomendacja, przyjęta w D-178:** dopasowanie po adresie e-mail nadawcy lub odbiorcy jako mechanizm podstawowy, konwencja tematu jako uzupełnienie dla przypadków niejednoznacznych (mail od instytucji dotyczący konkretnego klienta).
 
 ### Miejsca prezentacji korespondencji
 
@@ -161,22 +163,26 @@ Pola z obecnego formularza Excel:
 
 **Przypisanie uczestnika do konkretnego szkolenia** (odpowiednik obecnego arkusza `Rozpis szkoleń`), bo jeden wniosek może obejmować kilka szkoleń.
 
-**Pytanie otwarte [P-23]:** czy lista szkoleń pochodzi z katalogu w systemie, czy jest konfigurowana przez instytucję. Wykonawca: "albo zrobimy im listę, albo się to będzie pobierało od nas z systemu, już mniejsza."
+**[P-23] rozstrzygnięte D-188:** lista szkoleń pochodzi z katalogu w systemie. Wykonawca: "albo zrobimy im listę, albo się to będzie pobierało od nas z systemu, już mniejsza."
 
-### Technologia: OTWARTA [P-24]
+### Technologia: formularz natywny [P-24, rozstrzygnięte D-187, potwierdzone D-207]
+
+Niżej opis sporu z warsztatu (2:08 i dalej). Wykonawca zdecydował: **formularz natywny w systemie**. Odwraca to preferencję klienta z D-147 (Google Forms), więc wymaga rozmowy.
 
 Wykonawca zaproponował Google Forms z arkuszem pod spodem, po czym sam się z tego wycofał:
 
 > **Paweł (2:08:02):** "To nawet zwykłe Google Sheets, w sensie formularz od Google'a. Pod formularzem od Google'a jest excel, czyli spreadsheet, który się aktualizuje."
 > **Paweł (2:08:41):** "Znaczy, to nie będzie realnie Google Sheet, tylko zwykły formularz."
 
-**Rekomendacja:** formularz natywny w systemie, nie Google Forms. Argumenty:
+**Decyzja [D-187, D-207]:** formularz natywny w systemie, nie Google Forms. Argumenty:
 - Google Forms wymusza przechowywanie danych osobowych (PESEL) poza infrastrukturą systemu, co komplikuje zgodność z RODO
 - 20 osobnych kopii formularza Google to koszt utrzymania i ryzyko rozjazdu wersji
 - lista szkoleń do wyboru musi pochodzić z katalogu w systemie, co Google Forms utrudnia
 - formularz natywny może od razu rejestrować datę wpłynięcia w bazie systemu
 
-Synchronizacja cykliczna (np. co godzinę) była proponowana tylko dlatego, że źródło miało być zewnętrzne. Formularz natywny eliminuje ten problem.
+Synchronizacja cykliczna (np. co godzinę) była proponowana tylko dlatego, że źródło miało być zewnętrzne. Formularz natywny eliminuje ten problem (dotyczy też P-38).
+
+**Zabezpieczenie publicznego formularza [D-187]:** limit zgłoszeń i bramka akceptacji administratora [D-105]. Zgłoszenie czeka w tabeli `formularze_oczekujace`, pole `wypelnil` mówi, czy wypełnił klient czy handlowiec [D-181, wstępna], a `handlowiec_id` przypisuje zgłoszenie do konta handlowca [D-210], który widzi tylko swoje.
 
 **Dostęp instytucji do własnego formularza:** IS widzi, ile osób wypełniło, i może wykonać zgłoszenie testowe.
 
@@ -193,7 +199,7 @@ Synchronizacja cykliczna (np. co godzinę) była proponowana tylko dlatego, że 
 
 Częstotliwość importu: raz w tygodniu jest wystarczająca.
 
-> **BLOKER [P-09]:** nie potwierdzono, czy system księgowy klienta udostępnia eksport CSV. Klient miał to sprawdzić u księgowej w przerwie warsztatu, odpowiedź nie padła w transkrypcji. **Cały moduł faktur opiera się na tym założeniu.** Nazwa systemu: **eSzokBR** (z dokumentu klienta).
+> **[P-09] rozstrzygnięte wstępnie przez wykonawcę [D-163, wstępna]:** eksport CSV istnieje, robimy import (format kolumn, dopasowanie faktury do wniosku, import wielokrotny tego samego pliku). Faktury korygujące należą do okresu wystawienia [D-161]. Pierwotnie: nie potwierdzono, czy system księgowy klienta udostępnia eksport CSV. Klient miał to sprawdzić u księgowej w przerwie warsztatu, odpowiedź nie padła w transkrypcji. **Cały moduł faktur opiera się na tym założeniu, które klient (księgowa) musi jeszcze potwierdzić.** Nazwa systemu: **eSzokBR** (z dokumentu klienta).
 
 ---
 
@@ -211,7 +217,7 @@ Zakres danych: nabory aktualne, prognozowane i zakończone, przypisane do urzęd
 
 ## Architektura danych: separacja vs widok zbiorczy
 
-**To jest najważniejsza otwarta decyzja architektoniczna [P-25].**
+**Rozstrzygnięte [D-177, TWARDA]: jedna baza z separacją na wierszach, egzekwowana dwa razy [D-179]: polityki RLS w PostgreSQL plus filtr organizacji w serwerze.** Poniżej rozumowanie, które do tego doprowadziło. Audyt separacji jest osobnym krokiem przed wdrożeniem [D-177], a zewnętrzny audyt bezpieczeństwa po etapie I [D-201, wstępna].
 
 ### Sygnały wykonawcy w stronę osobnych baz
 
@@ -245,7 +251,7 @@ Argumenty:
 Klient sam sygnalizował ryzyko wycieku przez wyszukiwarkę:
 > **Bartek (3:06:43):** "żeby nie zdarzyło się, że wpiszą przypadkowo jakiegoś klienta i im się to wyświetli. Więc tutaj też na to trzeba będzie uważać."
 
-**Decyzja wymaga potwierdzenia przed rozpoczęciem implementacji.**
+**Decyzja podjęta [D-177]. Uwaga: Open Mercato filtruje organizacje w aplikacji, a RLS trzeba dołożyć samemu, bo framework go nie ma [D-179].**
 
 ---
 
@@ -274,14 +280,25 @@ Klient wielokrotnie warunkował zgodę na rozszerzenia zakresu (panel klienta, s
 
 ## Stos technologiczny
 
-**Nie został ustalony na warsztacie.** Padły wyłącznie decyzje pośrednie:
+**Stos docelowy [D-176, TWARDA]:** framework **Open Mercato** (TypeScript, Next.js, PostgreSQL, MikroORM, Zod). Z frameworka: uwierzytelnianie, role, uprawnienia jako features `modul.akcja`, organizacje, log akcji. Dobudowujemy sami: uprawnienia per pole, RLS w PostgreSQL [D-179], silnik prowizji, import CSV, integrację M365. Ryzyko: wersja v0.8.0, przed 1.0, patrz [15](15-ryzyka.md) i [18](18-od-makiety-do-aplikacji.md).
 
 | Element | Ustalenie |
 |---|---|
-| Prototypy i makiety | HTML |
-| Integracja poczty | Microsoft Graph (aplikacja M365) |
+| Framework i baza | Open Mercato, PostgreSQL, jedna baza [D-176, D-177] |
+| Separacja | RLS plus filtr organizacji w serwerze [D-179] |
+| Uprawnienia | Features `modul.akcja` z wildcardem `modul.*`, tabele `funkcje` i `role_funkcje` w makiecie [D-211] |
+| Walidacja | Na granicy zapisu, Zod w aplikacji, `assets/walidacja.js` w makiecie [D-211] |
+| Format błędów API | `{ data, error: { code, message } }` [D-211] |
+| Współbieżność zapisu | Blokada wersji (optimistic locking) w trybie serwera [D-211] |
+| Typy kwot | `NUMERIC(12,2)` w bazie docelowej [D-184] |
+| Integracja poczty | Microsoft Graph (aplikacja M365), jawna lista skrzynek [D-198] |
 | Generowanie dokumentów | PDF po stronie serwera z szablonu graficznego |
-| Archiwizacja | ZIP generowany po stronie serwera |
-| Import danych | CSV |
+| Archiwizacja | ZIP generowany po stronie serwera, PDF faktury z importu [D-183] |
+| Import danych | CSV [D-163] |
+| Prototypy i makiety | HTML na SQLite w przeglądarce |
 
-Wybór frameworka, bazy danych i hostingu pozostaje po stronie wykonawcy, z zastrzeżeniem kalkulacji kosztów utrzymania w wariantach skali.
+### Lokalny serwer makiety
+
+`node tools/serwer.mjs` uruchamia lokalny serwer z bazą w pliku `makieta/db/kfs.sqlite`, nasłuch wyłącznie na 127.0.0.1. API zwraca `{ data, error: { code, message } }`, zapis całej bazy wymaga aktualnego nagłówka wersji (konflikt kończy się 409) [D-211]. To nadal makieta: separacja i uprawnienia działają w przeglądarce [D-179], więc nie są zabezpieczeniem. Szczegóły w [18](18-od-makiety-do-aplikacji.md).
+
+Kalkulacja kosztów hostingu w wariantach skali pozostaje zadaniem otwartym [P-48].

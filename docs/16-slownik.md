@@ -11,7 +11,7 @@
 | **Nabór prognozowany** | Przewidywany, jeszcze nieogłoszony nabór. Z aplikacji do przewidywania naborów |
 | **praca.gov.pl** | Portal, przez który klient zakłada konto i składa dokumenty |
 | **Mikroprzedsiębiorca** | Firma zatrudniająca **do 9 osób** łącznie na umowie o pracę. Dofinansowanie 90% |
-| **Wkład własny** | Część kosztu pokrywana przez firmę. **10%** dla mikro, **30%** dla pozostałych |
+| **Wkład własny** | Część kosztu pokrywana przez firmę. **10%** dla mikro, **30%** dla pozostałych (wartości domyślne, progi konfigurowalne i wersjonowane datą [D-131]). Procent wyliczany, kwota nadpisywalna ręcznie [D-172, wstępna], liczony od kosztu uznanego przez urząd [D-173, wstępna] |
 | **Uczestnik zakwalifikowany** | Osoba spełniająca warunki KFS, wchodzi do kosztu całkowitego projektu |
 | **Uczestnik niezakwalifikowany** | Np. prezes zarządu będący większościowym udziałowcem bez umowy o pracę. **Wymaga odrębnej faktury komercyjnej** |
 | **Precedens cenowy** | Jeśli instytucja raz zejdzie z ceny, urząd nie zaakceptuje już wyższej kwoty dla tego szkolenia |
@@ -23,7 +23,7 @@
 | Pojęcie | Definicja | Sposób |
 |---|---|---|
 | **Całkowita wartość szkolenia** | Pełna wartość szkolenia z wkładem własnym, o którą wnioskujemy. Suma kwot uczestników zakwalifikowanych. Wcześniej mylnie nazywana "kwotą wnioskowaną" | Wyliczane |
-| **Koszt całkowity** | Wartość **uznana przez urząd**, podstawa wyliczenia dofinansowania. Może być niższa od wnioskowanej. **Nazwa sporna**, klient proponował "dofinansowanie ze wkładem własnym" | Ręczne |
+| **Koszt całkowity** | Wartość **uznana przez urząd**, podstawa wyliczenia dofinansowania. Może być niższa od wnioskowanej. **Nazwa sporna**, klient proponował "dofinansowanie ze wkładem własnym". Wykonawca wstępnie zostawia nazwę "koszt całkowity" [D-191, wstępna] | Wyliczane od "kosztu całkowitego z dopłatą" [D-134] |
 | **Przyznano** | Kwota dofinansowania przyznana przez urząd. `koszt_calkowity x 0,9` (mikro) lub `x 0,7` | Wyliczane |
 | **Dopłata standard** | Wkład własny wyrażony kwotowo. `wartosc x procent_wkladu` | Wyliczane |
 | **Kwota dopłaty dodatkowej** | Dodatkowa kwota płacona przez klienta poza wkładem własnym, gdy urząd przyznał za mało lub instytucja nie zeszła z ceny. Domyślnie 0 | Ręczne |
@@ -37,10 +37,12 @@
 
 | Pojęcie | Znaczenie |
 |---|---|
-| **Prowizja LDIT** | Wynagrodzenie firmy Bartka, płacone przez instytucję szkoleniową. Zawsze procentowo, nigdy kwotowo. Standard 20% |
-| **Prowizja wewnętrzna** | Prowizja pracowników LDIT, liczona kaskadowo od przychodu firmy. **Progi nieustalone** |
+| **Prowizja LDIT** | Wynagrodzenie firmy Bartka, płacone przez instytucję szkoleniową. Domyślnie procentowo, standard 20%. Indywidualne nadpisanie per wniosek może być procentem albo kwotą [D-136, koryguje D-21] |
+| **Prowizja wewnętrzna** | Prowizja pracowników LDIT. Startuje na stałej stawce, progi dołożone później, nowe warunki działają od daty obowiązywania, nigdy wstecz [D-162, wstępna, do potwierdzenia przez klienta] |
 | **Prowizja potencjalna** | Prowizja szacowana z wniosków jeszcze nierozstrzygniętych. Prezentowana na dashboardzie |
-| **Prowizja przewidywana** | Prognoza stawki dla okresu, wyliczona z zaplanowanych szkoleń przed wystawieniem faktur |
+| **Prowizja przewidywana** | Prognoza stawki dla okresu, wyliczona z zaplanowanych szkoleń (kalendarz) przed wystawieniem faktur. Obok niej widok rzeczywisty wg daty faktury [D-164, wstępna] |
+| **Okres rozliczeniowy** | Miesiąc albo rok (YTD), do którego przypisana jest faktura i z którego liczy się obrót do progów. Rzeczywisty: wg daty faktury. Przewidywany: wg kalendarza szkoleń [D-164]. Faktura korygująca należy do okresu, w którym ją wystawiono [D-161] |
+| **Korekta faktury (faktura korygująca)** | Faktura o rodzaju "korygująca" z `faktura_pierwotna_id` [D-170]. Zdejmuje prowizję stawką faktury pierwotnej, nie zmienia obrotu nowego okresu, zamknięty okres się nie zmienia. Prowizja za miesiąc korekty może wyjść ujemna [D-161, wstępna] |
 | **Prowizja przyznana** | Prowizja wyliczona od faktycznie przyznanego dofinansowania |
 | **Prowizja ustalona ręcznie** | Nadpisanie stawki dla pojedynczego wniosku. Edytowalne wyłącznie z modułu Administracja |
 | **Próg przychodu** | Kwota graniczna (miesięczna lub roczna), po przekroczeniu której zmienia się stawka |
@@ -65,11 +67,19 @@
 | **Termin szkolenia** | Konkretna **realizacja** szkolenia z katalogu. Jeden szablon może być zrealizowany 50 razy w roku |
 | **Plan szkolenia** | Zestaw parametrów dodawany przez instytucję, np. tryb wieczorowy |
 | **Standard** | Powtarzalny wzorzec godzin i dni szkolenia danej instytucji, np. 9:30-20:00, śr/czw/pt |
+| **Szkoleniowiec** | Osoba prowadząca szkolenia w instytucji: imię, nazwisko, telefon, e-mail. Osobna tabela `szkoleniowcy`, 1 instytucja : N [D-167] |
+| **Handlowiec** | Konto **Pracownik IS**, nadawane przez administratora instytucji. Widzi wyłącznie klientów i wnioski przypisane do siebie (`handlowiec_id`) [D-72, D-210]. Nie dostaje statystyk w rozbiciu per handlowiec [D-209] |
+| **Zakładka "nieprzypisane"** | Widok wniosków bez roku (`wnioski.rok` NULL). Usunięcie zakładki roku odpina wnioski, nie kasuje ich [D-165] |
+| **Podsumowanie historyczne** | Same liczby za lata nieprzeniesione (np. 2025), tabela `podsumowania_historyczne` i widok `v_podsumowanie_roku`, zasila dashboard [D-175, D-160] |
+| **Feature** | Jednostka uprawnienia w formacie `modul.akcja` (np. `wnioski.view`, `wnioski.manage`), także dla pól. Przypisywana do roli w `role_funkcje`, obsługuje wildcard `modul.*`. Wzór z Open Mercato (`acl.ts`, `role_acls`) [D-211, D-176] |
+| **Drill through** | Zasada: każda agregacja (liczba, wykres, kafelek, licznik) prowadzi do listy szczegółów, z których się składa [D-212, wstępna] |
+| **Strażnik zapisów** | Warstwa walidacji i kontroli przy zapisie: walidacja danych na granicy (`assets/walidacja.js`, odpowiednik Zod), format błędów `{ data, error: { code, message } }`, blokada wersji (optimistic locking) w trybie serwera [D-211] |
 | **Konfigurator instytucji** | Moduł z danymi firmy, warunkami prowizji, wzorem certyfikatu. **Widoczny wyłącznie dla admina** |
 | **Zgłoszenia** | Moduł wewnętrznej bazy incydentów (oszustwa, próby zaniżenia prowizji). Tylko admin i pracownicy LDIT |
 | **Rejestr aktywności** | Log zmian danych: kto, kiedy, wartość przed i po |
 | **Log logowań** | Log sesji: kto i kiedy zalogował się do systemu |
-| **Reguła (na polu)** | Automatyczne wyliczanie wartości. Kasowane po ręcznej edycji, z możliwością przywrócenia |
+| **Reguła (na polu)** | Automatyczne wyliczanie wartości. Kasowane po ręcznej edycji, z możliwością przywrócenia ("Przywróć regułę") |
+| **Rejestr (log akcji)** | Dziennik istotnych zdarzeń (otwarcie karty, eksport, wejście w moduł finansowy, wysyłka, zmiana statusu, zmiana uprawnień), tylko do dopisywania [D-189, D-208] |
 
 ---
 
@@ -93,7 +103,7 @@ Klient zażądał zachowania obecnych nazw [D-55]. Ta tabela zapobiega rozjazdow
 |---|---|
 | `NW` (status) | Rozwinięcie skrótu zapomniane przez samego klienta. Znaczenie: umówione z klientem, że piszemy wniosek, ale sprawa stoi |
 | `Niezłożone` (zakładka) | Myląca, zawiera też klientów ze złożonymi wnioskami. Klient proponuje "Baza klientów" |
-| `koszt całkowity` (pole) | Myli się z całkowitą wartością szkolenia. Rekomendacja: "Koszt uznany przez urząd" |
+| `koszt całkowity` (pole) | Myli się z całkowitą wartością szkolenia. Propozycja wcześniejsza: "Koszt uznany przez urząd". **Wstępnie zostaje "koszt całkowity"** [D-191, do potwierdzenia przez klienta], ryzyko pomyłki z "kosztem całkowitym z dopłatą" |
 
 ---
 
@@ -127,7 +137,8 @@ Klient zażądał zachowania obecnych nazw [D-55]. Ta tabela zapobiega rozjazdow
 | **Microsoft 365** | Środowisko klienta. Podstawa integracji poczty |
 | **Outlook** | Klient poczty. Integracja kalendarza **wykluczona** |
 | **OneDrive / SharePoint** | Repozytorium plików. **Zostaje poza systemem** |
-| **Projectly** | Druga aplikacja wykonawcy. Miała przejąć zadania [D-118], ale moduł wrócił do systemu [D-140] |
+| **Projectly** | Druga aplikacja wykonawcy. Miała przejąć zadania [D-118], ale moduł wrócił do systemu [D-140], integracja niepotrzebna |
+| **Open Mercato** | Framework docelowy: TypeScript, Next.js, PostgreSQL, MikroORM, Zod. Wersja v0.8.0, przed 1.0 [D-176] |
 | **Zoho CRM** | System wykonawcy, demonstrowany na warsztacie jako wzorzec integracji poczty |
 | **Fakturownia** | Poprzedni system fakturowy klienta |
 | **inFakt** | System fakturowy wykonawcy, referencja dla eksportu |
