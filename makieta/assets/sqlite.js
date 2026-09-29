@@ -9,8 +9,11 @@
    wklejone jako base64 (db/sql-wasm-data.js), a nie pobierane przez fetch,
    ktory na protokole file:// jest blokowany.
 
-   Stan roboczy zapisuje sie w localStorage, wiec zmiany w makiecie przezywaja
-   odswiezenie strony. KFS.reset() wraca do bazy startowej.
+   Dwa tryby przechowywania stanu roboczego:
+     przegladarka  makieta z dwukliku (file://): baza w localStorage
+     serwer        makieta z node tools/serwer.mjs (http://): baza w pliku
+                   makieta/db/kfs.sqlite na dysku, wspolna dla wszystkich kart
+   KFS.tryb mowi, ktory dziala. KFS.reset() wraca do bazy startowej.
 
    API:  KFS.gotowa            Promise, spelniona gdy baza jest zaladowana
          KFS.db                obiekt bazy sql.js (po spelnieniu gotowa)
@@ -22,7 +25,7 @@
 (function (global) {
   "use strict";
 
-  var KLUCZ = "kfs_sqlite_v4";
+  var KLUCZ = "kfs_sqlite_v5";
   var OPOZNIENIE_ZAPISU = 250;
 
   function base64NaBajty(b64) {
@@ -50,30 +53,75 @@
     }
   }
 
+  var ADRES_API = "/api/baza";
+  var protokol = global.location && global.location.protocol;
+  var zSerwera = protokol === "http:" || protokol === "https:";
+
   var KFS = {
     db: null,
     KLUCZ: KLUCZ,
-    zapisany: false
+    zapisany: false,
+    tryb: zSerwera ? "serwer" : "przegladarka"
   };
 
   var timerZapisu = null;
+  var wersjaSerwera = null;
+  var zapisWToku = false, zapisCzeka = false;
+
+  function zglos(nazwa, komunikat) {
+    if (global.dispatchEvent && global.CustomEvent) {
+      global.dispatchEvent(new global.CustomEvent(nazwa, { detail: { komunikat: komunikat } }));
+    }
+  }
+
+  function zapiszLokalnie() {
+    try {
+      global.localStorage.setItem(KLUCZ, bajtyNaBase64(KFS.db.export()));
+      KFS.zapisany = true;
+    } catch (e) {
+      /* Przekroczony limit albo brak localStorage: pracujemy w pamieci sesji */
+      KFS.zapisany = false;
+    }
+  }
+
+  /* Jeden zapis naraz; kolejny czeka i wysyla najnowszy stan */
+  function zapiszNaSerwerze() {
+    if (zapisWToku) { zapisCzeka = true; return; }
+    zapisWToku = true;
+    global.fetch(ADRES_API, {
+      method: "PUT", body: KFS.db.export(),
+      headers: { "Content-Type": "application/x-sqlite3", "X-Kfs-Wersja": String(wersjaSerwera) }
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (r.status === 409) { KFS.zapisany = false; zglos("kfs:konflikt", j.error.message); return; }
+        if (!r.ok) { KFS.zapisany = false; zglos("kfs:blad-zapisu", j.error ? j.error.message : "Blad zapisu"); return; }
+        wersjaSerwera = j.data.wersja;
+        KFS.zapisany = true;
+      });
+    }).catch(function () {
+      KFS.zapisany = false;
+      zglos("kfs:blad-zapisu", "Serwer bazy nie odpowiada, zmiany nie zostaly zapisane na dysku.");
+    }).then(function () {
+      zapisWToku = false;
+      if (zapisCzeka) { zapisCzeka = false; zapiszNaSerwerze(); }
+    });
+  }
 
   KFS.zapisz = function () {
     if (timerZapisu) global.clearTimeout(timerZapisu);
     timerZapisu = global.setTimeout(function () {
       timerZapisu = null;
       if (!KFS.db) return;
-      try {
-        global.localStorage.setItem(KLUCZ, bajtyNaBase64(KFS.db.export()));
-        KFS.zapisany = true;
-      } catch (e) {
-        /* Przekroczony limit albo brak localStorage: pracujemy w pamieci sesji */
-        KFS.zapisany = false;
-      }
+      if (KFS.tryb === "serwer") zapiszNaSerwerze();
+      else zapiszLokalnie();
     }, OPOZNIENIE_ZAPISU);
   };
 
   KFS.reset = function () {
+    if (KFS.tryb === "serwer") {
+      global.fetch(ADRES_API, { method: "DELETE" }).then(function () { global.location.reload(); });
+      return;
+    }
     try { global.localStorage.removeItem(KLUCZ); } catch (e) { /* brak localStorage */ }
     global.location.reload();
   };
@@ -105,18 +153,36 @@
     return global.initSqlJs({ wasmBinary: base64NaBajty(global.SQL_WASM_BASE64) })
       .then(function (SQL) {
         global.SQL = SQL;
-        var zapisany = wczytajZapisany();
-        if (zapisany) {
-          KFS.db = new SQL.Database(zapisany);
+        if (KFS.tryb !== "serwer") return otworzLokalnie(SQL);
+        return global.fetch(ADRES_API, { cache: "no-store" }).then(function (r) {
+          if (!r.ok) throw new Error("Serwer bazy odpowiedzial " + r.status);
+          wersjaSerwera = r.headers.get("X-Kfs-Wersja");
+          return r.arrayBuffer();
+        }).then(function (bufor) {
+          KFS.db = new SQL.Database(new Uint8Array(bufor));
           KFS.zapisany = true;
-        } else {
-          if (!global.KFS_SEED_DB) throw new Error("Brak bazy startowej. Dolacz db/seed-db.js");
-          KFS.db = new SQL.Database(base64NaBajty(global.KFS_SEED_DB));
-        }
-        KFS.db.run("PRAGMA foreign_keys = ON");
-        return KFS.db;
+          KFS.db.run("PRAGMA foreign_keys = ON");
+          return KFS.db;
+        }, function () {
+          /* Strona z http, ale bez naszego serwera: wracamy do pamieci przegladarki */
+          KFS.tryb = "przegladarka";
+          return otworzLokalnie(SQL);
+        });
       });
   })();
+
+  function otworzLokalnie(SQL) {
+    var zapisany = wczytajZapisany();
+    if (zapisany) {
+      KFS.db = new SQL.Database(zapisany);
+      KFS.zapisany = true;
+    } else {
+      if (!global.KFS_SEED_DB) throw new Error("Brak bazy startowej. Dolacz db/seed-db.js");
+      KFS.db = new SQL.Database(base64NaBajty(global.KFS_SEED_DB));
+    }
+    KFS.db.run("PRAGMA foreign_keys = ON");
+    return KFS.db;
+  }
 
   global.KFS = KFS;
 })(window);

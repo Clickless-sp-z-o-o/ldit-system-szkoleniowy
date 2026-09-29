@@ -18,36 +18,54 @@
 (function (global) {
   "use strict";
 
-  var KLUCZ_SESJI = "kfs_sesja_v1";
+  var KLUCZ_SESJI = "kfs_sesja_v2";
   var S = global.Store;
   if (!S) throw new Error("Brak window.Store. Dolacz assets/store.js przed auth.js");
+  if (!global.Haslo) throw new Error("Brak window.Haslo. Dolacz assets/haslo.js przed auth.js");
+  var systemowo = S.odbierzTrybSystemowy();
 
-  var sesja = null;
+  /* Zasady logowania wzorowane na Open Mercato (D-176): ogolny komunikat bledu,
+     ktory nie zdradza, czy konto istnieje, blokada czasowa po serii prob,
+     sesja wygasajaca po bezczynnosci. */
+  var MAX_PROB = 5;
+  var BLOKADA_MIN = 15;
+  var SESJA_MIN = 8 * 60;
+  var BEZCZYNNOSC_MIN = 30;
+  var ODSWIEZ_AKTYWNOSC_MS = 60 * 1000;
+  var WAZNOSC_PAMIECI_MS = 1000;
+  var BLAD_OGOLNY = "Nieprawidłowy login lub hasło.";
 
-  function wczytajSesje() {
-    try {
-      var raw = global.localStorage && global.localStorage.getItem(KLUCZ_SESJI);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function zapiszSesje(s) {
-    try {
-      if (s) global.localStorage.setItem(KLUCZ_SESJI, JSON.stringify(s));
-      else global.localStorage.removeItem(KLUCZ_SESJI);
-    } catch (e) {
-      /* brak localStorage: sesja zyje tylko w pamieci karty */
-    }
-    sesja = s;
-  }
+  var pamiec = { token: null, obiekt: null, czas: 0 };
+  var ostatnieOdswiezenie = 0;
 
   function teraz() {
     var d = new Date();
     var p = function (n) { return String(n).padStart(2, "0"); };
     return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
            " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+  function isoZa(minuty) { return new Date(Date.now() + minuty * 60000).toISOString(); }
+
+  function czytajToken() {
+    try { return global.localStorage ? global.localStorage.getItem(KLUCZ_SESJI) : null; }
+    catch (e) { return null; }   /* localStorage niedostepny: brak sesji, czyli brak dostepu */
+  }
+  function zapiszToken(token) {
+    try {
+      if (token) global.localStorage.setItem(KLUCZ_SESJI, token);
+      else global.localStorage.removeItem(KLUCZ_SESJI);
+    } catch (e) {
+      pamiec.token = token;       /* bez localStorage sesja zyje tylko w tej karcie */
+    }
+    pamiec = { token: token, obiekt: null, czas: 0 };
+  }
+
+  function losowyToken() {
+    if (!global.crypto || !global.crypto.getRandomValues) {
+      throw new Error("Brak bezpiecznego generatora liczb losowych, logowanie niemozliwe");
+    }
+    var b = global.crypto.getRandomValues(new Uint8Array(24));
+    return Array.prototype.map.call(b, function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
   }
 
   /* Zmiana sesji zmienia zakres widocznych danych, wiec adapter musi je przeliczyc */
@@ -56,57 +74,109 @@
   }
 
   function zapiszLogowanie(login, wynik) {
-    S.insert("logowania", {
-      czas: teraz(), kto: login, ip: "10.0.0.1", wynik: wynik, urzadzenie: "Przegladarka (makieta)"
-    }, "LOG-");
+    systemowo(function () {
+      S.insert("logowania", {
+        czas: teraz(), kto: login, ip: "10.0.0.1", wynik: wynik, urzadzenie: "Przegladarka (makieta)"
+      }, "LOG-");
+    });
+  }
+
+  /* Sesja z bazy: rola, zakres i blokada czytane przy kazdym odczycie */
+  function sesjaZBazy(token) {
+    var r = S.one(
+      "SELECT s.token, s.wygasa, s.ostatnia_aktywnosc, s.utworzono, u.id, u.login, u.imie_nazwisko, " +
+      "       u.rola_id, u.instytucja_id, u.klient_id, u.wszystkie_instytucje, u.zablokowane, " +
+      "       r.nazwa AS rola_nazwa, r.zakres AS rola_zakres, i.nazwa AS instytucja_nazwa " +
+      "FROM sesje s JOIN uzytkownicy u ON u.id = s.uzytkownik_id JOIN role r ON r.id = u.rola_id " +
+      "LEFT JOIN instytucje i ON i.id = u.instytucja_id WHERE s.token = ?", [token]);
+    var nieaktywna = r && new Date(r.ostatnia_aktywnosc).getTime() < Date.now() - BEZCZYNNOSC_MIN * 60000;
+    if (!r || r.zablokowane || r.wygasa < new Date().toISOString() || nieaktywna) {
+      if (r) systemowo(function () { S.exec("DELETE FROM sesje WHERE token = ?", [token]); });
+      return null;
+    }
+    if (Date.now() - ostatnieOdswiezenie > ODSWIEZ_AKTYWNOSC_MS) {
+      ostatnieOdswiezenie = Date.now();
+      /* Bez powiadamiania sluchaczy: to nie jest zmiana danych, ktora wymaga przebudowy */
+      systemowo(function () {
+        S.exec("UPDATE sesje SET ostatnia_aktywnosc = ? WHERE token = ?", [new Date().toISOString(), token]);
+      });
+      S.save();
+    }
+    return {
+      uzytkownik_id: r.id, login: r.login, imie: r.imie_nazwisko,
+      rola_id: r.rola_id, rola_nazwa: r.rola_nazwa, rola_zakres: r.rola_zakres,
+      instytucja_id: r.instytucja_id, instytucja_nazwa: r.instytucja_nazwa, klient_id: r.klient_id,
+      wszystkie_instytucje: !!r.wszystkie_instytucje, zalogowano: r.utworzono
+    };
+  }
+
+  function nieudanaProba(u) {
+    var proby = (u.nieudane_proby || 0) + 1;
+    var patch = proby >= MAX_PROB
+      ? { nieudane_proby: 0, zablokowane_do: isoZa(BLOKADA_MIN) }
+      : { nieudane_proby: proby };
+    systemowo(function () { S.update("uzytkownicy", u.id, patch); });
   }
 
   var Auth = {
     KLUCZ_SESJI: KLUCZ_SESJI,
+    MAX_PROB: MAX_PROB,
 
     /* --------------------------- logowanie --------------------------- */
 
     zaloguj: function (login, haslo) {
       var u = S.one(
-        "SELECT u.*, r.nazwa AS rola_nazwa, r.zakres AS rola_zakres, i.nazwa AS instytucja_nazwa " +
-        "FROM uzytkownicy u JOIN role r ON r.id = u.rola_id " +
-        "LEFT JOIN instytucje i ON i.id = u.instytucja_id " +
-        "WHERE lower(u.login) = lower(?)", [String(login || "").trim()]);
+        "SELECT u.* FROM uzytkownicy u WHERE lower(u.login) = lower(?)", [String(login || "").trim()]);
 
       if (!u) {
         zapiszLogowanie(login, "blad hasla");
-        return { ok: false, blad: "Nie ma konta o takim adresie." };
+        return { ok: false, blad: BLAD_OGOLNY };
       }
+      if (u.zablokowane_do && u.zablokowane_do > new Date().toISOString()) {
+        zapiszLogowanie(login, "blokada czasowa");
+        return { ok: false, blad: "Zbyt wiele nieudanych prób. Spróbuj ponownie za " + BLOKADA_MIN + " minut." };
+      }
+      if (global.Haslo.skrot(String(haslo), u.haslo_sol) !== u.haslo_skrot) {
+        nieudanaProba(u);
+        zapiszLogowanie(login, "blad hasla");
+        return { ok: false, blad: BLAD_OGOLNY };
+      }
+      /* O blokadzie administratora mowimy dopiero po poprawnym hasle */
       if (u.zablokowane) {
         zapiszLogowanie(login, "zablokowane");
         return { ok: false, blad: "Konto zablokowane przez administratora." };
       }
-      if (String(haslo) !== String(u.haslo_demo)) {
-        zapiszLogowanie(login, "blad hasla");
-        return { ok: false, blad: "Nieprawidlowe haslo." };
-      }
 
-      zapiszSesje({
-        uzytkownik_id: u.id, login: u.login, imie: u.imie_nazwisko,
-        rola_id: u.rola_id, rola_nazwa: u.rola_nazwa, rola_zakres: u.rola_zakres,
-        instytucja_id: u.instytucja_id, instytucja_nazwa: u.instytucja_nazwa,
-        klient_id: u.klient_id,
-        wszystkie_instytucje: !!u.wszystkie_instytucje, zalogowano: teraz()
+      var token = losowyToken();
+      var czas = new Date().toISOString();
+      systemowo(function () {
+        S.insert("sesje", { token: token, uzytkownik_id: u.id, utworzono: czas,
+                            wygasa: isoZa(SESJA_MIN), ostatnia_aktywnosc: czas });
+        S.update("uzytkownicy", u.id, { ostatnie_logowanie: teraz(), nieudane_proby: 0, zablokowane_do: null });
       });
-      S.update("uzytkownicy", u.id, { ostatnie_logowanie: teraz() });
+      zapiszToken(token);
       zapiszLogowanie(login, "sukces");
       przebudujDane();
-      return { ok: true, sesja: sesja };
+      return { ok: true, sesja: this.sesja() };
     },
 
     wyloguj: function () {
-      zapiszSesje(null);
+      var token = czytajToken() || pamiec.token;
+      if (token) systemowo(function () { S.exec("DELETE FROM sesje WHERE token = ?", [token]); });
+      zapiszToken(null);
       przebudujDane();
     },
 
     sesja: function () {
-      if (sesja === null) sesja = wczytajSesje();
-      return sesja;
+      var token = czytajToken() || pamiec.token;
+      if (!token) return null;
+      if (pamiec.token === token && pamiec.obiekt && Date.now() - pamiec.czas < WAZNOSC_PAMIECI_MS) {
+        return pamiec.obiekt;
+      }
+      var obiekt = sesjaZBazy(token);
+      if (!obiekt) { zapiszToken(null); return null; }
+      pamiec = { token: token, obiekt: obiekt, czas: Date.now() };
+      return obiekt;
     },
 
     zalogowany: function () { return !!this.sesja(); },

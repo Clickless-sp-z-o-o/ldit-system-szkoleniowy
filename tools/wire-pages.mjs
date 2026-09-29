@@ -53,11 +53,14 @@ function lancuch(prefix, modul) {
     `<script src="${prefix}db/seed-db.js"></script>`,
     `<script src="${prefix}assets/sqlite.js"></script>`,
     `<script src="${prefix}assets/store.js"></script>`,
+    `<script src="${prefix}assets/haslo.js"></script>`,
     `<script src="${prefix}assets/auth.js"></script>`,
+    `<script src="${prefix}assets/straznik.js"></script>`,
     `<script src="${prefix}assets/zakres.js"></script>`,
     `<script src="${prefix}assets/prowizja.js"></script>`,
     `<script src="${prefix}assets/db.js"></script>`,
     `<script src="${prefix}assets/lata.js"></script>`,
+    `<script src="${prefix}assets/html.js"></script>`,
     `<script src="${prefix}assets/tips.js"></script>`,
     `<script src="${prefix}assets/boot.js"${modul ? ` data-modul="${modul}"` : ""}></script>`
   ].join("\n");

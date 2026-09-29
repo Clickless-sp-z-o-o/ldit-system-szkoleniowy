@@ -41,23 +41,24 @@
   function instytucjeView() {
     var warunki = S.query(
       "SELECT w.*, i.id AS inst FROM v_warunki_aktywne w JOIN instytucje i ON i.id = w.instytucja_id");
-    var progi = S.query("SELECT * FROM progi_prowizyjne ORDER BY od_kwoty");
-    var progiPoWarunku = {};
-    progi.forEach(function (p) {
-      (progiPoWarunku[p.warunki_id] = progiPoWarunku[p.warunki_id] || [])
-        .push({ od: p.od_kwoty, st: p.stawka });
-    });
+    /* Progi leza przy warunkach jako lista JSON (D-168) */
     var warunkiPoInst = indexBy(warunki, "instytucja_id");
 
     return S.get("instytucje").map(function (i) {
       var w = warunkiPoInst[i.id];
+      /* Instytucja bez warunkow nie dostaje po cichu stawki domyslnej: brak = null */
       var prowizja = w
         ? { model: w.model, kumulacja: w.rodzaj_kumulacji, sposob: w.sposob_liczenia,
-            stala: w.stawka_stala, progi: progiPoWarunku[w.id] || [] }
-        : { model: "D", kumulacja: "brak", sposob: "stala", stala: 20, progi: [] };
+            stala: w.stawka_stala, progi: JSON.parse(w.progi || "[]"), od: w.obowiazuje_od }
+        : null;
       return {
         id: i.id, nazwa: i.nazwa, skrot: i.skrot, miasto: i.siedziba_miejscowosc, nip: i.nip,
         kontakt: i.osoba_kontaktowa, mail: i.email, tel: i.telefon, opis: i.opis_dzialalnosci,
+        www: i.strona_www,
+        kontakty: [1, 2, 3].map(function (n) {
+          var sfx = n === 1 ? "" : "_" + n;
+          return { osoba: i["osoba_kontaktowa" + sfx], tel: i["telefon" + sfx], mail: i["email" + sfx] };
+        }).filter(function (k) { return k.osoba || k.tel || k.mail; }),
         standard: i.standard_godzinowy, opiekun: i.opiekun_ldit,
         modelTerminow: i.model_terminow, prowizja: prowizja
       };
@@ -76,16 +77,15 @@
 
       var ucz = (uczByWniosek[w.id] || []).map(function (u) {
         var s = szkById[u.szkolenie_id] || {};
-        return { imie: u.imie_nazwisko, pesel: u.pesel, szkolenie: u.szkolenie_id,
+        return { id: u.id, termin: u.termin_id, imie: u.imie_nazwisko, pesel: u.pesel, szkolenie: u.szkolenie_id,
                  szkNazwa: s.nazwa || "-", kwota: u.kwota, status: u.status_kwalifikacji,
                  powod: u.powod_niezakwalifikowania || "" };
       });
 
+      /* Wszystkie kwoty wyliczane pochodza z widoku v_wniosek_finanse (D-152) */
       var pozytywna = w.status_decyzji === "Pozytywna";
       var koszt = f.koszt_calkowity_efektywny;
-      var procent = f.procent_dofinansowania != null ? f.procent_dofinansowania : 70;
-      var przyznaneZReguly = pozytywna && koszt != null
-        ? Math.round(koszt * procent) / 100 : null;
+      var procent = f.procent_dofinansowania;
 
       return {
         id: w.id, nr: w.numer, rok: w.rok, etap: w.etap,
@@ -96,17 +96,32 @@
         szkolenie: szkG.nazwa || "-", szkId: w.szkolenie_glowne_id,
         uczestnicy: ucz, osob: ucz.length,
         osobZakw: f.uczestnikow_zakwalifikowanych || 0,
-        wartosc: ucz.reduce(function (s, u) { return s + (u.kwota || 0); }, 0),
+        /* Do wartosci wchodza wylacznie zakwalifikowani (D-61, D-79) */
+        wartosc: f.calkowita_wartosc_szkolenia || 0,
+        wartoscWszystkich: ucz.reduce(function (s, u) { return s + (u.kwota || 0); }, 0),
         calkowita: f.calkowita_wartosc_szkolenia || 0,
         kosztCalkowity: pozytywna ? koszt : null,
-        /* Przyznano: regula albo reczne nadpisanie (D-135) */
-        przyznano: w.przyznano_regula_aktywna ? przyznaneZReguly : w.przyznano,
+        /* Przyznano i wklad: regula albo reczne nadpisanie (D-135, D-172) */
+        przyznano: f.przyznano_efektywne,
         przyznanoRegula: w.przyznano_regula_aktywna !== 0,
-        przyznanoZReguly: przyznaneZReguly,
+        przyznanoZReguly: f.przyznano_wyliczone,
+        wklad: f.wklad_wlasny_efektywny,
+        wkladRegula: w.wklad_regula_aktywna !== 0,
+        wkladZReguly: f.wklad_wlasny_wyliczony,
+        procent: procent,
         wkladProc: Math.round(100 - procent),
+        progId: f.prog_efektywny_id, progRegula: w.prog_regula_aktywna !== 0,
+        zatrudnienie: w.liczba_zatrudnionych,
+        kontakty: [1, 2].map(function (n) {
+          var sfx = n === 1 ? "" : "_" + n;
+          return { osoba: w["osoba_kontaktowa" + sfx], tel: w["telefon" + sfx], mail: w["email" + sfx] };
+        }).filter(function (k) { return k.osoba || k.tel || k.mail; }),
         doplata: w.kwota_doplaty_dodatkowej || 0,
-        /* Podstawa prowizji LDIT: koszt calkowity z doplata (D-64) */
+        /* Podstawa prowizji LDIT: z doplata albo bez, wg znacznika (D-64, D-174) */
         kosztZDoplata: pozytywna ? w.koszt_calkowity_z_doplata : null,
+        kosztZDoplataZapisany: w.koszt_calkowity_z_doplata,
+        podstawaProwizji: pozytywna ? f.podstawa_prowizji : null,
+        doplataNaFakturze: w.doplata_na_fakturze_kfs !== 0,
         statusSkl: w.status_skladania, statusDec: w.status_decyzji, rozliczenie: w.status_finansowy,
         dataWniosku: w.data_wniosku, dataFormularza: w.data_wplyniecia_formularza,
         dataFaktury: w.data_wystawienia_faktury,
@@ -115,7 +130,8 @@
         prowizjaTyp: w.prowizja_typ_nadpisania,
         prowizjaProcent: w.prowizja_typ_nadpisania === "procent" ? w.prowizja_wartosc : null,
         prowizjaKwota: w.prowizja_typ_nadpisania === "kwota" ? w.prowizja_wartosc : null,
-        opiekun: inst.opiekun_ldit || "-"
+        opiekun: inst.opiekun_ldit || "-",
+        fakturaId: w.faktura_id
       };
     });
   }
@@ -151,10 +167,19 @@
 
     var wszystkie = wnioskiView(klById, instById, pupById, szkById, uczByWniosek);
     DB.WNIOSKI_WSZYSTKIE = wszystkie;
+    DB.WNIOSKI_BEZ_ROKU = wszystkie.filter(function (w) { return !w.rok; });
     DB.WNIOSKI_2026 = wszystkie.filter(function (w) { return w.rok === "2026"; });
     DB.WNIOSKI_2025 = wszystkie.filter(function (w) { return w.rok === "2025"; });
     DB.WNIOSKI = DB.WNIOSKI_2026;
     DB.LATA = S.query("SELECT rok, opis FROM lata_zestawien ORDER BY rok");
+    DB.PROGI_DOFINANSOWANIA = S.query("SELECT * FROM progi_dofinansowania ORDER BY wielkosc, obowiazuje_od");
+    DB.SZKOLENIOWCY = S.get("szkoleniowcy").map(function (z) {
+      return { id: z.id, is: z.instytucja_id, imie: z.imie, nazwisko: z.nazwisko, tel: z.telefon,
+               mail: z.email, specjalizacja: z.specjalizacja, aktywny: !!z.aktywny };
+    });
+    /* Porownania rok do roku na dashboardzie: lata przeniesione z wnioskow,
+       nieprzeniesione z podsumowan historycznych (D-175) */
+    DB.PODSUMOWANIA = S.query("SELECT rok, instytucja_id AS isId, miara, wartosc, zrodlo FROM v_podsumowanie_roku");
 
     DB.INSTYTUCJE = instytucjeView();
     DB.PUPY = S.get("urzedy_pracy").map(function (p) {
@@ -164,9 +189,18 @@
       return { id: s.id, is: s.instytucja_id, nazwa: s.nazwa, godz: s.liczba_godzin,
                dni: s.liczba_dni, tryb: s.tryb, cena: s.cena };
     });
+    /* Liczba zatrudnionych lezy we wniosku (D-169); przy kliencie pokazujemy te z ostatniego */
+    var zatrudnieniOstatnio = {};
+    wszystkie.slice().sort(function (a, b) { return (a.dataWniosku || "") < (b.dataWniosku || "") ? -1 : 1; })
+      .forEach(function (w) { if (w.zatrudnienie != null) zatrudnieniOstatnio[w.klient] = w.zatrudnienie; });
     DB.KLIENCI = S.get("klienci").map(function (k) {
       return { id: k.id, nr: k.numer_klienta, nazwa: k.nazwa, nip: k.nip,
-               wielkosc: k.wielkosc_przedsiebiorstwa, zatrudnienie: k.liczba_zatrudnionych,
+               wielkosc: k.wielkosc_przedsiebiorstwa,
+               zatrudnienie: zatrudnieniOstatnio[k.id] == null ? null : zatrudnieniOstatnio[k.id],
+               kontakty: [1, 2, 3].map(function (n) {
+                 var sfx = n === 1 ? "" : "_" + n;
+                 return { osoba: k["osoba_kontaktowa" + sfx], tel: k["telefon" + sfx], mail: k["email" + sfx] };
+               }).filter(function (c) { return c.osoba || c.tel || c.mail; }),
                osoba: k.osoba_kontaktowa, tel: k.telefon, mail: k.email,
                is: k.instytucja_id, pup: k.pup_id, miasto: k.miasto,
                zainteresowany: !!k.zainteresowany_naborem };
@@ -178,21 +212,28 @@
     });
     DB.NABORY = S.get("nabory").map(function (n) {
       var p = pupById[n.pup_id] || {};
-      return { pup: p.nazwa || "-", woj: p.wojewodztwo || "", rodzaj: n.rodzaj, status: n.status,
+      return { id: n.id, pupId: n.pup_id, pup: p.nazwa || "-", woj: p.wojewodztwo || "", rodzaj: n.rodzaj, status: n.status,
                od: n.data_od, do: n.data_do, prognoza: n.data_prognozowana, klientow: n.liczba_klientow };
     });
+    var szczegolyFaktur = indexBy(S.query("SELECT * FROM v_faktura_szczegoly"), "faktura_id");
     DB.FAKTURY = S.get("faktury").map(function (f) {
       var i = instById[f.instytucja_id] || {};
-      return { nr: f.numer, is: i.nazwa || "-", isId: f.instytucja_id, kwota: f.kwota, vat: f.vat,
+      var sz = szczegolyFaktur[f.id] || {};
+      return { id: f.id, nr: f.numer, is: i.nazwa || "-", isId: f.instytucja_id, kwota: f.kwota, vat: f.vat,
                wystawiona: f.data_wystawienia, termin: f.termin_platnosci, status: f.status,
-               projekty: f.liczba_projektow };
+               projekty: f.liczba_projektow,
+               /* Korekta trafia do okresu swojej daty wystawienia (D-161) */
+               rodzaj: f.rodzaj, korygowana: f.faktura_pierwotna_id, okres: sz.okres_rozliczeniowy,
+               klient: sz.klient_id || null, szkolenia: sz.szkolenia || "", wnioskow: sz.liczba_wnioskow || 0 };
     });
     DB.KOLEJKA = S.get("formularze_oczekujace").map(function (k) {
-      return { data: k.data, firma: k.firma, nip: k.nip, osob: k.osob, szkolenie: k.szkolenie,
-               kontakt: k.kontakt, is: (instById[k.instytucja_id] || {}).nazwa || "-" };
+      return { id: k.id, data: k.data, firma: k.firma, nip: k.nip, osob: k.osob, szkolenie: k.szkolenie,
+               kontakt: k.kontakt, is: (instById[k.instytucja_id] || {}).nazwa || "-",
+               isId: k.instytucja_id, status: k.status, wypelnil: k.wypelnil };
     });
     DB.MAILE = S.get("korespondencja").map(function (k) {
-      return { data: k.data, kier: k.kierunek === "przychodzacy" ? "in" : "out",
+      return { klient: k.klient_id, isId: k.instytucja_id,
+               data: k.data, kier: k.kierunek === "przychodzacy" ? "in" : "out",
                od: k.od_kogo, temat: k.temat, skrz: k.skrzynka, zal: k.zalaczniki };
     });
 

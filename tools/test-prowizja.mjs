@@ -142,4 +142,56 @@ kwotaRowna(liczProwizje(MODEL_A, 50000, -5000).kwota, -500,
 kwotaRowna(liczProwizje(MODEL_D, 50000, -5000).kwota, -1000,
   "stała stawka też obsługuje korektę");
 
+console.log("\nKorekta trafia do okresu, w którym ją wystawiono (D-161)");
+const { rozliczOkresy, warunkiNaDzien, ProwizjaError } = w.Prowizja;
+const wersja = (id, od, doDnia, warunki) => Object.assign({ id, od, do: doDnia }, warunki);
+const A_2026 = [wersja("W1", "2026-01-01", null, MODEL_A)];
+
+const bezKorekty = rozliczOkresy(A_2026, [{ id: "F1", data: "2026-01-20", kwota: 60000 },
+                                          { id: "F2", data: "2026-03-05", kwota: 20000 }]);
+const zKorekta = rozliczOkresy(A_2026, [{ id: "F1", data: "2026-01-20", kwota: 60000 },
+                                        { id: "F2", data: "2026-03-05", kwota: 20000 },
+                                        { id: "K1", data: "2026-03-10", kwota: -10000, korygowana: "F1" }]);
+const okres = (wynik, klucz) => wynik.okresy.find((o) => o.klucz === klucz);
+kwotaRowna(okres(zKorekta, "2026-01").suma, okres(bezKorekty, "2026-01").suma,
+  "styczeń, czyli okres faktury pierwotnej, zostaje nietknięty (7 200 zł)");
+kwotaRowna(okres(zKorekta, "2026-03").suma, 2000 - 1200,
+  "marzec: 2 000 z własnej faktury minus 1 200 z korekty po stawce styczniowej 12%");
+t.rowne(okres(zKorekta, "2026-03").obrot, 20000,
+  "korekta nie zmienia obrotu marca, więc nie przesuwa marcowych progów");
+kwotaRowna(zKorekta.suma, bezKorekty.suma - 1200, "łącznie prowizja spada dokładnie o 12% korekty");
+
+const pelna = rozliczOkresy(A_2026, [{ id: "F1", data: "2026-01-20", kwota: 60000 },
+                                     { id: "K1", data: "2026-02-02", kwota: -60000, korygowana: "F1" }]);
+kwotaRowna(pelna.suma, 0, "pełna korekta w następnym miesiącu zeruje prowizję z faktury");
+
+let kod = null;
+try { rozliczOkresy(A_2026, [{ id: "K9", data: "2026-03-10", kwota: -500, korygowana: "NIEMA" }]); }
+catch (e) { kod = e instanceof ProwizjaError ? e.kod : "inny"; }
+t.rowne(kod, "brak_pierwotnej", "korekta nieznanej faktury jest odrzucana, a nie liczona po cichu");
+
+console.log("\nNowe warunki działają od swojej daty, nigdy wstecz (D-23, D-162)");
+const B_STARE = wersja("B1", "2026-01-01", "2026-06-30", MODEL_B);
+const B_NOWE = wersja("B2", "2026-07-01", null, { kumulacja: "roczny", sposob: "od_nadwyzki",
+                                                 progi: [{ od: 0, st: 15 }] });
+const przed = rozliczOkresy([B_STARE], [{ id: "F1", data: "2026-03-01", kwota: 100000 }]);
+const po = rozliczOkresy([B_STARE, B_NOWE], [{ id: "F1", data: "2026-03-01", kwota: 100000 },
+                                            { id: "F2", data: "2026-08-01", kwota: 100000 }]);
+kwotaRowna(po.okresy[0].pozycje.find((p) => p.id === "F1").prowizja, przed.suma,
+  "faktura z marca zostaje po 20%, mimo że od lipca obowiązują nowe progi");
+kwotaRowna(po.okresy[0].pozycje.find((p) => p.id === "F2").prowizja, 15000,
+  "faktura z sierpnia liczona po nowych warunkach, 15%");
+
+const WEWN_STALA = wersja("P1", "2026-01-01", "2026-12-31", { kumulacja: "miesieczny", sposob: "stala", stala: 5, progi: [] });
+const WEWN_PROGI = wersja("P2", "2027-01-01", null, { kumulacja: "miesieczny", sposob: "od_nadwyzki",
+                                                     progi: [{ od: 0, st: 5 }, { od: 30000, st: 8 }] });
+const wewn = rozliczOkresy([WEWN_STALA, WEWN_PROGI], [{ id: "F1", data: "2026-11-15", kwota: 40000 },
+                                                     { id: "F2", data: "2027-01-15", kwota: 40000 }]);
+kwotaRowna(okres(wewn, "2026-11").suma, 2000, "prowizja wewnętrzna 2026 zostaje na stałej stawce 5% (P-02)");
+kwotaRowna(okres(wewn, "2027-01").suma, 30000 * 0.05 + 10000 * 0.08, "progi z 2027 działają dopiero od 2027");
+
+kod = null;
+try { warunkiNaDzien([B_STARE], "2025-12-31"); } catch (e) { kod = e instanceof ProwizjaError ? e.kod : "inny"; }
+t.rowne(kod, "brak_warunkow", "faktura sprzed jakichkolwiek warunków jest odrzucana");
+
 t.podsumuj();

@@ -18,7 +18,7 @@
 
   var ROK_MIN = 2020;
   var ROK_MAX = 2100;
-  var UPRAWNIENIE = "admin.lata_zestawien";
+  var UPRAWNIENIE = "zestawienia.dodawanie_lat";
 
   function LataError(kod, komunikat) {
     this.name = "LataError";
@@ -46,7 +46,7 @@
   function dodaj(rok, kto) {
     var tekst = String(rok == null ? "" : rok).trim();
     if (!global.Auth || !global.Auth.moze(UPRAWNIENIE)) {
-      throw new LataError("brak_uprawnien", "Nowy rok może dodać wyłącznie administrator.");
+      throw new LataError("brak_uprawnien", "Nowy rok może dodać administrator albo pracownik LDIT.");
     }
     if (!/^\d{4}$/.test(tekst)) {
       throw new LataError("zly_format", "Rok musi mieć cztery cyfry, np. 2028.");

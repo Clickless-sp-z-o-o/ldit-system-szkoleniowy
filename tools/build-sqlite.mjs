@@ -114,7 +114,8 @@ async function main() {
 
   let wierszy = 0;
   for (const [tabela, rows] of Object.entries(dane)) {
-    const kols = kolumny(db, tabela);
+    /* Tylko kolumny obecne w danych: pominieta kolumna dostaje DEFAULT ze schematu */
+    const kols = kolumny(db, tabela).filter((k) => rows.some((r) => r[k] !== undefined));
     wstaw(db, tabela, kols, rows);
     sql += seedSql(tabela, kols, rows);
     wierszy += rows.length;

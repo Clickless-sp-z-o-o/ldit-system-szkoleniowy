@@ -19,6 +19,16 @@
   var listeners = [];
   var cache = {};
 
+  /* Straznik zapisow (assets/straznik.js) sprawdza uprawnienia przed kazdym
+     INSERT / UPDATE / DELETE. Tryb systemowy uzywa wylacznie Auth do wlasnych
+     tabel (sesje, logowania), nigdy strony. */
+  var straznik = null;
+  var trybSystemowy = false;
+  var trybOdebrany = false;
+  function sprawdz(operacja, tabela, dane, id) {
+    if (straznik && !trybSystemowy) straznik(operacja, tabela, dane, id);
+  }
+
   function db() {
     if (!global.KFS || !global.KFS.db) {
       throw new Error("Baza nie jest jeszcze gotowa. Uzyj KFS.gotowa albo assets/boot.js");
@@ -88,7 +98,27 @@
 
   var Store = {
     query: query,
-    exec: exec,
+    exec: function (sql, params) {
+      if (straznik && !trybSystemowy) sprawdz("sql", null, sql, null);
+      return exec(sql, params);
+    },
+
+    ustawStraznika: function (fn) {
+      if (straznik) throw new Error("Straznik zapisow jest juz ustawiony");
+      straznik = fn;
+    },
+
+    /* Tryb systemowy dostaje wylacznie auth.js, jeden raz, zaraz po zaladowaniu.
+       Strony nie maja do niego dostepu, wiec nie wylacza straznika. */
+    odbierzTrybSystemowy: function () {
+      if (trybOdebrany) throw new Error("Tryb systemowy zostal juz przekazany");
+      trybOdebrany = true;
+      return function (fn) {
+        var poprzedni = trybSystemowy;
+        trybSystemowy = true;
+        try { return fn(); } finally { trybSystemowy = poprzedni; }
+      };
+    },
 
     one: function (sql, params) {
       var r = query(sql, params);
@@ -120,6 +150,7 @@
         }
       });
       if (dozwolone.indexOf("id") >= 0 && dane.id == null) dane.id = nextId(tabela, prefix);
+      sprawdz("insert", tabela, dane, dane.id);
 
       var klucze = Object.keys(dane);
       exec("INSERT INTO " + tabela + " (" + klucze.join(", ") + ") VALUES (" +
@@ -135,6 +166,9 @@
         return dozwolone.indexOf(k) >= 0 && k !== "id";
       });
       if (!klucze.length) return this.find(tabela, id);
+      var zmiany = {};
+      klucze.forEach(function (k) { zmiany[k] = patch[k]; });
+      sprawdz("update", tabela, zmiany, id);
       exec("UPDATE " + tabela + " SET " +
            klucze.map(function (k) { return k + " = ?"; }).join(", ") + " WHERE id = ?",
            klucze.map(function (k) {
@@ -146,6 +180,7 @@
     },
 
     remove: function (tabela, id) {
+      sprawdz("remove", tabela, null, id);
       exec("DELETE FROM " + tabela + " WHERE id = ?", [id]);
       var zostal = this.find(tabela, id);
       notify(tabela);
@@ -153,6 +188,7 @@
     },
 
     replaceTable: function (tabela, rows) {
+      sprawdz("import", tabela, null, null);
       exec("DELETE FROM " + tabela);
       var self = this;
       rows.forEach(function (r) { self.insert(tabela, r); });
@@ -172,6 +208,7 @@
 
     /* Eksport calej bazy do JSON: podglad zawartosci i kopia zapasowa. */
     exportJSON: function () {
+      sprawdz("eksport", null, null, null);
       var out = {};
       this.tables().forEach(function (t) {
         if (t.indexOf("sqlite_") === 0) return;
@@ -194,6 +231,7 @@
     },
 
     import: function (dane) {
+      sprawdz("import", null, null, null);
       if (dane instanceof ArrayBuffer || dane instanceof Uint8Array) {
         global.KFS.wczytajPlik(dane);
         notify(null);

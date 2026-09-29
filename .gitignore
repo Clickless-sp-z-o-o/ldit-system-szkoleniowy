@@ -15,3 +15,8 @@ dist/
 build/
 .env
 .env.local
+
+# Lokalna baza makiety z trybu serwera (tools/serwer.mjs)
+makieta/db/kfs.sqlite
+makieta/db/kfs.sqlite.bak
+makieta/db/kfs.sqlite.tmp

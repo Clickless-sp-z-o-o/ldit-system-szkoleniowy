@@ -79,11 +79,11 @@ function wstaw(tresc, kod, gdzie, plik, gniazdo) {
        wiedziały, gdzie ten diagram ma wrócić. */
     const znacznikGniazda = "<!-- diagram:gniazdo:" + gniazdo + " -->";
     if (tresc.includes(znacznikGniazda)) {
-      return tresc.replace(znacznikGniazda, znacznikGniazda + "\n  " + nowy);
+      return tresc.replace(znacznikGniazda, znacznikGniazda + "\n  " + nowy + "\n");
     }
     const wzorzec = /<div class="diagram">[\s\S]*?<\/div>/;
     if (wzorzec.test(tresc)) {
-      return tresc.replace(wzorzec, znacznikGniazda + "\n  " + nowy);
+      return tresc.replace(wzorzec, znacznikGniazda + "\n  " + nowy + "\n");
     }
     throw new Error("Brak rysunku ani gniazda do podmiany w " + plik);
   }
@@ -130,8 +130,10 @@ for (const sekcja of doCzyszczenia) {
     }
   }
 
+  /* Blok zabiera ze soba znak konca linii, ktory wstaw() dopisuje za nim,
+     inaczej kazde uruchomienie dokladaloby pusta linie */
   stan[sekcja] = tresc.replace(
-    new RegExp("\\s*" + ZNACZNIK_OD + "[\\s\\S]*?" + ZNACZNIK_DO, "g"), "");
+    new RegExp("\\s*" + ZNACZNIK_OD + "[\\s\\S]*?" + ZNACZNIK_DO + "\\n?", "g"), "");
 }
 
 let wstawionych = 0;

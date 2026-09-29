@@ -84,6 +84,20 @@ function bezNowosci(nazwa, wiersze) {
   return wiersze;
 }
 
+/* Pola, ktore zmienily sie swiadomie decyzja, a nie przez migracje. Kazde ma
+   ponizej osobne sprawdzenie nowej reguly, wiec wyjatek nie oslabia testu. */
+const ZMIANY_SWIADOME = {
+  KLIENCI: { zatrudnienie: "D-169: liczba zatrudnionych lezy we wniosku, klient pokazuje ja z ostatniego wniosku" },
+  WNIOSKI: { wartosc: "D-79: wartosc szkolenia sumuje wylacznie uczestnikow zakwalifikowanych" }
+};
+function bezSwiadomych(nazwa, wiersz) {
+  const pola = ZMIANY_SWIADOME[nazwa];
+  if (!pola || !wiersz) return wiersz;
+  const kopia = Object.assign({}, wiersz);
+  Object.keys(pola).forEach((k) => { delete kopia[k]; });
+  return kopia;
+}
+
 let bledy = 0;
 for (const t of TABELE) {
   const a = legacy[t], b = bezNowosci(t, nowe[t] || []);
@@ -99,7 +113,7 @@ for (const t of TABELE) {
   }
   let rozne = 0, pierwszy = null;
   for (let i = 0; i < a.length; i++) {
-    const d = diffPath(a[i], b[i], t + "[" + i + "]");
+    const d = diffPath(bezSwiadomych(t, a[i]), b[i], t + "[" + i + "]");
     if (d) { rozne++; if (!pierwszy) pierwszy = d; }
   }
   if (rozne) {
@@ -110,6 +124,23 @@ for (const t of TABELE) {
     console.log("  OK   " + t + " (" + a.length + ")");
   }
 }
+
+/* Nowe reguly zamiast starych wartosci */
+function sprawdzRegule(opis, warunek) {
+  if (warunek) { console.log("  OK   " + opis); return; }
+  console.error("  BLAD " + opis); bledy++;
+}
+const zatrudnieniLegacy = Object.fromEntries(legacy.KLIENCI.map((k) => [k.id, k.zatrudnienie]));
+sprawdzRegule("D-169: kazdy wniosek przejal liczbe zatrudnionych swojego klienta",
+  nowe.WNIOSKI_WSZYSTKIE.every((w) => w.zatrudnienie === zatrudnieniLegacy[w.klient]));
+sprawdzRegule("D-169: klient z wnioskiem pokazuje liczbe zatrudnionych z wniosku",
+  nowe.KLIENCI.filter((k) => nowe.WNIOSKI_WSZYSTKIE.some((w) => w.klient === k.id))
+    .every((k) => k.zatrudnienie === zatrudnieniLegacy[k.id]));
+sprawdzRegule("D-79: wartosc wniosku to suma kwot zakwalifikowanych uczestnikow",
+  nowe.WNIOSKI_WSZYSTKIE.every((w) => Math.abs(w.wartosc - w.uczestnicy
+    .filter((u) => u.status === "zakwalifikowany").reduce((s, u) => s + u.kwota, 0)) < 0.005));
+sprawdzRegule("D-79: stara wartosc (wszyscy uczestnicy) zostaje jako wartoscWszystkich",
+  legacy.WNIOSKI.every((w, i) => Math.abs(w.wartosc - nowe.WNIOSKI[i].wartoscWszystkich) < 0.005));
 
 if (nowe.WNIOSKI_2025.length !== 0) {
   console.error("  BLAD WNIOSKI_2025: oczekiwano 0 wnioskow (D-160), jest " + nowe.WNIOSKI_2025.length);

@@ -40,12 +40,8 @@
 
       var instytucje = Auth.instytucje();          /* null = brak ograniczenia */
       var klienci = Auth.klienciWZakresie();
-      var nazwyInst = null;
 
       DB.INSTYTUCJE = filtruj(DB.INSTYTUCJE, instytucje, "id");
-      if (instytucje !== null) {
-        nazwyInst = DB.INSTYTUCJE.map(function (i) { return i.nazwa; });
-      }
 
       DB.KLIENCI = filtruj(DB.KLIENCI, klienci, "id");
       DB.KLIENCI = this.wlasnyKontekstKlienta(DB.KLIENCI, instytucje);
@@ -55,10 +51,19 @@
       DB.WNIOSKI_WSZYSTKIE = filtruj(DB.WNIOSKI_WSZYSTKIE, instytucje, "is");
       DB.WNIOSKI_2026 = filtruj(DB.WNIOSKI_2026, instytucje, "is");
       DB.WNIOSKI_2025 = filtruj(DB.WNIOSKI_2025, instytucje, "is");
+      DB.WNIOSKI_BEZ_ROKU = filtruj(DB.WNIOSKI_BEZ_ROKU, instytucje, "is");
       DB.WNIOSKI = DB.WNIOSKI_2026;
-
-      if (nazwyInst !== null) {
-        DB.KOLEJKA = DB.KOLEJKA.filter(function (k) { return nazwyInst.indexOf(k.is) >= 0; });
+      DB.SZKOLENIOWCY = filtruj(DB.SZKOLENIOWCY, instytucje, "is");
+      DB.KOLEJKA = filtruj(DB.KOLEJKA, instytucje, "isId");
+      /* Korespondencja bez przypisanej instytucji nie trafia do konta z ograniczonym
+         zakresem: brak przypisania oznacza brak dostepu, nie dostep dla wszystkich */
+      DB.MAILE = filtruj(DB.MAILE, instytucje, "isId");
+      DB.ZADANIA = this.zadaniaWZakresie(DB.ZADANIA, DB.WNIOSKI_WSZYSTKIE, instytucje);
+      DB.PODSUMOWANIA = filtruj(DB.PODSUMOWANIA, instytucje, "isId");
+      if (instytucje !== null) DB.KLIENCI = this.zatrudnienieZWidocznych(DB.KLIENCI, DB.WNIOSKI_WSZYSTKIE);
+      /* Podsumowanie calej firmy (bez instytucji) to statystyka zbiorcza LDIT */
+      if (!Auth.moze("statystyki.zbiorcze")) {
+        DB.PODSUMOWANIA = DB.PODSUMOWANIA.filter(function (p) { return p.isId != null; });
       }
 
       /* Stawki prowizji widzi wylacznie administrator (D-07). Instytucja nie widzi
@@ -75,6 +80,7 @@
             w.prowizjaProcent = null;
             w.prowizjaKwota = null;
             w.prowizjaTyp = null;
+            w.podstawaProwizji = null;
           });
         });
       }
@@ -91,7 +97,9 @@
       if (!Auth.moze("finanse.kwoty_wniosku")) {
         DB.WNIOSKI_WSZYSTKIE.forEach(function (w) {
           w.kosztCalkowity = null; w.przyznano = null; w.kosztZDoplata = null;
-          w.calkowita = null; w.wartosc = null; w.doplata = null;
+          w.calkowita = null; w.wartosc = null; w.doplata = null; w.wartoscWszystkich = null;
+          w.przyznanoZReguly = null; w.wklad = null; w.wkladZReguly = null; w.podstawaProwizji = null;
+          w.kosztZDoplataZapisany = null;
         });
       }
 
@@ -136,9 +144,49 @@
       DB.TERMINY = DB.TERMINY.filter(function (t) { return moje.indexOf(t.is) >= 0; });
       DB.SZKOLENIA = DB.SZKOLENIA.filter(function (s) { return moje.indexOf(s.is) >= 0; });
 
-      ["FAKTURY", "KOLEJKA", "MAILE", "UZYTKOWNICY", "ZGLOSZENIA",
+      DB.WNIOSKI_BEZ_ROKU = DB.WNIOSKI_BEZ_ROKU.filter(function (w) { return w.klient === id; });
+      DB.SZKOLENIOWCY = DB.SZKOLENIOWCY.filter(function (s) { return moje.indexOf(s.is) >= 0; });
+
+      /* Klient widzi kwoty swojego wniosku, ale nie prowizje LDIT ani cudze PESEL-e
+         innych uczestnikow szkolenia (D-148, D-192). */
+      DB.WNIOSKI_WSZYSTKIE.forEach(function (w) {
+        w.prowizjaProcent = null; w.prowizjaKwota = null; w.prowizjaTyp = null; w.podstawaProwizji = null;
+        w.uczestnicy.forEach(function (u) { u.pesel = null; });
+      });
+
+      /* Klient widzi nazwisko szkoleniowca, ale nie jego prywatne kontakty ani opiekuna LDIT */
+      DB.SZKOLENIOWCY = DB.SZKOLENIOWCY.map(function (s) {
+        return { id: s.id, is: s.is, imie: s.imie, nazwisko: s.nazwisko, specjalizacja: s.specjalizacja,
+                 aktywny: s.aktywny, tel: null, mail: null };
+      });
+      DB.INSTYTUCJE.forEach(function (i) { i.opiekun = null; });
+
+      ["FAKTURY", "KOLEJKA", "MAILE", "UZYTKOWNICY", "ZGLOSZENIA", "PODSUMOWANIA", "SZABLONY", "ROLE",
        "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA"].forEach(function (k) { DB[k] = []; });
       return DB;
+    },
+
+    /* Liczba zatrudnionych klienta z ostatniego WIDOCZNEGO wniosku. Bez tego klient
+       wspolny pokazywalby liczbe z wniosku u konkurencyjnej instytucji (D-150). */
+    zatrudnienieZWidocznych: function (klienci, wnioski) {
+      var ostatnio = {};
+      wnioski.slice().sort(function (a, b) { return (a.dataWniosku || "") < (b.dataWniosku || "") ? -1 : 1; })
+        .forEach(function (w) { if (w.zatrudnienie != null) ostatnio[w.klient] = w.zatrudnienie; });
+      return klienci.map(function (k) {
+        var kopia = {};
+        for (var p in k) if (Object.prototype.hasOwnProperty.call(k, p)) kopia[p] = k[p];
+        kopia.zatrudnienie = ostatnio[k.id] == null ? null : ostatnio[k.id];
+        return kopia;
+      });
+    },
+
+    /* Zadanie jest widoczne, gdy dotyczy wniosku w zakresie konta. Zadanie bez
+       wniosku (ogolne) widza tylko konta LDIT bez ograniczen. */
+    zadaniaWZakresie: function (zadania, wnioski, instytucje) {
+      if (instytucje === null) return zadania;
+      var widoczne = {};
+      wnioski.forEach(function (w) { widoczne[w.id] = true; });
+      return zadania.filter(function (z) { return z.wniosek_id && widoczne[z.wniosek_id]; });
     },
 
     /* Jeden klient moze byc u kilku instytucji (D-144), ale kazda ma widziec go
@@ -167,7 +215,8 @@
     /* Brak sesji: zero danych. Strona i tak pokaze komunikat o wygasnieciu. */
     wyczysc: function (DB) {
       ["INSTYTUCJE", "KLIENCI", "SZKOLENIA", "TERMINY", "FAKTURY", "WNIOSKI",
-       "WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "KOLEJKA", "MAILE",
+       "WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "WNIOSKI_BEZ_ROKU", "KOLEJKA", "MAILE",
+       "SZKOLENIOWCY", "PODSUMOWANIA",
        "UZYTKOWNICY", "ZGLOSZENIA", "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA", "LATA"
       ].forEach(function (k) { DB[k] = []; });
       return DB;

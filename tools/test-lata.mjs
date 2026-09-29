@@ -54,9 +54,19 @@ t.ok(kodBledu(() => Store.insert("wnioski", { id: "PR-35-0001", numer: 1, rok: "
 
 console.log("\nUprawnienia");
 Auth.zaloguj("martyna@ldit.pl", "demo");
-t.rowne(kodBledu(() => Lata.dodaj("2029")), "brak_uprawnien", "pracownik LDIT nie doda roku");
+t.rowne(kodBledu(() => Lata.dodaj("2029")), null, "pracownik LDIT dodaje rok sam (D-165)");
+t.ok(!!Store.one("SELECT 1 AS x FROM lata_zestawien WHERE rok = '2029'"), "rok dodany przez pracownika jest w bazie");
 Auth.zaloguj("biuro@odczarujpowerbi.pl", "demo");
-t.rowne(kodBledu(() => Lata.dodaj("2029")), "brak_uprawnien", "instytucja szkoleniowa nie doda roku");
-t.ok(!Store.one("SELECT 1 AS x FROM lata_zestawien WHERE rok = '2029'"), "odrzucona proba nie zostawia wiersza");
+t.rowne(kodBledu(() => Lata.dodaj("2030")), "brak_uprawnien", "instytucja szkoleniowa nie doda roku");
+t.ok(!Store.one("SELECT 1 AS x FROM lata_zestawien WHERE rok = '2030'"), "odrzucona proba nie zostawia wiersza");
+
+console.log("\nWniosek bez roku jest nieprzypisany, nie znika (D-165)");
+Auth.zaloguj("bartek@ldit.pl", "demo");
+Store.update("wnioski", "PR-28-0001", { rok: null });
+t.ok(DB.WNIOSKI_BEZ_ROKU.some((x) => x.id === "PR-28-0001"), "wniosek bez roku trafia do listy nieprzypisanych");
+Store.update("wnioski", "PR-28-0001", { rok: "2029" });
+w.KFS.db.run("DELETE FROM lata_zestawien WHERE rok = '2029'");
+const poUsunieciu = Store.one("SELECT rok FROM wnioski WHERE id = 'PR-28-0001'");
+t.ok(poUsunieciu !== null && poUsunieciu.rok === null, "usuniecie roku odpina wniosek (rok = NULL), a wniosek zostaje");
 
 t.podsumuj();

@@ -20,7 +20,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ASSETS = join(ROOT, "makieta", "assets");
 const DB_DIR = join(ROOT, "makieta", "db");
 
-const PLIKI = ["sqlite.js", "store.js", "auth.js", "zakres.js", "prowizja.js", "db.js", "lata.js"];
+const PLIKI = ["sqlite.js", "store.js", "haslo.js", "auth.js", "straznik.js", "zakres.js", "prowizja.js", "db.js", "lata.js", "html.js"];
 
 function stworzOkno() {
   const sluchacze = {};
@@ -37,6 +37,7 @@ function stworzOkno() {
     atob: (s) => Buffer.from(s, "base64").toString("binary"),
     btoa: (s) => Buffer.from(s, "binary").toString("base64"),
     setTimeout, clearTimeout,
+    crypto: globalThis.crypto,
     location: { reload: () => {}, replace: () => {} }
   };
 }
@@ -44,7 +45,8 @@ function stworzOkno() {
 /* Zwraca gotowe okno makiety z zaladowana baza. */
 export async function przygotuj() {
   const window = stworzOkno();
-  const sandbox = { window, console, Promise, Uint8Array, Error, JSON, Math, Object, Array, String, Number, Date, RegExp, parseInt, parseFloat };
+  const sandbox = { window, console, Promise, Uint8Array, Error, JSON, Math, Object, Array, String, Number, Date, RegExp, parseInt, parseFloat,
+                    unescape, encodeURIComponent };
   sandbox.global = sandbox;
   vm.createContext(sandbox);
 

@@ -8,7 +8,20 @@
    dokladnie te sama wartosc.
    ============================================================================ */
 
+import { createHash } from "node:crypto";
+
 const HASLO_DEMO = "demo";
+const ITERACJE_SKROTU = 1000;   /* tyle samo co assets/haslo.js */
+
+/* Ten sam skrot co w przegladarce (assets/haslo.js). Sol jest pochodna loginu,
+   zeby baza startowa budowala sie powtarzalnie; w aplikacji sol jest losowa. */
+export function skrotHasla(haslo, sol) {
+  const sha = (t) => createHash("sha256").update(t, "utf8").digest("hex");
+  let h = sha(sol + ":" + haslo);
+  for (let i = 1; i < ITERACJE_SKROTU; i++) h = sha(h);
+  return h;
+}
+const solDla = (login) => createHash("sha256").update("kfs-sol:" + login, "utf8").digest("hex").slice(0, 16);
 
 /* Role systemowe (D-36). zakres okresla, czyje dane rola moze w ogole dotknac. */
 export const ROLE = [
@@ -67,7 +80,7 @@ const POLA = {
   "admin.konta":            ["admin"],
   "admin.rejestr":          ["admin"],
   "admin.progi_dofinansowania": ["admin"],
-  "admin.lata_zestawien":   ["admin"]
+  "zestawienia.dodawanie_lat": ["admin", "pracownik"]
 };
 
 export const KLUCZE_POL = Object.keys(POLA);
@@ -120,13 +133,60 @@ export function czyMigrowany(wniosek) {
 export function lataZestawienRows() {
   const kto = "Bartłomiej Olejnik";
   return [
-    { rok: "2025", opis: "Wniosków z 2025 nie przenosimy do systemu, w teście tylko rok 2026 (D-160).",
+    { rok: "2025", opis: "Wniosków z 2025 nie przenosimy (D-160). Na dashboard trafiają same podsumowania liczbowe (D-175).",
       utworzono: "2026-09-29", utworzyl: kto },
     { rok: "2026", opis: "Rok bieżący. Dane przeniesione z Excela w ramach testu (D-160).",
       utworzono: "2026-09-29", utworzyl: kto },
     { rok: "2027", opis: "Zakładka przygotowana na nowy rok. Pierwszy wniosek dostanie numer klienta 1 (D-112).",
       utworzono: "2026-09-29", utworzyl: kto }
   ];
+}
+
+/* Szkoleniowcy instytucji (D-167): deterministycznie od 2 do 4 na instytucje */
+const IMIONA = ["Anna", "Piotr", "Katarzyna", "Tomasz", "Magdalena", "Marcin", "Joanna", "Paweł"];
+const NAZWISKA = ["Nowak", "Kowalczyk", "Wiśniewska", "Zieliński", "Wójcik", "Kamiński", "Lewandowska", "Dąbrowski"];
+const SPECJALIZACJE = ["BHP", "Kadry i płace", "Obsługa wózków", "Excel i raportowanie", "Pierwsza pomoc", "Sprzedaż"];
+const MIN_SZKOLENIOWCOW = 2, ZAKRES_SZKOLENIOWCOW = 3;
+
+export function szkoleniowcyRows(instytucje) {
+  const out = [];
+  instytucje.forEach((inst, ii) => {
+    const ile = MIN_SZKOLENIOWCOW + (ii % ZAKRES_SZKOLENIOWCOW);
+    for (let n = 0; n < ile; n++) {
+      const k = ii * 3 + n;
+      const imie = IMIONA[k % IMIONA.length], nazwisko = NAZWISKA[(k * 5) % NAZWISKA.length];
+      out.push({
+        id: "SZK-" + String(out.length + 1).padStart(3, "0"), instytucja_id: inst.id, imie, nazwisko,
+        telefon: "+48 600 " + String(100 + k).padStart(3, "0") + " " + String(200 + ii).padStart(3, "0"),
+        email: (imie[0] + "." + nazwisko).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/ł/g, "l") + "@" + (inst.skrot || inst.id).toLowerCase().replace(/[^a-z0-9]/g, "") + ".pl",
+        specjalizacja: SPECJALIZACJE[k % SPECJALIZACJE.length], aktywny: 1
+      });
+    }
+  });
+  return out;
+}
+
+/* Podsumowania lat nieprzenoszonych (D-129, D-160, D-175). Z wnioskow 2025
+   zostaja wylacznie liczby per instytucja, same wnioski nie trafiaja do bazy. */
+export function podsumowaniaRows(wnioskiZrodlowe) {
+  const suma = {};
+  const dodaj = (rok, inst, miara, wartosc) => {
+    const k = rok + "|" + inst + "|" + miara;
+    suma[k] = suma[k] || { rok, instytucja_id: inst, miara, wartosc: 0 };
+    suma[k].wartosc += wartosc;
+  };
+  wnioskiZrodlowe.filter((w) => !czyMigrowany(w)).forEach((w) => {
+    if (w.status_skladania === "Złożony") dodaj(w.rok, w.instytucja_id, "wnioski_zlozone", 1);
+    if (w.status_decyzji === "Pozytywna") {
+      dodaj(w.rok, w.instytucja_id, "wnioski_pozytywne", 1);
+      dodaj(w.rok, w.instytucja_id, "obrot", w.koszt_calkowity || 0);
+    }
+  });
+  return Object.values(suma).map((r, i) => ({
+    id: "PH-" + String(i + 1).padStart(3, "0"), ...r,
+    wartosc: Math.round(r.wartosc * 100) / 100, zrodlo: "Excel " + r.rok + ", podsumowanie"
+  }));
 }
 
 /* Instytucje, ktore przekazuja terminy z gory zamiast udostepniac kalendarz (D-142) */
@@ -151,17 +211,10 @@ export function migruj(src) {
     aktywna: 1
   }));
 
-  /* Progi prowizyjne wychodza z tablicy zagniezdzonej do wlasnej tabeli */
-  const progi_prowizyjne = [];
-  const warunki = src.warunki_prowizyjne.map((w, wi) => {
-    (w.progi || []).forEach((p, pi) => {
-      progi_prowizyjne.push({
-        id: "PP-" + String(wi + 1).padStart(2, "0") + "-" + String(pi + 1),
-        warunki_id: w.id, od_kwoty: p.od, stawka: p.stawka
-      });
-    });
+  /* Progi prowizyjne leza przy warunkach jako lista JSON (D-168) */
+  const warunki = src.warunki_prowizyjne.map((w) => {
     const { progi, ...reszta } = w;
-    return reszta;
+    return { ...reszta, progi: JSON.stringify((progi || []).map((p) => ({ od: p.od, st: p.stawka }))) };
   });
 
   const katalog_szkolen = src.katalog_szkolen.map((s) => ({ ...s, plan_szkolenia: null }));
@@ -171,9 +224,19 @@ export function migruj(src) {
   });
 
   /* Flaga zainteresowania kolejnym naborem (D-130), deterministycznie co trzeci klient */
-  const klienci = src.klienci.map((k) => ({
-    ...k, adres_siedziby: null, zainteresowany_naborem: k.numer_klienta % 3 === 0 ? 1 : 0
-  }));
+  /* Liczba zatrudnionych przechodzi z klienta do jego wnioskow (D-169) */
+  const zatrudnieniKlienta = Object.fromEntries(src.klienci.map((k) => [k.id, k.liczba_zatrudnionych]));
+  const pierwszyWniosek = {};
+  src.wnioski.filter(czyMigrowany).forEach((w) => {
+    const d = w.data_wplyniecia_formularza || w.data_wniosku;
+    if (d && (!pierwszyWniosek[w.klient_id] || d < pierwszyWniosek[w.klient_id])) pierwszyWniosek[w.klient_id] = d;
+  });
+  const DATA_STARTU_BAZY = "2026-01-02";
+  const klienci = src.klienci.map((k) => {
+    const { liczba_zatrudnionych, ...reszta } = k;
+    return { ...reszta, adres_siedziby: null, zainteresowany_naborem: k.numer_klienta % 3 === 0 ? 1 : 0,
+             utworzono: pierwszyWniosek[k.id] || DATA_STARTU_BAZY };
+  });
 
   /* D-144: jeden klient u wielu instytucji. Baza startowa ma po jednym powiazaniu,
      co dziesiaty klient dostaje drugie, zeby separacja miala co egzekwowac. */
@@ -198,6 +261,8 @@ export function migruj(src) {
       nabor_id: null, szkolenie_glowne_id: w.szkolenie_glowne_id, faktura_id: null,
       etap: etapWniosku(w),
       wielkosc_przedsiebiorstwa: null, osoba_kontaktowa: null, telefon: null, email: null,
+      liczba_zatrudnionych: zatrudnieniKlienta[w.klient_id] == null ? null : zatrudnieniKlienta[w.klient_id],
+      prog_regula_aktywna: 1, wklad_regula_aktywna: 1, doplata_na_fakturze_kfs: 1,
       koszt_calkowity_z_doplata: kosztStary == null ? null : kosztStary + doplata,
       kwota_doplaty_dodatkowej: doplata,
       koszt_calkowity: kosztStary,
@@ -217,6 +282,11 @@ export function migruj(src) {
     };
   });
   const idWnioskow = new Set(wnioski.map((w) => w.id));
+  /* Uczestnik bez terminu dostaje pierwszy termin swojego szkolenia, zeby kalendarz
+     terminow pokazywal realne zapisy z tabeli uczestnikow */
+  const terminDlaSzkolenia = {};
+  terminy.forEach((t) => { if (!terminDlaSzkolenia[t.szkolenie_id]) terminDlaSzkolenia[t.szkolenie_id] = t.id; });
+  const dataWniosku = Object.fromEntries(wnioski.map((w) => [w.id, w.data_wplyniecia_formularza || w.data_wniosku]));
 
   /* Konta: rola jako referencja, przydzial instytucji jako osobne wiersze (D-113) */
   const rolaPoNazwie = { "Administrator": "admin", "Pracownik LDIT": "pracownik",
@@ -236,7 +306,8 @@ export function migruj(src) {
       if (rola_id === "is" || rola_id === "pracownikIS") instytucja_id = instByNazwa[nazwy[0]] || null;
     }
     return {
-      id: u.id, login: u.login, haslo_demo: HASLO_DEMO, imie_nazwisko: u.imie_nazwisko,
+      id: u.id, login: u.login, haslo_sol: solDla(u.login), haslo_skrot: skrotHasla(HASLO_DEMO, solDla(u.login)),
+      imie_nazwisko: u.imie_nazwisko,
       rola_id, instytucja_id, klient_id: null, wszystkie_instytucje: wszystkie,
       ostatnie_logowanie: u.ostatnie_logowanie, dwa_fa: u.dwa_fa ? 1 : 0, zablokowane: 0
     };
@@ -246,10 +317,11 @@ export function migruj(src) {
      zakresie (P-33), ale konto musi istniec, zeby dalo sie pokazac, ile
      dokladnie widzi klient po zalogowaniu. */
   const pierwszyKlient = klienci[0];
+  const loginKlienta = "kontakt@" + pierwszyKlient.nazwa.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".pl";
   uzytkownicy.push({
-    id: "kontakt@" + pierwszyKlient.nazwa.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".pl",
-    login: "kontakt@" + pierwszyKlient.nazwa.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".pl",
-    haslo_demo: HASLO_DEMO, imie_nazwisko: pierwszyKlient.osoba_kontaktowa,
+    id: loginKlienta, login: loginKlienta,
+    haslo_sol: solDla(loginKlienta), haslo_skrot: skrotHasla(HASLO_DEMO, solDla(loginKlienta)),
+    imie_nazwisko: pierwszyKlient.osoba_kontaktowa,
     rola_id: "klient", instytucja_id: null, klient_id: pierwszyKlient.id,
     wszystkie_instytucje: 0, ostatnie_logowanie: null, dwa_fa: 0, zablokowane: 0
   });
@@ -263,15 +335,17 @@ export function migruj(src) {
     progi_dofinansowania: progiDofinansowaniaRows(),
     instytucje,
     warunki_prowizyjne: warunki,
-    progi_prowizyjne,
+    szkoleniowcy: szkoleniowcyRows(src.instytucje),
     katalog_szkolen,
     terminy,
     klienci,
     klient_instytucja,
     nabory: src.nabory,
-    faktury: src.faktury,
+    faktury: src.faktury.map((f) => ({ ...f, rodzaj: "zwykla", klient_id: null, faktura_pierwotna_id: null })),
     wnioski,
-    uczestnicy: src.uczestnicy.filter((u) => idWnioskow.has(u.wniosek_id)),
+    uczestnicy: src.uczestnicy.filter((u) => idWnioskow.has(u.wniosek_id))
+      .map((u) => ({ ...u, utworzono: dataWniosku[u.wniosek_id] || DATA_STARTU_BAZY,
+                     termin_id: u.termin_id || terminDlaSzkolenia[u.szkolenie_id] || null })),
     role: ROLE,
     moduly: MODULY,
     uprawnienia: uprawnieniaRows(),
@@ -299,6 +373,7 @@ export function migruj(src) {
     rejestr_aktywnosci: src.rejestr_aktywnosci.map((r) => ({ id: idAkt(), ...r })),
     logowania: src.logowania.map((l) => ({ id: idLog(), ...l })),
     cele: src.cele.map((c, i) => ({ id: "CEL-" + (i + 1), ...c })),
+    podsumowania_historyczne: podsumowaniaRows(src.wnioski),
     meta: [
       { klucz: "wersja_schematu", wartosc: "2.0" },
       { klucz: "rok_biezacy", wartosc: "2026" },

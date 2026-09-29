@@ -53,6 +53,38 @@
     }
   }
 
+  /* Zapis odrzucony przez straznika (assets/straznik.js) nie jest awaria strony,
+     tylko odmowa. Pokazujemy ja uzytkownikowi zamiast cichego bledu w konsoli. */
+  function pokazOdmowe(komunikat) {
+    poDom(function () {
+      var el = document.getElementById("kfsOdmowa");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "kfsOdmowa";
+        el.setAttribute("role", "alert");
+        el.style.cssText = "position:fixed;right:16px;bottom:16px;z-index:9999;max-width:380px;padding:12px 14px;" +
+          "background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;font:13px system-ui;" +
+          "box-shadow:0 6px 18px rgba(0,0,0,.12)";
+        document.body.appendChild(el);
+      }
+      el.textContent = "Zapis odrzucony: " + komunikat;
+      el.style.display = "block";
+      global.clearTimeout(pokazOdmowe.timer);
+      pokazOdmowe.timer = global.setTimeout(function () { el.style.display = "none"; }, CZAS_KOMUNIKATU_MS);
+    });
+  }
+  var CZAS_KOMUNIKATU_MS = 6000;
+  function czyOdmowa(e) { return e && e.name === "StraznikError"; }
+  global.addEventListener("error", function (ev) {
+    if (czyOdmowa(ev.error)) { ev.preventDefault(); pokazOdmowe(ev.error.message); }
+  });
+  /* Tryb serwera: zapis odrzucony, bo inne okno zapisalo nowsza wersje bazy */
+  global.addEventListener("kfs:konflikt", function (ev) { pokazOdmowe(ev.detail.komunikat); });
+  global.addEventListener("kfs:blad-zapisu", function (ev) { pokazOdmowe(ev.detail.komunikat); });
+  global.addEventListener("unhandledrejection", function (ev) {
+    if (czyOdmowa(ev.reason)) { ev.preventDefault(); pokazOdmowe(ev.reason.message); }
+  });
+
   var czekajacy = [];
   var gotowe = false;
 

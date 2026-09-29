@@ -16,16 +16,19 @@ i staje się dowodem, że model się spina.
 ```
 makieta/
   db/
-    schema.sql          struktura: 30 tabel, klucze obce, CHECK, indeksy
+    schema.sql          struktura: 33 tabele, klucze obce, CHECK, indeksy
     views.sql           reguły biznesowe jako widoki SQL
     seed.sql            dane startowe do czytania (generowane)
     seed-db.js          ta sama baza jako binarium base64 (generowane)
     sql-wasm.js         silnik sql.js
     sql-wasm-data.js    binarium WebAssembly wklejone jako base64
   assets/
-    sqlite.js           start silnika, zapis stanu, eksport pliku .sqlite
+    sqlite.js           start silnika, zapis stanu (przeglądarka albo plik na dysku), eksport .sqlite
     store.js            dostęp do danych: get / query / insert / update / remove
-    auth.js             sesja, role, uprawnienia
+    haslo.js            skrót hasła SHA-256 z solą
+    auth.js             logowanie, sesja z tabeli sesje, role, uprawnienia
+    straznik.js         strażnik zapisów: moduł, wiersz, pole
+    html.js             esc() i escJs() przeciw XSS
     zakres.js           separacja danych, filtr wierszy i pól
     prowizja.js         silnik prowizji
     db.js               adapter: składa window.DB dla stron
@@ -33,13 +36,14 @@ makieta/
 tools/
     build-sqlite.mjs    buduje bazę ze schema.sql, views.sql i db.json
     sqlite-migracja.mjs mapowanie starych danych na nowy schemat
+    serwer.mjs          lokalny serwer: makieta plus baza w pliku na dysku
 ```
 
 Każda strona ładuje ten łańcuch:
 
 ```
-sql-wasm.js → sql-wasm-data.js → seed-db.js → sqlite.js → store.js
-→ auth.js → zakres.js → prowizja.js → db.js → tips.js → boot.js
+sql-wasm.js → sql-wasm-data.js → seed-db.js → sqlite.js → store.js → haslo.js
+→ auth.js → straznik.js → zakres.js → prowizja.js → db.js → lata.js → html.js → tips.js → boot.js
 ```
 
 ---
@@ -55,10 +59,38 @@ Koszt: około 1,9 MB dwóch wygenerowanych plików w repozytorium.
 
 ---
 
+## Lokalna baza na dysku (tryb serwera)
+
+Z dwukliku baza żyje w pamięci przeglądarki: jedna przeglądarka, jeden komputer, a wyczyszczenie
+danych przeglądarki kasuje zmiany. Żeby dane leżały w zwykłym pliku bazy na dysku, uruchom:
+
+```
+node tools/serwer.mjs          # potem otwórz http://127.0.0.1:8080/
+```
+
+Wtedy:
+
+- baza jest w pliku **`makieta/db/kfs.sqlite`** (poza repozytorium, w `.gitignore`), wspólnym dla
+  wszystkich kart i przeglądarek na tym komputerze; plik otworzysz w DB Browser for SQLite,
+- pierwszy start bierze bazę startową, każdy zapis w makiecie trafia do pliku,
+- dwa okna nie nadpiszą sobie zmian: zapis ze starszej wersji dostaje odmowę i komunikat
+  „odśwież stronę” (blokada wersji, jak optimistic locking w Open Mercato),
+- `KFS.reset()` odkłada plik do `kfs.sqlite.bak` i wraca do bazy startowej,
+- `KFS.tryb` mówi, który tryb działa: `serwer` albo `przegladarka`.
+
+Serwer nasłuchuje wyłącznie na `127.0.0.1`, sprawdza nagłówki Host i Origin, ogranicza liczbę
+zapisów na minutę i rozmiar pliku, przyjmuje tylko pliki SQLite i zapisuje atomowo. Podaje
+wyłącznie katalogi `makieta/` i `dokumentacja/`, sam plik bazy nie jest dostępny jako plik
+statyczny. Nadal to makieta: uprawnienia sprawdza przeglądarka, a ta ma całą bazę. Prawdziwą
+barierą będą polityki w bazie i filtr w serwerze aplikacji [D-179].
+
+---
+
 ## Jak działa start i zapis
 
-1. `sqlite.js` uruchamia silnik i wczytuje bazę: jeśli w `localStorage` leży zapisany stan
-   roboczy (klucz `kfs_sqlite_v4`), bierze jego, w przeciwnym razie bazę startową.
+1. `sqlite.js` uruchamia silnik i wczytuje bazę. W trybie serwera z pliku na dysku, z dwukliku:
+   jeśli w `localStorage` leży zapisany stan
+   roboczy (klucz `kfs_sqlite_v5`), bierze jego, w przeciwnym razie bazę startową.
 2. Każdy zapis przez `Store` odkłada binarium bazy z powrotem do `localStorage`, więc
    **zmiany przeżywają odświeżenie strony**.
 3. `KFS.reset()` kasuje stan roboczy i wraca do bazy startowej.
@@ -107,9 +139,15 @@ Widok `v_wniosek_finanse` liczy wszystko, co dokumentacja nazywa polem wyliczany
 | wielkość przedsiębiorstwa | nadpisanie per wniosek, w razie braku z klienta | D-132 |
 | procent dofinansowania | z tabeli progów, wersja ważna w dniu wniosku | D-131 |
 | koszt całkowity | koszt z dopłatą minus dopłata dodatkowa | D-134 |
-| przyznano | koszt całkowity razy procent dofinansowania | D-135 |
+| próg dofinansowania | wybrany we wniosku albo dobrany regułą z wielkości i daty | D-171 |
+| przyznano | koszt całkowity razy procent progu, tylko decyzja pozytywna | D-135 |
+| wkład własny | reszta: koszt minus przyznano, nadpisywalny ręcznie | D-172, D-184 |
 | całkowita wartość szkolenia | suma po uczestnikach zakwalifikowanych | D-61, D-79 |
-| podstawa prowizji | koszt całkowity **z dopłatą** | D-64 |
+| podstawa prowizji | koszt z dopłatą, gdy dopłata jest na fakturze KFS, inaczej bez niej | D-64, D-174 |
+
+Obok: `v_faktura_szczegoly` (faktura ze szkoleniem i klientem z wniosków, okres rozliczeniowy
+także dla korekty, D-161, D-170) i `v_podsumowanie_roku` (liczby na dashboard, dla 2025 z
+podsumowań historycznych, D-175).
 
 Każde pole wyliczane występuje w dwóch wariantach: `*_wyliczony` (zawsze z reguły, nawet gdy
 reguła jest wyłączona) i `*_efektywny` (to, co widzi użytkownik). Dzięki temu przycisk
@@ -132,11 +170,30 @@ Trzy poziomy kontroli:
 | pole | czy widzi prowizję, PESEL, zysk firmy | tabela `uprawnienia_pol` |
 | wiersz | czyje instytucje i czyich klientów | tabela `uzytkownik_instytucja`, widok `v_zakres_uzytkownika` |
 
+Te same trzy poziomy pilnują zapisów. `straznik.js` przechwytuje każdy `Store.insert`,
+`update` i `remove`: rola musi mieć edycję modułu, do którego należy tabela, zapisywany wiersz
+musi należeć do instytucji z zakresu konta (przy edycji sprawdzany jest stan przed i po, więc
+rekordu nie da się przenieść do konkurencji), a pola prowizji zmienia tylko rola z uprawnieniem
+`finanse.prowizja`. Rejestr aktywności jest tylko do dopisywania. Odrzucony zapis pokazuje
+komunikat na ekranie.
+
+## Logowanie i sesja
+
+- Hasło nie leży w bazie jawnie: `uzytkownicy.haslo_skrot` to SHA-256 z solą (`haslo_sol`),
+  iterowany 1000 razy. Docelowo bcrypt z frameworka Open Mercato [D-176].
+- Błąd logowania ma jeden komunikat, który nie zdradza, czy konto istnieje.
+- Po 5 nieudanych próbach konto czeka 15 minut (`nieudane_proby`, `zablokowane_do`).
+- Przeglądarka trzyma wyłącznie losowy token. Rola, zakres i blokada są przy każdym odczycie
+  czytane z tabeli `sesje` i `uzytkownicy`, więc podmiana czegokolwiek w pamięci przeglądarki
+  nie podnosi uprawnień. Sesja wygasa po 30 minutach bezczynności i po 8 godzinach.
+- Zablokowanie konta przez administratora kończy trwającą sesję.
+
 ---
 
 ## Konta demonstracyjne
 
-Hasło do wszystkich kont: **`demo`** (kolumna `uzytkownicy.haslo_demo`, jawnie, bo to makieta).
+Hasło do wszystkich kont: **`demo`** (w bazie jako skrót z solą; jawnie tylko w `meta.haslo_demo`
+na potrzeby listy kont na ekranie logowania).
 Lista kont jest na ekranie logowania, klikasz i formularz się wypełnia.
 
 | Konto | Rola | Co widzi |
@@ -164,5 +221,9 @@ node tools/verify-parity.mjs      # migracja nie zmieniła żadnej liczby w maki
 node tools/smoke-crud.mjs         # CRUD, ograniczenia schematu, pola wyliczane
 node tools/test-uprawnienia.mjs   # role, uprawnienia, separacja danych
 node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
-node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus korekty
+node tools/test-prowizja.mjs      # przypadki z docs/07, korekty w okresie wystawienia, warunki od daty
+node tools/test-lata.mjs          # zakładki lat, nieprzypisane wnioski, brak wniosków z 2025
+node tools/test-bezpieczenstwo.mjs # hasła, blokada, sesja, strażnik zapisów, XSS
+node tools/test-serwer.mjs        # lokalny serwer bazy
+node tools/test-model.mjs         # dane interaktywnego diagramu tabel
 ```
