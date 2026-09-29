@@ -214,7 +214,9 @@
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -223,249 +225,17 @@
 <script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="zglo"></script>
+<script src="js/10-zgloszenia-dane.js"></script>
+<script src="js/10-zgloszenia-lista.js"></script>
+<script src="js/10-zgloszenia-formularz.js"></script>
 <script type="text/kfs-strona">
-/* PRZYKLAD: wpisy archiwalne z 2025 to dane demonstracyjne (w bazie nie ma jeszcze importu
-   z arkusza). Sluza wylacznie do pokazania historii podmiotu, nie pojawiaja sie na glownej liscie. */
-var ARCHIWUM = [
-  { id: "ZG-A12", data: "2025-11-03", podmiot: "Dron Fortech", typ: "Instytucja",
-    powod: "Kontakt z klientem z pominięciem LDIT",
-    opis: "Instytucja skontaktowała się bezpośrednio z klientem w sprawie kolejnego szkolenia.",
-    autor: "Bartłomiej Olejnik", waga: "wysoka" },
-  { id: "ZG-A07", data: "2025-06-17", podmiot: "Dron Fortech", typ: "Instytucja",
-    powod: "Faktura wystawiona bez zgłoszenia w systemie",
-    opis: "Fakturę wykryto dopiero przy zamknięciu miesiąca, prowizja naliczona z opóźnieniem.",
-    autor: "Martyna Kowal", waga: "średnia" },
-  { id: "ZG-A09", data: "2025-09-01", podmiot: "Safe Work Institute", typ: "Instytucja",
-    powod: "Obniżenie ceny bez uzgodnienia",
-    opis: "Pierwszy taki przypadek, wtedy potraktowany jako pomyłka handlowca.",
-    autor: "Bartłomiej Olejnik", waga: "średnia" },
-  { id: "ZG-A04", data: "2025-03-22", podmiot: "Zenit sp.j.", typ: "Klient",
-    powod: "Rezygnacja po pozytywnej decyzji",
-    opis: "Firma zrezygnowała po przyznaniu środków, urząd odnotował niewykorzystany limit.",
-    autor: "Joanna Sadowska", waga: "niska" }
-];
+STAN_10.lokalne = lokalne();
+przygotujFormularz();
+podepnijFiltry();
 
-function lokalne() { return DB.ZGLOSZENIA.slice(); }
-function wszystkie() { return DB.ZGLOSZENIA.concat(ARCHIWUM); }
-var WSZYSTKIE = wszystkie();
-var LOKALNE = lokalne();
-var filtrTyp = "";
-
-function wagaTag(w) {
-  if (w === "wysoka") return '<span class="tag neg dot">waga wysoka</span>';
-  if (w === "średnia") return '<span class="tag warn dot">waga średnia</span>';
-  return '<span class="tag mute dot">waga niska</span>';
-}
-function typTag(t) {
-  return t === "Instytucja"
-    ? '<span class="tag info">Instytucja szkoleniowa</span>'
-    : '<span class="tag mute">Klient końcowy</span>';
-}
-
-/* ---------- KPI ---------- */
-function renderKpi() {
-  var wys = LOKALNE.filter(function (z) { return z.waga === "wysoka"; }).length;
-  var ins = LOKALNE.filter(function (z) { return z.typ === "Instytucja"; }).length;
-  var kli = LOKALNE.filter(function (z) { return z.typ === "Klient"; }).length;
-  var kpi = [
-    ["Zgłoszenia otwarte", LOKALNE.length, "cały bieżący rejestr, wpisów się nie zamyka"],
-    ["O wysokiej wadze", wys, "kandydaci do zerwania współpracy"],
-    ["Dotyczące instytucji", ins, "z " + DB.INSTYTUCJE.length + " instytucji w katalogu"],
-    ["Dotyczące klientów", kli, "z " + DB.fmtNum(DB.KLIENCI.length) + " klientów w bazie"]
-  ];
-  document.getElementById("kpi").innerHTML = kpi.map(function (k, i) {
-    return '<div class="kpi"><div class="k-label">' + k[0] + "</div>" +
-      '<div class="k-value"' + (i === 1 ? ' style="color:var(--neg-ink)"' : "") + ">" + k[1] + "</div>" +
-      '<div class="k-foot">' + k[2] + "</div></div>";
-  }).join("");
-
-  document.getElementById("nWsz").textContent = LOKALNE.length;
-  document.getElementById("nInst").textContent = ins;
-  document.getElementById("nKl").textContent = kli;
-
-  var maks = Math.max(1, LOKALNE.length);
-  document.getElementById("wagi").innerHTML = ["wysoka", "średnia", "niska"].map(function (w) {
-    var n = LOKALNE.filter(function (z) { return z.waga === w; }).length;
-    return '<div class="fn-row"><div class="fl">' + w + "</div>" +
-      '<div class="ft"><i style="width:' + Math.round(n / maks * 100) + '%"></i></div>' +
-      '<div class="fv">' + n + "</div></div>";
-  }).join("");
-}
-
-/* ---------- Historia podmiotu ---------- */
-function historia(podmiot, pomijId) {
-  return wszystkie()
-    .filter(function (z) { return z.podmiot === podmiot && z.id !== pomijId; })
-    .sort(function (a, b) { return a.data < b.data ? 1 : -1; });
-}
-
-function histHtml(z) {
-  var poprz = historia(z.podmiot, z.id);
-  var razem = poprz.length + 1;
-  var ostrz = razem >= 3
-    ? '<span class="tag neg">' + razem + " zgłoszeń, rekomendacja: zakończyć współpracę</span>"
-    : razem === 2
-      ? '<span class="tag warn">' + razem + " zgłoszenia, to już powtórka</span>"
-      : '<span class="tag mute">pierwsze zgłoszenie dla tego podmiotu</span>';
-
-  return '<div class="hist">' +
-    '<div class="hl">Historia podmiotu: ' + esc(z.podmiot) + " &middot; " + ostrz + "</div>" +
-    (poprz.length
-      ? poprz.map(function (p) {
-          return '<div class="hr"><span class="hd">' + esc(p.data) + "</span>" +
-            "<span><b>" + esc(p.powod) + "</b> " + wagaTag(p.waga) +
-            '<div class="small muted">' + esc(p.opis) + " &middot; zgłosił: " + esc(p.autor) +
-            (p.id.indexOf("ZG-A") === 0 ? ' &middot; <span class="pill">przykład: archiwum 2025</span>' : "") +
-            "</div></span></div>";
-        }).join("")
-      : '<div class="small muted">Brak wcześniejszych wpisów w rejestrze ani w archiwum z 2025.</div>') +
-    "</div>";
-}
-
-/* ---------- Lista ---------- */
-function renderLista() {
-  var q = document.getElementById("szukaj").value.toLowerCase().trim();
-  var waga = document.getElementById("fWaga").value;
-
-  var lista = LOKALNE.filter(function (z) {
-    if (filtrTyp && z.typ !== filtrTyp) return false;
-    if (waga && z.waga !== waga) return false;
-    if (q && (z.podmiot + " " + z.powod + " " + z.opis + " " + z.autor).toLowerCase().indexOf(q) === -1) return false;
-    return true;
-  }).sort(function (a, b) { return a.data < b.data ? 1 : -1; });
-
-  document.getElementById("podsumFiltru").textContent =
-    "widocznych " + lista.length + " z " + LOKALNE.length + " zgłoszeń";
-
-  if (!lista.length) {
-    document.getElementById("lista").innerHTML =
-      '<div class="card"><div class="empty"><div class="ei">&#9888;</div>' +
-      '<div class="et">Brak zgłoszeń spełniających filtry</div>' +
-      "Zmień filtr wagi, typ podmiotu albo wyczyść wyszukiwanie.</div></div>";
-    return;
-  }
-
-  document.getElementById("lista").innerHTML = lista.map(function (z) {
-    return '<div class="card">' +
-      '<div class="card-head" style="align-items:flex-start">' +
-        '<div class="zg-head" style="flex:1 1 auto">' +
-          '<div class="zg-t">' +
-            '<h3 class="zg-powod">' + esc(z.powod) + "</h3>" +
-            '<div class="small muted"><span class="mono">' + esc(z.id) + "</span> &middot; " +
-              esc(z.data) + " &middot; zgłosił: " + esc(z.autor) + "</div>" +
-          "</div>" +
-          '<div class="zg-meta">' + typTag(z.typ) + wagaTag(z.waga) + "</div>" +
-        "</div>" +
-      "</div>" +
-      '<div class="card-body">' +
-        '<div class="small muted">Podmiot</div>' +
-        '<div class="strong" style="font-size:14px;margin-bottom:2px">' + esc(z.podmiot) + "</div>" +
-        '<p class="zg-opis">' + esc(z.opis) + "</p>" +
-        '<div class="mt16">' + histHtml(z) + "</div>" +
-        '<div class="btn-row mt16">' +
-          '<button class="btn sm">Dopisz do zgłoszenia</button>' +
-          '<button class="btn sm">Otwórz kartę podmiotu</button>' +
-          '<button class="btn sm danger">Oznacz do zakończenia współpracy</button>' +
-        "</div>" +
-      "</div></div>";
-  }).join("");
-}
-
-/* ---------- Podmioty powracające ---------- */
-function renderPowracajace() {
-  var licz = {};
-  LOKALNE.concat(ARCHIWUM).forEach(function (z) {
-    if (!licz[z.podmiot]) licz[z.podmiot] = { n: 0, typ: z.typ };
-    licz[z.podmiot].n++;
-  });
-  var rows = Object.keys(licz).map(function (p) { return { p: p, n: licz[p].n, typ: licz[p].typ }; })
-    .filter(function (r) { return r.n > 1; })
-    .sort(function (a, b) { return b.n - a.n; });
-
-  document.getElementById("tbPowracajace").innerHTML = rows.length ? rows.map(function (r) {
-    return "<tr" + (r.n >= 3 ? ' class="row-danger"' : "") + ">" +
-      '<td class="strong">' + esc(r.p) + "</td>" +
-      '<td class="small muted">' + esc(r.typ) + "</td>" +
-      '<td class="num strong">' + r.n + "</td></tr>";
-  }).join("") + '<tr><td colspan="3" class="small muted">Liczone razem z przykładowym archiwum z 2025.</td></tr>'
-    : '<tr><td colspan="3" class="small muted">Żaden podmiot nie powtórzył się w rejestrze.</td></tr>';
-}
-
-/* ---------- Formularz ---------- */
-var opcje = '<optgroup label="Instytucje szkoleniowe">' +
-  DB.INSTYTUCJE.map(function (i) { return '<option value="Instytucja">' + esc(i.nazwa) + "</option>"; }).join("") +
-  '</optgroup><optgroup label="Klienci końcowi">' +
-  DB.KLIENCI.slice(0, 60).map(function (k) { return '<option value="Klient">' + esc(k.nazwa) + "</option>"; }).join("") +
-  "</optgroup>";
-document.getElementById("nPodmiot").innerHTML = opcje;
-
-/* Autor domyslnie = zalogowany (z sesji), pole edytowalne (D-121) */
-var PRACOWNICY_LDIT = DB.UZYTKOWNICY.filter(function (u) {
-  return u.rola === "Administrator" || u.rola === "Pracownik LDIT";
-});
-var domyslnyAutor = Auth.sesja().imie;
-document.getElementById("nAutor").innerHTML = PRACOWNICY_LDIT.map(function (u) {
-  return '<option' + (u.imie === domyslnyAutor ? " selected" : "") + ">" + esc(u.imie) + "</option>";
-}).join("");
-
-function dzisiaj() {
-  var d = new Date(), p = function (n) { return String(n).padStart(2, "0"); };
-  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
-}
-document.getElementById("nData").value = dzisiaj();
-
-function odswiezTyp() {
-  var s = document.getElementById("nPodmiot");
-  document.getElementById("nTyp").value =
-    s.value === "Instytucja" ? "Instytucja szkoleniowa" : "Klient końcowy";
-}
-document.getElementById("nPodmiot").addEventListener("change", odswiezTyp);
-
-function dodaj() {
-  var s = document.getElementById("nPodmiot");
-  var powod = document.getElementById("nPowod").value.trim();
-  var opis = document.getElementById("nOpis").value.trim();
-  if (!powod || !opis) {
-    document.getElementById("wynikDodania").innerHTML =
-      '<div class="note warn mt16 mb0">Powód i opis są wymagane. Zgłoszenie bez opisu jest bezużyteczne po roku.</div>';
-    return;
-  }
-  Store.insert("zgloszenia", {
-    data: dzisiaj(),
-    podmiot: s.options[s.selectedIndex].text,
-    typ: s.value,
-    powod: powod,
-    opis: opis,
-    autor: document.getElementById("nAutor").value,
-    waga: document.getElementById("nWaga").value
-  }, "ZG-");
-  document.getElementById("nPowod").value = "";
-  document.getElementById("nOpis").value = "";
-  document.getElementById("wynikDodania").innerHTML =
-    '<div class="note mt16 mb0" style="border-left-color:var(--pos-ink);background:var(--pos-bg)">' +
-    "<b>Zgłoszenie zapisane w bazie.</b> Historia podmiotu przeliczyła się na liście powyżej.</div>";
-  window.scrollTo(0, 0);
-  /* odswiez() wywola sie przez zdarzenie db:changed */
-}
-
-/* ---------- Filtry ---------- */
-Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (c) {
-  c.addEventListener("click", function () {
-    Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (x) { x.classList.remove("on"); });
-    c.classList.add("on");
-    filtrTyp = c.dataset.typ;
-    renderLista();
-  });
-});
-document.getElementById("szukaj").addEventListener("input", renderLista);
-document.getElementById("fWaga").addEventListener("change", renderLista);
-
-function odswiez() { renderKpi(); renderLista(); renderPowracajace(); }
-
-/* Odświeżanie po zapisaniu zgłoszenia do wspólnego JSON */
+/* Odswiezanie po zapisaniu zgloszenia do wspolnego JSON */
 window.addEventListener("db:changed", function () {
-  LOKALNE = lokalne();
-  WSZYSTKIE = wszystkie();
+  STAN_10.lokalne = lokalne();
   odswiez();
 });
 

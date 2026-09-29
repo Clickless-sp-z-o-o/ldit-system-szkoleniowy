@@ -152,7 +152,9 @@
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -161,189 +163,16 @@
 <script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="nabory"></script>
+<script src="js/05-nabory-dane.js"></script>
+<script src="js/05-nabory-tabela.js"></script>
+<script src="js/05-nabory-prognozy.js"></script>
 <script type="text/kfs-strona">
-(function () {
-  "use strict";
-
-  var MS_NA_DOBE = 86400000;
-  var HORYZONT_MIESIECY = 7;
-  var BRAK_PROGNOZY_KLUCZ = 999999;
-  var NAZWY_MIESIECY = [
-    { rdzen: "stycz", skrot: "sty" }, { rdzen: "lut", skrot: "lut" }, { rdzen: "marz", skrot: "mar" },
-    { rdzen: "kwie", skrot: "kwi" }, { rdzen: "maj", skrot: "maj" }, { rdzen: "czerw", skrot: "cze" },
-    { rdzen: "lip", skrot: "lip" }, { rdzen: "sierp", skrot: "sie" }, { rdzen: "wrze", skrot: "wrz" },
-    { rdzen: "paźd", skrot: "paź" }, { rdzen: "listop", skrot: "lis" }, { rdzen: "grud", skrot: "gru" }
-  ];
-
-  function el(id) { return document.getElementById(id); }
-
-  /* Data biezaca stanu demo z bazy (meta), z zapasem na date systemowa */
-  var meta = Store.one("SELECT wartosc FROM meta WHERE klucz = 'data_biezaca'");
-  var DZIS_ISO = meta && meta.wartosc ? meta.wartosc : new Date().toISOString().slice(0, 10);
-  var DZIS = new Date(DZIS_ISO);
-  function dniDo(iso) { return Math.round((new Date(iso) - DZIS) / MS_NA_DOBE); }
-  el("stanNa").textContent = "stan na " + DB.fmtDate(DZIS_ISO);
-
-  /* Prognoza jest tekstem ("polowa pazdziernika 2026"): wyciagamy miesiac i rok do sortowania */
-  function parsujPrognoze(tekst) {
-    var t = String(tekst || "").toLowerCase();
-    var rokMatch = /(\d{4})/.exec(t);
-    var mies = -1;
-    NAZWY_MIESIECY.forEach(function (m, i) { if (mies < 0 && t.indexOf(m.rdzen) >= 0) mies = i; });
-    if (!rokMatch || mies < 0) return null;
-    return { rok: parseInt(rokMatch[1], 10), mies: mies, polowa: t.indexOf("połowa") >= 0 };
-  }
-  function kluczPrognozy(tekst) {
-    var p = parsujPrognoze(tekst);
-    return p ? p.rok * 100 + p.mies : BRAK_PROGNOZY_KLUCZ;
-  }
-
-  /* Liczba klientow z danych: klienci przypisani do urzedu (klienci.pup_id) */
-  var pupPoNazwie = {};
-  DB.PUPY.forEach(function (p) { pupPoNazwie[p.nazwa] = p.id; });
-  var klienciPoPup = {};
-  DB.KLIENCI.forEach(function (k) { klienciPoPup[k.pup] = (klienciPoPup[k.pup] || 0) + 1; });
-  function pupId(n) { return pupPoNazwie[n.pup] || null; }
-  function klientow(n) { return klienciPoPup[pupId(n)] || 0; }
-
-  /* Sortowanie: ogloszone wg daty konca rosnaco, potem kontakt, prognoza, na koncu zakonczone */
-  function klucz(n) {
-    if (n.status === "Nabór ogłoszony") return 1000 + dniDo(n.do);
-    if (n.status === "W trakcie kontaktu") return 20000 + kluczPrognozy(n.prognoza);
-    if (n.status === "Brak naboru") return 30000 + kluczPrognozy(n.prognoza);
-    return 40000 - dniDo(n.do);
-  }
-  var N = DB.NABORY.slice().sort(function (a, b) { return klucz(a) - klucz(b); });
-
-  function poStatusie(s) { return N.filter(function (n) { return n.status === s; }); }
-  function suma(lista) { return lista.reduce(function (s, n) { return s + klientow(n); }, 0); }
-  var ogl = poStatusie("Nabór ogłoszony"), kont = poStatusie("W trakcie kontaktu");
-  var prog = poStatusie("Brak naboru");
-  var prognozowane = kont.concat(prog).filter(function (n) { return parsujPrognoze(n.prognoza); });
-
-  function zakresPrognoz() {
-    if (!prognozowane.length) return "brak prognoz";
-    var posortowane = prognozowane.slice().sort(function (a, b) { return kluczPrognozy(a.prognoza) - kluczPrognozy(b.prognoza); });
-    return "najbliższe: " + posortowane[0].prognoza + ", najdalsze: " + posortowane[posortowane.length - 1].prognoza;
-  }
-
-  function kpi(label, val, foot, tip) {
-    var mark = tip ? '<span class="tip-mark" data-tip="' + esc(tip) + '">i</span>' : "";
-    return '<div class="kpi"><div class="k-label">' + label + mark + '</div>' +
-      '<div class="k-value">' + val + '</div>' +
-      '<div class="k-foot">' + foot + '</div></div>';
-  }
-  el("kpi").innerHTML =
-    kpi("Nabory ogłoszone teraz", ogl.length,
-        '<span class="tag pos dot">' + suma(ogl) + ' klientów do obsłużenia</span>',
-        "Liczba naborów z aktualnie otwartym terminem składania wniosków. Obok liczba klientów LDIT w tych urzędach.") +
-    kpi("Urzędy w trakcie kontaktu", kont.length, "data jeszcze niepotwierdzona przez urząd",
-        "Urzędy, z którymi LDIT już rozmawia, ale które nie potwierdziły jeszcze dokładnej daty naboru.") +
-    kpi("Nabory prognozowane", kont.length + prog.length, esc(zakresPrognoz()),
-        "Łączna liczba naborów z przewidywanym terminem (w trakcie kontaktu plus sama prognoza), bez ogłoszonego jeszcze terminu.") +
-    kpi("Klientów przypisanych do urzędów", DB.fmtNum(suma(N)),
-        "z " + N.length + " urzędów z naborami, w bazie jest ich " + DB.PUPY.length,
-        "Suma klientów przypisanych do urzędów, które mają nabór. Liczona z bazy klientów, nie z pola liczba_klientow naboru.");
-
-  el("stopkaUrzedy").innerHTML = "W bazie systemu jest <b>" + DB.PUPY.length + " urzędów pracy</b>, tutaj widać <b>" +
-    N.length + "</b>, czyli te, dla których jest nabór lub prognoza. Pozostałe pojawiają się w widoku dopiero, " +
-    "gdy aplikacja prognozująca zwróci dla nich datę.";
-  el("notkaUrzedy").textContent = "Baza obejmuje " + DB.PUPY.length + " urzędów pracy, tutaj widać " + N.length + ".";
-
-  function tagStat(n) {
-    if (n.status === "Nabór ogłoszony") return '<span class="tag pos dot">Nabór ogłoszony</span>';
-    if (n.status === "W trakcie kontaktu") return '<span class="tag info dot">W trakcie kontaktu</span>';
-    if (n.status === "Brak naboru") return '<span class="tag warn dot">Brak naboru</span>';
-    return '<span class="tag mute dot">Po naborze</span>';
-  }
-  function tagDni(n) {
-    if (n.status === "Nabór ogłoszony") {
-      var d = dniDo(n.do);
-      if (d <= 3) return '<span class="tag neg">' + d + ' dni</span>';
-      if (d <= 10) return '<span class="tag warn">' + d + ' dni</span>';
-      return '<span class="tag info">' + d + ' dni</span>';
-    }
-    if (n.status === "Po naborze") return '<span class="small muted">zakończony</span>';
-    return '<span class="muted">&mdash;</span>';
-  }
-  function wierszNaboru(n) {
-    var cls = n.status === "Nabór ogłoszony" ? "row-pos row-nabor" : n.status === "Po naborze" ? "past" : "";
-    var id = pupId(n);
-    return '<tr class="' + cls + '">' +
-      '<td class="strong nowrap">' + esc(n.pup) + '</td>' +
-      '<td class="muted nowrap">' + esc(n.woj) + '</td>' +
-      '<td><span class="pill' + (n.rodzaj === "KFS" ? " k" : " w") + '">' + esc(n.rodzaj) + '</span></td>' +
-      '<td class="nowrap">' + tagStat(n) + '</td>' +
-      '<td class="mono nowrap">' + (n.od ? esc(n.od) : '<span class="muted">&mdash;</span>') + '</td>' +
-      '<td class="mono nowrap">' + (n.do ? esc(n.do) : '<span class="muted">&mdash;</span>') + '</td>' +
-      '<td class="c">' + tagDni(n) + '</td>' +
-      '<td class="nowrap">' + (n.prognoza ? '<span class="small">' + esc(n.prognoza) + '</span>' : '<span class="muted">&mdash;</span>') + '</td>' +
-      '<td class="num strong">' + klientow(n) + '</td>' +
-      '<td class="right nowrap">' + (id ? '<button class="btn xs" onclick="pokazKlientow(\'' + escJs(id) + '\')">Pokaż klientów</button>' : "") + '</td>' +
-      '</tr>';
-  }
-
-  function render() {
-    var q = el("q").value.toLowerCase().trim();
-    var fs = el("fStat").value, fr = el("fRodz").value;
-    var lista = N.filter(function (n) {
-      if (fs && n.status !== fs) return false;
-      if (fr && n.rodzaj !== fr) return false;
-      return !q || (n.pup + " " + n.woj).toLowerCase().indexOf(q) >= 0;
-    });
-    el("licz").innerHTML = "<b>" + lista.length + "</b> z " + N.length + " urzędów &middot; klientów: <b>" +
-      DB.fmtNum(suma(lista)) + "</b>";
-    el("body").innerHTML = lista.length ? lista.map(wierszNaboru).join("") :
-      '<tr><td colspan="10"><div class="empty"><div class="et">Brak naborów</div>Żaden nabór nie spełnia filtrów.</div></td></tr>';
-  }
-  window.pokazKlientow = function (id) {
-    location.href = "04-baza-klientow.html?pup=" + encodeURIComponent(id);
-  };
-  ["q", "fStat", "fRodz"].forEach(function (id) {
-    el(id).addEventListener("input", render);
-    el(id).addEventListener("change", render);
-  });
-  render();
-
-  /* Prognozy na kolejne miesiace, liczone od miesiaca daty biezacej */
-  var dane = [];
-  for (var i = 0; i < HORYZONT_MIESIECY; i++) {
-    var m = (DZIS.getUTCMonth() + i) % 12;
-    var r = DZIS.getUTCFullYear() + Math.floor((DZIS.getUTCMonth() + i) / 12);
-    var wyb = prognozowane.filter(function (n) {
-      var p = parsujPrognoze(n.prognoza);
-      return p.rok === r && p.mies === m;
-    });
-    dane.push({ lab: NAZWY_MIESIECY[m].skrot + " " + String(r).slice(2), ile: wyb.length, klientow: suma(wyb) });
-  }
-
-  function bars(id, pole) {
-    var max = Math.max.apply(null, dane.map(function (d) { return d[pole]; })) || 1;
-    el(id).innerHTML = dane.map(function (d, idx) {
-      var h = Math.round(d[pole] / max * 100);
-      return '<div class="b"><div class="val">' + (d[pole] ? d[pole] : "") + '</div>' +
-        '<div class="fill' + (idx > 1 ? " alt" : "") + '" style="height:' + h + '%"></div>' +
-        '<div class="lab">' + esc(d.lab) + '</div></div>';
-    }).join("");
-  }
-  bars("barsProg", "ile");
-  bars("barsKl", "klientow");
-
-  /* Os czasu najblizszych koncow naborow i najblizsze prognozy */
-  var bliskie = ogl.filter(function (n) { return dniDo(n.do) <= 14; });
-  var najblizszaPrognoza = prognozowane.length ? Math.min.apply(null, prognozowane.map(function (n) { return kluczPrognozy(n.prognoza); })) : null;
-  var naNajblizsza = prognozowane.filter(function (n) { return kluczPrognozy(n.prognoza) === najblizszaPrognoza; });
-  el("os").innerHTML = bliskie.map(function (n, idx) {
-    return '<div class="tl-item' + (idx === 0 ? " now" : "") + '">' +
-      '<div class="t">' + esc(n.pup) + ', koniec naboru ' + esc(n.do) + ', za ' + dniDo(n.do) + ' dni</div>' +
-      '<div class="m">' + klientow(n) + ' klientów w tym urzędzie, nabór trwa od ' + esc(n.od) +
-      '. Rodzaj: ' + esc(n.rodzaj) + ', województwo ' + esc(n.woj) + '.</div></div>';
-  }).join("") + (naNajblizsza.length
-    ? '<div class="tl-item"><div class="t">Dalej: urzędy z najbliższą prognozą</div><div class="m">' +
-      naNajblizsza.map(function (n) { return esc(n.pup) + " (" + klientow(n) + " klientów, " + esc(n.prognoza) + ")"; }).join(", ") +
-      ', data niepotwierdzona.</div></div>'
-    : "");
-})();
+wczytajDane05();
+renderKpi05();
+podepnijFiltry05();
+renderTabela05();
+renderPrognozy05();
+renderOsCzasu05();
 </script>
 </body>
 </html>

@@ -79,7 +79,9 @@
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -88,150 +90,15 @@
 <script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dash"></script>
+<script src="js/01-dashboard-kafelki.js"></script>
+<script src="js/01-dashboard-kolejki.js"></script>
 <script type="text/kfs-strona">
-(function () {
-  "use strict";
-
-  var DZIS = (function () {
-    var d = new Date();
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  })();
-  var ROK = DZIS.slice(0, 4);
-  var ROK_POPRZEDNI = String(parseInt(ROK, 10) - 1);
-  var DNI_NABORU = 7;
-  var DNI_SZKOLENIA = 8;
-
-  var W = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.rok === ROK; });
-  document.getElementById("okres").innerHTML = "<option>Rok " + ROK + "</option>";
-
-  /* Drugie sito uprawnien. Dane finansowe i tak nie dojechaly do strony,
-     bo odsial je assets/zakres.js, ale ekran nie ma nawet rysowac kafelkow,
-     ktorych ta rola nie powinna znac (D-34, D-114). */
-  var widziProwizje = Auth.moze("finanse.prowizja");
-  var widziFinanse = Auth.moze("finanse.zysk_ldit");
-  var zlozone = W.filter(function (w) { return w.statusSkl === "Złożony"; });
-  var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
-  var neg = W.filter(function (w) { return w.statusDec === "Negatywna"; });
-  var oczek = W.filter(function (w) { return w.statusSkl === "Złożony" && !w.statusDec; });
-
-  /* w.wartosc to tylko uczestnicy zakwalifikowani (D-79) */
-  var sumaWnioskowana = W.reduce(function (s, w) { return s + w.wartosc; }, 0);
-  var sumaPrzyznana = poz.reduce(function (s, w) { return s + (w.przyznano || 0); }, 0);
-  var sumaOczek = oczek.reduce(function (s, w) { return s + w.wartosc; }, 0);
-
-  function kpi(label, val, foot, admin, tip) {
-    var mark = tip ? '<span class="tip-mark" data-tip="' + esc(tip) + '">i</span>' : "";
-    return '<div class="kpi' + (admin ? " admin" : "") + '">' +
-      '<div class="k-label">' + label + mark + '</div>' +
-      '<div class="k-value">' + val + '</div>' +
-      (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
-  }
-
-  /* Porownanie rok do roku z podsumowan (D-175). Bierzemy tylko instytucje, ktore maja dane
-     za rok poprzedni, zeby nie porownywac wszystkich z podzbiorem. Brak danych = brak porownania. */
-  function porownanieRokDoRoku(miara) {
-    var poprzednie = DB.PODSUMOWANIA.filter(function (p) { return p.rok === ROK_POPRZEDNI && p.miara === miara; });
-    if (!poprzednie.length) return "";
-    var ids = {};
-    poprzednie.forEach(function (p) { ids[p.isId] = true; });
-    var suma = function (rok) {
-      return DB.PODSUMOWANIA.filter(function (p) { return p.rok === rok && p.miara === miara && ids[p.isId]; })
-        .reduce(function (s, p) { return s + p.wartosc; }, 0);
-    };
-    var przed = suma(ROK_POPRZEDNI), teraz = suma(ROK);
-    if (!przed) return "";
-    var delta = Math.round((teraz - przed) / przed * 100);
-    return '<span class="delta ' + (delta >= 0 ? "up" : "down") + '">' + (delta >= 0 ? "&#9650; " : "&#9660; ") +
-      Math.abs(delta) + '%</span> wobec ' + ROK_POPRZEDNI + " (" + Object.keys(ids).length + " instytucji z danymi)";
-  }
-
-  /* "Ile jest Klientow do obdzwonienia" - wprost z dokumentu klienta */
-  var pupZNaborem = DB.NABORY.filter(function (n) { return n.status === "Nabór ogłoszony"; })
-                             .map(function (n) { return n.pup; });
-  var doObdzwonienia = DB.KLIENCI.filter(function (k) {
-    var pup = (DB.PUPY.filter(function (p) { return p.id === k.pup; })[0] || {}).nazwa;
-    return pupZNaborem.indexOf(pup) >= 0;
-  }).length;
-  var rozstrzygniete = poz.length + neg.length;
-
-  document.getElementById("kpi").innerHTML =
-    kpi("Klienci do obdzwonienia", DB.fmtNum(doObdzwonienia),
-        '<span class="tag neg dot">nabór trwa</span> ' + pupZNaborem.length + " urzędy", false,
-        "Liczba klientow z bazy, ktorych urzad pracy (PUP) ma wlasnie ogloszony nabor. To lista do kontaktu, dzis w Excelu prowadzona recznie w arkuszu Niezlozone.") +
-    kpi("Wnioski złożone", DB.fmtNum(zlozone.length), porownanieRokDoRoku("wnioski_zlozone"), false,
-        "Liczba wnioskow o status Zlozony w roku biezacym. Porownanie z rokiem poprzednim liczy sie z podsumowan lat nieprzeniesionych, tylko dla instytucji, ktore je maja (D-175).") +
-    kpi("Decyzje pozytywne", DB.fmtNum(poz.length),
-        '<span class="tag pos dot">' + (rozstrzygniete ? Math.round(poz.length / rozstrzygniete * 100) : 0) + '% skuteczności</span>', false,
-        "Liczba wnioskow z decyzja pozytywna. Skutecznosc to udzial decyzji pozytywnych wsrod wszystkich rozpatrzonych (pozytywne plus negatywne).") +
-    kpi("Oczekuje na rozpatrzenie", DB.fmtNum(oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek), false,
-        "Wnioski zlozone, dla ktorych urzad nie wydal jeszcze decyzji. Kwota to suma wartosci tych wnioskow.");
-
-  /* Prowizja naliczona i rozliczona liczy sie w jednym miejscu: modul Administracja */
-  var kafelekProwizji = widziProwizje
-    ? kpi("Prowizja", '<a href="08-administracja.html">Administracja</a>', "naliczona i rozliczona, jedno źródło liczb", true,
-          "Prowizja LDIT jest liczona silnikiem okresowym wylacznie w module Administracja (warunki z daty faktury, korekty, nadpisania per wniosek). Dashboard nie liczy jej osobno, zeby nie bylo dwoch roznych liczb.")
-    : "";
-
-  if (!widziFinanse) document.getElementById("kpiFin").remove();
-  else document.getElementById("kpiFin").innerHTML =
-    kpi("Wartość wniosków", DB.fmtPLN(sumaWnioskowana), "suma wnioskowana " + ROK, true,
-        "Suma wartosci wniosków (tylko uczestnicy zakwalifikowani), niezaleznie od decyzji. Kafelek finansowy, widoczny tylko dla administratora.") +
-    kpi("Przyznane dofinansowania", DB.fmtPLN(sumaPrzyznana), "faktycznie przyznane", true,
-        "Suma kwot faktycznie przyznanych w decyzjach pozytywnych. Moze byc nizsza od wnioskowanej, gdy urzad przyznal mniej.") +
-    kafelekProwizji;
-
-  /* Wymaga dzialania: kazda pozycja liczona z danych, pozycje bez spraw sie nie pokazuja */
-  function dodajDni(data, dni) {
-    var d = new Date(data + "T00:00:00Z");
-    d.setUTCDate(d.getUTCDate() + dni);
-    return d.toISOString().slice(0, 10);
-  }
-  function pozycjeDoDzialania() {
-    var koniecNaboru = dodajDni(DZIS, DNI_NABORU), koniecSzkolen = dodajDni(DZIS, DNI_SZKOLENIA);
-    var kolejka = DB.KOLEJKA.filter(function (k) { return k.status === "oczekuje"; });
-    var nabory = DB.NABORY.filter(function (n) { return n.status === "Nabór ogłoszony" && n.do >= DZIS && n.do <= koniecNaboru; });
-    var terminy = DB.TERMINY.filter(function (t) { return t.status !== "Odbyty" && t.od >= DZIS && t.od <= koniecSzkolen; });
-    var faktury = DB.FAKTURY.filter(function (f) { return f.status === "Po terminie"; });
-    var doRozliczenia = poz.filter(function (w) { return w.rozliczenie === "Oczekuje"; });
-    var najwczesniej = function (lista, pole) {
-      return lista.map(function (x) { return x[pole]; }).sort()[0];
-    };
-    return [
-      { co: "Zgłoszenia z formularza do akceptacji", ctx: "bramka anty-spam", n: kolejka.length, termin: "do akceptacji", klasa: "warn", href: "18-zadania.html" },
-      { co: "Nabory kończące się w tym tygodniu", ctx: nabory.map(function (n) { return esc(n.pup); }).join(", "), n: nabory.length,
-        termin: "do " + esc(najwczesniej(nabory, "do")), klasa: "neg", href: "05-nabory.html" },
-      { co: "Szkolenia w ciągu " + DNI_SZKOLENIA + " dni, sprawdź dokumenty", ctx: "termin z kalendarza", n: terminy.length,
-        termin: esc(najwczesniej(terminy, "od")), klasa: "warn", href: "13-terminy.html" },
-      { co: "Faktury po terminie płatności", ctx: "moduł Administracja", n: faktury.length, termin: "zaległe", klasa: "neg", href: "08-administracja.html" },
-      { co: "Projekty z decyzją pozytywną, nierozliczone", ctx: "status rozliczenia: oczekuje", n: doRozliczenia.length,
-        termin: "bieżące", klasa: "info", href: "02-zestawienia.html" }
-    ].filter(function (p) { return p.n > 0; });
-  }
-
-  var doDzialania = pozycjeDoDzialania();
-  document.getElementById("wymagaDzialania").innerHTML = doDzialania.length
-    ? doDzialania.map(function (p) {
-        return '<tr><td class="strong">' + p.co + '</td><td class="muted">' + p.ctx + '</td>' +
-          '<td class="num">' + p.n + '</td><td><span class="tag ' + p.klasa + ' dot">' + p.termin + '</span></td>' +
-          '<td class="right"><a class="btn xs" href="' + p.href + '">Otwórz</a></td></tr>';
-      }).join("")
-    : '<tr><td colspan="5"><div class="empty"><div class="et">Nic nie wymaga działania</div>Wszystkie kolejki są puste.</div></td></tr>';
-
-  /* Statusy */
-  var st = [
-    ["Decyzja pozytywna", poz.length, "pos"],
-    ["Decyzja negatywna", neg.length, "neg"],
-    ["Oczekuje na decyzję", oczek.length, "info"],
-    ["Niezłożone", W.filter(function (w) { return w.statusSkl === "Niezłożony"; }).length, "mute"],
-    ["NW (do zmiany nazwy)", W.filter(function (w) { return w.statusSkl === "NW"; }).length, "warn"],
-    ["Rezygnacja", W.filter(function (w) { return w.statusSkl === "Rezygnacja"; }).length, "mute"]
-  ];
-  document.getElementById("statusy").innerHTML = st.map(function (s) {
-    return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)">' +
-      '<span class="tag ' + s[2] + ' dot">' + s[0] + '</span>' +
-      '<b style="margin-left:auto;font-variant-numeric:tabular-nums">' + s[1] + '</b></div>';
-  }).join("");
-})();
+przygotujStan01();
+document.getElementById("okres").innerHTML = "<option>Rok " + STAN_01.rok + "</option>";
+renderKpiOperacyjne();
+renderKpiFinansowe();
+renderWymagaDzialania();
+renderStatusy();
 </script>
 </body>
 </html>

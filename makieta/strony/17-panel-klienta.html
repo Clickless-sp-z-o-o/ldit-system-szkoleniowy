@@ -180,7 +180,9 @@
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -189,151 +191,18 @@
 <script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="panelKL"></script>
+<script src="js/17-panel-klienta-dane.js"></script>
+<script src="js/17-panel-klienta-kwoty.js"></script>
+<script src="js/17-panel-klienta-dokumenty.js"></script>
 <script type="text/kfs-strona">
-(function () {
-  /* Panel dziala w kontekscie JEDNEGO klienta: tego, ktory jest przypiety do
-     zalogowanego konta. Konto LDIT ogladajace panel podglada pierwszego klienta
-     ze swojego zakresu. Warstwa separacji i tak nie wpuscila tu nikogo wiecej. */
-  var sesja = Auth.sesja();
-  var kl = (sesja && sesja.klient_id)
-    ? DB.KLIENCI.filter(function (k) { return k.id === sesja.klient_id; })[0]
-    : DB.KLIENCI[0];
-
-  if (!kl) {
-    Auth.pokazBlokade("Brak danych",
-      "To konto nie jest powiazane z zadnym klientem. Zakres panelu klienta " +
-      "pozostaje nierozstrzygniety (P-33).");
-    return;
-  }
-
-  var wnioskiKlienta = DB.WNIOSKI_WSZYSTKIE.filter(function (x) { return x.klient === kl.id; });
-  var w = wnioskiKlienta.filter(function (x) { return x.statusDec === "Pozytywna"; })[0] ||
-          wnioskiKlienta[0];
-
-  if (!w) {
-    Auth.pokazBlokade("Brak wniosku",
-      "Ten klient nie ma jeszcze zadnego projektu w systemie.");
-    return;
-  }
-
-  var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0] || {};
-  var termin = DB.TERMINY.filter(function (t) { return t.szk === w.szkId; })[0];
-  var szk = DB.SZKOLENIA.filter(function (s) { return s.id === w.szkId; })[0];
-
-  document.getElementById("tytul").textContent = "Panel klienta, " + kl.nazwa;
-  document.getElementById("subStatus").textContent = "sprawa " + w.id + " w " + w.pupNazwa;
-
-  /* ---------- Etapy: z danych wniosku, bez wymyslonej historii ---------- */
-  var ETAPOW = 10;
-  var odbyte = w.rozliczenie === "Rozliczone" || w.rozliczenie === "Zafakturowany";
-  var kroki = [
-    ["Formularz wpłynął", w.dataFormularza ? "Otrzymaliśmy Twoje zgłoszenie " + w.dataFormularza : "Zgłoszenie w systemie", !!w.dataFormularza],
-    ["Wniosek w przygotowaniu", "Kompletujemy dokumenty i wyliczenia", w.etap >= 3],
-    ["Złożony w " + w.pupNazwa, w.statusSkl === "Złożony" ? "Złożono " + w.dataWniosku : "Oczekuje na złożenie", w.statusSkl === "Złożony"],
-    ["Decyzja pozytywna", w.statusDec === "Pozytywna" ? "Urząd przyznał dofinansowanie" : (w.statusDec === "Negatywna" ? "Decyzja negatywna, skontaktujemy się z Tobą" : "Czekamy na decyzję urzędu"), w.statusDec === "Pozytywna"],
-    ["Termin ustalony", termin ? termin.od + " do " + termin.do : "Termin jeszcze nieustalony", !!termin && w.statusDec === "Pozytywna"],
-    ["Szkolenie odbyte", odbyte ? "Zrealizowane, certyfikaty w dokumentach" : "Przed nami", odbyte],
-    ["Rozliczone", w.rozliczenie === "Rozliczone" ? "Sprawa zamknięta" : "Po szkoleniu przygotujemy paczkę rozliczeniową", w.rozliczenie === "Rozliczone"]
-  ];
-  var teraz = -1;
-  for (var i = 0; i < kroki.length; i++) { if (!kroki[i][2]) { teraz = i; break; } }
-  document.getElementById("przebieg").innerHTML = kroki.map(function (k, i) {
-    var cls = k[2] ? "done" : (i === teraz ? "now" : "");
-    return '<div class="tl-item ' + cls + '"><div class="t">' + esc(k[0]) + '</div><div class="m">' + esc(k[1]) + '</div></div>';
-  }).join("");
-  document.getElementById("tagEtap").textContent = "etap " + w.etap + " z " + ETAPOW +
-    (teraz === -1 ? ", sprawa zamknięta" : ", teraz: " + kroki[teraz][0].toLowerCase());
-
-  /* ---------- Moje szkolenie ---------- */
-  document.getElementById("szkolenieDl").innerHTML =
-    [["Szkolenie", "<b>" + esc(w.szkolenie) + "</b>"],
-     ["Prowadzi", esc(inst.nazwa || "-")],
-     ["Termin", termin ? esc(termin.od + " do " + termin.do) : '<span class="muted">ustalimy po decyzji urzędu</span>'],
-     ["Miejsce", termin ? esc(termin.miejsce) : '<span class="muted">do ustalenia</span>'],
-     ["Tryb", esc(szk ? szk.tryb : "-")],
-     ["Wymiar", esc(szk ? szk.godz + " godzin w " + szk.dni + " dni" : "-")],
-     ["Godziny zajęć", esc(inst.standard || "-")],
-     ["Materiały", '<a href="#" onclick="alert(\'Otwiera materiały udostępnione przez instytucję szkoleniową.\');return false">Otwórz materiały do szkolenia</a>'],
-     ["Kontakt organizacyjny", esc(inst.kontakt ? inst.kontakt + ", " + inst.tel : "-")],
-     ["Opiekun sprawy w LDIT", esc(w.opiekun) + ", tel. 61 22 11 004"]
-    ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
-
-  /* ---------- Kwoty, prosto i bez zargonu. Liczby z widoku SQL, nie z JavaScriptu ---------- */
-  var koszt = w.kosztCalkowity != null ? w.kosztCalkowity : w.calkowita;
-  var doplata = w.doplata || 0;
-  var poDecyzji = w.przyznano != null && w.wklad != null;
-
-  function box(label, val, foot, mocny) {
-    return '<div class="kpi" style="box-shadow:none;margin-bottom:10px' + (mocny ? ';border-color:#fcd34d' : '') + '">' +
-      '<div class="k-label">' + esc(label) + '</div>' +
-      '<div class="k-value">' + esc(val) + '</div>' +
-      (foot ? '<div class="k-foot">' + esc(foot) + '</div>' : '') + '</div>';
-  }
-  document.getElementById("kwoty").innerHTML =
-    box("Całkowita wartość szkolenia", DB.fmtPLN(koszt), w.osobZakw + " osób, " + DB.fmtPLN(szk ? szk.cena : 0) + " za osobę") +
-    box("Przyznane dofinansowanie", poDecyzji ? DB.fmtPLN(w.przyznano) : "po decyzji urzędu",
-        poDecyzji ? "urząd pokrywa " + DB.fmtPct(w.procent) + " kosztu" : "kwota pojawi się po decyzji pozytywnej") +
-    box("Wkład własny do zapłaty", poDecyzji ? DB.fmtPLN(w.wklad + doplata) : "po decyzji urzędu",
-        doplata ? "w tym dopłata dodatkowa " + DB.fmtPLN(doplata) : "płatne po szkoleniu, na podstawie faktury", true) +
-    '<div class="small muted">Kwoty pochodzą z decyzji urzędu. Jeżeli urząd uzna niższy koszt niż wnioskowany, ' +
-    'różnica powiększa wkład własny, a my informujemy o tym przed szkoleniem.</div>';
-
-  /* ---------- Uczestnicy ---------- */
-  var zakw = w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; }).length;
-  document.getElementById("subUcz").textContent = zakw + " zakwalifikowanych z " + w.uczestnicy.length + " zgłoszonych";
-  document.getElementById("uczestnicy").innerHTML = w.uczestnicy.map(function (u) {
-    var ok = u.status === "zakwalifikowany";
-    return '<tr' + (ok ? '' : ' class="row-danger"') + '>' +
-      '<td class="strong">' + esc(u.imie) + '</td>' +
-      '<td>' + esc(u.szkNazwa) + '</td>' +
-      '<td>' + (ok ? '<span class="tag pos dot">zakwalifikowany</span>' : '<span class="tag neg dot">niezakwalifikowany</span>') + '</td>' +
-      '<td class="small muted">' + esc(ok ? "objęty dofinansowaniem" : u.powod) + '</td></tr>';
-  }).join("");
-
-  /* ---------- Dokumenty ---------- */
-  var dok = [
-    ["Formularz zgłoszeniowy", "zgłoszenie", w.dataFormularza, "184 KB"],
-    ["Umowa z instytucją szkoleniową", "umowa", w.dataWniosku, "412 KB"],
-    ["Wniosek złożony w urzędzie", "wniosek", w.dataWniosku, "1,2 MB"],
-    ["Decyzja urzędu pracy", "decyzja", w.dataFaktury, "296 KB"],
-    ["Instrukcja rozliczenia", "instrukcja", w.dataFaktury, "148 KB"]
-  ];
-  if (odbyte) dok.push(["Certyfikaty uczestników (ZIP)", "certyfikaty", w.dataFaktury, DB.fmtNum(zakw * 220) + " KB"]);
-  document.getElementById("dokumenty").innerHTML = dok.map(function (d, i) {
-    return '<tr><td class="strong">' + esc(d[0]) + '</td>' +
-      '<td><span class="pill">' + esc(d[1]) + '</span></td>' +
-      '<td class="small nowrap">' + esc(d[2]) + '</td>' +
-      '<td class="c small muted">' + esc(d[3]) + '</td>' +
-      '<td class="right"><button class="btn xs" data-d="' + i + '">Pobierz</button></td></tr>';
-  }).join("");
-  Array.prototype.forEach.call(document.querySelectorAll("button[data-d]"), function (b) {
-    b.addEventListener("click", function () {
-      alert("Pobiera plik: " + dok[parseInt(b.getAttribute("data-d"), 10)][0] + ".\nDostępne wyłącznie dokumenty tej sprawy.");
-    });
-  });
-
-  /* ---------- Nabory dla urzedu klienta ---------- */
-  var moj = DB.NABORY.filter(function (n) { return n.pup === w.pupNazwa; });
-  var wojewodztwo = DB.NABORY.filter(function (n) {
-    return n.pup !== w.pupNazwa && moj.length && n.woj === moj[0].woj;
-  });
-  function wiersz(n, obcy) {
-    var tag = n.status === "Nabór ogłoszony" ? '<span class="tag pos dot">nabór trwa</span>'
-            : n.status === "W trakcie kontaktu" ? '<span class="tag info dot">spodziewany</span>'
-            : n.status === "Po naborze" ? '<span class="tag mute dot">po naborze</span>'
-            : '<span class="tag warn dot">brak naboru</span>';
-    var term = n.od ? esc(n.od + " do " + n.do) : (n.prognoza ? esc("prognoza: " + n.prognoza) : "&mdash;");
-    return '<tr' + (n.status === "Nabór ogłoszony" ? ' class="row-nabor"' : '') + '>' +
-      '<td class="' + (obcy ? "muted" : "strong") + '">' + esc(n.pup) + (obcy ? '<div class="small muted">inny urząd w województwie</div>' : '') + '</td>' +
-      '<td>' + tag + '</td>' +
-      '<td class="small nowrap">' + term + '</td></tr>';
-  }
-  var html = moj.map(function (n) { return wiersz(n, false); }).join("") +
-             wojewodztwo.map(function (n) { return wiersz(n, true); }).join("");
-  document.getElementById("nabory").innerHTML = html ||
-    '<tr><td colspan="3"><div class="empty"><div class="ei">&#128197;</div>' +
-    '<div class="et">Brak ogłoszonych naborów</div>Poinformujemy Cię mailem, gdy Twój urząd ogłosi nabór.</div></td></tr>';
-})();
+if (wczytajDane17()) {
+  renderStatus17();
+  renderSzkolenie17();
+  renderKwoty17();
+  renderUczestnicy17();
+  renderDokumenty17();
+  renderNabory17();
+}
 </script>
 </body>
 </html>

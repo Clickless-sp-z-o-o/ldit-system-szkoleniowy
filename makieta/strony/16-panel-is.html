@@ -26,10 +26,14 @@
 
   <div class="note">
     <b>Zakres widoczności tego konta.</b>
-    Instytucja widzi wyłącznie <b>własnych klientów</b>, ich sprawy i statystyki, także rozbicie według tego, kto wypełnił formularz
-    <span class="ref">D-193</span>. Nie widzi stawek prowizji ani marżowości LDIT <span class="ref">D-07</span> <span class="ref">D-19</span>.
+    Instytucja widzi wyłącznie <b>własnych klientów</b>, ich sprawy i statystyki, bez rozbicia na poszczególnych handlowców
+    <span class="ref">D-209</span>. Nie widzi stawek prowizji ani marżowości LDIT <span class="ref">D-07</span> <span class="ref">D-19</span>.
     W makiecie separację robi filtr w warstwie danych (zapytania, wyszukiwarka i eksport dostają tylko wiersze tej instytucji).
     Docelowo działają dwie warstwy: polityki w bazie oraz filtr organizacji w serwerze <span class="ref">D-179</span>.
+  </div>
+
+  <div class="note" id="infoHandlowiec" hidden>
+    Widzisz klientów przypisanych do Ciebie <span class="ref">D-210</span>.
   </div>
 
   <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
@@ -183,25 +187,6 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-head">
-          <h3>Zgłoszenia wg wypełniającego</h3>
-          <span class="sub">statystyki własnych klientów <span class="ref">D-193</span></span>
-        </div>
-        <div class="card-body tight">
-          <table class="tbl">
-            <thead><tr><th>Wypełnił</th><th class="num">Razem</th><th class="num">Oczekuje</th><th class="num">Zaakceptowane</th><th class="num">Odrzucone</th></tr></thead>
-            <tbody id="rozbicieWypelnil"></tbody>
-          </table>
-        </div>
-        <div class="card-body" style="border-top:1px solid var(--line)">
-          <div class="note mb0">
-            Schemat zapisuje tylko rodzaj wypełniającego (klient albo handlowiec). Nazwiska handlowców nie są przechowywane,
-            więc rozbicie na konkretne osoby wymaga nowej kolumny w formularzach.
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -214,7 +199,9 @@
 <script src="../assets/sqlite.js"></script>
 <script src="../assets/store.js"></script>
 <script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -223,218 +210,25 @@
 <script src="../assets/html.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="panelIS"></script>
+<script src="js/16-panel-is-dane.js"></script>
+<script src="js/16-panel-is-klienci.js"></script>
+<script src="js/16-panel-is-zasoby.js"></script>
+<script src="js/16-panel-is-formularz.js"></script>
 <script type="text/kfs-strona">
-(function () {
-  "use strict";
-
-  function el(id) { return document.getElementById(id); }
-  function wiersze(dane, sklej) { return dane.map(sklej).join(""); }
-
-  /* Panel pokazuje instytucje zalogowanego konta. Konto LDIT ogladajace panel
-     widzi pierwsza instytucje ze swojego zakresu. */
-  var sesja = Auth.sesja();
-  var IS = (sesja && sesja.instytucja_id) || (DB.INSTYTUCJE[0] && DB.INSTYTUCJE[0].id);
-  var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === IS; })[0];
-  if (!inst) {
-    el("zalogowano").textContent = "Brak instytucji w zakresie tego konta.";
-    return;
-  }
-
-  var W = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.is === IS; });
-  var KL = DB.KLIENCI.filter(function (k) { return k.is === IS; });
-  var TR = DB.TERMINY.filter(function (t) { return t.is === IS; });
-  var SZ = DB.SZKOLENIA.filter(function (s) { return s.is === IS; });
-  var SZKOLENIOWCY = DB.SZKOLENIOWCY.filter(function (z) { return z.is === IS; });
-  var FORMULARZE = DB.KOLEJKA.filter(function (k) { return k.isId === IS; });
-
-  el("zalogowano").textContent = "Zalogowano jako " + (sesja ? sesja.imie + " (" + sesja.login + ")" : "gość") +
-    " › " + inst.nazwa;
-  el("tytul").textContent = inst.nazwa;
-  el("tagInst").textContent = "tylko " + inst.nazwa;
-  el("standard").textContent = inst.standard || "-";
-
-  /* ---------- KPI, bez jakichkolwiek kwot prowizji ---------- */
-  var zlozone = W.filter(function (w) { return w.statusSkl === "Złożony"; });
-  var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
-  var zrealizowane = W.filter(function (w) { return w.rozliczenie === "Rozliczone" || w.rozliczenie === "Zafakturowany"; });
-  var osobyPoz = poz.reduce(function (s, w) { return s + w.osobZakw; }, 0);
-
-  function kpi(label, val, foot) {
-    return '<div class="kpi"><div class="k-label">' + label + '</div>' +
-      '<div class="k-value">' + val + '</div>' +
-      (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
-  }
-  el("kpi").innerHTML =
-    kpi("Moi klienci", DB.fmtNum(KL.length), "przypisani do instytucji") +
-    kpi("Wnioski złożone", DB.fmtNum(zlozone.length), "z " + W.length + " projektów") +
-    kpi("Decyzje pozytywne", DB.fmtNum(poz.length),
-        '<span class="tag pos dot">' + (zlozone.length ? Math.round(poz.length / zlozone.length * 100) : 0) + '% skuteczności</span>') +
-    kpi("Szkolenia zrealizowane", DB.fmtNum(zrealizowane.length), DB.fmtNum(osobyPoz) + " osób zakwalifikowanych");
-
-  /* ---------- Tabela wlasnych klientow ---------- */
-  /* Termin wniosku wynika z przypisania uczestnikow do terminu (uczestnicy.termin_id) */
-  var terminWniosku = {};
-  Store.query(
-    "SELECT u.wniosek_id, MIN(t.data_od) AS od, MAX(t.data_do) AS do FROM uczestnicy u " +
-    "JOIN terminy t ON t.id = u.termin_id GROUP BY u.wniosek_id"
-  ).forEach(function (r) { terminWniosku[r.wniosek_id] = r; });
-
-  function pasuje(w, f) {
-    if (f === "poz") return w.statusDec === "Pozytywna";
-    if (f === "neg") return w.statusDec === "Negatywna";
-    if (f === "ocz") return w.statusSkl === "Złożony" && !w.statusDec;
-    if (f === "rozl") return w.rozliczenie === "Rozliczone";
-    return true;
-  }
-  function tagStatusWniosku(w) {
-    if (w.statusDec === "Pozytywna") return '<span class="tag pos dot">decyzja pozytywna</span>';
-    if (w.statusDec === "Negatywna") return '<span class="tag neg dot">decyzja negatywna</span>';
-    if (w.statusSkl === "Złożony") return '<span class="tag info dot">oczekuje na decyzję</span>';
-    if (w.statusSkl === "NW") return '<span class="tag warn dot">NW</span>';
-    if (w.statusSkl === "Rezygnacja") return '<span class="tag mute dot">rezygnacja</span>';
-    return '<span class="tag mute dot">niezłożony</span>';
-  }
-  function tagRealizacji(w) {
-    if (w.rozliczenie === "Rozliczone") return '<span class="tag set dot">rozliczone</span>';
-    if (w.rozliczenie === "Zafakturowany") return '<span class="tag info dot">szkolenie odbyte</span>';
-    if (w.rozliczenie === "Oczekuje") return '<span class="tag warn dot">czeka na realizację</span>';
-    return '<span class="muted">&mdash;</span>';
-  }
-  function wierszWniosku(w) {
-    var t = terminWniosku[w.id];
-    var cls = w.rozliczenie === "Rozliczone" ? "row-set"
-            : w.statusDec === "Pozytywna" ? "row-pos"
-            : w.statusDec === "Negatywna" ? "row-neg" : "";
-    return '<tr class="' + cls + '">' +
-      '<td class="strong">' + esc(w.klNazwa) + '</td>' +
-      '<td>' + esc(w.szkolenie) + '</td>' +
-      '<td class="num">' + esc(w.osobZakw) + (w.osobZakw < w.osob ? ' <span class="muted small">z ' + esc(w.osob) + '</span>' : '') + '</td>' +
-      '<td>' + tagStatusWniosku(w) + '</td>' +
-      '<td class="nowrap small">' + (t ? esc(t.od) + " &rsaquo; " + esc(t.do) : '<span class="muted">termin nieustalony</span>') + '</td>' +
-      '<td>' + tagRealizacji(w) + '</td></tr>';
-  }
-
-  var filtr = "all";
-  function render() {
-    var q = el("szukaj").value.trim().toLowerCase();
-    var lista = W.filter(function (w) {
-      if (!pasuje(w, filtr)) return false;
-      return !q || (w.klNazwa + " " + w.szkolenie).toLowerCase().indexOf(q) >= 0;
-    });
-    el("subTab").textContent = lista.length + " z " + W.length + " projektów instytucji";
-    el("wiersze").innerHTML = lista.length ? wiersze(lista, wierszWniosku) :
-      '<tr><td colspan="6"><div class="empty"><div class="ei">&#9788;</div>' +
-      '<div class="et">Brak wyników w Twoim katalogu</div>Wyszukiwarka nie sięga poza dane tej instytucji.</div></td></tr>';
-  }
-  el("szukaj").addEventListener("input", render);
-  Array.prototype.forEach.call(document.querySelectorAll(".chip[data-f]"), function (c) {
-    c.addEventListener("click", function () {
-      Array.prototype.forEach.call(document.querySelectorAll(".chip[data-f]"), function (x) { x.classList.remove("on"); });
-      c.classList.add("on");
-      filtr = c.getAttribute("data-f");
-      render();
-    });
-  });
-  render();
-
-  /* ---------- Moje terminy: tylko podsumowanie, szczegoly w module Terminy ---------- */
-  var wolne = TR.filter(function (t) { return t.status === "Wolny"; }).length;
-  var zaplanowane = TR.filter(function (t) { return t.status === "Zaplanowany"; }).length;
-  el("podsTerminy").innerHTML = TR.length
-    ? "<b>" + TR.length + "</b> terminów: " + zaplanowane + " zaplanowanych, " + wolne + " wolnych, " +
-      (TR.length - zaplanowane - wolne) + " odbytych."
-    : '<span class="muted">Instytucja nie ma jeszcze wystawionych terminów.</span>';
-
-  /* ---------- Katalog szkolen (tylko odczyt) ---------- */
-  function wierszSzkolenia(s) {
-    var ile = W.filter(function (w) { return w.szkId === s.id; }).length;
-    return '<tr>' +
-      '<td class="strong">' + esc(s.nazwa) + '</td>' +
-      '<td class="num">' + esc(s.godz) + '</td>' +
-      '<td class="num">' + esc(s.dni) + '</td>' +
-      '<td><span class="pill w">' + esc(s.tryb) + '</span></td>' +
-      '<td class="num">' + DB.fmtPLN(s.cena) + '</td>' +
-      '<td class="num">' + ile + '</td></tr>';
-  }
-  el("szkolenia").innerHTML = SZ.length ? wiersze(SZ, wierszSzkolenia) :
-    '<tr><td colspan="6"><div class="empty"><div class="et">Katalog pusty</div>Instytucja nie ma jeszcze szkoleń w katalogu.</div></td></tr>';
-
-  /* ---------- Szkoleniowcy instytucji (D-167) ---------- */
-  function wierszSzkoleniowca(z) {
-    return '<tr' + (z.aktywny ? "" : ' class="muted"') + '>' +
-      '<td class="strong">' + esc(z.imie + " " + z.nazwisko) + '</td>' +
-      '<td>' + esc(z.specjalizacja || "-") + '</td>' +
-      '<td class="small">' + esc([z.mail, z.tel].filter(Boolean).join(" · ") || "-") + '</td>' +
-      '<td>' + (z.aktywny ? '<span class="tag pos">aktywny</span>' : '<span class="tag mute">nieaktywny</span>') + '</td></tr>';
-  }
-  el("subSzkoleniowcy").textContent = SZKOLENIOWCY.length + " osób";
-  el("szkoleniowcy").innerHTML = SZKOLENIOWCY.length ? wiersze(SZKOLENIOWCY, wierszSzkoleniowca) :
-    '<tr><td colspan="4"><div class="empty"><div class="et">Brak szkoleniowców</div>Instytucja nie ma jeszcze dodanych szkoleniowców.</div></td></tr>';
-
-  /* ---------- Formularz zgloszeniowy: liczby z kolejki (formularze_oczekujace) ---------- */
-  function liczbaStatus(lista, status) {
-    return lista.filter(function (k) { return k.status === status; }).length;
-  }
-  var oczekujace = FORMULARZE.filter(function (k) { return k.status === "oczekuje"; });
-  el("formStat").innerHTML =
-    [["Zgłoszeń z formularza", "<b>" + DB.fmtNum(FORMULARZE.length) + "</b>"],
-     ["Czeka na akceptację LDIT", '<span class="tag warn">' + oczekujace.length + "</span>"],
-     ["Zaakceptowane", "<b>" + liczbaStatus(FORMULARZE, "zaakceptowany") + "</b>"],
-     ["Odrzucone", "<b>" + liczbaStatus(FORMULARZE, "odrzucony") + "</b>"]
-    ].map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
-
-  var link = "https://zgloszenia.ldit.pl/f/" + encodeURIComponent(inst.id.toLowerCase());
-  el("linkFormularza").value = link;
-  el("btnKopiujLink").addEventListener("click", function () {
-    var przycisk = el("btnKopiujLink");
-    navigator.clipboard.writeText(link).then(function () {
-      przycisk.textContent = "Skopiowano";
-    }, function () {
-      el("linkFormularza").select();
-      przycisk.textContent = "Zaznaczono, skopiuj ręcznie";
-    });
-  });
-
-  function wierszKolejki(k) {
-    return '<tr><td class="strong">' + esc(k.firma) + '<div class="small muted">' + esc(k.szkolenie) + '</div></td>' +
-      '<td class="num">' + esc(k.osob) + '</td>' +
-      '<td class="small nowrap">' + esc(k.data) + '</td></tr>';
-  }
-  el("kolejka").innerHTML = oczekujace.length ? wiersze(oczekujace, wierszKolejki) :
-    '<tr><td colspan="3"><div class="empty"><div class="ei">&#9993;</div>' +
-    '<div class="et">Brak zgłoszeń do akceptacji</div>Nowe wypełnienia formularza pojawią się tutaj.</div></td></tr>';
-
-  /* ---------- Rozbicie zgloszen wg wypelniajacego (D-193, D-181) ---------- */
-  var RODZAJE = [["klient", "Klient końcowy"], ["handlowiec", "Handlowiec instytucji"]];
-  el("rozbicieWypelnil").innerHTML = wiersze(RODZAJE, function (r) {
-    var lista = FORMULARZE.filter(function (k) { return k.wypelnil === r[0]; });
-    return '<tr><td class="strong">' + r[1] + '</td>' +
-      '<td class="num">' + lista.length + '</td>' +
-      '<td class="num">' + liczbaStatus(lista, "oczekuje") + '</td>' +
-      '<td class="num">' + liczbaStatus(lista, "zaakceptowany") + '</td>' +
-      '<td class="num">' + liczbaStatus(lista, "odrzucony") + '</td></tr>';
-  });
-
-  /* ---------- Szablony maili dostepne dla instytucji ---------- */
-  var moje = DB.SZABLONY.filter(function (s) {
-    return s.odbiorca === "Instytucja szkoleniowa" || s.odbiorca === "Uczestnicy terminu";
-  });
-  el("szablony").innerHTML = wiersze(moje, function (s) {
-    return '<tr><td class="strong">' + esc(s.nazwa) + '</td>' +
-      '<td class="small muted">' + esc(s.odbiorca) + '</td>' +
-      '<td><span class="pill">' + esc(s.autor) + '</span></td>' +
-      '<td class="right"><button class="btn xs" data-mail="' + esc(s.id) + '">Otwórz w Outlooku</button></td></tr>';
-  }) +
-  '<tr><td colspan="4" class="small muted" style="padding:10px 12px">' +
-  'Pozostałe szablony z biblioteki (' + (DB.SZABLONY.length - moje.length) + ') są adresowane do klienta końcowego ' +
-  'i wysyła je wyłącznie LDIT <span class="ref">D-87</span>.</td></tr>';
-
-  Array.prototype.forEach.call(document.querySelectorAll("button[data-mail]"), function (b) {
-    b.addEventListener("click", function () {
-      alert("Otwiera nową wiadomość w Outlooku z uzupełnioną treścią szablonu.\nSystem niczego nie wysyła (D-87). Wysyłkę wykonujesz z własnej skrzynki (D-88).");
-    });
-  });
-})();
+if (wczytajDane16()) {
+  naglowek16();
+  renderKpi16();
+  wczytajTerminyWnioskow16();
+  podepnijFiltry16();
+  renderKlienci16();
+  renderTerminy16();
+  renderKatalog16();
+  renderSzkoleniowcy16();
+  renderStatystykiFormularza16();
+  podepnijLinkFormularza16();
+  renderKolejka16();
+  renderSzablony16();
+}
 </script>
 </body>
 </html>
