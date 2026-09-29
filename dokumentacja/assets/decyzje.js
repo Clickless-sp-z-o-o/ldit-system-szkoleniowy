@@ -1,20 +1,37 @@
 /* ============================================================================
    Punkty decyzyjne projektu KFS/LDIT.
 
-   Każdy wpis to jedno pytanie, które nie zostało rozstrzygnięte, wraz z wariantami
-   i konsekwencjami każdego z nich. Pytania pochodzą z docs/14-pytania-otwarte.md,
-   warianty i skutki są analizą wykonawcy, nie ustaleniem z warsztatu.
+   STAN NA 2026-09-29: PANEL JEST PUSTY. Wszystkie 38 punktow zostalo rozstrzygnietych
+   w rundzie decyzji z 29.09.2026 (decyzje D-161 - D-206 w docs/13-rejestr-decyzji.md).
+   window.DECYZJE zawiera wylacznie punkty NIEROZSTRZYGNIETE, wiec jest teraz pusta
+   i panel pokazuje 0 otwartych. Nowe pytanie dopisuje sie do window.DECYZJE, a po
+   rozstrzygnieciu przenosi do rejestru decyzji jako D-xx i usuwa z tej listy.
 
-   Typy skutków:
+   Tresc wariantow, skutkow i kosztow rozstrzygnietych punktow zachowano ponizej jako
+   window.DECYZJE_ARCHIWUM (panel jej nie czyta). Mapa punkt -> decyzja:
+   P-04 D-161, P-02 D-162, P-09 D-163, P-01 D-164, P-53 D-172, P-14 D-173, P-05 D-174,
+   D-143 D-176, P-25 D-177, P-21 D-178, P-59 D-179, P-61 D-180, P-39 D-181, P-63 D-182,
+   P-18 D-183, P-51 D-184, P-57 D-185, P-26 D-186, P-24 D-187, P-23 D-188, P-54 D-189,
+   P-32 D-190, P-13 D-191, P-33 D-192, P-12 D-193, P-08 D-194, P-55 D-195, P-17 D-196,
+   P-46 D-197, P-20 D-198, P-19 D-199, P-40 D-200, P-27 D-201, P-42 D-202, P-52 D-203,
+   P-45 D-204, P-11 D-205, P-43 D-206.
+   Uwaga: wybory P-04 i P-02 zostaly tego samego dnia skorygowane przez wykonawce
+   (faktura korygujaca do nowego okresu, progi nie przeliczaja sie wstecz), wiec
+   archiwum dla tych dwoch punktow pokazuje stan sprzed korekty.
+
+   Typy skutkow w archiwum:
      zysk    co ten wariant daje
-     koszt   czym za to płacimy
-     wymusza co trzeba zrobić dodatkowo, jeśli ten wariant wygra
-     ryzyko  co może pójść nie tak
+     koszt   czym za to placimy
+     wymusza co trzeba zrobic dodatkowo, jesli ten wariant wygra
+     ryzyko  co moze pojsc nie tak
 
-   Dane są tylko danymi. Logika panelu siedzi w sekcje/17-panel-decyzji.html.
+   Dane sa tylko danymi. Logika panelu siedzi w sekcje/17-panel-decyzji.html.
    ============================================================================ */
 
-window.DECYZJE = [
+/* Punkty nierozstrzygniete: brak. */
+window.DECYZJE = [];
+
+window.DECYZJE_ARCHIWUM = [
 
   /* ====================== BLOKADY ====================== */
 

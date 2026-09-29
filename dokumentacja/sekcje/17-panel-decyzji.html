@@ -197,7 +197,11 @@
     var widoczne = D.filter(pasuje);
     document.getElementById("lista").innerHTML = widoczne.length
       ? widoczne.map(kartaHtml).join("")
-      : '<div class="pd-pusto">Żadne pytanie nie pasuje do tych filtrów.</div>';
+      : (D.length
+          ? '<div class="pd-pusto">Żadne pytanie nie pasuje do tych filtrów.</div>'
+          : '<div class="pd-pusto">Wszystkie punkty są rozstrzygnięte (29.09.2026). Wybrane warianty są w ' +
+            '<a href="13-decyzje.html" onclick="if(parent!==window){parent.docNav(\'13-decyzje\');return false}">rejestrze decyzji</a>' +
+            ' jako D-161 do D-206. Punkty, na które odpowiada klient, czekają na jego potwierdzenie.</div>');
 
     liczniki();
     podsumowanie();

@@ -431,11 +431,21 @@ warstwie, w dół. Jedyna zasada, przy której korekta złożona z oryginałem d
 
 Testy: `tools/test-prowizja.mjs`, sekcja "Faktury korygujące".
 
-**Pytanie otwarte [P-04] zawężone.** Kwota jest rozstrzygnięta, ale nadal nie ustalono:
-do którego okresu rozliczeniowego należy korekta wystawiona w innym miesiącu niż faktura
-pierwotna, oraz co się dzieje, gdy korekta cofa obrót poniżej progu, na którym zamknięto już
-rozliczony okres. To są pytania biznesowe, nie implementacyjne, i wiążą się z [D-23]
-(historia rozliczeń nie może być przeliczana wstecz).
+**Rozstrzygnięcie [D-161, WSTĘPNA, rozstrzyga P-04].** Faktura korygująca należy do okresu, w którym ją wystawiono, nie do okresu faktury pierwotnej. Zdejmuje prowizję stawką, którą naliczyła faktura pierwotna, i nie zmienia obrotu nowego okresu. Okres zamknięty się nie zmienia [D-23]. Wybór z panelu decyzyjnego z 29.09.2026 (korekta wraca do okresu faktury pierwotnej) został tego samego dnia skorygowany przez wykonawcę: "faktura korygująca jest do nowego okresu, progi nie przeliczają się wstecz". Klient nie potwierdził jeszcze tej wersji.
+
+Przykład liczbowy (Model A, próg 50 000 zł, stawki 10% / 12%):
+
+| Zdarzenie | Obrót okresu | Prowizja |
+|---|---|---|
+| Styczeń: faktura 60 000 zł | 60 000 (powyżej progu) | 60 000 x 12% = **7 200 zł** |
+| Marzec: faktura własna 20 000 zł | 20 000 (poniżej progu) | 20 000 x 10% = 2 000 zł |
+| Marzec: korekta -10 000 zł do faktury styczniowej | nadal 20 000 (korekta nie zmienia obrotu marca) | -10 000 x 12% = **-1 200 zł** (stawka faktury pierwotnej) |
+| Marzec razem | 20 000 | 2 000 - 1 200 = **800 zł** |
+| Styczeń po korekcie | 60 000 | **7 200 zł, bez zmian** |
+
+Koszt tej reguły: prowizja za miesiąc korekty może wyjść ujemna, co trzeba pokazać w interfejsie. Korekta wskazująca nieznaną fakturę pierwotną jest odrzucana (błąd `brak_pierwotnej`), a nie liczona po cichu. Implementacja: `Prowizja.rozliczOkresy(wersje, faktury)` w `makieta/assets/prowizja.js`, gdzie `korygowana` to id faktury pierwotnej (w bazie `faktury.faktura_pierwotna_id` [D-170]).
+
+**Warunki od daty [D-162, WSTĘPNA, rozstrzyga P-02].** Nowe warunki i progi działają od swojej daty obowiązywania, nigdy wstecz [D-23, D-22]. Każda faktura jest liczona warunkami obowiązującymi w dniu jej wystawienia. Przykład: faktura z marca rozliczona po 20%, od lipca obowiązują nowe warunki 15%. Faktura marcowa zostaje po 20%, sierpniowa idzie po 15%. To samo dotyczy prowizji wewnętrznej: start na stałej stawce (np. 5% w 2026), progi dołożone od 2027 działają dopiero od 2027. Implementacja: `Prowizja.warunkiNaDzien(wersje, data)`. Dzień bez żadnych obowiązujących warunków kończy się błędem `brak_warunkow`.
 
 ---
 
@@ -593,7 +603,9 @@ To dotyczy przede wszystkim modeli od nadwyżki (B i C) - w Modelu A kolejność
 
 ---
 
-## Konflikt reguły okresu rozliczeniowego [P-01, OTWARTE, PRIORYTET]
+## Konflikt reguły okresu rozliczeniowego [P-01, rozstrzygnięte wstępnie: D-164]
+
+> **Stan 2026-09-29.** Wykonawca wybrał w panelu decyzyjnym wariant "dwa widoki: rzeczywisty i przewidywany" [D-164, WSTĘPNA]. Wymaga potwierdzenia klienta. Opis konfliktu i punkty 1-5 poniżej zostają jako uzasadnienie. Punkty 3 i 5 (moment przejścia z prognozy, oznaczenie widoku) są konsekwencjami wyboru do ustalenia.
 
 **To najważniejsze pytanie otwarte w module prowizji.**
 
@@ -657,7 +669,9 @@ prowizja pracownika  =  % od przychodu LDIT
 
 System musi obsłużyć oba warianty.
 
-### BLOKADA PROJEKTOWA [P-02]
+### Blokada P-02, rozstrzygnięta wstępnie [D-162]
+
+> **Stan 2026-09-29.** Prowizja wewnętrzna startuje na stałej stawce, progi dochodzą później i działają od swojej daty, nigdy wstecz [D-162, WSTĘPNA]. Wybór wykonawcy w panelu (korekta wcześniejszego wyboru), wymaga potwierdzenia klienta. Poniżej stan sprzed rozstrzygnięcia.
 
 **Progi i stawki prowizji wewnętrznej NIE ISTNIEJĄ.**
 
@@ -699,7 +713,9 @@ Stawka konfigurowana per instytucja jest **dziedziczona przez wszystkich jej kli
 
 ---
 
-## Prowizja od dopłaty [P-05, OTWARTE]
+## Prowizja od dopłaty [P-05, rozstrzygnięte wstępnie: D-174]
+
+> **Stan 2026-09-29.** Znacznik przy dopłacie: na fakturze KFS czy osobno. Na fakturze KFS = dopłata wchodzi do podstawy prowizji [D-174, WSTĘPNA]. Kolumna `wnioski.doplata_na_fakturze_kfs`.
 
 Prowizja od kwoty dopłaty należy się **tylko wtedy, gdy dopłata figuruje na wspólnej fakturze KFS**.
 
@@ -725,7 +741,7 @@ To jest **warunek wstępny** rozpoczęcia implementacji modułu prowizji. Protot
 
 ## Zestaw przypadków testowych
 
-To jest gotowy materiał do napisania testów jednostkowych w docelowej aplikacji. Przypadki 1-12 to minimalne obowiązkowe pokrycie wyprowadzone z warsztatu (identyczne z zestawem uzgodnionym dla tego modułu). Przypadki 13-17 to dodatkowe warianty i przypadki brzegowe zademonstrowane w prototypie `makieta/strony/15-konfigurator-prowizji.html`, uwzględnione zgodnie z wymaganiem pokrycia prototypu.
+To jest gotowy materiał do napisania testów jednostkowych w docelowej aplikacji. Przypadki 1-12 to minimalne obowiązkowe pokrycie wyprowadzone z warsztatu (identyczne z zestawem uzgodnionym dla tego modułu). Przypadki 13-17 to dodatkowe warianty i przypadki brzegowe zademonstrowane w prototypie `makieta/strony/15-konfigurator-prowizji.html`, uwzględnione zgodnie z wymaganiem pokrycia prototypu. Przypadki 18-24 dodano po rundzie decyzji 29.09.2026 (korekty w okresie wystawienia i warunki od daty), są w `tools/test-prowizja.mjs`.
 
 | # | Model | Warunki wejściowe | Oczekiwany wynik | Uzasadnienie |
 |---|---|---|---|---|
@@ -746,6 +762,13 @@ To jest gotowy materiał do napisania testów jednostkowych w docelowej aplikacj
 | 15 | B, wariant demonstracyjny | Progi uproszczone (0,20%)/(500000,10%)/(1000000,5%), narastająco 490 000 zł, faktura 15 000 zł | 2 500,00 zł z tej faktury, efektywnie ok. 16,7% | Wariant z warsztatu użyty wyłącznie do demonstracji mechaniki podziału, nie odpowiada realnej umowie [17. Warsztat, uwaga w sekcji Model B] |
 | 16 | C, wariant trzyprogowy | Progi (0,18%)/(100000,14%)/(200000,10%), obrót 250 000 zł | 37 000,00 zł (18 000 + 14 000 + 5 000) | Faktura przechodzi przez dwa progi jednocześnie, wariant z dokumentu przedwarsztatowego |
 | 17 | A | Okres bez żadnej faktury (miesiąc pusty) | Suma prowizji = 0 zł | Przypadek brzegowy - zerowy obrót, brak pozycji do rozliczenia |
+| 18 | A + korekta | Styczeń 60 000 zł (12%), marzec: faktura 20 000 zł i korekta -10 000 zł do faktury styczniowej | Marzec: 2 000 - 1 200 = 800 zł, styczeń bez zmian (7 200 zł) | Korekta do okresu wystawienia, stawka faktury pierwotnej [D-161] |
+| 19 | A + korekta | Jak wyżej | Obrót marca nadal 20 000 zł | Korekta nie zmienia obrotu nowego okresu, więc nie przesuwa jego progów [D-161] |
+| 20 | A + korekta | Faktura 60 000 zł w styczniu, korekta -60 000 zł w lutym | Suma prowizji = 0 zł | Pełna korekta w następnym miesiącu zeruje prowizję z faktury [D-161] |
+| 21 | dowolny + korekta | Korekta wskazująca fakturę pierwotną, której nie ma | Błąd `brak_pierwotnej` | Błąd nie jest liczony po cichu [D-161] |
+| 22 | B, dwie wersje warunków | Faktura z marca (20%), od lipca nowe warunki 15%, faktura z sierpnia | Marzec po 20%, sierpień po 15% (15 000 zł od 100 000 zł) | Warunki od daty, nigdy wstecz [D-162, D-23] |
+| 23 | wewnętrzna | Stała stawka 5% do końca 2026, progi 5%/8% od 2027, faktury 40 000 zł w listopadzie 2026 i w styczniu 2027 | Listopad 2 000 zł, styczeń 30 000 x 5% + 10 000 x 8% = 2 300 zł | Prowizja wewnętrzna: stała stawka, progi później [D-162] |
+| 24 | dowolny | Faktura z dnia, w którym nie obowiązują żadne warunki | Błąd `brak_warunkow` | Odrzucenie zamiast domyślnej stawki [D-162] |
 
 ---
 
@@ -753,13 +776,13 @@ To jest gotowy materiał do napisania testów jednostkowych w docelowej aplikacj
 
 | ID | Pytanie | Status | Blokuje |
 |---|---|---|---|
-| **P-01** | Konflikt reguły okresu rozliczeniowego: data faktury kontra prognoza z kalendarza szkoleń | OTWARTE, priorytet | Widok "prowizja przewidywana", pełne domknięcie silnika |
-| **P-02** | Progi prowizji wewnętrznej dla pracowników nie istnieją | OTWARTE, blokada twarda | Cały moduł prowizji wewnętrznej (Poziom 2) |
+| **P-01** | Konflikt reguły okresu rozliczeniowego: data faktury kontra prognoza z kalendarza szkoleń | **Rozstrzygnięte wstępnie [D-164]**: dwa widoki, wymaga potwierdzenia klienta | Zostają do ustalenia: moment przejścia z prognozy do rozliczenia i oznaczenie widoku |
+| **P-02** | Progi prowizji wewnętrznej dla pracowników | **Rozstrzygnięte wstępnie [D-162]**: stała stawka, progi później od swojej daty, wymaga potwierdzenia klienta | Stawka startowa do podania przez klienta |
 | **P-03** | Czy wniosek z nadpisaną stawką wlicza się do progów pozostałych wniosków | **Rozstrzygnięte [D-137]:** tak, wlicza się | - |
-| **P-04** | Faktury niechronologiczne i korekty (noty korygujące) | ZAWĘŻONE | Kwota korekty rozstrzygnięta i pokryta testami 23.09.2026. Otwarte zostaje przypisanie korekty do okresu rozliczeniowego, powiązane z [D-23] |
-| **P-05** | Prowizja od dopłaty - kiedy dokładnie się należy, skąd bierze się kwota dopłaty | OTWARTE, wątek urwany | Ostateczna definicja podstawy naliczenia w przypadkach specjalnych |
+| **P-04** | Faktury niechronologiczne i korekty (noty korygujące) | **Rozstrzygnięte wstępnie [D-161]**, wymaga potwierdzenia klienta | Korekta do okresu wystawienia, stawka faktury pierwotnej, testy 18-21 |
+| **P-05** | Prowizja od dopłaty | **Rozstrzygnięte wstępnie [D-174]**: znacznik "dopłata na fakturze KFS" (`wnioski.doplata_na_fakturze_kfs`) | - |
 | **P-07** | Wymiar prezentacji prowizji (per uczestnik / per firma / per wniosek) | OTWARTE, wskazówka kontekstowa: per wniosek | Widok Administracji |
 | **P-15** | Jednostka i okres celów/premii zespołu | OTWARTE | Moduł celów, powiązany z prowizją wewnętrzną |
-| **P-32** | Trzeci próg skali rocznej Modelu B (powyżej 1 - 1,5 mln zł) | OTWARTE, dwa warianty w arkuszu | Testy jednostkowe dla górnego zakresu Modelu B |
+| **P-32** | Trzeci próg skali rocznej Modelu B (powyżej 1 - 1,5 mln zł) | **Rozstrzygnięte wstępnie [D-190]**: progi konfiguruje administrator, nic nie zaszyte | Poprawną stawkę wpisuje administrator |
 
 **Legenda siły i autorstwa jak w [13. Rejestr decyzji](13-rejestr-decyzji.md). Pełny rejestr pytań otwartych: [14. Pytania otwarte](14-pytania-otwarte.md).**

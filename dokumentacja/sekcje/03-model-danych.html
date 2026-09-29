@@ -63,8 +63,22 @@ erDiagram
         string skrot
         string siedziba_miejscowosc "zrodlo pola na certyfikacie"
         string nip
+        string strona_www
+        string osoba_kontaktowa "do trzech kontaktow, _2 i _3"
+        string opis_dzialalnosci
         string model_terminow "kalendarz/z_gory"
         int aktywna
+    }
+
+    szkoleniowcy {
+        string id PK
+        string instytucja_id FK
+        string imie
+        string nazwisko
+        string telefon
+        string email
+        string specjalizacja
+        int aktywny
     }
 
     warunki_prowizyjne {
@@ -76,13 +90,7 @@ erDiagram
         string rodzaj_kumulacji "miesieczny/roczny/brak"
         string sposob_liczenia "od_calosci/od_nadwyzki/stala"
         real stawka_stala
-    }
-
-    progi_prowizyjne {
-        string id PK
-        string warunki_id FK
-        real od_kwoty
-        real stawka
+        string progi "lista JSON, CHECK json_valid"
     }
 
     katalog_szkolen {
@@ -112,10 +120,11 @@ erDiagram
         string nazwa
         string nip
         string wielkosc_przedsiebiorstwa
-        int liczba_zatrudnionych
+        string osoba_kontaktowa "do trzech kontaktow, _2 i _3"
         string instytucja_id FK "instytucja pozyskujaca, opcjonalne"
         string pup_id FK
         int zainteresowany_naborem
+        string utworzono "poczatek biegu retencji"
     }
 
     klient_instytucja {
@@ -138,17 +147,21 @@ erDiagram
         string id PK
         string numer
         string instytucja_id FK
+        string klient_id FK "opcjonalne"
+        string rodzaj "zwykla/korygujaca"
+        string faktura_pierwotna_id FK "tylko dla korekty"
         real kwota
         string vat
         string data_wystawienia
         string status
         int liczba_projektow
+        string plik_pdf "PDF z importu"
     }
 
     wnioski {
         string id PK
         int numer
-        string rok "klucz rocznika, tekstowy"
+        string rok FK "NULL = nieprzypisany, ON DELETE SET NULL"
         string klient_id FK
         string instytucja_id FK
         string pup_id FK
@@ -157,13 +170,19 @@ erDiagram
         string faktura_id FK
         int etap "1-10"
         string wielkosc_przedsiebiorstwa "nadpisanie per wniosek"
-        string osoba_kontaktowa "nadpisanie per wniosek"
+        int liczba_zatrudnionych "na dzien wniosku"
+        string osoba_kontaktowa "do dwoch kontaktow, _2"
+        string prog_dofinansowania_id FK "wybrany we wniosku"
+        int prog_regula_aktywna
         real koszt_calkowity_z_doplata "RECZNE, podstawa prowizji"
         real kwota_doplaty_dodatkowej "RECZNE, domyslnie 0"
         real koszt_calkowity "WYLICZANE"
         int koszt_regula_aktywna
         real przyznano "WYLICZANE, edytowalne"
         int przyznano_regula_aktywna
+        real wklad_wlasny "reszta, nadpisywalna"
+        int wklad_regula_aktywna
+        int doplata_na_fakturze_kfs "1 = doplata w podstawie prowizji"
         int prowizja_regula_aktywna
         string prowizja_typ_nadpisania "procent/kwota"
         real prowizja_wartosc
@@ -183,6 +202,7 @@ erDiagram
         real kwota
         string status_kwalifikacji "zakwalifikowany/niezakwalifikowany"
         string powod_niezakwalifikowania
+        string utworzono "poczatek biegu retencji"
     }
 
     role {
@@ -214,6 +234,10 @@ erDiagram
     uzytkownicy {
         string id PK
         string login
+        string haslo_skrot "skrot z sola, nie jawne haslo"
+        string haslo_sol
+        int nieudane_proby
+        string zablokowane_do
         string imie_nazwisko
         string rola_id FK
         string instytucja_id FK "konto IS, opcjonalne"
@@ -225,6 +249,14 @@ erDiagram
     uzytkownik_instytucja {
         string uzytkownik_id PK
         string instytucja_id PK
+    }
+
+    sesje {
+        string token PK
+        string uzytkownik_id FK
+        string utworzono
+        string wygasa
+        string ostatnia_aktywnosc
     }
 
     przebieg_wniosku {
@@ -277,6 +309,7 @@ erDiagram
         string instytucja_id FK
         int osob
         string szkolenie
+        string wypelnil "klient/handlowiec"
         string status "oczekuje/zaakceptowany/odrzucony"
     }
 
@@ -319,13 +352,23 @@ erDiagram
         real obecnie
     }
 
+    podsumowania_historyczne {
+        string id PK
+        string rok
+        string instytucja_id FK "NULL = calosc"
+        string miara "wnioski_zlozone/obrot/prowizja..."
+        real wartosc
+        string zrodlo
+    }
+
     meta {
         string klucz PK
         string wartosc
     }
 
     instytucje ||--o{ warunki_prowizyjne : "ma wersje warunkow"
-    warunki_prowizyjne ||--o{ progi_prowizyjne : "ma progi kwotowe"
+    instytucje ||--o{ szkoleniowcy : "zatrudnia"
+    instytucje |o--o{ podsumowania_historyczne : "podsumowanie liczbowe"
     instytucje ||--o{ katalog_szkolen : "oferuje"
     instytucje ||--o{ terminy : "organizuje"
     katalog_szkolen ||--o{ terminy : "ma realizacje"
@@ -335,13 +378,16 @@ erDiagram
     instytucje ||--o{ klient_instytucja : "widzi klienta"
     urzedy_pracy ||--o{ nabory : "oglasza"
     instytucje ||--o{ faktury : "wystawiona dla"
-    lata_zestawien ||--o{ wnioski : "zakladka roczna"
+    lata_zestawien |o--o{ wnioski : "zakladka roczna, NULL = nieprzypisany"
     klienci ||--o{ wnioski : "sklada"
     instytucje ||--o{ wnioski : "obsluguje"
     urzedy_pracy |o--o{ wnioski : "rozpatruje"
     nabory |o--o{ wnioski : "w ramach naboru"
     katalog_szkolen |o--o{ wnioski : "szkolenie glowne"
     faktury |o--o{ wnioski : "rozliczony faktura"
+    progi_dofinansowania |o--o{ wnioski : "prog wybrany we wniosku"
+    klienci |o--o{ faktury : "faktura klienta"
+    faktury |o--o{ faktury : "korekta wskazuje pierwotna"
     wnioski ||--o{ uczestnicy : "obejmuje"
     katalog_szkolen |o--o{ uczestnicy : "szkolenie uczestnika"
     terminy |o--o{ uczestnicy : "termin uczestnika"
@@ -351,6 +397,7 @@ erDiagram
     role ||--o{ uzytkownicy : "przypisana do konta"
     instytucje |o--o{ uzytkownicy : "konto macierzyste"
     klienci |o--o{ uzytkownicy : "konto klienta koncowego"
+    uzytkownicy ||--o{ sesje : "ma sesje"
     uzytkownicy ||--o{ uzytkownik_instytucja : "ma dostep do"
     instytucje ||--o{ uzytkownik_instytucja : "udostepniona kontu"
     wnioski ||--o{ przebieg_wniosku : "ma historie etapow"
@@ -365,6 +412,7 @@ erDiagram
     instytucje |o--o{ formularze_oczekujace : "zrodlo zgloszenia"
 </pre>
 <!-- diagram:do -->
+
 
   <h2>Kluczowe decyzje modelowe</h2>
 
@@ -538,7 +586,6 @@ erDiagram
     gdzie reguła miała się wyłączać po edycji. Bartek nie zaprotestował, ale też nie potwierdził wprost.
   </div>
   <p>W makiecie przyjęto konwencję: <b>pola ręczne oznaczone na żółto</b> <span class="ref">D-81</span>.</p>
-
   <!-- diagram:od -->
 <pre class="mermaid">
 flowchart LR

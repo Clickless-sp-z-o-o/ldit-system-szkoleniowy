@@ -36,16 +36,18 @@ Uruchamiaj ich zamiast rozwiązywać problem samodzielnie:
 
 ## Cztery blokady projektowe
 
-Bez rozstrzygnięcia tych pytań odpowiednie moduły **nie mogą być projektowane**:
+Stan po rundzie decyzji z 29.09.2026: żadna blokada nie jest formalnie otwarta, ale trzy z nich
+rozstrzygnął w panelu wykonawca za klienta, więc **wymagają potwierdzenia przez klienta** przed
+implementacją odpowiednich modułów.
 
-| ID | Pytanie | Blokuje | Odpowiada |
+| ID | Pytanie | Status | Odpowiada |
 |---|---|---|---|
-| **P-01** | Konflikt reguły okresu rozliczeniowego prowizji (data faktury vs prognoza z kalendarza) | Silnik prowizji | Klient |
-| **P-02** | Progi prowizji wewnętrznej dla pracowników nie istnieją | Moduł prowizji pracowniczych | Klient |
-| **P-09** | Czy system księgowy udostępnia eksport CSV | Moduł faktur | Klient |
-| **P-25** | Architektura danych: osobne bazy czy jedna z separacją wierszy | Projekt bazy danych | Wykonawca |
+| **P-01** | Okres rozliczeniowy prowizji (data faktury vs prognoza z kalendarza) | rozstrzygnięte wstępnie: dwa widoki, rzeczywisty i przewidywany (D-164), wymaga potwierdzenia klienta | Klient |
+| **P-02** | Progi prowizji wewnętrznej dla pracowników | rozstrzygnięte wstępnie: stała stawka, progi później, nigdy wstecz (D-162), wymaga potwierdzenia klienta | Klient |
+| **P-09** | Czy system księgowy udostępnia eksport CSV | rozstrzygnięte wstępnie: import CSV (D-163), wymaga potwierdzenia u księgowej | Klient |
+| **P-25** | Architektura danych: osobne bazy czy jedna z separacją wierszy | rozstrzygnięte: jedna baza, separacja wierszy (D-177) | Wykonawca |
 
-Szczegóły w `docs/14-pytania-otwarte.md`.
+Szczegóły w `docs/13-rejestr-decyzji.md` (D-161 - D-206) i `docs/14-pytania-otwarte.md`.
 
 ---
 
@@ -56,6 +58,12 @@ Na warsztacie ustalono, że **przed kodowaniem powstaje prototyp konfiguratora p
 > "żebyśmy nie kodowali aplikacji, zanim nie zostanie to ustalone. Taki prosty konfigurator w HTML, będziesz wpisywał cyferki i mi powiesz czy to się dobrze liczy czy nie."
 
 Nie zaczynaj implementacji silnika prowizji bez tego.
+
+---
+
+## Stos docelowy: Open Mercato
+
+Decyzja D-176: framework Open Mercato (TypeScript, Next.js, PostgreSQL, MikroORM, Zod, licencja MIT, wersja v0.8.0, przed 1.0). Z frameworka bierzemy uwierzytelnianie, role, uprawnienia jako features `modul.akcja` w `acl.ts`, organizacje (tenant = LDIT, organizacja = instytucja) i log akcji (`action_logs`). Czego nie ma i dobudowujemy: uprawnienia per pole (odpowiednik `uprawnienia_pol`) oraz RLS w PostgreSQL jako druga bariera separacji (D-179), bo framework filtruje organizacje tylko w aplikacji. Mapowanie makiety na framework i ryzyka: `docs/18-od-makiety-do-aplikacji.md`.
 
 ---
 
@@ -140,6 +148,7 @@ node tools/smoke-crud.mjs         # CRUD, ograniczenia schematu, pola wyliczane
 node tools/test-uprawnienia.mjs   # role, uprawnienia, separacja danych
 node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
 node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus korekty
+node tools/test-bezpieczenstwo.mjs   # hasła, sesja, strażnik zapisów, XSS
 node tools/test-lata.mjs          # zakładki roczne, dodawanie roku, brak wniosków z 2025
 node tools/test-model.mjs         # dane interaktywnego diagramu tabel zgodne ze schematem
 ```

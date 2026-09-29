@@ -290,6 +290,82 @@ przyzwyczajenia się do wyglądu innego niż Excel.
 
 ---
 
+## Rozstrzygnięcia z panelu decyzyjnego i przeglądu modelu (2026-09-29): D-161 - D-206
+
+Tego dnia wykonawca rozstrzygnął w panelu decyzyjnym wszystkie 38 punktów, które do tej pory
+stały w [14. Pytaniach otwartych](14-pytania-otwarte.md), i przejrzał interaktywny diagram tabel.
+Panel po tej rundzie jest pusty (0 punktów otwartych), a treść wariantów, skutków i kosztów
+każdego wyboru zachowano w `dokumentacja/assets/decyzje.js` jako archiwum.
+
+**Zasada oznaczania siły.** Punkty, w których w panelu odpowiadał klient, zapisano jako **WSTĘPNA**
+z adnotacją "[W] wybór w panelu 29.09, do potwierdzenia przez klienta" (skrót w tabeli: **[W]\***).
+Punkty, w których odpowiadał wykonawca lub obie strony, oraz ustalenia z przeglądu diagramu
+tabel to **TWARDA**, [W]. Wybór wykonawcy za klienta nie zastępuje odpowiedzi klienta: to jest
+propozycja gotowa do zatwierdzenia, a nie ustalenie z nim. Kolejna rozmowa z klientem powinna przejść
+przez wszystkie wiersze oznaczone [W]\*.
+
+**Korekta tego samego dnia.** Wybory P-04 i P-02 z panelu zostały skorygowane przez wykonawcę po
+przemyśleniu skutków. Cytat wykonawcy: "faktura korygująca jest do nowego okresu, progi nie
+przeliczają się wstecz". W panelu było odpowiednio: korekta wraca do okresu faktury pierwotnej,
+a progi mogły wymagać przeliczenia wstecz. Obowiązują wersje skorygowane, czyli D-161 i D-162.
+
+**Uwaga o blokadach.** Blokady P-01, P-02 i P-09 są rozstrzygnięte wyłącznie wyborem wykonawcy,
+bez odpowiedzi klienta. Przed implementacją modułu prowizji wewnętrznej i modułu faktur klient musi
+potwierdzić D-162, D-163 i D-164.
+
+| ID | Decyzja | Siła | Kto | Dotyczy |
+|---|---|---|---|---|
+| **D-161** | **Faktura korygująca należy do okresu, w którym ją wystawiono**, nie do okresu faktury pierwotnej. Zdejmuje prowizję stawką, którą naliczyła faktura pierwotna, i nie zmienia obrotu nowego okresu. Zamknięty okres się nie zmienia. Koszt: prowizja za miesiąc korekty może wyjść ujemna i trzeba to pokazać w interfejsie | WSTĘPNA | [W]\* | rozstrzyga P-04, zgodne z D-23, korekta wyboru z panelu, patrz [07](07-silnik-prowizji.md) |
+| **D-162** | **Prowizja wewnętrzna startuje na stałej stawce, progi dołożone później.** Nowe warunki i progi działają od swojej daty obowiązywania, nigdy wstecz. Koszt: model progowy to inna struktura danych niż stała stawka, więc prawdopodobna przeróbka | WSTĘPNA | [W]\* | rozstrzyga P-02, zgodne z D-23, D-22, korekta wyboru z panelu (było: klient dostarcza progi przed etapem II) |
+| **D-163** | **Eksport CSV z systemu księgowego istnieje, robimy import.** Wymusza: ustalenie formatu kolumn, regułę dopasowania faktury do wniosku i obsługę importu wielokrotnego (co gdy ten sam plik wgrany dwa razy). Do potwierdzenia u księgowej | WSTĘPNA | [W]\* | rozstrzyga P-09, zgodne z D-37, D-139 |
+| **D-164** | **Dwa widoki prowizji: rzeczywista (data faktury) i przewidywana (kalendarz szkoleń).** Rozliczenie zostaje na dacie faktury, klient dostaje prognozę z kalendarza. Wymusza: rozstrzygnięcie, w którym momencie pozycja przechodzi z prognozy do rozliczenia, i wyraźne oznaczenie widoku w interfejsie | WSTĘPNA | [W]\* | rozstrzyga P-01, godzi D-13 i D-26 |
+| **D-165** | **Zakładki lat dodaje administrator albo pracownik LDIT.** Wniosek bez roku jest "nieprzypisany" (`wnioski.rok` NULL), usunięcie roku odpina wnioski (`ON DELETE SET NULL`), a nie usuwa | TWARDA | [W] | przegląd diagramu, uzupełnia D-159 |
+| **D-166** | **Instytucja ma szczegółowe dane:** strona www, opis działalności, do trzech osób kontaktowych | TWARDA | [W] | przegląd diagramu, tabela `instytucje` |
+| **D-167** | **Osobna tabela szkoleniowców instytucji** (1 instytucja : N szkoleniowców), każdy z imieniem, nazwiskiem, telefonem i e-mailem | TWARDA | [W] | przegląd diagramu, tabela `szkoleniowcy` |
+| **D-168** | **Warunki i progi prowizyjne w jednej tabeli:** progi jako lista JSON w `warunki_prowizyjne`, tabela `progi_prowizyjne` zlikwidowana. Koszt: progi nie są osobnymi wierszami, walidacja przez `CHECK json_valid` | TWARDA | [W] | przegląd diagramu, uszczegółowia D-155 |
+| **D-169** | **Dane zmienne w czasie leżą przy wniosku:** liczba zatrudnionych (przeniesiona z klienta), do 2 osób kontaktowych i 2 adresów e-mail we wniosku. Klient ma do 3 osób kontaktowych. Hierarchia: instytucja -> klienci -> wnioski, katalog szkoleń -> wnioski, nabór jest dodatkiem do wniosku | TWARDA | [W] | przegląd diagramu, uszczegółowia D-132, D-146 |
+| **D-170** | **Faktury po kliencie i instytucji** (`faktury.klient_id`), szczegóły szkolenia czytane z wniosków (widok `v_faktura_szczegoly`), nie kopiowane do faktury. Faktura ma rodzaj zwykła/korygująca i `faktura_pierwotna_id` | TWARDA | [W] | przegląd diagramu, uszczegółowia D-38, D-139, D-161 |
+| **D-171** | **Próg dofinansowania wybierany we wniosku** (`wnioski.prog_dofinansowania_id` -> `progi_dofinansowania`). Reguła dobiera go sama z wielkości i daty, ręczny wybór wyłącza regułę | TWARDA | [W] | przegląd diagramu, realizuje D-19, D-131, D-155 |
+| **D-172** | **Wkład własny: procent wyliczany domyślnie, kwota nadpisywalna ręcznie**, z flagą reguły i "Przywróć regułę". Godzi obie sprzeczne decyzje bez odwracania żadnej | WSTĘPNA | [W]\* | rozstrzyga P-53, godzi D-59 i D-80, zgodne z D-19 |
+| **D-173** | **Wkład własny liczony od kosztu uznanego przez urząd**, czyli z tej samej podstawy co przyznano. Równanie przyznano + wkład = koszt całkowity domyka się samo | WSTĘPNA | [W]\* | rozstrzyga P-14, [06](06-model-finansowy-kfs.md) |
+| **D-174** | **Znacznik przy dopłacie: na fakturze KFS czy osobno.** Na fakturze KFS = dopłata wchodzi do podstawy prowizji. Kolumna `wnioski.doplata_na_fakturze_kfs` | WSTĘPNA | [W]\* | rozstrzyga P-05, uszczegółowia D-85, D-64, D-134 |
+| **D-175** | **Tabela podsumowań historycznych pod dashboard** (`podsumowania_historyczne`) i widok `v_podsumowanie_roku`: lata nieprzeniesione (2025) jako same liczby | TWARDA | [W] | przegląd diagramu, realizuje D-129 i D-160 |
+| **D-176** | **Stos: framework Open Mercato** (TypeScript, Next.js, PostgreSQL, MikroORM, Zod). Uwierzytelnianie, role, uprawnienia (features `modul.akcja`), organizacje i log akcji z frameworka. Uprawnienia per pole dobudowujemy, bo framework ich nie ma. Ryzyko: wersja v0.8.0, przed 1.0 | TWARDA | [W] | rozstrzyga punkt "Stos technologiczny" z panelu, konkretyzuje D-143, patrz [18](18-od-makiety-do-aplikacji.md) |
+| **D-177** | **Jedna baza, separacja politykami na wierszach.** Wymusza: audyt separacji jako osobny krok przed wdrożeniem, nie jako część testów funkcjonalnych | TWARDA | [W] | rozstrzyga P-25 (blokada), zgodne z D-112, D-144, D-148 |
+| **D-178** | **Mail dopasowywany do klienta po adresie e-mail** (klienta i wniosku), temat jako uzupełnienie, możliwość ręcznego przypięcia. Koszt: mail z innego adresu tej samej firmy nie zostanie dopasowany | TWARDA | [W] | rozstrzyga P-21 |
+| **D-179** | **Separacja egzekwowana dwa razy:** polityki w bazie (RLS PostgreSQL) plus filtr organizacji w serwerze. Open Mercato filtruje organizacje w aplikacji, RLS trzeba dołożyć samemu | TWARDA | [W] | rozstrzyga P-59, rozwija D-148, [10](10-bezpieczenstwo-i-rodo.md) |
+| **D-180** | **Powstaje specyfikacja ekranów pole po polu:** co edytowalne, co waliduje, jakie akcje, która rola co widzi. Podstawa odbioru ekranu | TWARDA | [W] | rozstrzyga P-61 |
+| **D-181** | **Formularz wypełnia klient albo handlowiec instytucji**, system zapisuje kto (`formularze_oczekujace.wypelnil`) | WSTĘPNA | [W]\* | rozstrzyga P-39, zgodne z D-75 |
+| **D-182** | **Moduł jest skończony, gdy przechodzą testy ORAZ wynik zgadza się z porównaniem z Excelem klienta.** Wymaga wybrania zestawu przypadków przed startem modułu | TWARDA | [W] | rozstrzyga P-63 |
+| **D-183** | **Faktura w paczce ZIP dołączana z importu (PDF), nie generowana przez system.** Wymusza przechowywanie pliku PDF faktury | WSTĘPNA | [W]\* | rozstrzyga P-18, zgodne z D-40, D-102 |
+| **D-184** | **Typ stałoprzecinkowy, zaokrąglenie do 2 miejsc, wkład własny liczony jako reszta.** W bazie docelowej kolumny kwotowe `NUMERIC(12,2)`, makieta (SQLite) liczy na REAL z ROUND w widokach. Do potwierdzenia: czy urząd stosuje te same zaokrąglenia | TWARDA | [W] | rozstrzyga P-51, [06](06-model-finansowy-kfs.md) |
+| **D-185** | **Zadania automatyczne tylko z daty i statusu, reszta ręczna.** Wymusza spisanie listy wyzwalaczy (342 urzędy o różnych zasadach) | TWARDA | [W] | rozstrzyga P-57, zgodne z D-140, D-145 |
+| **D-186** | **Jawne okresy retencji per kategoria danych.** Kolumny daty utworzenia przy klientach i uczestnikach już są. Wymusza proces czyszczenia | WSTĘPNA | [W]\* | rozstrzyga P-26, [10](10-bezpieczenstwo-i-rodo.md) |
+| **D-187** | **Formularz zgłoszeniowy natywny w systemie**, nie Google Forms. Wymusza zabezpieczenie publicznego formularza przed nadużyciem (limit zgłoszeń, bramka akceptacji D-105). Odwraca preferencję klienta z D-147, wymaga rozmowy | TWARDA | [W] | rozstrzyga P-24, **koryguje D-147**, zgodne z D-105 |
+| **D-188** | **Lista szkoleń w formularzu pochodzi z katalogu szkoleń w systemie** | TWARDA | [W] | rozstrzyga P-23 |
+| **D-189** | **Do logu akcji trafia lista istotnych zdarzeń:** otwarcie karty, eksport, wejście w moduł finansowy, wysyłka, zmiana statusu, zmiana uprawnień. Rejestr tylko do dopisywania. **Zawęża wymaganie klienta z D-122 ("każde kliknięcie"), wymaga jego zgody** | TWARDA | [W] | rozstrzyga P-54, zawęża D-122 |
+| **D-190** | **Progi skali rocznej konfiguruje administrator, nic nie jest zaszyte w kodzie.** Odpowiedzialność za poprawną stawkę trzeciego progu przechodzi na administratora | WSTĘPNA | [W]\* | rozstrzyga P-32, zgodne z D-155, D-168 |
+| **D-191** | **Zostaje nazwa "koszt całkowity".** Ryzyko pomyłki z "kosztem całkowitym z dopłatą" | WSTĘPNA | [W]\* | rozstrzyga P-13, zgodne z D-10, D-55 |
+| **D-192** | **Panel klienta końcowego w etapie IV, w minimalnym zakresie.** Wymusza osobny cykl testów separacji przed udostępnieniem | WSTĘPNA | [W]\* | rozstrzyga P-33, zgodne z D-154 |
+| **D-193** | **Instytucja widzi pełne statystyki własnych klientów, w tym rozbicie per handlowiec.** Koszt: instytucja widzi swoją skuteczność, co jest argumentem w negocjacjach prowizji. Klient odroczył tę decyzję wprost (2:54:45), więc wybór wykonawcy wymaga szczególnego potwierdzenia | WSTĘPNA | [W]\* | rozstrzyga P-12, konflikt interesów wykonawcy opisany w P-12 |
+| **D-194** | **Dashboard to statystyka, zbiorcze zestawienie to osobny widok operacyjny** ("Wszystkie instytucje") | WSTĘPNA | [W]\* | rozstrzyga P-08, zgodne z D-114, D-127 |
+| **D-195** | **Zadania i powiadomienia to dwa osobne moduły** | WSTĘPNA | [W]\* | rozstrzyga P-55, zgodne z D-140 |
+| **D-196** | **Bez SMS, wyłącznie mail**, także dla uczestników | WSTĘPNA | [W]\* | rozstrzyga P-17, zgodne z D-04 |
+| **D-197** | **Osoba niekwalifikowana rejestrowana jako uczestnik niezakwalifikowany z powodem**, faktura komercyjna poza systemem | WSTĘPNA | [W]\* | rozstrzyga P-46, zgodne z D-61, D-84 |
+| **D-198** | **Jawna lista skrzynek objętych integracją M365**, ustalona przed konfiguracją aplikacji | WSTĘPNA | [W]\* | rozstrzyga P-20 |
+| **D-199** | **Wzór certyfikatu wgrywa instytucja, format HTML z polami, z podglądem przed zapisaniem** | WSTĘPNA | [W]\* | rozstrzyga P-19, zgodne z D-98, D-99 |
+| **D-200** | **Numeracja certyfikatów ciągła w roku, osobna dla każdej instytucji.** Wymusza licznik per instytucja i rok | WSTĘPNA | [W]\* | rozstrzyga P-40 |
+| **D-201** | **Zewnętrzny audyt bezpieczeństwa po etapie I, przed wpuszczeniem instytucji** | WSTĘPNA | [W]\* | rozstrzyga P-27, uzupełnia D-177 |
+| **D-202** | **Etap procesu jako łańcuch (1-10), statusy jako atrybuty.** Wymusza listę dozwolonych przejść między etapami | WSTĘPNA | [W]\* | rozstrzyga P-42, zgodne z D-145, D-146 |
+| **D-203** | **Alert z praca.gov.pl jako zadanie automatyczne**, z regułą zamykania | WSTĘPNA | [W]\* | rozstrzyga P-52, zgodne z D-140 |
+| **D-204** | **Zmiana planu szkolenia przez instytucję czeka na akceptację administratora** (kolejka zmian, powiadomienie). Wybrano wariant inny niż rekomendowany w panelu (powiadomienie): koszt to wąskie gardło przy dwudziestu instytucjach | WSTĘPNA | [W]\* | rozstrzyga P-45, zgodne z D-43 |
+| **D-205** | **Rozwinięcie i nową nazwę statusu NW podaje klient**, do tego czasu zostaje NW | WSTĘPNA | [W]\* | rozstrzyga P-11, zgodne z D-55 |
+| **D-206** | **Kolumny widoku wniosku zatwierdzone wg makiety**, klient zgłasza poprawki | WSTĘPNA | [W]\* | rozstrzyga P-43, dotyczy też P-44 |
+
+[W]\* = wybór wykonawcy w panelu 29.09, do potwierdzenia przez klienta.
+
+---
+
 ## Decyzje unieważnione w trakcie warsztatu
 
 | Wcześniejsza decyzja | Czas | Unieważniona przez | Czas |
@@ -316,13 +392,13 @@ przyzwyczajenia się do wyglądu innego niż Excel.
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 128 |
-| WSTĘPNA | 23 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 147 |
+| WSTĘPNA | 50 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **160** |
+| **Razem** | **206** |
 
-Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**.
+Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**. Liczby dotyczą D-01 - D-160. Wszystkie 46 decyzji D-161 - D-206 to rozstrzygnięcia wykonawcy: 19 TWARDYCH i 27 WSTĘPNYCH czekających na potwierdzenie klienta.
 
 Skąd te liczby:
 
@@ -333,7 +409,8 @@ Skąd te liczby:
 | Warsztat doprecyzowujący 04.09.2026 | D-125 - D-147 | 23 |
 | Budowa makiety na bazie danych 23.09.2026 | D-148 - D-157 | 10 |
 | Feedback klienta 29.09.2026 | D-158 - D-160 | 3 |
+| Panel decyzyjny i przegląd modelu 29.09.2026 | D-161 - D-206 | 46 |
 
 Warsztat 04.09 przyniósł 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md). Runda budowy makiety nie odwróciła żadnej decyzji klienta, tylko rozstrzygnęła, gdzie ustalenia mają być egzekwowane.
 
-> **Uwaga o interpretacji.** Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde ustalenia w wąskim zakresie, obok których stoi 50 pytań otwartych, w tym 4 blokady. Decyzje z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu stron i wymagają potwierdzenia.
+> **Uwaga o interpretacji.** Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde ustalenia w wąskim zakresie, obok których stoi 20 pytań otwartych (spoza panelu, patrz 14) i 27 wyborów wykonawcy czekających na potwierdzenie klienta (blokady P-01, P-02, P-09 rozstrzygnięte wstępnie). Decyzje z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu stron i wymagają potwierdzenia.

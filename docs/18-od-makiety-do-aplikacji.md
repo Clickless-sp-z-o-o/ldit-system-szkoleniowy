@@ -18,7 +18,7 @@ To przesuwa najdroższą część pracy, czyli **rozstrzyganie, jak dane mają w
 
 | Element | Gdzie leży | Co się z nim dzieje przy przenosinach |
 |---|---|---|
-| Struktura danych, 30 tabel | `makieta/db/schema.sql` | Zmiana typów `TEXT` na `text`/`varchar` i `REAL` na `numeric`. Klucze obce, `CHECK` i indeksy przechodzą bez zmian |
+| Struktura danych, 33 tabele | `makieta/db/schema.sql` | Zmiana typów `TEXT` na `text`/`varchar` i `REAL` na `numeric`. Klucze obce, `CHECK` i indeksy przechodzą bez zmian |
 | Reguły pól wyliczanych | `makieta/db/views.sql` | Widoki przenoszą się wprost, stają się warstwą domenową |
 | Silnik prowizji | `makieta/assets/prowizja.js` | Czysta funkcja bez zależności. Przenosi się jako moduł albo jako funkcja w bazie |
 | Macierz uprawnień | tabele `role`, `moduly`, `uprawnienia`, `uprawnienia_pol` | Przenosi się jako dane, nie jako kod |
@@ -36,7 +36,7 @@ To jest dokładnie ta część, w której najłatwiej o błąd nie do wykrycia, 
 ```mermaid
 flowchart LR
   subgraph gotowe["Gotowe, przenosi sie"]
-    A1[schema.sql<br/>30 tabel]
+    A1[schema.sql<br/>33 tabele]
     A2[views.sql<br/>reguly wyliczen]
     A3[prowizja.js<br/>silnik]
     A4[macierz uprawnien<br/>jako dane]
@@ -82,8 +82,8 @@ Zasada z [D-19] wymaga, żeby ręczna edycja kasowała regułę, ale żeby dało
 **4. Integracje nie mają wersji makietowej.**
 Wysyłki maila z domeny klienta, zaciągania formularza ani importu faktur nie da się zasymulować tak, żeby cokolwiek z tego wynikało. Te trzy rzeczy trzeba zbudować i przetestować na żywym połączeniu.
 
-**5. Cztery blokady nadal stoją.**
-[P-01], [P-02], [P-09] i [P-25] nie są domknięte. Dopóki stoją, silnik prowizji, moduł prowizji wewnętrznej, moduł faktur i architektura danych nie mają kompletu wejścia. Szczegóły w [14. Pytania otwarte](14-pytania-otwarte.md).
+**5. Cztery blokady są rozstrzygnięte, ale trzy tylko wstępnie.**
+[P-25] rozstrzygnięte [D-177]. [P-01], [P-02] i [P-09] rozstrzygnął w panelu 29.09.2026 wykonawca [D-164, D-162, D-163], więc **czekają na potwierdzenie klienta** przed implementacją silnika prowizji, prowizji wewnętrznej i modułu faktur. Szczegóły w [13. Rejestrze decyzji](13-rejestr-decyzji.md).
 
 ---
 
@@ -91,7 +91,7 @@ Wysyłki maila z domeny klienta, zaciągania formularza ani importu faktur nie d
 
 To jest odpowiedź na drugie pytanie wykonawcy: *czy gdybym oddał tę dokumentację nowemu modelowi bez kontekstu, zbudowałby z niej tę aplikację?* Dziś: **nie w całości**. Zbudowałby bazę i silnik prowizji, ale nie odtworzyłby ekranów ani reguł walidacji, bo ich nie ma spisanych.
 
-Lista braków, w kolejności od najbardziej kosztownych:
+Punkt 1 jest rozstrzygnięty co do zasady [D-180]: powstaje specyfikacja ekranów pole po polu. Kryterium zakończenia modułu to testy oraz zgodność z Excelem klienta [D-182]. Lista braków, w kolejności od najbardziej kosztownych:
 
 | # | Czego brakuje | Dlaczego blokuje | Ile pracy |
 |---|---|---|---|
@@ -151,14 +151,51 @@ Wniosek praktyczny: **im więcej z listy braków zostanie spisane przed startem,
 
 ---
 
+## Stos docelowy: Open Mercato [D-176]
+
+Po rundzie decyzji z 29.09.2026 stos docelowy to framework **Open Mercato** (TypeScript, Next.js App Router, PostgreSQL, MikroORM, Zod, Awilix, licencja MIT, wersja v0.8.0 z 18.09.2026, repozytorium `open-mercato/open-mercato`). Dokumentacja modułów i wzorców jest w plikach `AGENTS.md` repozytorium.
+
+### Jak przenieść makietę
+
+| Makieta | W aplikacji Open Mercato |
+|---|---|
+| Tabele `schema.sql` | Encje MikroORM we własnym module (np. `applications`) z migracjami `yarn db:generate`. Kolumny kwotowe `NUMERIC(12,2)` [D-184], `INTEGER` jako flagi na `boolean` |
+| `tenant` i `organization_id` w każdej encji | Tenant = LDIT, organizacja = instytucja szkoleniowa. Framework dodaje `tenant_id` i `organization_id` do encji |
+| Uprawnienia do modułu (`uprawnienia`) | Features `modul.akcja` deklarowane w `acl.ts`, domyślne przypisanie do ról w `setup.ts`, sprawdzanie przez `requireFeatures` w metadanych tras. Zakaz sprawdzania po nazwach ról |
+| Uprawnienia do pola (`uprawnienia_pol`) | **Własny mechanizm.** Framework nie ma widoczności per pole i rola. Dobudowujemy warstwę serializacji, która wycina pola wg features (prowizja, PESEL, zysk firmy) |
+| `uzytkownik_instytucja` (poziom wiersza) | `organizations_json` w `user_acls` i drzewo organizacji. Filtr organizacji obowiązkowy w każdym zapytaniu |
+| `rejestr_aktywnosci` | Moduł `audit_logs`, tabela `action_logs` (migawki przed i po, `changes_json`). Lista zdarzeń wg D-189, tylko dopisywanie |
+| Widoki `views.sql` | Warstwa domenowa (serwisy w module) albo moduł `business_rules`. Reguły pól wyliczanych z flagą reguły i "Przywróć regułę" [D-19, D-153] muszą zostać zachowane |
+| Silnik `prowizja.js` | Czysty moduł TypeScript, testy z `docs/07` (przypadki 1-24) przeniesione bez zmian |
+| Strażnik zapisów (`straznik.js`) | Wzorzec `Command` frameworka plus `requireFeatures` plus filtr organizacji. Zapis nie idzie inaczej niż przez komendę |
+| Hasła, sesje, logowania | `users`, `sessions`, `password_resets` z frameworka, `bcryptjs`. Tabele `sesje` i `haslo_*` z makiety nie są przenoszone |
+| Walidacja wejścia | Schematy Zod w `data/validators.ts` na granicy każdego API |
+
+**Dwa poziomy separacji [D-179].** Filtr organizacji w serwerze (z frameworka) i polityki na wierszach w PostgreSQL (RLS, do dołożenia). Open Mercato filtruje organizacje w aplikacji, więc pominięty filtr w jednym zapytaniu jest wyciekiem. RLS jest drugą, niezależną barierą. Przed wdrożeniem osobny audyt separacji [D-177] i audyt zewnętrzny po etapie I [D-201].
+
+### Ryzyka wyboru frameworka
+
+- **Wersja przed 1.0 (v0.8.0).** Interfejsy mogą się zmieniać między wersjami, a migracje na nowszą wersję kosztują. Wersję pinujemy, aktualizacje robimy świadomie.
+- **Brak potwierdzonego RLS.** Izolacja tenantów jest aplikacyjna. Trzeba sprawdzić, czy da się przekazać kontekst użytkownika do sesji bazy i włączyć polityki bez konfliktu z ORM.
+- **Brak uprawnień per pole.** Największy element do dobudowania, bo D-149 wymaga trzech poziomów, a framework daje dwa (moduł i organizacja).
+- **Log akcji z migawkami** może zawierać stawki prowizji i dane innych organizacji. Ograniczyć features `audit_logs.*`, szyfrować pola wrażliwe [10. Bezpieczeństwo i RODO](10-bezpieczenstwo-i-rodo.md).
+- **MFA** jest w warstwie enterprise, a wymaganie 2FA to MUST. Do sprawdzenia przed startem.
+- **Krzywa uczenia.** Framework narzuca wzorce (Command, moduły, Awilix). Zysk to gotowe uwierzytelnianie, role, organizacje i log akcji, czyli najtrudniejsza część.
+
+### Lokalna baza w trybie serwera
+
+Makieta może pracować na bazie zapisanej na dysku: `node tools/serwer.mjs` uruchamia lokalny serwer z plikiem `makieta/db/kfs.sqlite`, dzięki czemu zmiany zostają między sesjami przeglądarki. To ułatwia ćwiczenie scenariuszy na tych samych danych, ale nie zmienia ograniczenia bezpieczeństwa: kod egzekwujący uprawnienia dalej działa po stronie użytkownika. Szczegóły w [`makieta/DANE.md`](../makieta/DANE.md).
+
+---
+
 ## Czego makieta celowo nie rozstrzyga
 
 Żeby nie było złudzenia, że wszystko jest ustalone:
 
-- **Framework i stos technologiczny.** Makieta jest czystym HTML, żeby nie przesądzać wyboru. Kierunek z [D-143] to framework z gotowym modułem uprawnień, ale konkret nie jest wybrany.
-- **Architektura danych.** [P-25] i [P-56]: osobne bazy per instytucja kontra jedna baza z separacją wierszy. Makieta pokazuje drugi wariant, bo tylko on daje widoki zbiorcze, ale to nie jest rozstrzygnięcie.
+- **Framework i stos technologiczny** są wybrane po makiecie [D-176]: Open Mercato, patrz sekcja niżej. Sama makieta pozostaje czystym HTML.
+- **Architektura danych** jest rozstrzygnięta [D-177]: jedna baza z separacją wierszy. Makieta pokazuje ten wariant.
 - **Hosting, kopie zapasowe, utrzymanie.** Poza zakresem makiety.
-- **Zakres panelu klienta końcowego.** [P-33] otwarte. Makieta pokazuje minimalny wariant, żeby było o czym rozmawiać.
+- **Zakres panelu klienta końcowego** wstępnie rozstrzygnięty [D-192]: etap IV, minimalny zakres, z osobnymi testami separacji.
 
 ---
 

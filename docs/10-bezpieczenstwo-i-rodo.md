@@ -143,6 +143,69 @@ obcej instytucji.
 
 ---
 
+## Zabezpieczenia makiety (stan 2026-09-29)
+
+Po rundzie decyzji makieta dostała mechanizmy, które odwzorowują reguły bezpieczeństwa
+aplikacji. Testy: `node tools/test-bezpieczenstwo.mjs`.
+
+| Mechanizm | Jak działa | Plik |
+|---|---|---|
+| Hasło jako skrót z solą | W bazie nie ma jawnego hasła, są `haslo_skrot` i `haslo_sol` zamiast dawnego `haslo_demo` | `makieta/assets/haslo.js` |
+| Blokada po nieudanych próbach | 5 nieudanych prób blokuje konto na 15 minut (`nieudane_proby`, `zablokowane_do`) | `makieta/assets/auth.js` |
+| Ogólny komunikat błędu logowania | Komunikat nie zdradza, czy login istnieje | `makieta/assets/auth.js` |
+| Sesja jako token w bazie | Przeglądarka trzyma wyłącznie token z tabeli `sesje`, a rola i zakres są czytane z bazy przy każdym odczycie, więc edycja pamięci przeglądarki nie podnosi uprawnień | `makieta/assets/auth.js` |
+| Wygasanie sesji | Po 30 minutach bezczynności i po 8 godzinach od utworzenia | `makieta/assets/auth.js` |
+| Strażnik zapisów | Każdy zapis przechodzi kontrolę trzech poziomów: moduł, wiersz, pole [D-149]. Rejestr aktywności jest tylko do dopisywania | `makieta/assets/straznik.js` |
+| Ochrona przed XSS | Wszystkie wartości z bazy trafiają do HTML przez `esc()` | `makieta/assets/html.js` |
+| Log logowań | Tabela `logowania`, każda próba z wynikiem | `makieta/db/schema.sql` |
+
+### Uczciwe ograniczenie makiety
+
+**To jest demonstracja reguł, nie ochrona.** Cała baza SQLite leży w przeglądarce (albo w pliku
+`makieta/db/kfs.sqlite` przy trybie lokalnego serwera, patrz [18](18-od-makiety-do-aplikacji.md)).
+Osoba z narzędziami deweloperskimi może odczytać plik bazy, wywołać funkcje wprost i pominąć
+strażnika. Skrót hasła z solą, blokada i sesje pokazują, jak mechanizm ma działać, ale nie
+chronią niczego, bo kod egzekwujący działa po stronie użytkownika. Ochrona realna to serwer
+i polityki w bazie [D-179]. Test akceptacyjny dla aplikacji jest inny niż dla makiety: musi
+przejść z konta z ograniczeniami, także przy zapytaniu bezpośrednio do API i do bazy.
+
+---
+
+## Docelowy model bezpieczeństwa: Open Mercato [D-176, D-179]
+
+Stos docelowy to framework Open Mercato (wersja v0.8.0, przed 1.0, patrz
+[18. Od makiety do aplikacji](18-od-makiety-do-aplikacji.md)). Co dostajemy z frameworka i czego brakuje:
+
+| Obszar | Z frameworka | Do dobudowania |
+|---|---|---|
+| Uwierzytelnianie | Sesje JWT, `bcryptjs` (koszt co najmniej 10), błąd logowania nie zdradza, czy e-mail istnieje, tabele `users`, `roles`, `sessions`, `password_resets`. MFA w warstwie enterprise | Weryfikacja, czy MFA jest dostępne w naszej licencji (wymaganie 2FA jest MUST) |
+| Uprawnienia | Features `modul.akcja` w `acl.ts`, przypisanie do ról w `setup.ts`, `role_acls` i `user_acls`, wildcardy `modul.*`, sprawdzanie przez `requireFeatures` | **Uprawnienia per pole** (odpowiednik `uprawnienia_pol`): framework ich nie ma [D-149] |
+| Separacja instytucji | Tenant (LDIT) i organizacje (instytucja szkoleniowa), `organization_id` w każdej encji, obowiązkowy filtr w zapytaniach | **RLS w PostgreSQL** jako druga bariera. Framework filtruje organizacje w aplikacji, więc jedno zapomniane zapytanie bez filtra to wyciek |
+| Rejestr zmian | Moduł `audit_logs`, tabela `action_logs` (aktor, zasób, `snapshot_before`, `snapshot_after`, `changes_json`, cofnij/ponów) | Lista zdarzeń wg D-189, ograniczenie features `audit_logs.*` |
+| Szyfrowanie | AES-GCM z kluczem per tenant, mapy szyfrowania per pole | Włączenie dla PESEL (kandydat) |
+
+**Separacja egzekwowana dwa razy [D-179].** Polityki na wierszach w bazie (RLS) plus filtr
+organizacji w serwerze. Dwie niezależne bariery: błąd w jednej nie powoduje wycieku. Koszt to
+podwójne utrzymanie i trudniejsza diagnoza, gdy warstwy się rozjadą. Kontekst zalogowanego
+użytkownika musi dotrzeć do bazy przy każdym zapytaniu. Jedna baza, nie osobne bazy per
+instytucja [D-177], stąd audyt separacji jako osobny krok przed wdrożeniem.
+
+**Ryzyko: log akcji sam zawiera dane wrażliwe.** `action_logs` przechowuje migawki przed i po,
+więc może zawierać stawki prowizji i dane innych organizacji. Należy ograniczyć features
+`audit_logs.view_*` do administratora, filtrować log po organizacji i szyfrować pola
+wrażliwe w migawkach. Bez tego log stałby się obejściem separacji.
+
+**Ryzyko: PESEL.** Kandydat do szyfrowania per pole kluczem tenanta (AES-GCM). Widoczność
+per rola przez dobudowany mechanizm pól, szyfrowanie chroni dodatkowo przed odczytem kopii
+zapasowej i bezpośrednim dostępem do bazy.
+
+**Retencja [D-186].** Kolumny `utworzono` przy klientach i uczestnikach wyznaczają początek
+biegu retencji. Wymaga procesu czyszczenia, który ktoś zaplanuje i uruchamia.
+
+**Audyt zewnętrzny [D-201].** Po etapie I, przed wpuszczeniem instytucji do systemu.
+
+---
+
 ## Prywatność skrzynek pocztowych
 
 **Skrzynka właściciela firmy wyłączona z pełnej integracji** [D-48].
@@ -209,7 +272,9 @@ Formularz zgłoszeniowy jest publicznie dostępny pod linkiem. Bramka ręcznej a
 
 PESEL to dana wymagająca szczególnej ochrony. Pojawia się w formularzu zgłoszeniowym.
 
-### Retencja: NIEUSTALONA [P-26]
+### Retencja: rozstrzygnięta wstępnie [P-26, D-186]
+
+> **Stan 2026-09-29.** Wybrano jawne okresy retencji per kategoria danych [D-186, WSTĘPNA, do potwierdzenia przez klienta]. Konkretne okresy nadal do ustalenia. Poniżej stan sprzed rozstrzygnięcia.
 
 Pytanie z dokumentacji przedwarsztatowej pozostało bez odpowiedzi: **jak długo przechowujemy korespondencję zaimportowaną do kart uczestników**.
 
@@ -230,7 +295,7 @@ Baza dzielona na roczniki, ale nie ustalono, czy starsze roczniki mają być arc
 
 Dokumentacja przedwarsztatowa wskazuje: **rozważane jest zlecenie zewnętrznego audytu bezpieczeństwa firmie, która przejmuje część odpowiedzialności. Temat do domknięcia przed startem prac.**
 
-**Warsztat nie wrócił do tego tematu.** [P-27]
+**Warsztat nie wrócił do tego tematu.** [P-27] **Rozstrzygnięte wstępnie 2026-09-29 [D-201]:** audyt zewnętrzny po etapie I, przed wpuszczeniem instytucji (do potwierdzenia przez klienta).
 
 Rekomendacja: audyt jest szczególnie uzasadniony, jeśli:
 - wejdzie panel klienta końcowego (osoby spoza obu organizacji)
@@ -252,5 +317,9 @@ Rekomendacja: audyt jest szczególnie uzasadniony, jeśli:
 - [ ] Log logowań działa i jest dostępny dla administratora
 - [ ] Blokada konta byłego pracownika przetestowana (czy sesja wygasa natychmiast)
 - [ ] Rate limiting na publicznym formularzu zgłoszeniowym
-- [ ] Decyzja o audycie zewnętrznym podjęta
+- [ ] Audyt zewnętrzny po etapie I wykonany, przed wpuszczeniem instytucji [D-201]
+- [ ] Audyt separacji jako osobny krok przed wdrożeniem [D-177]
+- [ ] RLS w PostgreSQL włączone i przetestowane obok filtra organizacji [D-179]
+- [ ] Uprawnienia per pole dobudowane i przetestowane [D-176]
+- [ ] Log akcji ograniczony features i pozbawiony danych wrażliwych w migawkach
 - [ ] Jeśli wchodzi panel klienta: osobny cykl testów separacji przed udostępnieniem

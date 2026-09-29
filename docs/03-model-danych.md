@@ -2,6 +2,8 @@
 
 > **Aktualizacja po warsztacie 2026-09-04.** Widok rozdzielony na **Bazę danych** (klient = jeden wiersz, wnioski zagnieżdżone) i **Wnioski** (od etapu 3) [D-128]. Odwrócenie wyliczania: **koszt całkowity z dopłatą ręczny, koszt całkowity wyliczany** [D-134]. **"Przyznano" edytowalne** [D-135]. Wielkość przedsiębiorstwa i dane kontaktowe **edytowalne per wniosek** [D-132, D-133]. Brak migracji danych historycznych, roczne zakładki [D-129]. Jeden klient może być u wielu instytucji [D-144]. Pełny kontekst i konflikty: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
 
+> **Aktualizacja po rundzie decyzji i przeglądzie diagramu (2026-09-29).** Schemat ma 33 tabele. Nowe: `szkoleniowcy` [D-167], `sesje` (sesja logowania, [D-179]) i `podsumowania_historyczne` [D-175]. Zlikwidowana: `progi_prowizyjne`, progi są listą JSON w `warunki_prowizyjne` [D-168]. Nowe kolumny: dane instytucji [D-166], dane zmienne we wniosku [D-169], `faktury.klient_id`, `rodzaj` i `faktura_pierwotna_id` [D-170], `wnioski.prog_dofinansowania_id` [D-171], `doplata_na_fakturze_kfs` [D-174], `formularze_oczekujace.wypelnil` [D-181], skrót hasła z solą zamiast jawnego hasła. Nowe widoki: `v_faktura_szczegoly` i `v_podsumowanie_roku`. Opis encji niżej jest poprawiony wg `schema.sql`.
+
 > **Aktualizacja z budowy makiety na bazie danych (2026-09-23).** Model danych został zaimplementowany jako prawdziwa baza SQLite. **Schemat bazy jest teraz źródłem prawdy o strukturze danych** [D-151], reguły wyliczeń są zapisane jako widoki SQL, nie powielane w kodzie ekranów [D-152]. Ten rozdział opisuje ten sam model słowami, ale przy rozjeździe wygrywa `makieta/db/schema.sql`. Rozdział uwzględnia też decyzje wykonawcze D-148 - D-157 (separacja na poziomie danych, dwuwariantowe pola wyliczane, konta klientów).
 
 Model wypracowany na warsztacie, w kilku miejscach na żywo skorygowany. Wykonawca odkrył w trakcie ćwiczenia brakującą tabelę:
@@ -14,7 +16,7 @@ Model wypracowany na warsztacie, w kilku miejscach na żywo skorygowany. Wykonaw
 
 Interaktywna wersja tego diagramu, z opisem i kolumnami każdej tabeli po kliknięciu, jest w klikalnej dokumentacji: **Diagram tabel (interaktywny)** (`dokumentacja/sekcje/18-model-tabel.html`, dane generuje `node tools/build-model.mjs`).
 
-Diagram odzwierciedla `makieta/db/schema.sql` (31 tabel). Krotność `||--o{` oznacza relację obowiązkową (klucz obcy `NOT NULL`), `|o--o{` oznacza relację opcjonalną (klucz obcy dopuszcza `NULL`).
+Diagram odzwierciedla `makieta/db/schema.sql` (33 tabele). Krotność `||--o{` oznacza relację obowiązkową (klucz obcy `NOT NULL`), `|o--o{` oznacza relację opcjonalną (klucz obcy dopuszcza `NULL`).
 
 ```mermaid
 erDiagram
@@ -46,8 +48,22 @@ erDiagram
         string skrot
         string siedziba_miejscowosc "zrodlo pola na certyfikacie"
         string nip
+        string strona_www
+        string osoba_kontaktowa "do trzech kontaktow, _2 i _3"
+        string opis_dzialalnosci
         string model_terminow "kalendarz/z_gory"
         int aktywna
+    }
+
+    szkoleniowcy {
+        string id PK
+        string instytucja_id FK
+        string imie
+        string nazwisko
+        string telefon
+        string email
+        string specjalizacja
+        int aktywny
     }
 
     warunki_prowizyjne {
@@ -59,13 +75,7 @@ erDiagram
         string rodzaj_kumulacji "miesieczny/roczny/brak"
         string sposob_liczenia "od_calosci/od_nadwyzki/stala"
         real stawka_stala
-    }
-
-    progi_prowizyjne {
-        string id PK
-        string warunki_id FK
-        real od_kwoty
-        real stawka
+        string progi "lista JSON, CHECK json_valid"
     }
 
     katalog_szkolen {
@@ -95,10 +105,11 @@ erDiagram
         string nazwa
         string nip
         string wielkosc_przedsiebiorstwa
-        int liczba_zatrudnionych
+        string osoba_kontaktowa "do trzech kontaktow, _2 i _3"
         string instytucja_id FK "instytucja pozyskujaca, opcjonalne"
         string pup_id FK
         int zainteresowany_naborem
+        string utworzono "poczatek biegu retencji"
     }
 
     klient_instytucja {
@@ -121,17 +132,21 @@ erDiagram
         string id PK
         string numer
         string instytucja_id FK
+        string klient_id FK "opcjonalne"
+        string rodzaj "zwykla/korygujaca"
+        string faktura_pierwotna_id FK "tylko dla korekty"
         real kwota
         string vat
         string data_wystawienia
         string status
         int liczba_projektow
+        string plik_pdf "PDF z importu"
     }
 
     wnioski {
         string id PK
         int numer
-        string rok "klucz rocznika, tekstowy"
+        string rok FK "NULL = nieprzypisany, ON DELETE SET NULL"
         string klient_id FK
         string instytucja_id FK
         string pup_id FK
@@ -140,13 +155,19 @@ erDiagram
         string faktura_id FK
         int etap "1-10"
         string wielkosc_przedsiebiorstwa "nadpisanie per wniosek"
-        string osoba_kontaktowa "nadpisanie per wniosek"
+        int liczba_zatrudnionych "na dzien wniosku"
+        string osoba_kontaktowa "do dwoch kontaktow, _2"
+        string prog_dofinansowania_id FK "wybrany we wniosku"
+        int prog_regula_aktywna
         real koszt_calkowity_z_doplata "RECZNE, podstawa prowizji"
         real kwota_doplaty_dodatkowej "RECZNE, domyslnie 0"
         real koszt_calkowity "WYLICZANE"
         int koszt_regula_aktywna
         real przyznano "WYLICZANE, edytowalne"
         int przyznano_regula_aktywna
+        real wklad_wlasny "reszta, nadpisywalna"
+        int wklad_regula_aktywna
+        int doplata_na_fakturze_kfs "1 = doplata w podstawie prowizji"
         int prowizja_regula_aktywna
         string prowizja_typ_nadpisania "procent/kwota"
         real prowizja_wartosc
@@ -166,6 +187,7 @@ erDiagram
         real kwota
         string status_kwalifikacji "zakwalifikowany/niezakwalifikowany"
         string powod_niezakwalifikowania
+        string utworzono "poczatek biegu retencji"
     }
 
     role {
@@ -197,6 +219,10 @@ erDiagram
     uzytkownicy {
         string id PK
         string login
+        string haslo_skrot "skrot z sola, nie jawne haslo"
+        string haslo_sol
+        int nieudane_proby
+        string zablokowane_do
         string imie_nazwisko
         string rola_id FK
         string instytucja_id FK "konto IS, opcjonalne"
@@ -208,6 +234,14 @@ erDiagram
     uzytkownik_instytucja {
         string uzytkownik_id PK
         string instytucja_id PK
+    }
+
+    sesje {
+        string token PK
+        string uzytkownik_id FK
+        string utworzono
+        string wygasa
+        string ostatnia_aktywnosc
     }
 
     przebieg_wniosku {
@@ -260,6 +294,7 @@ erDiagram
         string instytucja_id FK
         int osob
         string szkolenie
+        string wypelnil "klient/handlowiec"
         string status "oczekuje/zaakceptowany/odrzucony"
     }
 
@@ -302,13 +337,23 @@ erDiagram
         real obecnie
     }
 
+    podsumowania_historyczne {
+        string id PK
+        string rok
+        string instytucja_id FK "NULL = calosc"
+        string miara "wnioski_zlozone/obrot/prowizja..."
+        real wartosc
+        string zrodlo
+    }
+
     meta {
         string klucz PK
         string wartosc
     }
 
     instytucje ||--o{ warunki_prowizyjne : "ma wersje warunkow"
-    warunki_prowizyjne ||--o{ progi_prowizyjne : "ma progi kwotowe"
+    instytucje ||--o{ szkoleniowcy : "zatrudnia"
+    instytucje |o--o{ podsumowania_historyczne : "podsumowanie liczbowe"
     instytucje ||--o{ katalog_szkolen : "oferuje"
     instytucje ||--o{ terminy : "organizuje"
     katalog_szkolen ||--o{ terminy : "ma realizacje"
@@ -318,13 +363,16 @@ erDiagram
     instytucje ||--o{ klient_instytucja : "widzi klienta"
     urzedy_pracy ||--o{ nabory : "oglasza"
     instytucje ||--o{ faktury : "wystawiona dla"
-    lata_zestawien ||--o{ wnioski : "zakladka roczna"
+    lata_zestawien |o--o{ wnioski : "zakladka roczna, NULL = nieprzypisany"
     klienci ||--o{ wnioski : "sklada"
     instytucje ||--o{ wnioski : "obsluguje"
     urzedy_pracy |o--o{ wnioski : "rozpatruje"
     nabory |o--o{ wnioski : "w ramach naboru"
     katalog_szkolen |o--o{ wnioski : "szkolenie glowne"
     faktury |o--o{ wnioski : "rozliczony faktura"
+    progi_dofinansowania |o--o{ wnioski : "prog wybrany we wniosku"
+    klienci |o--o{ faktury : "faktura klienta"
+    faktury |o--o{ faktury : "korekta wskazuje pierwotna"
     wnioski ||--o{ uczestnicy : "obejmuje"
     katalog_szkolen |o--o{ uczestnicy : "szkolenie uczestnika"
     terminy |o--o{ uczestnicy : "termin uczestnika"
@@ -334,6 +382,7 @@ erDiagram
     role ||--o{ uzytkownicy : "przypisana do konta"
     instytucje |o--o{ uzytkownicy : "konto macierzyste"
     klienci |o--o{ uzytkownicy : "konto klienta koncowego"
+    uzytkownicy ||--o{ sesje : "ma sesje"
     uzytkownicy ||--o{ uzytkownik_instytucja : "ma dostep do"
     instytucje ||--o{ uzytkownik_instytucja : "udostepniona kontu"
     wnioski ||--o{ przebieg_wniosku : "ma historie etapow"
@@ -356,8 +405,11 @@ Poza diagramem (tabele bez relacji z kluczem obcym): `szablony_maili`, `zgloszen
 
 Model danych nie jest już wyłącznie opisem w tym pliku. Ma wykonywalną, testowalną postać:
 
-- **`makieta/db/schema.sql`** definiuje strukturę: 31 tabel, klucze obce z regułami `ON DELETE CASCADE` tam, gdzie usunięcie rodzica ma sens (np. usunięcie wniosku kasuje jego uczestników i przebieg), ograniczenia `CHECK` dla wartości enumeratywnych (`wielkosc`, `status_kwalifikacji`, `poziom` uprawnienia, `etap` w zakresie 1-10) oraz indeksy pod typowe filtry (rok, instytucja, NIP, status zadania).
-- **`makieta/db/views.sql`** zawiera reguły wyliczeń jako widoki SQL: `v_warunki_aktywne` (aktualna wersja warunków prowizyjnych, D-22), `v_wniosek_finanse` (cały łańcuch finansowy wniosku, patrz [06. Model finansowy KFS](06-model-finansowy-kfs.md)), `v_klient_priorytet` (priorytet w Bazie klientów wg D-130) i `v_zakres_uzytkownika` (separacja danych, D-113, D-35, D-148).
+- **`makieta/db/schema.sql`** definiuje strukturę: 33 tabele, klucze obce z regułami `ON DELETE CASCADE` tam, gdzie usunięcie rodzica ma sens (np. usunięcie wniosku kasuje jego uczestników i przebieg), ograniczenia `CHECK` dla wartości enumeratywnych (`wielkosc`, `status_kwalifikacji`, `poziom` uprawnienia, `etap` w zakresie 1-10) oraz indeksy pod typowe filtry (rok, instytucja, NIP, status zadania).
+- **`makieta/db/views.sql`** zawiera reguły wyliczeń jako widoki SQL: `v_warunki_aktywne` (aktualna wersja warunków prowizyjnych, D-22), `v_wniosek_finanse` (cały łańcuch finansowy wniosku, patrz [06. Model finansowy KFS](06-model-finansowy-kfs.md)), `v_faktura_szczegoly` i `v_podsumowanie_roku` (niżej), `v_klient_priorytet` (priorytet w Bazie klientów wg D-130) i `v_zakres_uzytkownika` (separacja danych, D-113, D-35, D-148).
+- **`v_wniosek_finanse`** liczy teraz `przyznano`, wkład własny (jako resztę [D-184]), wybrany próg dofinansowania [D-171] oraz `podstawa_prowizji` ze znacznikiem dopłaty [D-174].
+- **`v_faktura_szczegoly`** [D-170]: faktura razem z klientem, liczbą wniosków, nazwami szkoleń i `okres_rozliczeniowy` (miesiąc daty wystawienia, także dla korekty [D-161]). Klient z `faktury.klient_id`, a gdy go brak, z wniosku. Szkolenia i liczba projektów są czytane z wniosków, nie kopiowane.
+- **`v_podsumowanie_roku`** [D-175]: miary roku pod dashboard. Lata przeniesione liczone z wniosków (`wnioski_zlozone`, `wnioski_pozytywne`), lata nieprzeniesione (2025) biorą same liczby z `podsumowania_historyczne`.
 
 **Dlaczego to ma znaczenie dla dokumentacji:**
 
@@ -439,7 +491,7 @@ Poniżej encje pogrupowane tak, jak w `schema.sql`: słowniki i konfiguracja, in
 | utworzono | data | |
 | utworzyl | tekst, nullable | Kto dodał zakładkę |
 
-Każdy wiersz to jedna zakładka "Dofinansowania RRRR". Nowy rok dodaje administrator przyciskiem na ekranie Zestawień (uprawnienie pola `admin.lata_zestawien`, sprawdzane w warstwie danych `assets/lata.js`, nie tylko w interfejsie [D-148]). Wniosku nie da się zapisać do roku bez zakładki.
+Każdy wiersz to jedna zakładka "Dofinansowania RRRR". Nowy rok dodaje administrator przyciskiem na ekranie Zestawień (uprawnienie pola `admin.lata_zestawien`, sprawdzane w warstwie danych `assets/lata.js`, nie tylko w interfejsie [D-148]). Wniosku nie da się zapisać do roku bez zakładki. Zakładkę dodaje administrator albo pracownik LDIT [D-165]. Wniosek bez roku (`wnioski.rok` = `NULL`) jest "nieprzypisany": usunięcie roku odpina wnioski (`ON DELETE SET NULL`), a nie usuwa.
 
 #### PROGI_DOFINANSOWANIA (`progi_dofinansowania`) [NOWA TABELA, D-131]
 
@@ -459,17 +511,33 @@ Realizuje D-131, koryguje D-59: progi 90/10 i 70/30 **nie są zaszyte w kodzie**
 | Pole | Typ | Uwagi |
 |---|---|---|
 | nazwa, skrot | tekst | Skrót jako etykieta zakładki w widoku IS |
-| nip, osoba_kontaktowa, email, telefon | tekst | Dane firmy i kontakt |
+| nip | tekst | |
+| strona_www | tekst | [D-166] |
+| osoba_kontaktowa, email, telefon | tekst | Główna osoba kontaktowa |
+| osoba_kontaktowa_2, email_2, telefon_2 | tekst | Druga osoba kontaktowa [D-166] |
+| osoba_kontaktowa_3, email_3, telefon_3 | tekst | Trzecia osoba kontaktowa [D-166]. Razem do trzech osób |
 | **siedziba_miejscowosc** | tekst | **Źródło pola "miejscowość" na certyfikacie** [D-99] |
-| opis_dzialalnosci | tekst | |
+| opis_dzialalnosci | tekst | [D-166] |
 | standard_godzinowy | tekst | Np. 9:30-20:00, środa/czwartek/piątek |
 | opiekun_ldit | tekst | |
 | **model_terminow** | enum | `kalendarz` / `z_gory` [D-142] |
 | aktywna | flaga | |
 
-Powiązania: nadrzędna wobec katalogu szkoleń, terminów, klientów (opcjonalnie), warunków prowizyjnych, faktur i użytkowników IS.
+Powiązania: nadrzędna wobec szkoleniowców, katalogu szkoleń, terminów, klientów (opcjonalnie), warunków prowizyjnych, faktur i użytkowników IS.
 
-**Rozjazd z wcześniejszą dokumentacją.** Poprzednia wersja tego pliku opisywała pola `dane_firmy` (grupa), `osoby_kontaktowe` (lista wielu kontaktów) i **`wzor_certyfikatu`** (plik z placeholderami, [D-98]). W `schema.sql` instytucja ma **jedną** `osoba_kontaktowa` (tekst), a kolumny na wzór certyfikatu **nie ma w ogóle** - moduł Certyfikaty jest w etapie III [12. Zakres i etapowanie](12-zakres-i-etapowanie.md) i jeszcze nie doczekał się tabeli. Do czasu jego budowy D-98 pozostaje wymaganiem docelowym, nieodwzorowanym w bieżącym schemacie.
+**Rozjazd z wcześniejszą dokumentacją.** Wzór certyfikatu (`wzor_certyfikatu`, [D-98]) nie ma kolumny w `schema.sql`: moduł Certyfikaty jest w etapie III [12. Zakres i etapowanie](12-zakres-i-etapowanie.md). Wzór ma wgrywać instytucja w formacie HTML z polami [D-199], numeracja certyfikatów ciągła w roku, osobna dla instytucji [D-200]. Do czasu budowy modułu pozostaje wymaganiem docelowym, nieodwzorowanym w schemacie.
+
+#### SZKOLENIOWIEC (`szkoleniowcy`) [NOWA TABELA, D-167]
+
+| Pole | Typ | Uwagi |
+|---|---|---|
+| instytucja_id | FK -> instytucje, `ON DELETE CASCADE` | Jedna instytucja ma wielu szkoleniowców (1 : N) |
+| imie, nazwisko | tekst, wymagane | |
+| telefon, email | tekst | Dane kontaktowe szkoleniowca |
+| specjalizacja | tekst, nullable | |
+| aktywny | flaga | |
+
+Szkoleniowiec jest zasobem instytucji, widocznym wyłącznie w jej kontekście (separacja wierszy, [D-177]). Indeks po `instytucja_id`.
 
 #### WARUNKI_PROWIZYJNE (wersjonowane, `warunki_prowizyjne`)
 
@@ -482,18 +550,11 @@ Powiązania: nadrzędna wobec katalogu szkoleń, terminów, klientów (opcjonaln
 | rodzaj_kumulacji | enum | `miesieczny` / `roczny` / `brak` (stała stawka) |
 | sposob_liczenia | enum | `od_calosci` / `od_nadwyzki` / `stala` |
 | stawka_stala | procent | Używana gdy `rodzaj_kumulacji = brak` |
+| **progi** | JSON (tekst) | Lista `[{"od": kwota, "st": stawka}]`, `CHECK (json_valid(progi) AND json_type(progi) = 'array')` [D-168] |
 
-Progi kwotowe (`próg -> stawka`) **nie są tu polem-listą**, tylko osobną, znormalizowaną tabelą `progi_prowizyjne`, opisaną niżej. Szczegóły semantyki w [07. Silnik prowizji](07-silnik-prowizji.md).
+Progi kwotowe (`od -> st`) leżą w kolumnie `progi` jako lista JSON [D-168]. Nowa wersja warunków działa od swojej daty obowiązywania, nigdy wstecz [D-162, D-23]. Szczegóły semantyki w [07. Silnik prowizji](07-silnik-prowizji.md).
 
-#### PROGI_PROWIZYJNE (`progi_prowizyjne`) [NOWA TABELA]
-
-| Pole | Typ | Uwagi |
-|---|---|---|
-| warunki_id | FK -> warunki_prowizyjne, `ON DELETE CASCADE` | |
-| od_kwoty | kwota | Dolna granica progu |
-| stawka | procent | Stawka obowiązująca od tej kwoty |
-
-Wcześniejsza dokumentacja opisywała progi jako pole `progi | lista` wewnątrz encji `WARUNKI_PROWIZYJNE`. W `schema.sql` jest to osobna tabela z indeksem po `(warunki_id, od_kwoty)`, żeby dało się szybko odnaleźć właściwy próg dla danej kwoty narastająco. Zmiana czysto techniczna, znaczenie biznesowe bez zmian.
+**Zlikwidowana tabela `progi_prowizyjne`.** Wcześniej progi były osobną, znormalizowaną tabelą (`warunki_id`, `od_kwoty`, `stawka`). Decyzja D-168 łączy je z warunkami: jedna tabela, jeden wiersz na wersję warunków. Koszt: progi nie są osobnymi wierszami, więc nie da się ich odpytać zwykłym `JOIN`, a poprawność listy pilnuje `CHECK json_valid`. Zysk: wersja warunków jest jednym atomowym rekordem, bez ryzyka progów osieroconych albo niekompletnych. Znaczenie biznesowe bez zmian.
 
 #### KATALOG_SZKOLEŃ (szablon, `katalog_szkolen`)
 
@@ -534,14 +595,17 @@ Dodawanie nowego planu przez IS jest swobodne. **Edycja istniejącego wymaga prz
 | numer_klienta | liczba | **Sekwencyjny w ramach roku**, trafia na fakturę [D-112] |
 | nazwa, nip | tekst | NIP jest kryterium wyszukiwania |
 | adres_siedziby | tekst | Do maila "dane do faktury" |
-| osoba_kontaktowa, telefon, email, miasto | tekst | |
+| osoba_kontaktowa, telefon, email | tekst | Główna osoba kontaktowa |
+| osoba_kontaktowa_2, telefon_2, email_2 | tekst | Druga osoba kontaktowa [D-169] |
+| osoba_kontaktowa_3, telefon_3, email_3 | tekst | Trzecia osoba kontaktowa [D-169]. Razem do trzech osób |
+| miasto | tekst | |
 | **wielkosc_przedsiebiorstwa** | enum | `mikro` / `mały` / `średni` / `duży` / `inny` |
-| liczba_zatrudnionych | liczba | Z formularza. **Do 9 osób = mikro** |
 | instytucja_id | FK -> instytucje, nullable | Instytucja, która **pozyskała** klienta jako pierwsza |
 | pup_id | FK -> urzedy_pracy, nullable | Właściwy urząd pracy |
 | **zainteresowany_naborem** | flaga | Wyznacza priorytet w Bazie klientów razem z datą końca naboru [D-130] |
+| utworzono | data | Początek biegu retencji danych [D-186] |
 
-Dane stałe w czasie. Dane zmienne siedzą we wniosku - i od warsztatu 04.09 mogą być tam **nadpisane** (patrz niżej, D-132/D-133).
+Dane stałe w czasie. **Liczba zatrudnionych przeniosła się z klienta do wniosku** [D-169], bo zmienia się w czasie i wyznacza wielkość przedsiębiorstwa (do 9 osób = mikro) na dzień wniosku. Hierarchia: instytucja -> klienci -> wnioski, katalog szkoleń -> wnioski, nabór jest dodatkiem do wniosku [D-169]. Dane zmienne siedzą we wniosku - i od warsztatu 04.09 mogą być tam **nadpisane** (patrz niżej, D-132/D-133).
 
 > **Paweł (1:58:07):** rozdzielenie danych stałych (telefon, dane kontaktowe) od danych finansowych wniosku.
 
@@ -569,18 +633,21 @@ Zasilane z istniejącej aplikacji do przewidywania naborów. System jest odbiorc
 
 #### FAKTURA (`faktury`)
 
+Faktury pochodzą z importu CSV systemu księgowego [D-163]. Szczegóły szkolenia nie są kopiowane do faktury: czyta je widok `v_faktura_szczegoly` z wniosków, które faktura rozlicza [D-170].
+
 | Pole | Typ | Uwagi |
 |---|---|---|
 | instytucja_id | FK -> instytucje | |
+| **klient_id** | FK -> klienci, nullable | Faktura po kliencie i instytucji [D-170] |
 | numer | tekst | |
-| kwota | kwota | Z importu CSV |
+| **rodzaj** | enum | `zwykla` / `korygujaca` [D-170] |
+| **faktura_pierwotna_id** | FK -> faktury (samo do siebie), nullable | Wypełnione wyłącznie dla korekty. `CHECK ((rodzaj = 'korygujaca') = (faktura_pierwotna_id IS NOT NULL))` |
+| kwota | kwota | Z importu CSV. Dla korekty ujemna |
 | vat | tekst | |
-| data_wystawienia, termin_platnosci | data | |
+| data_wystawienia, termin_platnosci | data | Korekta należy do okresu swojej daty wystawienia, nie faktury pierwotnej [D-161] |
 | status | tekst | |
 | liczba_projektow | liczba | Ile wniosków rozlicza ta faktura |
-| plik_pdf | plik | **Podgląd w systemie** [D-24] |
-
-Pola `vat`, `status` i `liczba_projektow` nie były opisane we wcześniejszej wersji tego rozdziału - dodane, bo są w `schema.sql`.
+| plik_pdf | plik | PDF z importu, **podgląd w systemie** [D-40] i dołączany do paczki ZIP [D-183] |
 
 #### WNIOSEK / PROJEKT (`wnioski`)
 
@@ -590,10 +657,14 @@ Kompletna specyfikacja pól finansowych i przykłady liczbowe w [06. Model finan
 |---|---|---|
 | klient_id, instytucja_id | FK, wymagane | |
 | pup_id, nabor_id, szkolenie_glowne_id, faktura_id | FK, opcjonalne | Numer faktury trzymany bezpośrednio przy wniosku [D-139] |
-| numer, rok | liczba / tekst | `rok` jest kluczem rocznika (klucz podziału na zestawienia 2025/2026/2027), przechowywany jako tekst, nie liczba |
+| numer | liczba | |
+| **rok** | tekst, FK -> lata_zestawien, nullable | Klucz zakładki rocznej. `NULL` = wniosek nieprzypisany, usunięcie roku odpina wnioski (`ON DELETE SET NULL`) [D-165] |
+| **prog_dofinansowania_id** | FK -> progi_dofinansowania, nullable | Próg wybrany we wniosku [D-171]. Reguła dobiera go sama z wielkości i daty, ręczny wybór wyłącza regułę (`prog_regula_aktywna`, [D-19]) |
 | **etap** | liczba 1-10 | Etapy wg `Etapy_procesu.png` [D-146]. Klient trafia do tabeli Wnioski dopiero od **etapu 3**, wartość domyślna nowego wniosku to `3` |
 | **wielkosc_przedsiebiorstwa** | enum, nullable | **Nadpisanie per wniosek** [D-132]. `NULL` = bierz z klienta. Kryterium liczby zatrudnionych bywa niewystarczające (obrót >2 mln EUR wyklucza mikro mimo małego zatrudnienia) |
+| **liczba_zatrudnionych** | liczba, nullable | Na dzień wniosku, wyznacza wielkość [D-169]. Przeniesiona z klienta |
 | **osoba_kontaktowa, telefon, email** | tekst, nullable | **Nadpisanie danych kontaktowych per wniosek** [D-133]. `NULL` = bierz z klienta |
+| **osoba_kontaktowa_2, telefon_2, email_2** | tekst, nullable | Druga osoba kontaktowa we wniosku. Razem do 2 osób i 2 adresów e-mail [D-169]. Po adresach e-mail wniosku dopasowywana jest korespondencja [D-178] |
 | **calkowita_wartosc_szkolenia** | kwota | Wyliczane (suma warunkowa po zakwalifikowanych uczestnikach, z widoku, nie z kolumny) [D-79] |
 | **koszt_calkowity_z_doplata** | kwota | **RĘCZNE** [D-134, odwraca D-64]. To jest zarazem **podstawa prowizji LDIT** [D-64] |
 | **kwota_doplaty_dodatkowej** | kwota, domyślnie 0 | **RĘCZNE** [D-63] |
@@ -606,11 +677,13 @@ Kompletna specyfikacja pól finansowych i przykłady liczbowe w [06. Model finan
 | data_wniosku | data | |
 | **data_wystawienia_faktury** | data | Domyślnie ostatni dzień szkolenia, edytowalna. **Wyznacza okres rozliczeniowy prowizji** [D-13] |
 | data_aktualizacji | data | Automatyczna |
+| **wklad_wlasny** | kwota, nullable | Domyślnie reszta `koszt_calkowity - przyznano`, **nadpisywalna ręcznie** [D-172], liczona od kosztu uznanego przez urząd [D-173]. Ma parę `wklad_regula_aktywna` + "Przywróć regułę" |
+| **doplata_na_fakturze_kfs** | flaga, domyślnie prawda | Znacznik przy dopłacie [D-174]. `1` = dopłata w podstawie prowizji (`podstawa_prowizji` w widoku) |
 | **prowizja_regula_aktywna** | flaga, domyślnie prawda | Licz wg warunków IS. Nadpisanie kasuje regułę, "Przywróć regułę" ją odtwarza [D-16, D-19] |
 | **prowizja_typ_nadpisania** | enum, nullable | `procent` albo `kwota` [D-136, koryguje D-21]. `NULL` = brak nadpisania, licz z warunków instytucji |
 | **prowizja_wartosc** | liczba, nullable | Interpretacja zależy od `prowizja_typ_nadpisania`. Nadpisanie jest **wyłącznie dla administratora** [D-93] i **wlicza się do puli progowej** miesięcznej/rocznej instytucji [D-137] |
 
-**Rozjazd z wcześniejszą dokumentacją.** Poprzednia wersja tej tabeli opisywała: `koszt_calkowity` jako pole ręczne i `koszt_calkowity_z_doplata` jako wyliczane (kierunek sprzed D-134); `przyznano` jako "wyliczane, nieedytowalne" (sprzed D-135); osobne kolumny `prowizja_procent` i `prowizja_kwota` (sprzed D-136, gdy nadpisanie było zawsze procentowe). Żadne z tych trzech pól nie istnieje już w tej postaci w `schema.sql` - zastąpione przez `prowizja_typ_nadpisania` + `prowizja_wartosc`. Pole `wklad_wlasny_procent` i `doplata_standard`, opisane wcześniej jako osobne kolumny wyliczane, **nie mają odpowiednika w schemacie** - wkład własny jest liczony wyłącznie jako różnica `koszt_calkowity_efektywny - przyznano_efektywny` w widoku `v_wniosek_finanse` i w kodzie ekranu wniosku, nie jest przechowywany jako osobna kolumna. Szczegóły w [06. Model finansowy KFS](06-model-finansowy-kfs.md).
+**Rozjazd z wcześniejszą dokumentacją.** Poprzednia wersja tej tabeli opisywała: `koszt_calkowity` jako pole ręczne i `koszt_calkowity_z_doplata` jako wyliczane (kierunek sprzed D-134); `przyznano` jako "wyliczane, nieedytowalne" (sprzed D-135); osobne kolumny `prowizja_procent` i `prowizja_kwota` (sprzed D-136). Żadne z nich nie istnieje w tej postaci w `schema.sql`. **Wkład własny ma teraz kolumnę** `wklad_wlasny` z flagą reguły [D-172], a domyślną wartość liczy widok `v_wniosek_finanse` jako resztę (`wklad_wlasny_wyliczony`, [D-184]). Pole `doplata_standard` nie ma odpowiednika w schemacie. Szczegóły w [06. Model finansowy KFS](06-model-finansowy-kfs.md).
 
 #### UCZESTNIK_WNIOSKU (`uczestnicy`)
 
@@ -623,7 +696,8 @@ Kompletna specyfikacja pól finansowych i przykłady liczbowe w [06. Model finan
 | termin_id | FK -> terminy, nullable | Przypisany termin realizacji |
 | kwota | kwota | Cena szkolenia dla tej osoby |
 | **status_kwalifikacji** | enum | `zakwalifikowany` / `niezakwalifikowany` [D-61] |
-| powod_niezakwalifikowania | tekst | Uzupełniane, gdy status = `niezakwalifikowany`. Nie było opisane we wcześniejszej wersji tego rozdziału |
+| powod_niezakwalifikowania | tekst | Uzupełniane, gdy status = `niezakwalifikowany` [D-197] |
+| utworzono | data | Początek biegu retencji danych osobowych [D-186] |
 
 **Reguła:** do sumy `calkowita_wartosc_szkolenia` wchodzą wyłącznie uczestnicy zakwalifikowani [D-61, D-79].
 
@@ -675,7 +749,9 @@ Tu egzekwowane jest, że pracownik LDIT nie widzi zysków firmy ani stawek prowi
 
 | Pole | Typ | Uwagi |
 |---|---|---|
-| login, haslo_demo | tekst | W makiecie jawne hasło demonstracyjne, nie hash produkcyjny |
+| login | tekst, unikalny | |
+| haslo_skrot, haslo_sol | tekst | Skrót hasła z solą, nigdy jawne hasło (`assets/haslo.js`). Docelowo bcrypt z frameworka [D-176] |
+| nieudane_proby, zablokowane_do | liczba / data | Blokada czasowa po serii nieudanych prób (5 prób, 15 minut) |
 | imie_nazwisko | tekst | |
 | rola_id | FK -> role | |
 | instytucja_id | FK -> instytucje, nullable | Konto pracownika IS: instytucja macierzysta |
@@ -683,6 +759,17 @@ Tu egzekwowane jest, że pracownik LDIT nie widzi zysków firmy ani stawek prowi
 | wszystkie_instytucje | flaga | Konto bez ograniczenia widoku, np. admin LDIT [D-113] |
 | ostatnie_logowanie, dwa_fa | tekst / flaga | |
 | zablokowane | flaga | Admin LDIT blokuje konta IS [D-126] |
+
+#### SESJE (`sesje`) [NOWA TABELA]
+
+| Pole | Typ | Uwagi |
+|---|---|---|
+| token | tekst, klucz główny | Przeglądarka trzyma wyłącznie token |
+| uzytkownik_id | FK -> uzytkownicy, `ON DELETE CASCADE` | |
+| utworzono, wygasa | data/czas | Wygaśnięcie po 8 godzinach |
+| ostatnia_aktywnosc | data/czas | Wygaśnięcie po 30 minutach bezczynności |
+
+Rola i zakres są przy każdym odczycie brane z bazy, więc edycja pamięci przeglądarki nie podnosi uprawnień [D-179]. Wzorzec tabeli `sessions` z Open Mercato [D-176]. Ograniczenia makiety: [10. Bezpieczeństwo i RODO](10-bezpieczenstwo-i-rodo.md).
 
 #### UŻYTKOWNIK_INSTYTUCJA (`uzytkownik_instytucja`) [NOWA TABELA]
 
@@ -730,8 +817,9 @@ Moduł zadań i powiadomień **wrócił do zakresu** [D-140], po tym jak wcześn
 | firma, nip | tekst | |
 | instytucja_id | FK -> instytucje, nullable, `ON DELETE CASCADE` | |
 | osob | liczba | Liczba osób zgłoszonych |
-| szkolenie | tekst | |
+| szkolenie | tekst | Wybór z katalogu szkoleń [D-188] |
 | kontakt | tekst | |
+| **wypelnil** | enum | `klient` / `handlowiec`, system zapisuje kto wypełnił [D-181] |
 | status | enum | `oczekuje` / `zaakceptowany` / `odrzucony` |
 
 To jest **bramka ręcznej akceptacji formularza elektronicznego przed wejściem rekordu do bazy** - mechanizm anty-spam [D-105]. Rekordy oczekujące zasilają licznik "wniosków oczekujących na akceptację" pokazywany w interfejsie [D-140]. Po akceptacji rekord przestaje być formularzem oczekującym i staje się parą klient + wniosek.
@@ -772,6 +860,18 @@ Nazwa kolumny w schemacie to `skrzynka`, nie `skrzynka_zrodlowa` jak we wcześni
 | waga | tekst | |
 
 **Rozjazd z wcześniejszą dokumentacją.** Poprzednia wersja opisywała `podmiot` jako `ref` (klucz obcy do instytucji lub klienta). W `schema.sql` jest to zwykły `TEXT` - świadomy wybór, żeby zgłoszenie zostało czytelne nawet po ewentualnym usunięciu powiązanego rekordu. **Widoczne wyłącznie dla administratora i pracowników LDIT** [D-107]. Nie jest podzakładką instytytucji ani klienta.
+
+#### PODSUMOWANIA_HISTORYCZNE (`podsumowania_historyczne`) [NOWA TABELA, D-175]
+
+| Pole | Typ | Uwagi |
+|---|---|---|
+| rok | tekst | Rok, którego wniosków nie przenosimy (np. 2025) [D-160] |
+| instytucja_id | FK -> instytucje, nullable, `ON DELETE CASCADE` | `NULL` = całość |
+| miara | enum | `wnioski_zlozone` / `wnioski_pozytywne` / `kwota_przyznana` / `obrot` / `prowizja` |
+| wartosc | liczba | |
+| zrodlo | tekst, nullable | Skąd liczba |
+
+Unikalność `(rok, instytucja_id, miara)`. Źródło porównań rok do roku na dashboardzie dla lat nieprzeniesionych, same liczby bez wniosków [D-129, D-160, D-175].
 
 #### REJESTR_AKTYWNOŚCI, LOGOWANIA, SZABLONY_MAILI, CELE, META
 

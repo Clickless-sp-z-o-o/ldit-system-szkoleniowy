@@ -10,7 +10,7 @@ Platforma łącząca firmę pozyskującą dofinansowania (LDIT), współpracują
 | **Warsztat doprecyzowujący** | 04.09.2026, 2h16m |
 | **Termin realizacji** | ok. 2 miesiące, gotowe przed styczniem 2027 |
 | **Wycena wstępna** | 12-18 tys. PLN (niewiążąca, do potwierdzenia po makiecie) |
-| **Status** | makieta v2 działa na bazie SQLite, przed walidacją konfiguratora prowizji przez klienta |
+| **Status** | makieta v2 działa na bazie SQLite. Runda decyzji 29.09.2026 rozstrzygnęła 38 punktów panelu (D-161 - D-206), 27 z nich czeka na potwierdzenie klienta. Stos docelowy: Open Mercato [D-176]. Przed walidacją konfiguratora prowizji przez klienta |
 
 ---
 
@@ -70,8 +70,8 @@ flowchart TD
 ### Rejestry
 | Plik | Zawartość |
 |---|---|
-| [13. Rejestr decyzji](13-rejestr-decyzji.md) | 160 decyzji z siłą i uzasadnieniem |
-| [14. Pytania otwarte](14-pytania-otwarte.md) | Co wymaga domknięcia, kto odpowiada, co blokuje |
+| [13. Rejestr decyzji](13-rejestr-decyzji.md) | 206 decyzji (D-01 - D-206) z siłą i uzasadnieniem, w tym 46 z rundy 29.09.2026 |
+| [14. Pytania otwarte](14-pytania-otwarte.md) | 20 pytań nadal otwartych, 38 rozstrzygniętych 29.09.2026 (z odnośnikiem do D-xxx), zero blokad |
 | [15. Ryzyka](15-ryzyka.md) | Rejestr ryzyk z oceną i mitygacją |
 | [16. Słownik](16-slownik.md) | Pojęcia domenowe KFS i terminologia projektu |
 
@@ -84,7 +84,7 @@ flowchart TD
 
 ## Cztery blokady
 
-Bez ich rozstrzygnięcia odpowiednie moduły nie mogą być projektowane.
+Stan po rundzie 29.09.2026: wszystkie cztery są rozstrzygnięte. P-25 przez D-177, a P-01, P-02 i P-09 (D-164, D-162, D-163) tylko **wstępnie, wyborem wykonawcy, do potwierdzenia przez klienta**. Do tego czasu odpowiednie moduły nie są w pełni odblokowane.
 
 ```mermaid
 flowchart LR
@@ -112,7 +112,7 @@ Szczegóły i pełna lista kto komu co jest winien: [14. Pytania otwarte](14-pyt
 | Schemat bazy | [`makieta/db/schema.sql`](../makieta/db/schema.sql) | **Źródło prawdy o strukturze danych** [D-151] |
 | Reguły wyliczeń | [`makieta/db/views.sql`](../makieta/db/views.sql) | Pola wyliczane zapisane jako widoki SQL |
 | Dokumentacja jako strona | [`dokumentacja/index.html`](../dokumentacja/index.html) | Ta sama treść w formie klikalnej, do pokazania klientowi |
-| **Panel decyzyjny** | [`dokumentacja/sekcje/17-panel-decyzji.html`](../dokumentacja/sekcje/17-panel-decyzji.html) | 38 punktów do rozstrzygnięcia, każdy wariant z konsekwencjami. Wybory składają się w podsumowanie do wysłania |
+| **Panel decyzyjny** | [`dokumentacja/sekcje/17-panel-decyzji.html`](../dokumentacja/sekcje/17-panel-decyzji.html) | Po rundzie 29.09.2026 pusty (0 otwartych). Warianty i konsekwencje 38 rozstrzygniętych punktów zostały w `decyzje.js` jako archiwum, a wyniki są w rejestrze decyzji D-161 - D-206 |
 
 ---
 
