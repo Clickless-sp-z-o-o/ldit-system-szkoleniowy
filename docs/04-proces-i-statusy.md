@@ -156,19 +156,21 @@ stateDiagram-v2
 
 ---
 
-## Kolorowanie wierszy [D-01, TWARDA; paleta zaktualizowana D-123]
+## Kolorowanie wierszy [D-01, TWARDA; paleta D-123, kody HEX z Excela D-158]
 
-Kolor obejmuje **cały wiersz** i zmienia się **automatycznie** przy zmianie statusu. Na warsztacie ustalono paletę trójbarwną (czerwony/zielony/fioletowy). **2026-09-04 klient rozszerzył ją do pięciu stanów** [D-123].
+Kolor obejmuje **cały wiersz** i zmienia się **automatycznie** przy zmianie statusu. Na warsztacie ustalono paletę trójbarwną (czerwony/zielony/fioletowy). **2026-09-04 klient rozszerzył ją do pięciu stanów** [D-123], a **2026-09-29 podał dokładne kody HEX z obecnego Excela** [D-158].
 
-### Paleta obowiązująca (5 stanów)
+### Paleta obowiązująca (5 stanów, kody z Excela klienta) [D-158]
 
-| Status | Kolor | Tło (hex) | Tekst (hex) | Wariant alternatywny |
-|---|---|---|---|---|
-| **Czekamy** (oczekuje na decyzję) | biały | `#ffffff` | `#334155` | - |
-| **Pozytywny** (decyzja pozytywna) | zielony delikatny | `#dcf3e3` | `#166534` | - |
-| **Negatywny** (decyzja negatywna) | pomarańczowy intensywny | `#f6a94a` | `#5c2c00` | jasny czerwony `#f4b4b4` |
-| **Rezygnacja** | żółty | `#fce98a` | `#6b5900` | - |
-| **Rozliczone** (kompletnie) | granatowy z delikatnym fioletem | `#3a3f72` | `#ffffff` | granatowy z szarym `#39435a` |
+| Status | Kolor | Tło (hex) | Tekst (hex) |
+|---|---|---|---|
+| **Czekamy** (oczekuje na decyzję) | biały | `#FFFFFF` | `#334155` |
+| **Pozytywna** (decyzja pozytywna) | zielony | `#C6E0B4` | `#1E3A10` |
+| **Negatywna** (decyzja negatywna) | łososiowy | `#F8CBAD` | `#5C2400` |
+| **Rezygnacja** | żółty | `#FFE699` | `#5C4A00` |
+| **Rozliczony** (kompletnie) | jasnoniebieski | `#B4C6E7` | `#1F3864` |
+
+Tła są dokładnie tymi kodami, których zespół używa dziś w Excelu. Kolor tekstu dobrał wykonawca tak, żeby na każdym tle był czytelny. Poprzednia paleta z D-123 (pomarańcz `#f6a94a`, granat `#3a3f72`) przestaje obowiązywać.
 
 Osobny kontekst: klient z aktywnym naborem w widoku "Baza klientów" (dawniej "Niezłożone") wyróżniany jest zielonym akcentem na krawędzi wiersza, niezależnie od statusu decyzji.
 
@@ -176,7 +178,11 @@ Osobny kontekst: klient z aktywnym naborem w widoku "Baza klientów" (dawniej "N
 
 > **Aktualizacja 2026-09-04 (D-123).** Klient doprecyzował kolory: negatywny zmienia się z czerwonego na bardziej intensywny pomarańczowy (ewentualnie jasny czerwony), dochodzi żółty dla rezygnacji i biały dla stanu "czekamy", a rozliczone przechodzi z fioletu na granatowy z domieszką delikatnego fioletu (albo granatowy z szarym).
 
-**Uwaga dostępnościowa:** kolor jest dodatkiem do statusu tekstowego, nie jego zamiennikiem. Nazwane statusy muszą być widoczne obok kolorów. Wiersz "rozliczone" ma ciemne tło, więc tekst na nim jest jasny, a nazwany status pozostaje czytelny.
+> **Bartek (feedback 29.09.2026):** "Moim zdaniem wygląda to czytelnie, więc w dobrym kierunku idziemy. Zmienimy jedynie kolory na identyczne jakimi operowaliśmy teraz (statusy)."
+
+> **Aktualizacja 2026-09-29 (D-158).** Kody HEX: Pozytywna `#C6E0B4`, Negatywna `#F8CBAD`, Rozliczony `#B4C6E7`, Rezygnacja `#FFE699`. Wszystkie cztery tła są jasne, więc tekst na każdym wierszu jest ciemny.
+
+**Uwaga dostępnościowa:** kolor jest dodatkiem do statusu tekstowego, nie jego zamiennikiem. Nazwane statusy muszą być widoczne obok kolorów.
 
 ---
 

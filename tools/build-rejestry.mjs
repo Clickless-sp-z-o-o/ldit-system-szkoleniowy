@@ -127,6 +127,7 @@ function wstaw(sciezka, kotwica, blok) {
 
 const warsztat0409 = decyzje("17-warsztat-2026-09-04.md", 125, 147);
 const makieta = decyzje("13-rejestr-decyzji.md", 148, 157);
+const feedback2909 = decyzje("13-rejestr-decyzji.md", 158, 160);
 
 const blokDecyzji =
   "  <h2>Warsztat doprecyzowujący (2026-09-04)</h2>\n" +
@@ -146,7 +147,14 @@ const blokDecyzji =
   "    mówiły, <b>co</b> system ma robić, ale nie rozstrzygały, <b>gdzie</b> ma to być egzekwowane.\n" +
   "    Szerzej: <a href=\"16-od-makiety.html\" onclick=\"if(parent!==window){parent.docNav('16-od-makiety');return false}\">Od makiety do aplikacji</a>.\n" +
   "  </div>\n" +
-  tabelaDecyzji(makieta, "Dotyczy");
+  tabelaDecyzji(makieta, "Dotyczy") + "\n\n" +
+  "  <h2>Feedback klienta po makiecie na bazie danych (2026-09-29)</h2>\n" +
+  '  <div class="callout ok">\n' +
+  '    <span class="ct">' + feedback2909.length + " decyzje klienta po obejrzeniu makiety z zespołem</span>\n" +
+  "    Ocena ogólna: czytelnie, kierunek dobry. Zmiany: kolory statusów identyczne z Excelem,\n" +
+  "    zakładki roczne dodawane samodzielnie, test migracji tylko na danych z 2026 roku.\n" +
+  "  </div>\n" +
+  tabelaDecyzji(feedback2909, "Dotyczy");
 
 wstaw(join(SEKCJE, "13-decyzje.html"),
       "<h2>Decyzje unieważnione w trakcie warsztatu</h2>", blokDecyzji);
@@ -175,5 +183,6 @@ const blokPytan =
 
 wstaw(join(SEKCJE, "12-pytania-ryzyka.html"), "<h3>Podsumowanie pytań</h3>", blokPytan);
 
-console.log("Decyzje: D-125 - D-147 (" + warsztat0409.length + "), D-148 - D-157 (" + makieta.length + ")");
+console.log("Decyzje: D-125 - D-147 (" + warsztat0409.length + "), D-148 - D-157 (" + makieta.length +
+            "), D-158 - D-160 (" + feedback2909.length + ")");
 console.log("Pytania: P-55 - P-58 (" + pytania0409.length + "), P-59 - P-63 (" + pytaniaMakiety.length + ")");

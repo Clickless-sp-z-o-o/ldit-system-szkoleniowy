@@ -12,9 +12,9 @@
     <div class="doc-kicker">Rejestry</div>
     <h1 class="doc-title">Rejestr decyzji</h1>
     <p class="doc-lead">
-157 decyzji projektowych w kolejności chronologicznej: 120 z warsztatu 25.08.2026,
-      4 uzupełnienia dopisane po nim, 23 z warsztatu doprecyzowującego 04.09.2026 i 10 decyzji
-      wykonawczych z budowy makiety na bazie danych 23.09.2026. Każda ma siłę (twarda, wstępna,
+160 decyzji projektowych w kolejności chronologicznej: 120 z warsztatu 25.08.2026,
+      4 uzupełnienia dopisane po nim, 23 z warsztatu doprecyzowującego 04.09.2026, 10 decyzji
+      wykonawczych z budowy makiety na bazie danych 23.09.2026 i 3 z feedbacku klienta 29.09.2026. Każda ma siłę (twarda, wstępna,
       odrzucona, odroczona), autora potrzeby lub rozwiązania oraz znacznik czasu z nagrania,
       jeśli padła na warsztacie.
     </p>
@@ -350,6 +350,23 @@
       </tbody>
     </table>
   </div>
+
+  <h2>Feedback klienta po makiecie na bazie danych (2026-09-29)</h2>
+  <div class="callout ok">
+    <span class="ct">3 decyzje klienta po obejrzeniu makiety z zespołem</span>
+    Ocena ogólna: czytelnie, kierunek dobry. Zmiany: kolory statusów identyczne z Excelem,
+    zakładki roczne dodawane samodzielnie, test migracji tylko na danych z 2026 roku.
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Dotyczy</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref new">D-158</span></td><td><b>Kolory statusów identyczne z obecnym Excelem</b>, kody HEX podane przez klienta: Pozytywna <code>#C6E0B4</code>, Negatywna <code>#F8CBAD</code>, Rozliczony <code>#B4C6E7</code>, Rezygnacja <code>#FFE699</code>. Czekamy pozostaje biały</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td><b>koryguje <span class="ref new">D-123</span></b></td></tr>
+        <tr><td><span class="ref new">D-159</span></td><td><b>Zakładki roczne Dofinansowań (2025, 2026, 2027 i kolejne) administrator dodaje sam</b>, bez wykonawcy. Lata są wierszami tabeli <code>lata_zestawien</code>, wniosek może należeć tylko do roku, który ma zakładkę</td><td><span class="pill tw">TWARDA</span></td><td>[K] potrzeba, [W] rozwiązanie</td><td>uszczegółowia <span class="ref new">D-129</span>, <span class="ref">D-55</span></td></tr>
+        <tr><td><span class="ref new">D-160</span></td><td><b>Test migracji obejmuje wyłącznie dane z 2026 roku.</b> Zespół ma najpierw oswoić się z systemem na bieżącym roczniku. Zakładka 2025 w makiecie ma dane przykładowe, 2027 jest pusta</td><td><span class="pill tw">TWARDA</span></td><td>[K]</td><td><b>koryguje <span class="ref new">D-129</span></b> (tam: brak migracji danych historycznych)</td></tr>
+      </tbody>
+    </table>
+  </div>
   <!-- rejestr:do -->
 
   <h2>Decyzje unieważnione w trakcie warsztatu</h2>
@@ -389,11 +406,11 @@
     <table class="t">
       <thead><tr><th>Kategoria</th><th>Liczba</th></tr></thead>
       <tbody>
-        <tr><td>TWARDA (w tym warianty typu "TWARDA co do zasady")</td><td class="num">125</td></tr>
+        <tr><td>TWARDA (w tym warianty typu "TWARDA co do zasady")</td><td class="num">128</td></tr>
         <tr><td>WSTĘPNA</td><td class="num">23</td></tr>
         <tr><td>ODRZUCONA / wykluczenie</td><td class="num">7</td></tr>
         <tr><td>ODROCZONA bez decyzji</td><td class="num">2</td></tr>
-        <tr><td><b>Razem</b></td><td class="num"><b>157</b></td></tr>
+        <tr><td><b>Razem</b></td><td class="num"><b>160</b></td></tr>
       </tbody>
     </table>
   </div>
@@ -406,6 +423,7 @@
         <tr><td>Uzupełnienia po pierwszym warsztacie</td><td>D-121 &ndash; D-124</td><td class="num">4</td></tr>
         <tr><td>Warsztat doprecyzowujący 04.09.2026</td><td>D-125 &ndash; D-147</td><td class="num">23</td></tr>
         <tr><td>Budowa makiety na bazie danych 23.09.2026</td><td>D-148 &ndash; D-157</td><td class="num">10</td></tr>
+        <tr><td>Feedback klienta 29.09.2026</td><td>D-158 &ndash; D-160</td><td class="num">3</td></tr>
       </tbody>
     </table>
   </div>

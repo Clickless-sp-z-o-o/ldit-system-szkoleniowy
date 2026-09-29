@@ -275,6 +275,19 @@ Z osiemnastu ekranów makiety **tylko siedem w ogóle czytało informację o rol
 pytał o nią warstwy danych. To jest ten sam błąd, przed którym ostrzega [R-01]: separacja
 traktowana jako sprawa wyglądu, a nie dostępu.
 
+## Feedback klienta po makiecie na bazie danych (2026-09-29): D-158 - D-160
+
+Klient obejrzał makietę z zespołem. Ogólna ocena: czytelnie, kierunek dobry, obawa dotyczy głównie
+przyzwyczajenia się do wyglądu innego niż Excel.
+
+> **Bartek (feedback 29.09.2026):** "Moim zdaniem wygląda to czytelnie, więc w dobrym kierunku idziemy. Zmienimy jedynie kolory na identyczne jakimi operowaliśmy teraz (statusy)."
+
+| ID | Decyzja | Siła | Kto | Dotyczy |
+|---|---|---|---|---|
+| **D-158** | **Kolory statusów identyczne z obecnym Excelem**, kody HEX podane przez klienta: Pozytywna `#C6E0B4`, Negatywna `#F8CBAD`, Rozliczony `#B4C6E7`, Rezygnacja `#FFE699`. Czekamy pozostaje biały | TWARDA | [K] | **koryguje D-123** |
+| **D-159** | **Zakładki roczne Dofinansowań (2025, 2026, 2027 i kolejne) administrator dodaje sam**, bez wykonawcy. Lata są wierszami tabeli `lata_zestawien`, wniosek może należeć tylko do roku, który ma zakładkę | TWARDA | [K] potrzeba, [W] rozwiązanie | uszczegółowia D-129, D-55 |
+| **D-160** | **Test migracji obejmuje wyłącznie dane z 2026 roku.** Zespół ma najpierw oswoić się z systemem na bieżącym roczniku. Zakładka 2025 w makiecie ma dane przykładowe, 2027 jest pusta | TWARDA | [K] | **koryguje D-129** (tam: brak migracji danych historycznych) |
+
 ---
 
 ## Decyzje unieważnione w trakcie warsztatu
@@ -303,11 +316,11 @@ traktowana jako sprawa wyglądu, a nie dostępu.
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 125 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 128 |
 | WSTĘPNA | 23 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **157** |
+| **Razem** | **160** |
 
 Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**.
 
@@ -319,6 +332,7 @@ Skąd te liczby:
 | Uzupełnienia po pierwszym warsztacie | D-121 - D-124 | 4 |
 | Warsztat doprecyzowujący 04.09.2026 | D-125 - D-147 | 23 |
 | Budowa makiety na bazie danych 23.09.2026 | D-148 - D-157 | 10 |
+| Feedback klienta 29.09.2026 | D-158 - D-160 | 3 |
 
 Warsztat 04.09 przyniósł 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md). Runda budowy makiety nie odwróciła żadnej decyzji klienta, tylko rozstrzygnęła, gdzie ustalenia mają być egzekwowane.
 

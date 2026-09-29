@@ -12,7 +12,7 @@ Model wypracowany na warsztacie, w kilku miejscach na żywo skorygowany. Wykonaw
 
 ## Diagram encji
 
-Diagram odzwierciedla `makieta/db/schema.sql` (30 tabel). Krotność `||--o{` oznacza relację obowiązkową (klucz obcy `NOT NULL`), `|o--o{` oznacza relację opcjonalną (klucz obcy dopuszcza `NULL`).
+Diagram odzwierciedla `makieta/db/schema.sql` (31 tabel). Krotność `||--o{` oznacza relację obowiązkową (klucz obcy `NOT NULL`), `|o--o{` oznacza relację opcjonalną (klucz obcy dopuszcza `NULL`).
 
 ```mermaid
 erDiagram
@@ -21,6 +21,13 @@ erDiagram
         string nazwa
         string wojewodztwo
         string powiat
+    }
+
+    lata_zestawien {
+        string rok PK "cztery cyfry, np. 2026"
+        string opis
+        string utworzono
+        string utworzyl
     }
 
     progi_dofinansowania {
@@ -309,6 +316,7 @@ erDiagram
     instytucje ||--o{ klient_instytucja : "widzi klienta"
     urzedy_pracy ||--o{ nabory : "oglasza"
     instytucje ||--o{ faktury : "wystawiona dla"
+    lata_zestawien ||--o{ wnioski : "zakladka roczna"
     klienci ||--o{ wnioski : "sklada"
     instytucje ||--o{ wnioski : "obsluguje"
     urzedy_pracy |o--o{ wnioski : "rozpatruje"
@@ -346,7 +354,7 @@ Poza diagramem (tabele bez relacji z kluczem obcym): `szablony_maili`, `zgloszen
 
 Model danych nie jest już wyłącznie opisem w tym pliku. Ma wykonywalną, testowalną postać:
 
-- **`makieta/db/schema.sql`** definiuje strukturę: 30 tabel, klucze obce z regułami `ON DELETE CASCADE` tam, gdzie usunięcie rodzica ma sens (np. usunięcie wniosku kasuje jego uczestników i przebieg), ograniczenia `CHECK` dla wartości enumeratywnych (`wielkosc`, `status_kwalifikacji`, `poziom` uprawnienia, `etap` w zakresie 1-10) oraz indeksy pod typowe filtry (rok, instytucja, NIP, status zadania).
+- **`makieta/db/schema.sql`** definiuje strukturę: 31 tabel, klucze obce z regułami `ON DELETE CASCADE` tam, gdzie usunięcie rodzica ma sens (np. usunięcie wniosku kasuje jego uczestników i przebieg), ograniczenia `CHECK` dla wartości enumeratywnych (`wielkosc`, `status_kwalifikacji`, `poziom` uprawnienia, `etap` w zakresie 1-10) oraz indeksy pod typowe filtry (rok, instytucja, NIP, status zadania).
 - **`makieta/db/views.sql`** zawiera reguły wyliczeń jako widoki SQL: `v_warunki_aktywne` (aktualna wersja warunków prowizyjnych, D-22), `v_wniosek_finanse` (cały łańcuch finansowy wniosku, patrz [06. Model finansowy KFS](06-model-finansowy-kfs.md)), `v_klient_priorytet` (priorytet w Bazie klientów wg D-130) i `v_zakres_uzytkownika` (separacja danych, D-113, D-35, D-148).
 
 **Dlaczego to ma znaczenie dla dokumentacji:**
@@ -419,6 +427,17 @@ Poniżej encje pogrupowane tak, jak w `schema.sql`: słowniki i konfiguracja, in
 | powiat | tekst | |
 
 340 urzędów w bazie, źródło naborów.
+
+#### LATA_ZESTAWIEN (`lata_zestawien`) [NOWA TABELA, D-159]
+
+| Pole | Typ | Uwagi |
+|---|---|---|
+| rok | tekst, klucz główny | Dokładnie cztery cyfry (`CHECK`). Na nim wisi klucz obcy `wnioski.rok` |
+| opis | tekst, nullable | Notka widoczna na pustej zakładce, np. "dane przykładowe" |
+| utworzono | data | |
+| utworzyl | tekst, nullable | Kto dodał zakładkę |
+
+Każdy wiersz to jedna zakładka "Dofinansowania RRRR". Nowy rok dodaje administrator przyciskiem na ekranie Zestawień (uprawnienie pola `admin.lata_zestawien`, sprawdzane w warstwie danych `assets/lata.js`, nie tylko w interfejsie [D-148]). Wniosku nie da się zapisać do roku bez zakładki.
 
 #### PROGI_DOFINANSOWANIA (`progi_dofinansowania`) [NOWA TABELA, D-131]
 
@@ -825,3 +844,5 @@ Nawigacja: **Zestawienia -> 2025 / 2026 / 2027** jako drzewo w lewym menu [D-55]
 W `schema.sql` kolumna `wnioski.rok` jest typu `TEXT`, nie liczbowego - **filtr po roku na jednej tabeli**, zgodnie z rekomendacją poniżej, a nie osobne fizyczne zbiory danych. Numeracja klientów (`numer_klienta`) jest roczna, ale klient i jego korespondencja są ciągłe w czasie, więc `klienci` nie ma kolumny `rok`.
 
 Nierozstrzygnięte pierwotnie: czy to osobne widoki, filtr po roku, czy fizycznie osobne zbiory danych. **Rozstrzygnięcie zaimplementowane:** filtr po roku na jednej tabeli `wnioski`.
+
+**Aktualizacja 2026-09-29 [D-159, D-160].** Lista lat przestała być zaszyta w kodzie ekranu. Leży w tabeli `lata_zestawien`, a `wnioski.rok` jest do niej kluczem obcym. W makiecie są trzy zakładki: 2025 (dane przykładowe), 2026 (rok bieżący, jedyny objęty testem migracji z Excela) i 2027 (pusta). Kolejny rok administrator dodaje sam.

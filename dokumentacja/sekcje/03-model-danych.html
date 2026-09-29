@@ -35,6 +35,13 @@ erDiagram
         string powiat
     }
 
+    lata_zestawien {
+        string rok PK "cztery cyfry, np. 2026"
+        string opis
+        string utworzono
+        string utworzyl
+    }
+
     progi_dofinansowania {
         string id PK
         string wielkosc "mikro/maly/sredni/duzy/inny"
@@ -321,6 +328,7 @@ erDiagram
     instytucje ||--o{ klient_instytucja : "widzi klienta"
     urzedy_pracy ||--o{ nabory : "oglasza"
     instytucje ||--o{ faktury : "wystawiona dla"
+    lata_zestawien ||--o{ wnioski : "zakladka roczna"
     klienci ||--o{ wnioski : "sklada"
     instytucje ||--o{ wnioski : "obsluguje"
     urzedy_pracy |o--o{ wnioski : "rozpatruje"

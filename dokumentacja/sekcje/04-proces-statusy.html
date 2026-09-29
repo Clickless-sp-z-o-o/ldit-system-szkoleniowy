@@ -13,7 +13,8 @@
     <h1 class="doc-title">Proces i statusy</h1>
     <p class="doc-lead">
       Ścieżka od leada do rozliczenia, statusy funkcjonujące dziś w Excelu oraz paleta kolorów
-      wiersza. Paleta została po warsztacie rozszerzona do pięciu stanów <span class="ref new">D-123</span>.
+      wiersza. Paleta została po warsztacie rozszerzona do pięciu stanów <span class="ref">D-123</span>,
+      a kody kolorów przejęte z Excela klienta <span class="ref new">D-158</span>.
     </p>
   </div>
 
@@ -68,22 +69,23 @@ flowchart TD
     </div>
   </div>
 
-  <h2>Kolorowanie wierszy <span class="ref">D-01</span> <span class="ref new">D-123</span></h2>
+  <h2>Kolorowanie wierszy <span class="ref">D-01</span> <span class="ref">D-123</span> <span class="ref new">D-158</span></h2>
   <p>
     Kolor obejmuje <b>cały wiersz</b> i zmienia się <b>automatycznie</b> przy zmianie statusu.
-    Na warsztacie ustalono paletę trójbarwną (czerwony / zielony / fioletowy), a 04.09.2026 klient
-    rozszerzył ją do pięciu stanów. Poniżej paleta obowiązująca, z podglądem koloru:
+    Na warsztacie ustalono paletę trójbarwną (czerwony / zielony / fioletowy), 04.09.2026 klient
+    rozszerzył ją do pięciu stanów, a 29.09.2026 podał dokładne kody HEX z obecnego Excela.
+    Poniżej paleta obowiązująca, z podglądem koloru:
   </p>
 
   <div class="tbl-wrap">
     <table class="t pal">
-      <thead><tr><th>Podgląd</th><th>Status</th><th>Kolor</th><th>Tło</th><th>Wariant alternatywny</th></tr></thead>
+      <thead><tr><th>Podgląd</th><th>Status</th><th>Kolor</th><th>Tło</th><th>Tekst</th></tr></thead>
       <tbody>
-        <tr class="demo-czekamy"><td><span class="swatch" style="background:#ffffff"></span></td><td><b>Czekamy</b> (oczekuje na decyzję)</td><td>biały</td><td class="mono">#ffffff</td><td class="muted">&mdash;</td></tr>
-        <tr class="demo-poz"><td><span class="swatch" style="background:#dcf3e3"></span></td><td><b>Pozytywny</b> (decyzja pozytywna)</td><td>zielony delikatny</td><td class="mono">#dcf3e3</td><td class="muted">&mdash;</td></tr>
-        <tr class="demo-neg"><td><span class="swatch" style="background:#f6a94a"></span></td><td><b>Negatywny</b> (decyzja negatywna)</td><td>pomarańczowy intensywny</td><td class="mono">#f6a94a</td><td>jasny czerwony <span class="mono">#f4b4b4</span></td></tr>
-        <tr class="demo-rez"><td><span class="swatch" style="background:#fce98a"></span></td><td><b>Rezygnacja</b></td><td>żółty</td><td class="mono">#fce98a</td><td class="muted">&mdash;</td></tr>
-        <tr class="demo-set"><td><span class="swatch" style="background:#3a3f72"></span></td><td><b>Rozliczone</b> (kompletnie)</td><td>granatowy z fioletem</td><td class="mono">#3a3f72</td><td>granatowy z szarym <span class="mono">#39435a</span></td></tr>
+        <tr class="demo-czekamy"><td><span class="swatch" style="background:#FFFFFF"></span></td><td><b>Czekamy</b> (oczekuje na decyzję)</td><td>biały</td><td class="mono">#FFFFFF</td><td class="mono">#334155</td></tr>
+        <tr class="demo-poz"><td><span class="swatch" style="background:#C6E0B4"></span></td><td><b>Pozytywna</b> (decyzja pozytywna)</td><td>zielony</td><td class="mono">#C6E0B4</td><td class="mono">#1E3A10</td></tr>
+        <tr class="demo-neg"><td><span class="swatch" style="background:#F8CBAD"></span></td><td><b>Negatywna</b> (decyzja negatywna)</td><td>łososiowy</td><td class="mono">#F8CBAD</td><td class="mono">#5C2400</td></tr>
+        <tr class="demo-rez"><td><span class="swatch" style="background:#FFE699"></span></td><td><b>Rezygnacja</b></td><td>żółty</td><td class="mono">#FFE699</td><td class="mono">#5C4A00</td></tr>
+        <tr class="demo-set"><td><span class="swatch" style="background:#B4C6E7"></span></td><td><b>Rozliczony</b> (kompletnie)</td><td>jasnoniebieski</td><td class="mono">#B4C6E7</td><td class="mono">#1F3864</td></tr>
       </tbody>
     </table>
   </div>
@@ -97,8 +99,18 @@ flowchart TD
     żeby kolor się po całej długości ustawił.”
     <span class="who">Bartek, 0:14 (paleta pierwotna)</span>
   </div>
+  <div class="q">
+    „Moim zdaniem wygląda to czytelnie, więc w dobrym kierunku idziemy. Zmienimy jedynie kolory
+    na identyczne jakimi operowaliśmy teraz (statusy).”
+    <span class="who">Bartek, feedback 29.09.2026</span>
+  </div>
   <div class="callout ok">
-    <span class="ct">Aktualizacja 04.09.2026 <span class="ref new">D-123</span></span>
+    <span class="ct">Aktualizacja 29.09.2026 <span class="ref new">D-158</span></span>
+    Tła wierszy mają dokładnie te kody, których zespół używa dziś w Excelu: Pozytywna #C6E0B4,
+    Negatywna #F8CBAD, Rozliczony #B4C6E7, Rezygnacja #FFE699. Paleta z 04.09 przestaje obowiązywać.
+  </div>
+  <div class="callout">
+    <span class="ct">Wcześniej: 04.09.2026 <span class="ref">D-123</span></span>
     Negatywny zmienia się z czerwonego na intensywny pomarańczowy (ewentualnie jasny czerwony),
     dochodzi żółty dla rezygnacji i biały dla stanu „czekamy”, a rozliczone przechodzi z fioletu
     na granatowy z domieszką delikatnego fioletu (albo granatowy z szarym).
@@ -106,7 +118,7 @@ flowchart TD
   <div class="callout warn">
     <span class="ct">Uwaga dostępnościowa</span>
     Kolor jest dodatkiem do statusu tekstowego, nie jego zamiennikiem. Nazwany status musi być
-    widoczny obok koloru. Wiersz „rozliczone” ma ciemne tło, więc tekst na nim jest jasny.
+    widoczny obok koloru. Wszystkie tła są jasne, więc tekst na każdym wierszu jest ciemny.
   </div>
 
   <!-- diagram:od -->

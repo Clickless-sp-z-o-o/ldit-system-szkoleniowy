@@ -30,10 +30,10 @@
 
   /* Paleta statusow wg D-123 (spojna z makieta) */
   --st-czekamy: #ffffff;
-  --st-poz: #dcf3e3;
-  --st-neg: #f6a94a;
-  --st-rez: #fce98a;
-  --st-set: #3a3f72;
+  --st-poz: #C6E0B4;
+  --st-neg: #F8CBAD;
+  --st-rez: #FFE699;
+  --st-set: #B4C6E7;
 
   --radius: 8px;
   --radius-lg: 12px;
@@ -263,9 +263,9 @@ table.pal td:first-child { width: 210px; }
 table.pal .swatch { display: inline-block; width: 100%; height: 26px; border-radius: 5px; border: 1px solid rgba(0,0,0,.10); }
 tr.demo-czekamy td { background: var(--st-czekamy); box-shadow: inset 3px 0 0 var(--line-strong); }
 tr.demo-poz td { background: var(--st-poz); }
-tr.demo-neg td { background: var(--st-neg); color: #5c2c00; }
-tr.demo-rez td { background: var(--st-rez); color: #6b5900; }
-tr.demo-set td { background: var(--st-set); color: #eef0ff; }
+tr.demo-neg td { background: var(--st-neg); color: #5c2400; }
+tr.demo-rez td { background: var(--st-rez); color: #5c4a00; }
+tr.demo-set td { background: var(--st-set); color: #1f3864; }
 
 .doc-foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-4); }
 .doc-foot a { font-weight: 600; }

@@ -70,7 +70,7 @@ flowchart TD
 ### Rejestry
 | Plik | Zawartość |
 |---|---|
-| [13. Rejestr decyzji](13-rejestr-decyzji.md) | 157 decyzji z siłą i uzasadnieniem |
+| [13. Rejestr decyzji](13-rejestr-decyzji.md) | 160 decyzji z siłą i uzasadnieniem |
 | [14. Pytania otwarte](14-pytania-otwarte.md) | Co wymaga domknięcia, kto odpowiada, co blokuje |
 | [15. Ryzyka](15-ryzyka.md) | Rejestr ryzyk z oceną i mitygacją |
 | [16. Słownik](16-slownik.md) | Pojęcia domenowe KFS i terminologia projektu |
