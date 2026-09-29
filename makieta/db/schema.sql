@@ -29,6 +29,15 @@ CREATE TABLE progi_dofinansowania (
 );
 CREATE INDEX idx_progi_dof_okres ON progi_dofinansowania (wielkosc, obowiazuje_od);
 
+-- Zakladki roczne Dofinansowan (D-129, D-159). Kolejny rok dodaje administrator
+-- sam, bez udzialu wykonawcy. Wniosek moze nalezec tylko do istniejacego roku.
+CREATE TABLE lata_zestawien (
+  rok        TEXT PRIMARY KEY CHECK (length(rok) = 4 AND rok GLOB '[0-9][0-9][0-9][0-9]'),
+  opis       TEXT,
+  utworzono  TEXT NOT NULL,
+  utworzyl   TEXT
+);
+
 -- --------------------------------------------------------------------------
 -- 2. INSTYTUCJE SZKOLENIOWE I ICH WARUNKI
 -- --------------------------------------------------------------------------
@@ -166,7 +175,7 @@ CREATE INDEX idx_faktury_inst ON faktury (instytucja_id, data_wystawienia);
 CREATE TABLE wnioski (
   id                        TEXT PRIMARY KEY,
   numer                     INTEGER NOT NULL,
-  rok                       TEXT NOT NULL,
+  rok                       TEXT NOT NULL REFERENCES lata_zestawien (rok),
   klient_id                 TEXT NOT NULL REFERENCES klienci (id),
   instytucja_id             TEXT NOT NULL REFERENCES instytucje (id),
   pup_id                    TEXT REFERENCES urzedy_pracy (id),

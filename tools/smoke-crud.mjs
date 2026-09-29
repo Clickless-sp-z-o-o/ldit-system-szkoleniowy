@@ -103,7 +103,9 @@ t.rowne(poPrzywroceniu.przyznano, poPrzywroceniu.przyznanoZReguly,
 console.log("\nTrwalosc");
 
 Store.save();
-t.ok(w.localStorage.getItem("kfs_sqlite_v2") === null || true, "zapis do localStorage nie rzuca bledem");
+const OPOZNIENIE_ZAPISU_MS = 300;
+await new Promise((res) => setTimeout(res, OPOZNIENIE_ZAPISU_MS));
+t.ok(w.localStorage.getItem(w.KFS.KLUCZ) !== null, "stan bazy trafia do localStorage pod kluczem " + w.KFS.KLUCZ);
 t.ok(Store.tables().length >= 30, "baza ma komplet tabel (" + Store.tables().length + ")");
 
 t.podsumuj();

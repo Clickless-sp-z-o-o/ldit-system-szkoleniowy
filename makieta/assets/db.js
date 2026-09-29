@@ -154,6 +154,7 @@
     DB.WNIOSKI_2026 = wszystkie.filter(function (w) { return w.rok === "2026"; });
     DB.WNIOSKI_2025 = wszystkie.filter(function (w) { return w.rok === "2025"; });
     DB.WNIOSKI = DB.WNIOSKI_2026;
+    DB.LATA = S.query("SELECT rok, opis FROM lata_zestawien ORDER BY rok");
 
     DB.INSTYTUCJE = instytucjeView();
     DB.PUPY = S.get("urzedy_pracy").map(function (p) {

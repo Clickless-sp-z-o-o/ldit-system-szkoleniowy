@@ -22,7 +22,7 @@
 (function (global) {
   "use strict";
 
-  var KLUCZ = "kfs_sqlite_v2";
+  var KLUCZ = "kfs_sqlite_v3";
   var OPOZNIENIE_ZAPISU = 250;
 
   function base64NaBajty(b64) {

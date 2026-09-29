@@ -66,7 +66,8 @@ const POLA = {
   "zgloszenia.dostep":      ["admin", "pracownik"],
   "admin.konta":            ["admin"],
   "admin.rejestr":          ["admin"],
-  "admin.progi_dofinansowania": ["admin"]
+  "admin.progi_dofinansowania": ["admin"],
+  "admin.lata_zestawien":   ["admin"]
 };
 
 export const KLUCZE_POL = Object.keys(POLA);
@@ -103,6 +104,20 @@ export function progiDofinansowaniaRows() {
     { id: "PD-03", wielkosc: "średni",  procent_dofinansowania: 70, obowiazuje_od: od, obowiazuje_do: null },
     { id: "PD-04", wielkosc: "duży",    procent_dofinansowania: 70, obowiazuje_od: od, obowiazuje_do: null },
     { id: "PD-05", wielkosc: "inny",    procent_dofinansowania: 70, obowiazuje_od: od, obowiazuje_do: null }
+  ];
+}
+
+/* Zakladki roczne Dofinansowan (D-159). W tescie migrujemy tylko rok 2026
+   (D-160), wiec 2025 zostaje z danymi przykladowymi, a 2027 czeka pusty. */
+export function lataZestawienRows() {
+  const kto = "Bartłomiej Olejnik";
+  return [
+    { rok: "2025", opis: "Dane przykładowe. W teście przenosimy z Excela tylko rok 2026 (D-160).",
+      utworzono: "2026-09-29", utworzyl: kto },
+    { rok: "2026", opis: "Rok bieżący. Dane przeniesione z Excela w ramach testu (D-160).",
+      utworzono: "2026-09-29", utworzyl: kto },
+    { rok: "2027", opis: "Zakładka przygotowana na nowy rok. Pierwszy wniosek dostanie numer klienta 1 (D-112).",
+      utworzono: "2026-09-29", utworzyl: kto }
   ];
 }
 
@@ -235,6 +250,7 @@ export function migruj(src) {
 
   return {
     urzedy_pracy: src.urzedy_pracy,
+    lata_zestawien: lataZestawienRows(),
     progi_dofinansowania: progiDofinansowaniaRows(),
     instytucje,
     warunki_prowizyjne: warunki,

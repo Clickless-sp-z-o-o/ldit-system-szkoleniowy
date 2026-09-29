@@ -18,6 +18,11 @@ INSERT INTO urzedy_pracy (id, nazwa, wojewodztwo, powiat) VALUES ('PUP-10', 'PUP
 INSERT INTO urzedy_pracy (id, nazwa, wojewodztwo, powiat) VALUES ('PUP-11', 'PUP Brzesko', 'małopolskie', 'brzeski');
 INSERT INTO urzedy_pracy (id, nazwa, wojewodztwo, powiat) VALUES ('PUP-12', 'PUP Bydgoszcz', 'kujawsko-pomorskie', 'bydgoski');
 
+-- lata_zestawien (3)
+INSERT INTO lata_zestawien (rok, opis, utworzono, utworzyl) VALUES ('2025', 'Dane przykładowe. W teście przenosimy z Excela tylko rok 2026 (D-160).', '2026-09-29', 'Bartłomiej Olejnik');
+INSERT INTO lata_zestawien (rok, opis, utworzono, utworzyl) VALUES ('2026', 'Rok bieżący. Dane przeniesione z Excela w ramach testu (D-160).', '2026-09-29', 'Bartłomiej Olejnik');
+INSERT INTO lata_zestawien (rok, opis, utworzono, utworzyl) VALUES ('2027', 'Zakładka przygotowana na nowy rok. Pierwszy wniosek dostanie numer klienta 1 (D-112).', '2026-09-29', 'Bartłomiej Olejnik');
+
 -- progi_dofinansowania (5)
 INSERT INTO progi_dofinansowania (id, wielkosc, procent_dofinansowania, obowiazuje_od, obowiazuje_do) VALUES ('PD-01', 'mikro', 90, '2020-01-01', NULL);
 INSERT INTO progi_dofinansowania (id, wielkosc, procent_dofinansowania, obowiazuje_od, obowiazuje_do) VALUES ('PD-02', 'mały', 70, '2020-01-01', NULL);
@@ -2992,7 +2997,7 @@ INSERT INTO uprawnienia (rola_id, modul_id, poziom) VALUES ('klient', 'panelIS',
 INSERT INTO uprawnienia (rola_id, modul_id, poziom) VALUES ('klient', 'terminy', 'brak');
 INSERT INTO uprawnienia (rola_id, modul_id, poziom) VALUES ('klient', 'panelKL', 'podglad');
 
--- uprawnienia_pol (60)
+-- uprawnienia_pol (65)
 INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('admin', 'finanse.kwoty_wniosku', 1);
 INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('pracownik', 'finanse.kwoty_wniosku', 1);
 INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('is', 'finanse.kwoty_wniosku', 1);
@@ -3053,6 +3058,11 @@ INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('pracownik', 'adm
 INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('is', 'admin.progi_dofinansowania', 0);
 INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('pracownikIS', 'admin.progi_dofinansowania', 0);
 INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('klient', 'admin.progi_dofinansowania', 0);
+INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('admin', 'admin.lata_zestawien', 1);
+INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('pracownik', 'admin.lata_zestawien', 0);
+INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('is', 'admin.lata_zestawien', 0);
+INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('pracownikIS', 'admin.lata_zestawien', 0);
+INSERT INTO uprawnienia_pol (rola_id, klucz, widoczne) VALUES ('klient', 'admin.lata_zestawien', 0);
 
 -- uzytkownicy (11)
 INSERT INTO uzytkownicy (id, login, haslo_demo, imie_nazwisko, rola_id, instytucja_id, klient_id, wszystkie_instytucje, ostatnie_logowanie, dwa_fa, zablokowane) VALUES ('bartek@ldit.pl', 'bartek@ldit.pl', 'demo', 'Bartłomiej Olejnik', 'admin', NULL, NULL, 1, '2026-08-29 08:41', 1, 0);

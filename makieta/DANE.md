@@ -58,7 +58,7 @@ Koszt: około 1,9 MB dwóch wygenerowanych plików w repozytorium.
 ## Jak działa start i zapis
 
 1. `sqlite.js` uruchamia silnik i wczytuje bazę: jeśli w `localStorage` leży zapisany stan
-   roboczy (klucz `kfs_sqlite_v2`), bierze jego, w przeciwnym razie bazę startową.
+   roboczy (klucz `kfs_sqlite_v3`), bierze jego, w przeciwnym razie bazę startową.
 2. Każdy zapis przez `Store` odkłada binarium bazy z powrotem do `localStorage`, więc
    **zmiany przeżywają odświeżenie strony**.
 3. `KFS.reset()` kasuje stan roboczy i wraca do bazy startowej.

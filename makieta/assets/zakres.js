@@ -168,7 +168,7 @@
     wyczysc: function (DB) {
       ["INSTYTUCJE", "KLIENCI", "SZKOLENIA", "TERMINY", "FAKTURY", "WNIOSKI",
        "WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "KOLEJKA", "MAILE",
-       "UZYTKOWNICY", "ZGLOSZENIA", "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA"
+       "UZYTKOWNICY", "ZGLOSZENIA", "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA", "LATA"
       ].forEach(function (k) { DB[k] = []; });
       return DB;
     },

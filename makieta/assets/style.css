@@ -45,13 +45,13 @@
   --info-bg: #e0f2fe;
   --info-ink: #0369a1;
 
-  /* Paleta kolorow statusow wiersza wg aktualizacji warsztatowej D-123 (2026-09-04):
-     czekamy=bialy, pozytywny=zielony, negatywny=pomaranczowy, rezygnacja=zolty, rozliczone=granat */
+  /* Paleta kolorow statusow wiersza: kody HEX z Excela klienta (D-158, koryguje D-123).
+     czekamy=bialy, pozytywna=zielony, negatywna=lososiowy, rezygnacja=zolty, rozliczony=niebieski */
   --st-czekamy-bg: #ffffff;  --st-czekamy-mark: #cbd5e1; --st-czekamy-ink: #334155;
-  --st-poz-bg: #dcf3e3;      --st-poz-bg-hover: #cdeed7; --st-poz-ink: #166534;  --st-poz-mark: #22a35a;
-  --st-neg-bg: #f6a94a;      --st-neg-bg-hover: #f39a2f; --st-neg-ink: #5c2c00;
-  --st-rez-bg: #fce98a;      --st-rez-bg-hover: #fbe066; --st-rez-ink: #6b5900;
-  --st-set-bg: #3a3f72;      --st-set-bg-hover: #454b82; --st-set-ink: #eef0ff;
+  --st-poz-bg: #C6E0B4;      --st-poz-bg-hover: #b6d79f; --st-poz-ink: #1e3a10;  --st-poz-mark: #7fb35f;
+  --st-neg-bg: #F8CBAD;      --st-neg-bg-hover: #f5ba93; --st-neg-ink: #5c2400;  --st-neg-mark: #e3935e;
+  --st-rez-bg: #FFE699;      --st-rez-bg-hover: #ffdd74; --st-rez-ink: #5c4a00;  --st-rez-mark: #e0c043;
+  --st-set-bg: #B4C6E7;      --st-set-bg-hover: #a1b7df; --st-set-ink: #1f3864;  --st-set-mark: #7f9bd0;
 
   --radius: 8px;
   --radius-lg: 12px;
@@ -270,21 +270,19 @@ table.tbl .muted { color: var(--ink-3); }
 table.tbl .strong { font-weight: 650; }
 table.tbl tr.sel td { background: var(--accent-soft); }
 
-/* Kolorowanie wierszy wg statusu (D-01, paleta 5 stanow D-123) */
+/* Kolorowanie wierszy wg statusu (D-01, paleta z Excela D-158) */
 tr.row-czekamy td { background: var(--st-czekamy-bg); box-shadow: inset 3px 0 0 var(--st-czekamy-mark); }
 tr.row-pos td { background: var(--st-poz-bg); }
 tr.row-pos:hover td { background: var(--st-poz-bg-hover); }
 tr.row-neg td { background: var(--st-neg-bg); color: var(--st-neg-ink); }
 tr.row-neg:hover td { background: var(--st-neg-bg-hover); }
-tr.row-neg td .muted, tr.row-neg td.muted { color: #7a4a12; }
+tr.row-neg td .muted, tr.row-neg td.muted { color: #7a4326; }
 tr.row-rez td { background: var(--st-rez-bg); color: var(--st-rez-ink); }
 tr.row-rez:hover td { background: var(--st-rez-bg-hover); }
 tr.row-rez td .muted, tr.row-rez td.muted { color: #7a6a1a; }
-/* Rozliczone: ciemny granat, tekst jasny, nazwany status pozostaje czytelny */
-tr.row-set td { background: var(--st-set-bg); color: var(--st-set-ink); border-bottom-color: rgba(255,255,255,.12); }
+tr.row-set td { background: var(--st-set-bg); color: var(--st-set-ink); }
 tr.row-set:hover td { background: var(--st-set-bg-hover); }
-tr.row-set td .muted, tr.row-set td.muted { color: #b9bce0; }
-tr.row-set td .strong { color: #ffffff; }
+tr.row-set td .muted, tr.row-set td.muted { color: #3c5584; }
 tr.row-nabor td { box-shadow: inset 3px 0 0 var(--pos-ink); }
 
 /* Wiersz o charakterze bledu/zagrozenia (NIE status decyzji): pozostaje czerwony */
@@ -294,12 +292,12 @@ tr.row-danger:hover td { background: var(--neg-bg-hover); }
 tr.row-hl td { background: var(--accent-soft); }
 tr.row-hl:hover td { background: #e0ecfd; }
 
-/* Znaczniki statusu spojne z paleta wiersza (D-123) */
+/* Znaczniki statusu spojne z paleta wiersza (D-158) */
 .tag.st-czekamy { background: #fff; color: var(--st-czekamy-ink); border-color: var(--line-strong); }
-.tag.st-poz { background: var(--st-poz-bg); color: var(--st-poz-ink); border-color: #86efac; }
-.tag.st-neg { background: var(--st-neg-bg); color: var(--st-neg-ink); border-color: #e08a2e; }
-.tag.st-rez { background: var(--st-rez-bg); color: var(--st-rez-ink); border-color: #e6cf5a; }
-.tag.st-set { background: var(--st-set-bg); color: #fff; border-color: var(--st-set-bg); }
+.tag.st-poz { background: var(--st-poz-bg); color: var(--st-poz-ink); border-color: var(--st-poz-mark); }
+.tag.st-neg { background: var(--st-neg-bg); color: var(--st-neg-ink); border-color: var(--st-neg-mark); }
+.tag.st-rez { background: var(--st-rez-bg); color: var(--st-rez-ink); border-color: var(--st-rez-mark); }
+.tag.st-set { background: var(--st-set-bg); color: var(--st-set-ink); border-color: var(--st-set-mark); }
 
 /* Znaczniki */
 .tag {
@@ -550,6 +548,25 @@ table.matrix .lv { font-size: 11.5px; font-weight: 650; padding: 2px 8px; border
 }
 .mod-tabs a.on .n { background: var(--accent); color: #fff; }
 .mod-tabs .adm { margin-left: auto; font-size: 11px; color: var(--ink-4); padding-right: 4px; }
+
+/* ====== Zakladki roczne Dofinansowan jak arkusze Excela (D-159) ====== */
+.lata-tabs {
+  display: flex; gap: 2px; align-items: flex-end; flex-wrap: wrap;
+  padding: 8px 10px 0; background: var(--surface-2); border-bottom: 1px solid var(--line-strong);
+}
+.lata-tab {
+  font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  padding: 6px 13px; color: var(--ink-3); background: var(--surface-3);
+  border: 1px solid var(--line-strong); border-bottom: none; border-radius: 6px 6px 0 0;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.lata-tab:hover { color: var(--ink); background: #fff; }
+.lata-tab.on { color: var(--accent); background: #fff; margin-bottom: -1px; padding-bottom: 7px; }
+.lata-tab .n { font-size: 11px; font-weight: 700; color: var(--ink-4); }
+.lata-tab.on .n { color: var(--accent); }
+.lata-tab.plus { background: transparent; border-style: dashed; color: var(--ink-3); }
+.lata-dodaj { display: inline-flex; align-items: center; gap: 4px; margin-left: 4px; padding-bottom: 4px; }
+.lata-dodaj .lata-tab.plus { margin-bottom: -4px; }
 
 /* ====================== TOOLTIPY (feedback klienta 2026-09-04) ====================== */
 /* Marker "i" przy naglowku kolumny lub wskazniku. Obsluga w assets/tips.js. */
