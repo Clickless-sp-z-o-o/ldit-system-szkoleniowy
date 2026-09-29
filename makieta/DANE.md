@@ -26,7 +26,9 @@ makieta/
     sqlite.js           start silnika, zapis stanu (przeglądarka albo plik na dysku), eksport .sqlite
     store.js            dostęp do danych: get / query / insert / update / remove
     haslo.js            skrót hasła SHA-256 z solą
-    auth.js             logowanie, sesja z tabeli sesje, role, uprawnienia
+    funkcje.js          dopasowanie features z wildcardem "modul.*"
+    auth.js             logowanie, sesja z tabeli sesje, role, features (maFunkcje, poziom, moze)
+    walidacja.js        walidacja na granicy zapisu (odpowiednik Zod)
     straznik.js         strażnik zapisów: moduł, wiersz, pole
     html.js             esc() i escJs() przeciw XSS
     zakres.js           separacja danych, filtr wierszy i pól
@@ -36,6 +38,8 @@ makieta/
 tools/
     build-sqlite.mjs    buduje bazę ze schema.sql, views.sql i db.json
     sqlite-migracja.mjs mapowanie starych danych na nowy schemat
+    migracja-uprawnienia.mjs  dane funkcji i nadań rolom (features)
+    migracja-slowniki.mjs     dane słowników
     serwer.mjs          lokalny serwer: makieta plus baza w pliku na dysku
 ```
 
@@ -43,8 +47,10 @@ Każda strona ładuje ten łańcuch:
 
 ```
 sql-wasm.js → sql-wasm-data.js → seed-db.js → sqlite.js → store.js → haslo.js
-→ auth.js → straznik.js → zakres.js → prowizja.js → db.js → lata.js → html.js → tips.js → boot.js
+→ funkcje.js → auth.js → walidacja.js → straznik.js → zakres.js → prowizja.js → db.js → lata.js → html.js → tips.js → boot.js
 ```
+
+Potem ładują się skrypty konkretnej strony z `makieta/strony/js/*.js` (każdy poniżej 300 linii, wcześniej siedziały w plikach HTML).
 
 ---
 
@@ -166,14 +172,30 @@ Trzy poziomy kontroli:
 
 | Poziom | Pytanie | Źródło |
 |---|---|---|
-| moduł | czy rola widzi zakładkę | tabela `uprawnienia` |
-| pole | czy widzi prowizję, PESEL, zysk firmy | tabela `uprawnienia_pol` |
-| wiersz | czyje instytucje i czyich klientów | tabela `uzytkownik_instytucja`, widok `v_zakres_uzytkownika` |
+| moduł | czy rola widzi zakładkę i co może w niej zrobić | features rodzaju `modul` w `funkcje`, nadania w `role_funkcje` |
+| pole | czy widzi prowizję, PESEL (`klient.pesel`), zysk firmy | features rodzaju `pole` w `funkcje` |
+| wiersz | czyje instytucje i czyich klientów | tabela `uzytkownik_instytucja`, widok `v_zakres_uzytkownika`, kolumny `handlowiec_id` |
+
+Uprawnienia to features w modelu Open Mercato [D-211]: `funkcje` to katalog (`id` w formie
+`modul.akcja`, `rodzaj`, `zalezy_od`), `role_funkcje` to nadania rolom, także z wildcardem
+`modul.*`. Poziom modułu: podgląd = `<m>.view`, edycja = `<m>.*`. Sprawdzają to `Auth.maFunkcje`,
+`Auth.poziom` i `Auth.moze`.
+
+Filtr handlowca [D-210]: bez feature `zakres.cala_instytucja` (nadanej tylko roli `is`) konto
+instytucji jest handlowcem i widzi tylko swoich klientów i wnioski (`handlowiec_id` w
+`klient_instytucja`, `wnioski` i `formularze_oczekujace`). Filtr siedzi w `zakresHandlowca`
+(`zakres.js`) i w `Auth.klienciWZakresie`. Handlowiec nie ma statystyk [D-209].
+
+Walidacja: `walidacja.js` sprawdza dane przy każdym zapisie, zanim dojdą do bazy (e-mail,
+telefon, NIP i PESEL z cyfrą kontrolną, URL, daty, kwoty nieujemne, liczby całkowite, pola
+wymagane, `data_do >= data_od` w terminach). Przy edycji sprawdzane są tylko zmieniane pola.
+Błąd to `StraznikError` z kodem `walidacja`. Tryb systemowy `Store` nie jest publiczny
+(`Store.odbierzTrybSystemowy`, jednorazowo dla `auth.js`), a eksport całej bazy wymaga `ustaw.manage`.
 
 Te same trzy poziomy pilnują zapisów. `straznik.js` przechwytuje każdy `Store.insert`,
 `update` i `remove`: rola musi mieć edycję modułu, do którego należy tabela, zapisywany wiersz
 musi należeć do instytucji z zakresu konta (przy edycji sprawdzany jest stan przed i po, więc
-rekordu nie da się przenieść do konkurencji), a pola prowizji zmienia tylko rola z uprawnieniem
+rekordu nie da się przenieść do konkurencji), a pola prowizji zmienia tylko rola z feature
 `finanse.prowizja`. Rejestr aktywności jest tylko do dopisywania. Odrzucony zapis pokazuje
 komunikat na ekranie.
 
@@ -224,6 +246,7 @@ node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
 node tools/test-prowizja.mjs      # przypadki z docs/07, korekty w okresie wystawienia, warunki od daty
 node tools/test-lata.mjs          # zakładki lat, nieprzypisane wnioski, brak wniosków z 2025
 node tools/test-bezpieczenstwo.mjs # hasła, blokada, sesja, strażnik zapisów, XSS
+node tools/test-walidacja.mjs     # walidacja danych na granicy zapisu
 node tools/test-serwer.mjs        # lokalny serwer bazy
 node tools/test-model.mjs         # dane interaktywnego diagramu tabel
 ```

@@ -20,7 +20,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ASSETS = join(ROOT, "makieta", "assets");
 const DB_DIR = join(ROOT, "makieta", "db");
 
-const PLIKI = ["sqlite.js", "store.js", "haslo.js", "auth.js", "straznik.js", "zakres.js", "prowizja.js", "db.js", "lata.js", "html.js"];
+const PLIKI = ["sqlite.js", "store.js", "haslo.js", "funkcje.js", "auth.js", "walidacja.js", "straznik.js", "zakres.js", "prowizja.js", "db.js", "lata.js", "html.js"];
 
 function stworzOkno() {
   const sluchacze = {};

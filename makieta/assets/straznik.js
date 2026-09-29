@@ -8,6 +8,8 @@
      2. wiersz  zapisywany wiersz nalezy do instytucji z zakresu konta
      3. pole    kolumny wrazliwe (prowizja) zmienia tylko rola z uprawnieniem pola
 
+   Na koniec dane przechodza walidacje (walidacja.js, odpowiednik Zod, D-211).
+
    Rejestr aktywnosci jest tylko do dopisywania: nikt go nie edytuje ani nie
    usuwa (D-189). W docelowej aplikacji te same reguly realizuja features
    frameworka Open Mercato i filtr organizacji w serwerze (D-176, D-179).
@@ -35,7 +37,7 @@
     warunki_prowizyjne: ["admin"], progi_dofinansowania: ["admin"], faktury: ["admin"],
     cele: ["admin"], podsumowania_historyczne: ["admin"], meta: ["admin"],
     uzytkownicy: ["ustaw"], uzytkownik_instytucja: ["ustaw"], role: ["ustaw"],
-    uprawnienia: ["ustaw"], uprawnienia_pol: ["ustaw"], moduly: ["ustaw"],
+    funkcje: ["ustaw"], role_funkcje: ["ustaw"], moduly: ["ustaw"],
     zgloszenia: ["zglo"], zadania: ["zadania", "dofin"],
     szablony_maili: ["komun"], korespondencja: ["komun", "dofin"]
   };
@@ -126,6 +128,33 @@
     });
   }
 
+  /* Handlowiec (D-210) nie zmienia cudzych rekordow ani nie przepisuje rekordu na kogos innego */
+  var TABELE_HANDLOWCA = { wnioski: "id", formularze_oczekujace: "id" };
+  function handlowiecPozwala(operacja, tabela, dane, id) {
+    var h = global.Auth.handlowiec();
+    if (!h) return;
+    if (dane && dane.handlowiec_id !== undefined && dane.handlowiec_id !== h) {
+      odmowa("poza_zakresem", "Handlowiec nie przypisuje rekordów innym osobom.");
+    }
+    if (TABELE_HANDLOWCA[tabela] && operacja !== "insert") {
+      var r = S.one("SELECT handlowiec_id AS h FROM " + tabela + " WHERE id = ?", [id]);
+      if (r && r.h !== h) odmowa("poza_zakresem", "Ten rekord prowadzi inny handlowiec.");
+    }
+  }
+
+  /* Walidacja danych (walidacja.js). Przy edycji tylko pola, ktore sie zmieniaja. */
+  function danePoprawne(operacja, tabela, dane, id) {
+    if (!global.Walidacja || !dane || operacja === "remove") return;
+    var doSprawdzenia = dane;
+    if (operacja === "update") {
+      var obecny = S.one("SELECT * FROM " + tabela + " WHERE id = ?", [id]) || {};
+      doSprawdzenia = {};
+      Object.keys(dane).forEach(function (k) { if (String(dane[k]) !== String(obecny[k])) doSprawdzenia[k] = dane[k]; });
+    }
+    var b = global.Walidacja.bledy(tabela, doSprawdzenia);
+    if (b.length) odmowa("walidacja", b.map(function (x) { return x.pole + ": " + x.komunikat; }).join("; "));
+  }
+
   function straznik(operacja, tabela, dane, id) {
     var Auth = global.Auth;
     if (!Auth || !Auth.zalogowany()) odmowa("brak_sesji", "Sesja wygasła. Zaloguj się ponownie.");
@@ -144,7 +173,9 @@
     }
     modulPozwala(tabela);
     wierszPozwala(operacja, tabela, dane, id);
+    handlowiecPozwala(operacja, tabela, dane, id);
     polaPozwalaja(tabela, dane);
+    danePoprawne(operacja, tabela, dane, id);
   }
 
   S.ustawStraznika(straznik);

@@ -109,6 +109,7 @@ const warsztat0409 = decyzje("17-warsztat-2026-09-04.md", 125, 147);
 const makieta = decyzje("13-rejestr-decyzji.md", 148, 157);
 const feedback2909 = decyzje("13-rejestr-decyzji.md", 158, 160);
 const panel2909 = decyzje("13-rejestr-decyzji.md", 161, 206);
+const potwierdzenia2909 = decyzje("13-rejestr-decyzji.md", 207, 212);
 
 const blokDecyzji =
   "  <h2>Warsztat doprecyzowujący (2026-09-04)</h2>\n" +
@@ -143,7 +144,14 @@ const blokDecyzji =
   "    Wybory P-04 i P-02 wykonawca skorygował tego samego dnia: korekta faktury trafia do nowego\n" +
   "    okresu, a progi nie przeliczają się wstecz.\n" +
   "  </div>\n" +
-  tabelaDecyzji(panel2909, "Dotyczy");
+  tabelaDecyzji(panel2909, "Dotyczy") + "\n\n" +
+  "  <h2>Potwierdzenia i standardy Open Mercato (2026-09-29)</h2>\n" +
+  '  <div class="callout ok">\n' +
+  '    <span class="ct">' + potwierdzenia2909.length + " decyzji wykonawcy po przeglądzie makiety</span>\n" +
+  "    Potwierdzony formularz natywny i log istotnych zdarzeń, bez statystyk per handlowiec, ale\n" +
+  "    z filtrowaniem danych per handlowiec, standardy Open Mercato w makiecie i drill through.\n" +
+  "  </div>\n" +
+  tabelaDecyzji(potwierdzenia2909, "Dotyczy");
 
 wstaw(join(SEKCJE, "13-decyzje.html"),
       "<h2>Decyzje unieważnione w trakcie warsztatu</h2>", blokDecyzji);
@@ -173,5 +181,5 @@ const blokPytan =
 wstaw(join(SEKCJE, "12-pytania-ryzyka.html"), "<h3>Podsumowanie pytań</h3>", blokPytan);
 
 console.log("Decyzje: D-125 - D-147 (" + warsztat0409.length + "), D-148 - D-157 (" + makieta.length +
-            "), D-158 - D-160 (" + feedback2909.length + "), D-161 - D-206 (" + panel2909.length + ")");
+            "), D-158 - D-160 (" + feedback2909.length + "), D-161 - D-206 (" + panel2909.length + "), D-207 - D-212 (" + potwierdzenia2909.length + ")");
 console.log("Pytania: P-55 - P-58 (" + pytania0409.length + "), P-59 - P-63 (" + pytaniaMakiety.length + ")");

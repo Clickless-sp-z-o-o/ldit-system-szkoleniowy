@@ -60,6 +60,7 @@
       DB.MAILE = filtruj(DB.MAILE, instytucje, "isId");
       DB.ZADANIA = this.zadaniaWZakresie(DB.ZADANIA, DB.WNIOSKI_WSZYSTKIE, instytucje);
       DB.PODSUMOWANIA = filtruj(DB.PODSUMOWANIA, instytucje, "isId");
+      this.zakresHandlowca(DB, Auth.handlowiec());
       if (instytucje !== null) DB.KLIENCI = this.zatrudnienieZWidocznych(DB.KLIENCI, DB.WNIOSKI_WSZYSTKIE);
       /* Podsumowanie calej firmy (bez instytucji) to statystyka zbiorcza LDIT */
       if (!Auth.moze("statystyki.zbiorcze")) {
@@ -164,6 +165,24 @@
       ["FAKTURY", "KOLEJKA", "MAILE", "UZYTKOWNICY", "ZGLOSZENIA", "PODSUMOWANIA", "SZABLONY", "ROLE",
        "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA"].forEach(function (k) { DB[k] = []; });
       return DB;
+    },
+
+    /* Handlowiec instytucji widzi wylacznie swoje wnioski, formularze i korespondencje
+       swoich klientow; klientow zaweza juz Auth.klienciWZakresie (D-210).
+       Statystyk instytucji nie dostaje (D-209). */
+    zakresHandlowca: function (DB, handlowiec) {
+      if (!handlowiec) return;
+      var moje = function (w) { return w.handlowiec === handlowiec; };
+      ["WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "WNIOSKI_BEZ_ROKU"].forEach(function (k) { DB[k] = DB[k].filter(moje); });
+      DB.WNIOSKI = DB.WNIOSKI_2026;
+      DB.KOLEJKA = DB.KOLEJKA.filter(function (k) { return k.handlowiec === handlowiec; });
+      var klienci = {};
+      DB.KLIENCI.forEach(function (k) { klienci[k.id] = true; });
+      DB.MAILE = DB.MAILE.filter(function (m) { return m.klient && klienci[m.klient]; });
+      var wnioski = {};
+      DB.WNIOSKI_WSZYSTKIE.forEach(function (w) { wnioski[w.id] = true; });
+      DB.ZADANIA = DB.ZADANIA.filter(function (z) { return z.wniosek_id && wnioski[z.wniosek_id]; });
+      DB.PODSUMOWANIA = [];
     },
 
     /* Liczba zatrudnionych klienta z ostatniego WIDOCZNEGO wniosku. Bez tego klient

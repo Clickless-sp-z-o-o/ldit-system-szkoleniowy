@@ -2,8 +2,9 @@
    Sesja i uprawnienia.
 
    Rola nie jest wybierana przelacznikiem, tylko wynika z zalogowanego konta
-   (D-125). Uprawnienia czytamy z bazy, z tabel role, moduly, uprawnienia
-   i uprawnienia_pol, a nie z list zaszytych w kodzie stron (D-35, D-36).
+   (D-125). Uprawnienia czytamy z bazy jako features "modul.akcja" z tabel
+   funkcje i role_funkcje (model Open Mercato, D-211, assets/funkcje.js),
+   a nie z list zaszytych w kodzie stron (D-35, D-36).
 
    Trzy poziomy kontroli:
      1. modul   Auth.poziom("admin")  czy rola w ogole widzi zakladke
@@ -194,34 +195,31 @@
 
     /* ------------------------ uprawnienia: moduly ------------------------ */
 
-    poziom: function (modulId) {
+    /* Czy rola ma feature, np. "dofin.manage" albo "finanse.prowizja" */
+    maFunkcje: function (feature) {
       var s = this.sesja();
-      if (!s) return "brak";
-      var r = S.one("SELECT poziom FROM uprawnienia WHERE rola_id = ? AND modul_id = ?",
-                    [s.rola_id, modulId]);
-      return r ? r.poziom : "brak";
+      return !!s && global.Funkcje.pasuje(global.Funkcje.nadania(s.rola_id), feature);
+    },
+
+    /* Poziom modulu wyliczony z features: manage = edycja, view = podglad */
+    poziom: function (modulId) {
+      if (this.maFunkcje(modulId + ".manage")) return "edycja";
+      return this.maFunkcje(modulId + ".view") ? "podglad" : "brak";
     },
 
     widziModul: function (modulId) { return this.poziom(modulId) !== "brak"; },
     edytujeModul: function (modulId) { return this.poziom(modulId) === "edycja"; },
 
     moduly: function () {
-      var s = this.sesja();
-      if (!s) return [];
-      return S.query(
-        "SELECT m.*, u.poziom FROM moduly m JOIN uprawnienia u ON u.modul_id = m.id " +
-        "WHERE u.rola_id = ? AND u.poziom <> 'brak' ORDER BY m.kolejnosc", [s.rola_id]);
+      var self = this;
+      if (!this.sesja()) return [];
+      return S.query("SELECT * FROM moduly ORDER BY kolejnosc")
+        .map(function (m) { m.poziom = self.poziom(m.id); return m; })
+        .filter(function (m) { return m.poziom !== "brak"; });
     },
 
-    /* -------------------------- uprawnienia: pola -------------------------- */
-
-    moze: function (klucz) {
-      var s = this.sesja();
-      if (!s) return false;
-      var r = S.one("SELECT widoczne FROM uprawnienia_pol WHERE rola_id = ? AND klucz = ?",
-                    [s.rola_id, klucz]);
-      return !!(r && r.widoczne);
-    },
+    /* Uprawnienie pola to tez feature (finanse.prowizja, klient.pesel) */
+    moze: function (klucz) { return this.maFunkcje(klucz); },
 
     /* ------------------------- uprawnienia: wiersze ------------------------- */
 
@@ -248,8 +246,19 @@
       if (lista === null) return null;
       if (!lista.length) return [];
       var puste = lista.map(function () { return "?"; }).join(", ");
-      return S.query("SELECT DISTINCT klient_id FROM klient_instytucja WHERE instytucja_id IN (" +
-                     puste + ")", lista).map(function (r) { return r.klient_id; });
+      var handlowiec = this.handlowiec();
+      return S.query("SELECT DISTINCT klient_id FROM klient_instytucja WHERE instytucja_id IN (" + puste + ")" +
+                     (handlowiec ? " AND handlowiec_id = ?" : ""), handlowiec ? lista.concat([handlowiec]) : lista)
+        .map(function (r) { return r.klient_id; });
+    },
+
+    /* Konto instytucji bez feature zakres.cala_instytucja to handlowiec: widzi
+       wylacznie klientow i wnioski przypisane do siebie (D-210). Zwraca jego id
+       albo null, gdy konto widzi cala instytucje albo nie jest kontem instytucji. */
+    handlowiec: function () {
+      var s = this.sesja();
+      if (!s || s.rola_zakres !== "instytucja") return null;
+      return this.maFunkcje("zakres.cala_instytucja") ? null : s.uzytkownik_id;
     },
 
     /* Klient koncowy widzi wylacznie wlasne wnioski. W makiecie konto klienta

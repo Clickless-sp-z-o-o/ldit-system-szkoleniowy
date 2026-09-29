@@ -124,24 +124,51 @@ if (kontoKlienta) {
   console.log("  (brak konta klienta w danych demonstracyjnych, pomijam)");
 }
 
-/* ------------------------------ macierz uprawnien ------------------------------ */
-console.log("\nSpojnosc macierzy uprawnien");
+/* ------------------------ uprawnienia jako features (D-211) ------------------------ */
+console.log("\nSpojnosc uprawnien w modelu features");
 
-const role = Store.query("SELECT id FROM role").map((r) => r.id);
 const moduly = Store.query("SELECT id FROM moduly").map((m) => m.id);
-const braki = [];
-for (const r of role) {
-  for (const m of moduly) {
-    if (!Store.one("SELECT 1 AS x FROM uprawnienia WHERE rola_id = ? AND modul_id = ?", [r, m])) {
-      braki.push(r + "/" + m);
-    }
-  }
-}
-t.rowne(braki.length, 0, "kazda para rola-modul ma jawny wpis, nic nie jest domyslne");
+const katalog = new Set(Store.query("SELECT id FROM funkcje").map((f) => f.id));
+t.ok(moduly.every((m) => katalog.has(m + ".view") && katalog.has(m + ".manage")),
+  "kazdy modul ma w katalogu feature view i manage");
+const manageBezView = Store.query("SELECT id FROM funkcje WHERE id LIKE '%.manage' AND zalezy_od IS NULL");
+t.rowne(manageBezView.length, 0, "manage zalezy od view, jak dependsOn w acl.ts");
+const nadania = Store.query("SELECT rola_id, funkcja FROM role_funkcje");
+const sieroce = nadania.filter((n) => n.funkcja.endsWith(".*")
+  ? !moduly.includes(n.funkcja.slice(0, -2)) : !katalog.has(n.funkcja));
+t.rowne(sieroce.length, 0, "kazde nadanie wskazuje istniejaca feature albo modul (wildcard)");
 
-const poleBezWpisu = Store.query(
-  "SELECT DISTINCT klucz FROM uprawnienia_pol").filter((p) =>
-    Store.query("SELECT 1 AS x FROM uprawnienia_pol WHERE klucz = ?", [p.klucz]).length !== role.length);
-t.rowne(poleBezWpisu.length, 0, "kazde pole wrazliwe ma wpis dla kazdej roli");
+/* Model features daje te same uprawnienia co dawna macierz rola x modul */
+const OCZEKIWANE = [
+  ["bartek@ldit.pl", "admin", "edycja"], ["bartek@ldit.pl", "panelIS", "brak"],
+  ["martyna@ldit.pl", "dofin", "edycja"], ["martyna@ldit.pl", "inst", "podglad"], ["martyna@ldit.pl", "admin", "brak"],
+  ["biuro@odczarujpowerbi.pl", "dofin", "brak"], ["biuro@odczarujpowerbi.pl", "terminy", "edycja"],
+  ["biuro@odczarujpowerbi.pl", "dash", "podglad"], ["mirka@dronfortech.pl", "panelIS", "podglad"]
+];
+for (const [login, modul, poziom] of OCZEKIWANE) {
+  zaloguj(login);
+  t.rowne(Auth.poziom(modul), poziom, login + " ma poziom " + poziom + " w module " + modul);
+}
+zaloguj("bartek@ldit.pl");
+t.ok(Auth.maFunkcje("admin.manage") && Auth.maFunkcje("admin.view"), "wildcard admin.* obejmuje view i manage");
+t.ok(!Auth.maFunkcje("adminx.view"), "wildcard nie obejmuje modulu o podobnej nazwie");
+
+/* --------------------------- handlowiec instytucji (D-210) --------------------------- */
+console.log("\nHandlowiec widzi tylko swoich klientow i wnioski (D-210)");
+zaloguj("biuro@odczarujpowerbi.pl");
+const instIS = Auth.sesja().instytucja_id;
+const wszyscyIS = DB.KLIENCI.length, wnioskiIS = DB.WNIOSKI_WSZYSTKIE.length;
+t.ok(Auth.handlowiec() === null, "administrator instytucji widzi cala instytucje");
+
+const handlowiec = Store.one("SELECT id FROM uzytkownicy WHERE rola_id = 'pracownikIS' AND instytucja_id = ?", [instIS]);
+zaloguj(handlowiec.id);
+t.rowne(Auth.handlowiec(), handlowiec.id, "konto Pracownik IS jest handlowcem");
+t.ok(DB.KLIENCI.length > 0 && DB.KLIENCI.length < wszyscyIS, "handlowiec widzi czesc klientow instytucji (" + DB.KLIENCI.length + " z " + wszyscyIS + ")");
+const przypisani = new Set(Store.query("SELECT klient_id FROM klient_instytucja WHERE handlowiec_id = ?", [handlowiec.id]).map((r) => r.klient_id));
+t.ok(DB.KLIENCI.every((k) => przypisani.has(k.id)), "kazdy widoczny klient jest przypisany do tego handlowca");
+t.ok(DB.WNIOSKI_WSZYSTKIE.every((w) => w.handlowiec === handlowiec.id) && DB.WNIOSKI_WSZYSTKIE.length <= wnioskiIS,
+  "handlowiec widzi wylacznie wnioski przypisane do siebie");
+t.ok(DB.KOLEJKA.every((k) => k.handlowiec === handlowiec.id), "formularze tylko te, ktore wypelnil sam");
+t.rowne(DB.PODSUMOWANIA.length, 0, "handlowiec nie dostaje statystyk instytucji (D-209)");
 
 t.podsumuj();

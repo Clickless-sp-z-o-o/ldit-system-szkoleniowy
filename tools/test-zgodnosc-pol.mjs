@@ -10,7 +10,7 @@
    table_info kazdej tabeli.
    ============================================================================ */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -77,7 +77,12 @@ function kluczeNajwyzszego(literal) {
 const WZORZEC = /Store\.(insert|update)\(\s*"([a-z_]+)"\s*,/g;
 let sprawdzonych = 0;
 
-for (const plik of readdirSync(STRONY).filter((f) => f.endsWith(".html"))) {
+/* Strony i ich skrypty wydzielone do makieta/strony/js (pliki ponizej 300 linii) */
+const KATALOG_JS = join(STRONY, "js");
+const plikiStron = readdirSync(STRONY).filter((f) => f.endsWith(".html"))
+  .concat(existsSync(KATALOG_JS) ? readdirSync(KATALOG_JS).filter((f) => f.endsWith(".js")).map((f) => "js/" + f) : []);
+
+for (const plik of plikiStron) {
   const tresc = readFileSync(join(STRONY, plik), "utf8");
   let m;
   WZORZEC.lastIndex = 0;

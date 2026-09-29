@@ -107,6 +107,8 @@ async function main() {
 
   const db = new SQL.Database();
   db.exec(readFileSync(join(DB_DIR, "schema.sql"), "utf8"));
+  /* Kolejnosc tabel nie musi odpowiadac kluczom obcym; komplet sprawdza sprawdzKlucze() */
+  db.run("PRAGMA foreign_keys = OFF");
 
   let sql = "-- Dane startowe makiety, generowane przez tools/build-sqlite.mjs.\n" +
             "-- Nie edytuj recznie bez przegenerowania seed-db.js.\n\n" +

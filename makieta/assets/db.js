@@ -131,7 +131,8 @@
         prowizjaProcent: w.prowizja_typ_nadpisania === "procent" ? w.prowizja_wartosc : null,
         prowizjaKwota: w.prowizja_typ_nadpisania === "kwota" ? w.prowizja_wartosc : null,
         opiekun: inst.opiekun_ldit || "-",
-        fakturaId: w.faktura_id
+        fakturaId: w.faktura_id,
+        handlowiec: w.handlowiec_id
       };
     });
   }
@@ -229,7 +230,7 @@
     DB.KOLEJKA = S.get("formularze_oczekujace").map(function (k) {
       return { id: k.id, data: k.data, firma: k.firma, nip: k.nip, osob: k.osob, szkolenie: k.szkolenie,
                kontakt: k.kontakt, is: (instById[k.instytucja_id] || {}).nazwa || "-",
-               isId: k.instytucja_id, status: k.status, wypelnil: k.wypelnil };
+               isId: k.instytucja_id, status: k.status, wypelnil: k.wypelnil, handlowiec: k.handlowiec_id };
     });
     DB.MAILE = S.get("korespondencja").map(function (k) {
       return { klient: k.klient_id, isId: k.instytucja_id,

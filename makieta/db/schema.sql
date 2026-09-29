@@ -163,9 +163,12 @@ CREATE INDEX idx_klienci_nazwa ON klienci (nazwa);
 
 -- Jeden klient moze byc przypisany do wielu instytucji (D-144), kazda widzi go
 -- wylacznie we wlasnym kontekscie. To jest tabela egzekwujaca separacje.
+-- handlowiec_id: handlowiec instytucji prowadzacy klienta. Konto bez feature
+-- zakres.cala_instytucja widzi wylacznie swoich klientow (D-210).
 CREATE TABLE klient_instytucja (
   klient_id     TEXT NOT NULL REFERENCES klienci (id) ON DELETE CASCADE,
   instytucja_id TEXT NOT NULL REFERENCES instytucje (id) ON DELETE CASCADE,
+  handlowiec_id TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
   PRIMARY KEY (klient_id, instytucja_id)
 );
 
@@ -217,6 +220,7 @@ CREATE TABLE wnioski (
   nabor_id                  TEXT REFERENCES nabory (id),
   szkolenie_glowne_id       TEXT REFERENCES katalog_szkolen (id),
   faktura_id                TEXT REFERENCES faktury (id),          -- numer przy wniosku (D-139)
+  handlowiec_id             TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,  -- D-210
   etap                      INTEGER NOT NULL DEFAULT 3 CHECK (etap BETWEEN 1 AND 10),  -- D-146
 
   -- Dane zmienne klienta na poziomie wniosku (D-132, D-133, D-169). NULL = bierz z klienta.
@@ -302,21 +306,24 @@ CREATE TABLE moduly (
   kolejnosc INTEGER NOT NULL DEFAULT 0
 );
 
--- Macierz rola x modul (D-36). Poziom 'brak' oznacza brak pozycji w menu.
-CREATE TABLE uprawnienia (
-  rola_id  TEXT NOT NULL REFERENCES role (id) ON DELETE CASCADE,
-  modul_id TEXT NOT NULL REFERENCES moduly (id) ON DELETE CASCADE,
-  poziom   TEXT NOT NULL DEFAULT 'brak' CHECK (poziom IN ('brak','podglad','edycja')),
-  PRIMARY KEY (rola_id, modul_id)
+-- Katalog uprawnien w modelu features Open Mercato (D-176, D-211), odpowiednik
+-- acl.ts: "modul.view" i "modul.manage" dla kazdego modulu (D-36) oraz
+-- features pol (finanse.prowizja, klient.pesel...), ktorych framework nie ma
+-- i ktore dobudowujemy (D-149). manage zalezy od view.
+CREATE TABLE funkcje (
+  id        TEXT PRIMARY KEY CHECK (id GLOB '?*.?*'),
+  modul_id  TEXT REFERENCES moduly (id) ON DELETE CASCADE,
+  rodzaj    TEXT NOT NULL CHECK (rodzaj IN ('modul','pole')),
+  opis      TEXT NOT NULL,
+  zalezy_od TEXT REFERENCES funkcje (id)
 );
 
--- Widocznosc pol wrazliwych per rola. Tu egzekwowane sa D-114 (pracownik nie
--- widzi zyskow firmy), D-34, D-07 (stawki prowizji tylko admin) oraz D-76.
-CREATE TABLE uprawnienia_pol (
-  rola_id  TEXT NOT NULL REFERENCES role (id) ON DELETE CASCADE,
-  klucz    TEXT NOT NULL,
-  widoczne INTEGER NOT NULL DEFAULT 0,
-  PRIMARY KEY (rola_id, klucz)
+-- Nadania rolom, odpowiednik role_acls.features_json. Wartosc to feature albo
+-- wildcard "modul.*" (wszystkie akcje modulu). Brak nadania = brak dostepu.
+CREATE TABLE role_funkcje (
+  rola_id TEXT NOT NULL REFERENCES role (id) ON DELETE CASCADE,
+  funkcja TEXT NOT NULL CHECK (funkcja GLOB '?*.?*'),
+  PRIMARY KEY (rola_id, funkcja)
 );
 
 CREATE TABLE uzytkownicy (
@@ -420,6 +427,7 @@ CREATE TABLE formularze_oczekujace (
   szkolenie     TEXT,
   kontakt       TEXT,
   wypelnil      TEXT NOT NULL DEFAULT 'klient' CHECK (wypelnil IN ('klient','handlowiec')),  -- D-181
+  handlowiec_id TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,  -- D-210
   status        TEXT NOT NULL DEFAULT 'oczekuje'
                 CHECK (status IN ('oczekuje','zaakceptowany','odrzucony'))
 );
