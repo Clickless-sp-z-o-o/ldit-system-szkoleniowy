@@ -13,6 +13,7 @@ var SECTIONS = [
     { id: "01-kontekst",       ikona: "&#9632;", label: "Kontekst i cel" },
     { id: "02-role",           ikona: "&#9634;", label: "Role i uprawnienia" },
     { id: "03-model-danych",   ikona: "&#9638;", label: "Model danych i diagram tabel" },
+    { id: "18-model-tabel",    ikona: "&#9707;", label: "Diagram tabel (interaktywny)" },
     { id: "04-proces-statusy", ikona: "&#9201;", label: "Proces i statusy" }
   ] },
   { grupa: "Funkcje", items: [

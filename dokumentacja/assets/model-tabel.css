@@ -1,0 +1,95 @@
+/* Interaktywny diagram tabel (sekcje/18-model-tabel.html) */
+
+.mt-body { margin: 0; height: 100vh; overflow: hidden; background: var(--bg); }
+.mt-app { display: flex; flex-direction: column; height: 100vh; }
+
+.mt-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.mt-title { display: flex; flex-direction: column; margin-right: auto; }
+.mt-title b { font-size: 15px; }
+.mt-sub { font-size: 12px; color: var(--ink-3); }
+.mt-szukaj {
+  font: inherit; font-size: 13px; padding: 6px 10px; width: 260px;
+  border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface);
+}
+.mt-przelacz { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.mt-zoom { display: flex; align-items: center; gap: 4px; }
+.mt-zoom button {
+  font: inherit; font-size: 13px; min-width: 30px; padding: 5px 9px; cursor: pointer;
+  border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink-2);
+}
+.mt-zoom button:hover { background: var(--surface-2); }
+.mt-zoom span { font-size: 12px; color: var(--ink-3); min-width: 42px; text-align: center; }
+.mt-pelny { font-size: 13px; }
+
+.mt-main { display: flex; flex: 1 1 auto; min-height: 0; }
+.mt-canvas { position: relative; flex: 1 1 auto; overflow: hidden; cursor: grab; background:
+  radial-gradient(circle, var(--line) 1px, transparent 1px) 0 0 / 22px 22px, var(--surface-2); }
+.mt-canvas.ciagnie { cursor: grabbing; }
+.mt-canvas svg { width: 100%; height: 100%; display: block; user-select: none; }
+
+.mt-legenda {
+  position: absolute; left: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 4px;
+  background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 10px; font-size: 12px; color: var(--ink-2); box-shadow: var(--shadow-sm);
+}
+.mt-legenda i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.mt-podpowiedz {
+  position: absolute; right: 12px; bottom: 10px; font-size: 12px; color: var(--ink-3);
+  background: rgba(255,255,255,.9); padding: 4px 8px; border-radius: 6px;
+}
+
+/* Elementy SVG */
+.mt-tab { cursor: pointer; }
+.mt-tab .ramka { fill: #fff; stroke: var(--line-strong); stroke-width: 1; }
+.mt-tab:hover .ramka { stroke: var(--accent); }
+.mt-tab.wybrana .ramka { stroke: var(--accent); stroke-width: 2.5; }
+.mt-tab.przygaszona { opacity: .22; }
+.mt-tab .naglowek-txt { font: 700 13px system-ui, sans-serif; fill: #0f172a; }
+.mt-tab .licznik { font: 11px system-ui, sans-serif; fill: #475569; }
+.mt-tab .kol { font: 12px ui-monospace, Consolas, monospace; fill: #334155; }
+.mt-tab .kol.pk { font-weight: 700; fill: #0f172a; }
+.mt-tab .kol.fk { fill: #1d4ed8; }
+.mt-tab .typ { font: 11px ui-monospace, Consolas, monospace; fill: #94a3b8; }
+.mt-tab .znacznik { font: 700 9px system-ui, sans-serif; }
+.mt-tab .reszta { font: italic 11px system-ui, sans-serif; fill: #94a3b8; }
+.mt-tab .trafienie { fill: #fef08a; }
+.mt-rel { fill: none; stroke: #94a3b8; stroke-width: 1.2; opacity: .55; }
+.mt-rel.aktywna { stroke: var(--accent); stroke-width: 2.2; opacity: 1; }
+.mt-rel.przygaszona { opacity: .06; }
+.mt-grupa-tytul { font: 700 13px system-ui, sans-serif; fill: #475569; letter-spacing: .02em; }
+
+/* Panel szczegolow */
+.mt-panel {
+  width: 520px; flex: 0 0 520px; overflow-y: auto; background: var(--surface);
+  border-left: 1px solid var(--line); padding: 18px 20px 40px; font-size: 13px;
+}
+.mt-pusty h3 { margin: 4px 0 8px; }
+.mt-pusty p { color: var(--ink-2); line-height: 1.55; }
+.mt-drobne { font-size: 12px; color: var(--ink-3) !important; }
+.mt-panel h2 { font-size: 20px; margin: 0; font-family: ui-monospace, Consolas, monospace; }
+.mt-panel h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: 20px 0 8px; }
+.mt-panel .mt-tytul { color: var(--ink-2); margin: 4px 0 10px; }
+.mt-panel .mt-chipy { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.mt-chip { font-size: 11.5px; padding: 2px 8px; border-radius: 10px; background: var(--surface-3); color: var(--ink-2); border: 1px solid var(--line); }
+.mt-opis { line-height: 1.55; color: var(--ink-2); margin: 6px 0; }
+.mt-cytat { border-left: 3px solid var(--line-strong); padding: 2px 0 2px 10px; color: var(--ink-3); font-style: italic; margin: 6px 0; }
+.mt-kolumny { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.mt-kolumny th { text-align: left; font-size: 11px; color: var(--ink-3); font-weight: 600; padding: 6px 6px; border-bottom: 1px solid var(--line-strong); }
+.mt-kolumny td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mt-kolumny .nazwa { font-family: ui-monospace, Consolas, monospace; font-weight: 600; white-space: nowrap; }
+.mt-kolumny .typ { font-family: ui-monospace, Consolas, monospace; color: var(--ink-3); white-space: nowrap; }
+.mt-kolumny .grupa td { background: var(--surface-2); font-size: 11.5px; color: var(--ink-3); font-style: italic; padding: 5px 6px; }
+.mt-kolumny .szczegol { color: var(--ink-2); line-height: 1.45; }
+.mt-kolumny .szczegol div + div { margin-top: 3px; }
+.mt-kolumny .ogr { font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; color: #7c2d12; }
+.mt-znak { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 4px; border-radius: 3px; margin-right: 3px; }
+.mt-znak.pk { background: #fef3c7; color: #92400e; }
+.mt-znak.fk { background: #dbeafe; color: #1e40af; }
+.mt-znak.nn { background: var(--surface-3); color: var(--ink-3); }
+.mt-link { color: var(--accent); cursor: pointer; font-family: ui-monospace, Consolas, monospace; }
+.mt-link:hover { text-decoration: underline; }
+.mt-lista { margin: 0; padding-left: 18px; line-height: 1.7; }
+.mt-lista code, .mt-panel code { font-size: 12px; }

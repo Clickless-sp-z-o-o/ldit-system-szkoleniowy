@@ -12,6 +12,8 @@ Model wypracowany na warsztacie, w kilku miejscach na żywo skorygowany. Wykonaw
 
 ## Diagram encji
 
+Interaktywna wersja tego diagramu, z opisem i kolumnami każdej tabeli po kliknięciu, jest w klikalnej dokumentacji: **Diagram tabel (interaktywny)** (`dokumentacja/sekcje/18-model-tabel.html`, dane generuje `node tools/build-model.mjs`).
+
 Diagram odzwierciedla `makieta/db/schema.sql` (31 tabel). Krotność `||--o{` oznacza relację obowiązkową (klucz obcy `NOT NULL`), `|o--o{` oznacza relację opcjonalną (klucz obcy dopuszcza `NULL`).
 
 ```mermaid
@@ -433,7 +435,7 @@ Poniżej encje pogrupowane tak, jak w `schema.sql`: słowniki i konfiguracja, in
 | Pole | Typ | Uwagi |
 |---|---|---|
 | rok | tekst, klucz główny | Dokładnie cztery cyfry (`CHECK`). Na nim wisi klucz obcy `wnioski.rok` |
-| opis | tekst, nullable | Notka widoczna na pustej zakładce, np. "dane przykładowe" |
+| opis | tekst, nullable | Notka widoczna na zakładce, np. "wniosków z 2025 nie przenosimy" |
 | utworzono | data | |
 | utworzyl | tekst, nullable | Kto dodał zakładkę |
 
@@ -845,4 +847,4 @@ W `schema.sql` kolumna `wnioski.rok` jest typu `TEXT`, nie liczbowego - **filtr 
 
 Nierozstrzygnięte pierwotnie: czy to osobne widoki, filtr po roku, czy fizycznie osobne zbiory danych. **Rozstrzygnięcie zaimplementowane:** filtr po roku na jednej tabeli `wnioski`.
 
-**Aktualizacja 2026-09-29 [D-159, D-160].** Lista lat przestała być zaszyta w kodzie ekranu. Leży w tabeli `lata_zestawien`, a `wnioski.rok` jest do niej kluczem obcym. W makiecie są trzy zakładki: 2025 (dane przykładowe), 2026 (rok bieżący, jedyny objęty testem migracji z Excela) i 2027 (pusta). Kolejny rok administrator dodaje sam.
+**Aktualizacja 2026-09-29 [D-159, D-160].** Lista lat przestała być zaszyta w kodzie ekranu. Leży w tabeli `lata_zestawien`, a `wnioski.rok` jest do niej kluczem obcym. W makiecie są trzy zakładki: 2025 (pusta, wniosków z tego roku nie przenosimy), 2026 (rok bieżący, jedyny objęty testem migracji z Excela) i 2027 (pusta). Kolejny rok administrator dodaje sam.

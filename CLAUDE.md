@@ -140,6 +140,8 @@ node tools/smoke-crud.mjs         # CRUD, ograniczenia schematu, pola wyliczane
 node tools/test-uprawnienia.mjs   # role, uprawnienia, separacja danych
 node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
 node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus korekty
+node tools/test-lata.mjs          # zakładki roczne, dodawanie roku, brak wniosków z 2025
+node tools/test-model.mjs         # dane interaktywnego diagramu tabel zgodne ze schematem
 ```
 
 Po zmianie schematu bazy przebuduj ją: `node tools/build-sqlite.mjs`.
@@ -154,7 +156,11 @@ edytować w plikach HTML**, bo następne uruchomienie skryptu je nadpisze:
 ```
 node tools/build-diagramy.mjs   # diagramy Mermaid z docs/*.md do sekcji HTML
 node tools/build-rejestry.mjs   # decyzje D-125+ i pytania P-55+ do rejestrow HTML
+node tools/build-model.mjs      # dane interaktywnego diagramu tabel ze schema.sql i docs/03
 ```
+
+Po zmianie `schema.sql` albo opisów tabel w `docs/03` uruchom `build-model.mjs`, inaczej
+diagram interaktywny pokaże stary stan.
 
 Oba skrypty są idempotentne, a wstawione bloki są otoczone znacznikiem `<!-- diagram:od -->`
 albo `<!-- rejestr:od -->`.

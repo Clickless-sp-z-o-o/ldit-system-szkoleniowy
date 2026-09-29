@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagram tabel</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/model-tabel.css">
+</head>
+<body class="mt-body">
+
+<div class="mt-app">
+  <div class="mt-bar">
+    <div class="mt-title">
+      <b>Diagram tabel</b>
+      <span class="mt-sub" id="mtMeta"></span>
+    </div>
+    <input class="mt-szukaj" id="mtSzukaj" type="search" placeholder="Szukaj tabeli lub kolumny...">
+    <label class="mt-przelacz"><input type="checkbox" id="mtKlucze"> tylko klucze</label>
+    <div class="mt-zoom">
+      <button id="mtMniej" title="Oddal">&minus;</button>
+      <span id="mtSkala">100%</span>
+      <button id="mtWiecej" title="Przybliż">+</button>
+      <button id="mtDopasuj" title="Pokaż cały diagram">Dopasuj</button>
+    </div>
+    <a class="mt-pelny" href="18-model-tabel.html" target="_blank" rel="noopener" title="Otwórz na pełnym ekranie">Pełny ekran &#8599;</a>
+  </div>
+
+  <div class="mt-main">
+    <div class="mt-canvas" id="mtCanvas">
+      <svg id="mtSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="mt-legenda" id="mtLegenda"></div>
+      <div class="mt-podpowiedz">Kliknij tabelę, żeby zobaczyć opis i kolumny. Przeciągnij tło, żeby przesunąć, kółko myszy przybliża.</div>
+    </div>
+    <aside class="mt-panel" id="mtPanel">
+      <div class="mt-pusty">
+        <h3>Wybierz tabelę</h3>
+        <p>Kliknij dowolną tabelę na diagramie albo wpisz jej nazwę w wyszukiwarce.
+           Panel pokaże opis, wszystkie kolumny z typami i ograniczeniami, relacje, indeksy
+           oraz widoki, które z niej liczą.</p>
+        <p class="mt-drobne">Źródło: <code>makieta/db/schema.sql</code> (struktura), <code>docs/03-model-danych.md</code>
+           (uwagi do kolumn), baza startowa makiety (liczba wierszy). Generuje <code>tools/build-model.mjs</code>.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="../assets/model-dane.js"></script>
+<script src="../assets/model-panel.js"></script>
+<script src="../assets/model-diagram.js"></script>
+</body>
+</html>

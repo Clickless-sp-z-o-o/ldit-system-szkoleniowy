@@ -15,6 +15,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { escapuj, inline, referencje } from "./md-html.mjs";
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DOCS = join(ROOT, "docs");
 const SEKCJE = join(ROOT, "dokumentacja", "sekcje");
@@ -23,28 +25,6 @@ const OD = "<!-- rejestr:od -->";
 const DO = "<!-- rejestr:do -->";
 
 /* ------------------------- zamiana Markdown na HTML ------------------------- */
-
-function escapuj(t) {
-  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-/* Odwołania do rejestrów dostają styl referencji. Pozycje od D-121 i od P-55
-   są oznaczane jako nowe, tak samo jak w pozostałych sekcjach strony. */
-function referencje(t) {
-  return t.replace(/\[?\b([DPR])-(\d{2,3})\b\]?/g, (_, typ, nr) => {
-    const numer = parseInt(nr, 10);
-    const klasa = typ === "P" ? "ref p"
-      : typ === "R" ? "ref"
-      : numer >= 121 ? "ref new" : "ref";
-    return '<span class="' + klasa + '">' + typ + "-" + nr + "</span>";
-  });
-}
-
-function inline(t) {
-  return referencje(escapuj(t))
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
-}
 
 function pigulka(sila) {
   const s = sila.replace(/\*/g, "").trim();
