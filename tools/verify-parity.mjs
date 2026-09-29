@@ -61,7 +61,9 @@ function diffPath(oczekiwane, jest, sciezka) {
 
 /* MODULY swiadomie wypada z porownania: dawniej byla to lista 14 etykiet
    z makiety, teraz sa to realne moduly menu z tabeli uprawnien (D-36). */
-const TABELE = ["INSTYTUCJE", "PUPY", "SZKOLENIA", "KLIENCI", "WNIOSKI", "WNIOSKI_2025",
+/* WNIOSKI_2025 swiadomie wypada: wnioskow z 2025 nie przenosimy (D-160).
+   Ze ich nie ma, sprawdza osobna asercja na koncu. */
+const TABELE = ["INSTYTUCJE", "PUPY", "SZKOLENIA", "KLIENCI", "WNIOSKI",
   "NABORY", "FAKTURY", "TERMINY", "UZYTKOWNICY", "AKTYWNOSC", "LOGOWANIA",
   "ZGLOSZENIA", "SZABLONY", "KOLEJKA", "MAILE", "CELE"];
 
@@ -107,6 +109,13 @@ for (const t of TABELE) {
   } else {
     console.log("  OK   " + t + " (" + a.length + ")");
   }
+}
+
+if (nowe.WNIOSKI_2025.length !== 0) {
+  console.error("  BLAD WNIOSKI_2025: oczekiwano 0 wnioskow (D-160), jest " + nowe.WNIOSKI_2025.length);
+  bledy++;
+} else {
+  console.log("  OK   WNIOSKI_2025 puste, rocznik nie jest migrowany (D-160)");
 }
 
 if (bledy) {

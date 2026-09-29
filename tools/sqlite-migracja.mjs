@@ -107,12 +107,20 @@ export function progiDofinansowaniaRows() {
   ];
 }
 
-/* Zakladki roczne Dofinansowan (D-159). W tescie migrujemy tylko rok 2026
-   (D-160), wiec 2025 zostaje z danymi przykladowymi, a 2027 czeka pusty. */
+/* Do bazy trafiaja wylacznie wnioski z tych rocznikow. W tescie migrujemy
+   tylko rok 2026 (D-160), wnioski z 2025 nie sa przenoszone. */
+export const ROCZNIKI_MIGROWANE = ["2026"];
+
+export function czyMigrowany(wniosek) {
+  return ROCZNIKI_MIGROWANE.includes(String(wniosek.rok));
+}
+
+/* Zakladki roczne Dofinansowan (D-159). Zakladka 2025 istnieje, ale jest pusta,
+   2027 czeka na nowy rok. */
 export function lataZestawienRows() {
   const kto = "Bartłomiej Olejnik";
   return [
-    { rok: "2025", opis: "Dane przykładowe. W teście przenosimy z Excela tylko rok 2026 (D-160).",
+    { rok: "2025", opis: "Wniosków z 2025 nie przenosimy do systemu, w teście tylko rok 2026 (D-160).",
       utworzono: "2026-09-29", utworzyl: kto },
     { rok: "2026", opis: "Rok bieżący. Dane przeniesione z Excela w ramach testu (D-160).",
       utworzono: "2026-09-29", utworzyl: kto },
@@ -181,7 +189,7 @@ export function migruj(src) {
   });
 
   /* Wnioski: odwrocenie wyliczen D-134 z zachowaniem liczb */
-  const wnioski = src.wnioski.map((w) => {
+  const wnioski = src.wnioski.filter(czyMigrowany).map((w) => {
     const doplata = w.kwota_doplaty_dodatkowej || 0;
     const kosztStary = w.koszt_calkowity;
     return {
@@ -208,6 +216,7 @@ export function migruj(src) {
       data_aktualizacji: w.data_wniosku
     };
   });
+  const idWnioskow = new Set(wnioski.map((w) => w.id));
 
   /* Konta: rola jako referencja, przydzial instytucji jako osobne wiersze (D-113) */
   const rolaPoNazwie = { "Administrator": "admin", "Pracownik LDIT": "pracownik",
@@ -262,7 +271,7 @@ export function migruj(src) {
     nabory: src.nabory,
     faktury: src.faktury,
     wnioski,
-    uczestnicy: src.uczestnicy,
+    uczestnicy: src.uczestnicy.filter((u) => idWnioskow.has(u.wniosek_id)),
     role: ROLE,
     moduly: MODULY,
     uprawnienia: uprawnieniaRows(),

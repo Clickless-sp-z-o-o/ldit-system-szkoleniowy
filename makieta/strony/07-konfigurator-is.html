@@ -552,9 +552,9 @@
     document.getElementById("tagModel").textContent = "Model " + p.model + ": " + OPIS_MODELU[p.model];
 
     var wn26 = DB.WNIOSKI.filter(function (w) { return w.is === i.id; });
-    var wn25 = DB.WNIOSKI_2025.filter(function (w) { return w.is === i.id; });
+    /* Wnioskow z 2025 nie przenosimy (D-160), liczymy tylko biezacy rocznik */
     document.getElementById("podsumowanie").innerHTML =
-      i.miasto + " &middot; " + wn26.length + " projektów w 2026, " + wn25.length + " w 2025 &middot; opiekun " + i.opiekun;
+      i.miasto + " &middot; " + wn26.length + " projektów w 2026 &middot; opiekun " + i.opiekun;
 
     /* Warunki aktualne */
     document.getElementById("obowOd").innerHTML = "obowiązuje od <b>2026-01-01</b>";

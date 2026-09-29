@@ -19,7 +19,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { migruj } from "./sqlite-migracja.mjs";
+import { czyMigrowany, migruj } from "./sqlite-migracja.mjs";
 
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -89,7 +89,7 @@ function sprawdzParytet(db, src) {
   );
   const wyliczone = Object.fromEntries(res[0].values.map((r) => [r[0], { koszt: r[1], proc: r[2] }]));
   let bledy = 0;
-  for (const w of src.wnioski) {
+  for (const w of src.wnioski.filter(czyMigrowany)) {
     const v = wyliczone[w.id];
     const oczekiwanyKoszt = w.koszt_calkowity == null ? 0 : w.koszt_calkowity;
     if (Math.abs((v.koszt || 0) - oczekiwanyKoszt) > 0.01) bledy++;

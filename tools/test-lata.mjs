@@ -25,6 +25,9 @@ DB.przebuduj();
 
 t.rowne(DB.LATA.map((l) => l.rok).join(","), "2025,2026,2027", "baza startowa ma zakladki 2025, 2026, 2027");
 t.rowne(DB.WNIOSKI_WSZYSTKIE.filter((x) => x.rok === "2027").length, 0, "zakladka 2027 jest pusta");
+t.rowne(DB.WNIOSKI_WSZYSTKIE.filter((x) => x.rok === "2025").length, 0, "wnioski z 2025 nie sa przenoszone (D-160)");
+t.rowne(Store.one("SELECT COUNT(*) AS n FROM uczestnicy u LEFT JOIN wnioski w ON w.id = u.wniosek_id " +
+                  "WHERE w.id IS NULL").n, 0, "w bazie nie zostali uczestnicy usunietych wnioskow");
 t.ok(DB.WNIOSKI_WSZYSTKIE.filter((x) => x.rok === "2026").length > 0, "zakladka 2026 ma wnioski");
 t.rowne(Lata.nastepny(), "2028", "propozycja kolejnego roku to ostatni + 1");
 

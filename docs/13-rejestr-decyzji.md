@@ -286,7 +286,7 @@ przyzwyczajenia się do wyglądu innego niż Excel.
 |---|---|---|---|---|
 | **D-158** | **Kolory statusów identyczne z obecnym Excelem**, kody HEX podane przez klienta: Pozytywna `#C6E0B4`, Negatywna `#F8CBAD`, Rozliczony `#B4C6E7`, Rezygnacja `#FFE699`. Czekamy pozostaje biały | TWARDA | [K] | **koryguje D-123** |
 | **D-159** | **Zakładki roczne Dofinansowań (2025, 2026, 2027 i kolejne) administrator dodaje sam**, bez wykonawcy. Lata są wierszami tabeli `lata_zestawien`, wniosek może należeć tylko do roku, który ma zakładkę | TWARDA | [K] potrzeba, [W] rozwiązanie | uszczegółowia D-129, D-55 |
-| **D-160** | **Test migracji obejmuje wyłącznie dane z 2026 roku.** Zespół ma najpierw oswoić się z systemem na bieżącym roczniku. Zakładka 2025 w makiecie ma dane przykładowe, 2027 jest pusta | TWARDA | [K] | **koryguje D-129** (tam: brak migracji danych historycznych) |
+| **D-160** | **Test migracji obejmuje wyłącznie dane z 2026 roku.** Zespół ma najpierw oswoić się z systemem na bieżącym roczniku. Wnioski z 2025 nie są przenoszone i zostały usunięte z bazy makiety, zakładki 2025 i 2027 są puste | TWARDA | [K] | **koryguje D-129** (tam: brak migracji danych historycznych) |
 
 ---
 
