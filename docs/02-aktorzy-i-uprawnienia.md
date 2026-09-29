@@ -149,13 +149,13 @@ Wersja robocza do potwierdzenia. Pola oznaczone `?` wymagają rozstrzygnięcia.
 | Baza klientów (Niezłożone) | Pełna | Przypisane IS | Wszyscy klienci instytucji | **Tylko przypisani do siebie** [D-210] | Brak |
 | Karta klienta i wniosku | Pełna edycja | Edycja w kontekście | Odczyt statusu | Odczyt ograniczony, tylko przypisani do siebie [D-210] | Własny status (`?`) |
 | Katalog szkoleń | Pełny | Odczyt | Własny, pełna edycja | Brak | Brak |
-| Terminy i kalendarz | Pełny | W kontekście | Własne terminy | Brak | Własne (`?`) |
+| Terminy i kalendarz | Pełny | Odczyt, przypisane IS [D-142] | Własne terminy | Brak | Własne (`?`) |
 | Konfigurator IS (prowizje) | **Wyłącznie admin** | Brak | **Brak** | Brak | Brak |
 | Administracja (prowizje szczegółowe) | **Wyłącznie admin** | Brak (`?`) | Brak | Brak | Brak |
 | Faktury | Pełny | Brak | Brak | Brak | Brak |
 | Powiadomienia i szablony | Pełny | Wysyłka | Szablony do Outlooka | Brak | Brak |
 | Zgłoszenia (incydenty) | Pełny | Pełny | **Brak** | Brak | Brak |
-| Nabory | Pełny | Odczyt | Odczyt (`?`) | Brak | Odczyt (`?`) |
+| Nabory | Pełny | Odczyt | Brak do decyzji klienta (`?`) | Brak | Odczyt (`?`) |
 | Konta i uprawnienia | Pełny | Brak | Użytkownicy własnej IS | Brak | Brak |
 | Rejestr aktywności | Pełny | Brak | Brak | Brak | Brak |
 

@@ -38,6 +38,15 @@
     return S.query("SELECT rok, opis, utworzono, utworzyl FROM lata_zestawien ORDER BY rok");
   }
 
+  /* Zakladka otwierana domyslnie w Zestawieniach: rok biezacy, jesli ma zakladke,
+     inaczej ostatni rok z listy. Z niej licza sie liczniki "Wnioski (n)" na innych ekranach. */
+  function domyslny() {
+    var biezacy = String(new Date().getFullYear());
+    var lata = lista().map(function (l) { return l.rok; });
+    if (lata.indexOf(biezacy) >= 0) return biezacy;
+    return lata.length ? lata[lata.length - 1] : biezacy;
+  }
+
   function nastepny() {
     var r = S.one("SELECT MAX(CAST(rok AS INTEGER)) AS m FROM lata_zestawien");
     return String(r && r.m ? r.m + 1 : new Date().getFullYear());
@@ -63,5 +72,5 @@
     });
   }
 
-  global.Lata = { lista: lista, nastepny: nastepny, dodaj: dodaj, LataError: LataError };
+  global.Lata = { lista: lista, domyslny: domyslny, nastepny: nastepny, dodaj: dodaj, LataError: LataError };
 })(window);

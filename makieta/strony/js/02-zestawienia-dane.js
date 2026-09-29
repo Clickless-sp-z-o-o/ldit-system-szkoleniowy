@@ -10,12 +10,11 @@ var NIEPRZYPISANE = "nieprzypisane";
    przerysowania przy operacjach masowych */
 var STAN_02 = { forcedInst: null, rokAktywny: "", W: [], batch: false };
 
-function rokBiezacy() { return String(new Date().getFullYear()); }
-/* Domyslnie rok biezacy, jesli ma zakladke, inaczej ostatni rok z listy */
+/* Rok z adresu (powrot z karty wniosku), jesli ma zakladke, inaczej zakladka domyslna */
 function wybierzRokDomyslny() {
-  var biezacy = rokBiezacy();
-  if (DB.LATA.some(function (l) { return l.rok === biezacy; })) return biezacy;
-  return DB.LATA.length ? DB.LATA[DB.LATA.length - 1].rok : biezacy;
+  var zAdresu = Nawigacja.odczytajZapytanie(location.search, ["rok"]).rok;
+  if (zAdresu === NIEPRZYPISANE || DB.LATA.some(function (l) { return l.rok === zAdresu; })) return zAdresu;
+  return Lata.domyslny();
 }
 
 /* Wejscie z listy instytucji w menu (?is=nazwa): pokazuj TYLKO dane tej instytucji.

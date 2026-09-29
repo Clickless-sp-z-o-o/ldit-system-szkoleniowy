@@ -45,7 +45,6 @@ function odswiezRok() {
   /* Nowy projekt dostaje numer i identyfikator z roku, wiec nie ma sensu w zakladce bez roku */
   document.getElementById("btnNowyProjekt").style.display = STAN_02.rokAktywny === NIEPRZYPISANE ? "none" : "";
   rysujLata(); render();
-  var tp = document.querySelector(".mod-tabs a.on .n"); if (tp) tp.textContent = STAN_02.W.length;
 }
 function wybierzRok(rok) { STAN_02.rokAktywny = rok; odswiezRok(); }
 

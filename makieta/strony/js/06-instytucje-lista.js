@@ -74,6 +74,15 @@ function aktywujTab(pid) {
   el(pid).classList.add("on");
 }
 
+/* Wejscie z linku (np. Zgloszenia, "Otworz karte podmiotu"): ?id=IS-01 otwiera karte tej
+   instytucji. Instytucja spoza zakresu konta nie jest w DB.INSTYTUCJE, wiec link nic nie odslania. */
+function wybierzZAdresu06() {
+  var id = Nawigacja.odczytajZapytanie(location.search, ["id"]).id;
+  var jest = DB.INSTYTUCJE.some(function (i) { return i.id === id; });
+  if (jest) STAN_06.wybrana = id;
+  return jest;
+}
+
 function odswiez06() {
   wypelnijFiltr("fOpiekun", "Opiekun LDIT", "opiekun");
   wypelnijFiltr("fMiasto", "Miasto", "miasto");

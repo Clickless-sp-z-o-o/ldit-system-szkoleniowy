@@ -47,6 +47,15 @@ function podlaczZakladki() {
   });
 }
 
+/* Wejscie z linku (np. dashboard "Faktury po terminie"): ?zakladka=faktury&status=Po terminie
+   otwiera zakladke i ustawia filtr statusu faktur. Nieznana zakladka zostawia domyslna. */
+function otworzZakladkeZAdresu() {
+  var p = Nawigacja.odczytajZapytanie(location.search, ["zakladka", "status"]);
+  var tab = document.querySelector('.tab[data-t="t-' + CSS.escape(p.zakladka) + '"]');
+  if (tab) tab.click();
+  if (p.status) document.getElementById("fFSt").value = p.status;
+}
+
 function wypelnijSelektorOkresu() {
   var miesiace = {};
   Object.keys(STAN_08.wyniki).forEach(function (k) {
@@ -91,6 +100,7 @@ function inicjuj08() {
   }).join("");
   document.getElementById("tagRok").textContent = "rok " + STAN_08.rok;
   podlaczZakladki();
+  otworzZakladkeZAdresu();
 
   wypelnijSelektorOkresu();
   STAN_08.wybranaIS = (DB.INSTYTUCJE.filter(function (i) { return pozycjeIS(i.id, "").length; })[0] ||

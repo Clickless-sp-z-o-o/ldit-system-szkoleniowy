@@ -20,7 +20,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ASSETS = join(ROOT, "makieta", "assets");
 const DB_DIR = join(ROOT, "makieta", "db");
 
-const PLIKI = ["sqlite.js", "store.js", "haslo.js", "funkcje.js", "auth.js", "walidacja.js", "straznik.js", "zakres.js", "prowizja.js", "db.js", "lata.js", "html.js"];
+const PLIKI = ["sqlite.js", "store.js", "haslo.js", "funkcje.js", "auth.js", "walidacja.js", "straznik.js", "zakres.js", "prowizja.js", "db.js", "lata.js", "html.js", "nawigacja.js"];
 
 function stworzOkno() {
   const sluchacze = {};
@@ -46,7 +46,7 @@ function stworzOkno() {
 export async function przygotuj() {
   const window = stworzOkno();
   const sandbox = { window, console, Promise, Uint8Array, Error, JSON, Math, Object, Array, String, Number, Date, RegExp, parseInt, parseFloat,
-                    unescape, encodeURIComponent };
+                    unescape, encodeURIComponent, URLSearchParams };
   sandbox.global = sandbox;
   vm.createContext(sandbox);
 

@@ -17,6 +17,17 @@
   .role-hint.show { display: block; }
   .role-hint b { color: #fff; }
   .role-hint .x { float: right; cursor: pointer; color: #64748b; margin-left: 10px; }
+  .crumb .sep { margin: 0 6px; }
+  .akceptacje {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 15px; color: var(--ink-2);
+  }
+  .akceptacje .n {
+    position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--neg-ink); color: #fff; font-size: 11px; font-weight: 700;
+    line-height: 18px; text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -49,6 +60,8 @@
       </div>
 
       <div class="topbar-right">
+        <button class="akceptacje" id="akceptacje" hidden
+                data-tip="Formularze zgloszeniowe czekajace na akceptacje (bramka anty-spam). Klik otwiera Zadania i powiadomienia. D-105, D-140.">&#9993;<span class="n" id="akceptacjeN"></span></button>
         <div class="uzytkownik">
           <div class="uzytkownik-dane">
             <div class="uzytkownik-imie" id="imie">&nbsp;</div>
@@ -87,8 +100,10 @@
 <script src="assets/prowizja.js"></script>
 <script src="assets/db.js"></script>
 <script src="assets/html.js"></script>
+<script src="assets/nawigacja.js"></script>
 <script src="assets/tips.js"></script>
 <script src="assets/boot.js"></script>
+<script src="assets/powloka-ekran.js"></script>
 
 <script type="text/kfs-strona">
 /* ================================================================
@@ -193,20 +208,23 @@ function render() {
       el.classList.add("active");
       if (id) stan.aktywny = id;
 
-      ustawOkruszek(el.getAttribute("data-label") || el.textContent.trim());
+      ustawOkruszek([el.getAttribute("data-label") || el.textContent.trim()]);
       document.getElementById("view").src = "strony/" + plik;
     });
   });
 }
 
-/* Okruszek buduje sie przez textContent: nazwy pochodza z bazy */
-function ustawOkruszek(tekst) {
-  var b = document.createElement("b");
-  b.textContent = tekst;
-  var el = document.getElementById("crumb");
-  el.innerHTML = "";
-  el.appendChild(b);
-}
+document.getElementById("akceptacje").addEventListener("click", function () {
+  document.getElementById("view").src = "strony/18-zadania.html";
+});
+
+window.addEventListener("message", function (ev) {
+  if (ev.source !== document.getElementById("view").contentWindow) return;
+  if (!ev.data || ev.data.typ !== "kfs:ekran") return;
+  var idMenu = zaznaczEkran(ev.data);
+  if (idMenu) stan.aktywny = idMenu;
+  pokazLicznik(ev.data.doAkceptacji);
+});
 
 function pokazSesje() {
   document.getElementById("imie").textContent = sesja.imie;
@@ -232,7 +250,7 @@ document.getElementById("wyloguj").addEventListener("click", function () {
 document.getElementById("gsearch").addEventListener("keydown", function (e) {
   if (e.key === "Enter" && this.value.trim()) {
     document.getElementById("view").src = "strony/04-baza-klientow.html?q=" + encodeURIComponent(this.value.trim());
-    ustawOkruszek("Wyniki wyszukiwania");
+    ustawOkruszek(["Wyniki wyszukiwania"]);
   }
 });
 
@@ -240,7 +258,7 @@ document.getElementById("gsearch").addEventListener("keydown", function (e) {
 var start = Auth.moduly()[0];
 if (start) {
   stan.aktywny = start.id;
-  ustawOkruszek(start.nazwa);
+  ustawOkruszek([start.nazwa]);
   document.getElementById("view").src = "strony/" + start.plik;
 }
 

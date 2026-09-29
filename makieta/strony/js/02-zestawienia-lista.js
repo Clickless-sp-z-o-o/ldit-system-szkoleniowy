@@ -84,6 +84,45 @@ function render() {
     c.addEventListener("change", licz);
   });
   licz();
+  odswiezZakladki02(lista.length);
+  Nawigacja.zapiszWAdresie(wartosciFiltrow02());
+}
+
+/* Rok i filtry w adresie: link z Bazy danych i z wyszukiwarki otwiera liste przefiltrowana,
+   a powrot z karty wniosku odtwarza rok, filtry i wiersz. Instytucja z menu (?is=)
+   jest wymuszona, wiec nie ma osobnego filtra inst. */
+var FILTRY_02 = { q: "q", inst: "fIS", pup: "fPUP", status: "fStatus" };
+
+function filtryZAdresu02() {
+  var pola = Object.assign({}, FILTRY_02);
+  if (STAN_02.forcedInst) delete pola.inst;
+  return pola;
+}
+
+function wartosciFiltrow02() {
+  var w = { is: STAN_02.forcedInst ? STAN_02.forcedInst.nazwa : "", rok: STAN_02.rokAktywny };
+  var pola = filtryZAdresu02();
+  Object.keys(pola).forEach(function (p) { w[p] = document.getElementById(pola[p]).value; });
+  return w;
+}
+
+/* Licznik "Wnioski (n)" = wiersze widoczne teraz. Zakladka Baza danych dostaje
+   te same filtry instytucji i urzedu. */
+function odswiezZakladki02(widocznych) {
+  document.getElementById("licznikWnioskow").textContent = widocznych;
+  document.getElementById("zakladkaBaza").href = "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({
+    inst: document.getElementById("fIS").value, pup: document.getElementById("fPUP").value
+  });
+}
+
+/* Po powrocie z karty wiersz wniosku jest wyrozniony i widoczny na ekranie */
+function pokazWierszPowrotu(idWniosku) {
+  var wiersz = Array.prototype.filter.call(document.querySelectorAll("#body tr[data-id]"), function (tr) {
+    return tr.dataset.id === idWniosku;
+  })[0];
+  if (!wiersz) return;   /* wiersz poza limitem LIMIT_WIERSZY_02 albo poza filtrem */
+  wiersz.classList.add("wiersz-powrotu");
+  wiersz.scrollIntoView({ block: "center" });
 }
 
 function licz() {
@@ -113,7 +152,8 @@ function masowo(status) {
 }
 
 function otworz(id) {
-  location.href = "03-wniosek.html?id=" + encodeURIComponent(id);
+  var powrot = "02-zestawienia.html" + Nawigacja.zbudujZapytanie(Object.assign(wartosciFiltrow02(), { wn: id }));
+  location.href = Nawigacja.adresKarty(id, powrot);
 }
 
 function inicjuj02() {
@@ -138,9 +178,9 @@ function inicjuj02() {
     if (STAN_02.batch) return;
     STAN_02.W = budujW(); rysujLata(); render();
   });
-  /* Podpowiedz filtra z wyszukiwarki globalnej */
-  var qp = new URLSearchParams(location.search).get("q");
-  if (qp) document.getElementById("q").value = qp;
+  var wn = Nawigacja.odczytajZapytanie(location.search, ["wn"]).wn;
+  Nawigacja.wczytajFiltry(filtryZAdresu02());
 
   odswiezRok();
+  if (wn) pokazWierszPowrotu(wn);
 }

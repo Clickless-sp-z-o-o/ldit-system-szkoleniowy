@@ -54,13 +54,15 @@ export const MODULY = [
 
 /* Dostep do modulow. W modelu features (wzor Open Mercato, D-211) poziom
    "podglad" to feature <modul>.view, a "edycja" to wildcard <modul>.*
-   (view i manage). Brak wpisu = modulu nie ma w menu tej roli. */
+   (view i manage). Brak wpisu = modulu nie ma w menu tej roli.
+   Pracownik LDIT ma wglad w terminy przypisanych instytucji (D-142), terminy wystawia instytucja.
+   Nabory sa modulem rol LDIT, instytucja ich nie widzi (D-91, P-34 dotyczy Bazy danych). */
 const DOSTEP = {
   admin:       { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", inst: "edycja",
                  komun: "edycja", admin: "edycja", zglo: "edycja", ustaw: "edycja", terminy: "edycja" },
   pracownik:   { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", inst: "podglad",
-                 komun: "edycja", zglo: "edycja" },
-  is:          { dash: "podglad", panelIS: "edycja", terminy: "edycja", nabory: "podglad" },
+                 komun: "edycja", zglo: "edycja", terminy: "podglad" },
+  is:          { dash: "podglad", panelIS: "edycja", terminy: "edycja" },
   pracownikIS: { panelIS: "podglad" },
   klient:      { panelKL: "podglad" }
 };

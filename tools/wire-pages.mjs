@@ -15,33 +15,19 @@
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const STRONY = join(ROOT, "makieta", "strony");
 
-/* Ktory modul obsluguje dana strona. Modul decyduje o dostepie (D-36). */
-const MODUL_STRONY = {
-  "01-dashboard.html": "dash",
-  "02-zestawienia.html": "dofin",
-  "03-wniosek.html": "dofin",
-  "04-baza-klientow.html": "dofin",
-  "05-nabory.html": "nabory",
-  "06-instytucje.html": "inst",
-  /* Konfigurator warunkow prowizyjnych jest ekranem administratora, mimo ze
-     wchodzi sie do niego z zakladki Instytucje szkoleniowe (D-07, D-93). */
-  "07-konfigurator-is.html": "admin",
-  "08-administracja.html": "admin",
-  "09-wysylka-maili.html": "komun",
-  "10-zgloszenia.html": "zglo",
-  "11-konta-uprawnienia.html": "ustaw",
-  "12-rejestr-aktywnosci.html": "ustaw",
-  "13-terminy.html": "terminy",
-  "14-statystyki.html": "dash",
-  "15-konfigurator-prowizji.html": "admin",
-  "16-panel-is.html": "panelIS",
-  "17-panel-klienta.html": "panelKL",
-  "18-zadania.html": "zadania"
-};
+/* Ktory modul obsluguje dana strona. Modul decyduje o dostepie (D-36).
+   Slownik jest w assets/nawigacja.js, bo ta sama mapa steruje nawigacja w przegladarce. */
+function wczytajModulyStron() {
+  const okno = {};
+  vm.runInNewContext(readFileSync(join(ROOT, "makieta", "assets", "nawigacja.js"), "utf8"), { window: okno });
+  return okno.Nawigacja.MODUL_EKRANU;
+}
+const MODUL_STRONY = wczytajModulyStron();
 
 const ZNACZNIK = "<!-- kfs:skrypty -->";
 
@@ -63,6 +49,7 @@ function lancuch(prefix, modul) {
     `<script src="${prefix}assets/db.js"></script>`,
     `<script src="${prefix}assets/lata.js"></script>`,
     `<script src="${prefix}assets/html.js"></script>`,
+    `<script src="${prefix}assets/nawigacja.js"></script>`,
     `<script src="${prefix}assets/tips.js"></script>`,
     `<script src="${prefix}assets/boot.js"${modul ? ` data-modul="${modul}"` : ""}></script>`
   ].join("\n");

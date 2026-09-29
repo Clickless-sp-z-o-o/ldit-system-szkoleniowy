@@ -131,24 +131,9 @@ function wierszPozycjiHtml(p) {
       (p.nadpisana ? '<div class="small" style="color:var(--warn-ink)">' + esc(opisNadpisania(w)) +
         '<br>wg reguły ' + DB.fmtPLN(p.wyliczona) + '</div>' : "") + '</td>' +
     '<td>' + tagRozl(w) + '</td>' +
-    '<td class="right nowrap"><button class="btn xs" data-act="' + (p.nadpisana ? "przywroc" : "nadpisz") + '">' +
-      (p.nadpisana ? "Przywróć regułę" : "Nadpisz") + '</button></td></tr>';
-}
-
-function podlaczAkcjePozycji() {
-  document.querySelectorAll("#tabProjekty button[data-act]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      if (b.dataset.act === "przywroc") {
-        alert("Przywrócenie reguły.\n\nProwizja wraca do wartości wyliczonej przez silnik. " +
-              "Zmiana trafia do rejestru aktywności z wartością przed i po (D-16).");
-      } else {
-        alert("Ręczne nadpisanie prowizji dla tego projektu, procent albo kwota (D-136).\n\n" +
-              "Jedyne miejsce nadpisania w systemie (D-93). Warunki negocjuje się przed złożeniem " +
-              "wniosku, nigdy w trakcie (D-25).\nNadpisany projekt wlicza się do puli progowej (D-137). " +
-              "Nadpisanie kasuje regułę i jest odwracalne.\n\nUprawnienie do tej akcji pozostaje nieokreślone, patrz P-06.");
-      }
-    });
-  });
+    '<td class="right nowrap"><a class="btn xs" href="' + esc(Nawigacja.adresKarty(w.id)) + '" data-tip="' +
+      (p.nadpisana ? "Przywrocenie reguly" : "Nadpisanie prowizji, procent albo kwota (D-136),") +
+      ' robi sie na karcie wniosku (D-138). Administracja tylko pokazuje podstawe.">Karta wniosku</a></td></tr>';
 }
 
 function renderProjekty() {
@@ -172,5 +157,4 @@ function renderProjekty() {
     ? lista.map(wierszPozycjiHtml).join("")
     : brakDanych(10, "Brak projektów w wybranym okresie",
         "Zmień okres rozliczeniowy albo wybierz inną instytucję w tabeli powyżej.");
-  podlaczAkcjePozycji();
 }

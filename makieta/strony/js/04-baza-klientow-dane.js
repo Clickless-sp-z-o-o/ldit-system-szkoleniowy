@@ -43,16 +43,15 @@ function wnioskiPoKlientach() {
   return mapa;
 }
 
-/* Licznik przy zakladce Wnioski: ten sam rok co domyslna zakladka w Zestawieniach */
-function rokDomyslny() {
-  var biezacy = String(new Date().getFullYear());
-  if (DB.LATA.some(function (l) { return l.rok === biezacy; })) return biezacy;
-  return DB.LATA.length ? DB.LATA[DB.LATA.length - 1].rok : biezacy;
-}
+/* Licznik przy zakladce Wnioski pokazuje dokladnie tyle wierszy, ile zobaczysz po kliknieciu:
+   domyslny rok Zestawien i te same filtry instytucji i urzedu, ktore link przenosi dalej */
 function odswiezLicznikWnioskow() {
-  var rok = rokDomyslny();
-  document.getElementById("licznikWnioskow").textContent =
-    DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return String(w.rok) === rok; }).length;
+  var rok = Lata.domyslny();
+  var fis = document.getElementById("fIS").value, fpup = document.getElementById("fPUP").value;
+  document.getElementById("licznikWnioskow").textContent = DB.WNIOSKI_WSZYSTKIE.filter(function (w) {
+    return String(w.rok) === rok && (!fis || w.is === fis) && (!fpup || w.pup === fpup);
+  }).length;
+  document.getElementById("zakladkaWnioski").href = "02-zestawienia.html" + Nawigacja.zbudujZapytanie({ inst: fis, pup: fpup });
 }
 
 function kluczSortowania(status, koniec) {
@@ -120,5 +119,5 @@ function filtrujWnioski(list) {
 function przebuduj04() {
   STAN_04.WN_BY_KL = wnioskiPoKlientach();
   STAN_04.K = budujK();
-  odswiezLicznikWnioskow(); renderKPI(); render();
+  renderKPI(); render();
 }

@@ -71,7 +71,7 @@ function wierszWniosku(w) {
     '<td class="num">' + (w.kosztCalkowity != null ? DB.fmtPLN(w.kosztCalkowity) : brak) + '</td>' +
     '<td>' + tagStatusWn(w) + '</td>' +
     '<td>' + tagRozl(w) + '</td>' +
-    '<td class="right"><button class="btn xs" onclick="location.href=\'' + escJs('03-wniosek.html?id=' + encodeURIComponent(w.id)) + '\'">Otwórz</button></td>' +
+    '<td class="right"><button class="btn xs" onclick="otworzWniosek04(\'' + escJs(w.id) + '\', \'' + escJs(w.klient) + '\')">Otwórz</button></td>' +
     '</tr>';
 }
 
@@ -101,7 +101,7 @@ function przyciskRozwijania(r) {
 function wierszKlienta(r) {
   var cls = r.status === "Nabór ogłoszony" ? "row-pos row-nabor"
           : (r.status === "Po naborze" || r.status === "Bez informacji") ? "dim" : "";
-  var row = '<tr class="' + cls + '">' +
+  var row = '<tr class="' + cls + '" data-kl="' + esc(r.kl.id) + '">' +
     '<td class="exp-cell">' + przyciskRozwijania(r) + '</td>' +
     '<td class="strong">' + esc(r.kl.nr) + '</td>' +
     '<td class="strong nowrap">' + esc(r.kl.nazwa) +
@@ -155,6 +155,36 @@ function render() {
       '<div class="et">Brak klientów dla tych filtrów</div>Zmień kryteria wyszukiwania.</div></td></tr>';
   }
   document.getElementById("body").innerHTML = html;
+  odswiezLicznikWnioskow();
+  Nawigacja.zapiszWAdresie(wartosciFiltrow04());
+}
+
+/* Filtry Bazy danych w adresie: link z Naborow (pup), z wyszukiwarki globalnej (q)
+   i powrot z karty wniosku otwieraja liste juz przefiltrowana */
+var FILTRY_04 = { q: "q", inst: "fIS", pup: "fPUP", nabor: "fNab", wnioski: "fStatusWn" };
+var WNIOSKI_DOMYSLNIE_04 = "aktywne";
+
+function wartosciFiltrow04() {
+  var w = {};
+  Object.keys(FILTRY_04).forEach(function (p) { w[p] = document.getElementById(FILTRY_04[p]).value; });
+  if (w.wnioski === WNIOSKI_DOMYSLNIE_04) w.wnioski = "";
+  return w;
+}
+
+function otworzWniosek04(idWniosku, idKlienta) {
+  var powrot = "04-baza-klientow.html" +
+    Nawigacja.zbudujZapytanie(Object.assign(wartosciFiltrow04(), { rozwin: idKlienta }));
+  location.href = Nawigacja.adresKarty(idWniosku, powrot);
+}
+
+/* Po powrocie z karty klient jest rozwiniety i widoczny na ekranie */
+function pokazRozwinietego(idKlienta) {
+  var wiersz = Array.prototype.filter.call(document.querySelectorAll("#body tr[data-kl]"), function (tr) {
+    return tr.dataset.kl === idKlienta;
+  })[0];
+  if (!wiersz) return;   /* klient poza pierwszymi LIMIT_WIERSZY_04 wierszami albo poza filtrem */
+  wiersz.classList.add("wiersz-powrotu");
+  wiersz.scrollIntoView({ block: "center" });
 }
 
 function przelaczWnioski(id) {
@@ -167,6 +197,9 @@ function inicjuj04() {
   STAN_04.DZIS.setHours(0, 0, 0, 0);
   STAN_04.NAB = budujNabory();
   wypelnijFiltry();
+  var rozwin = Nawigacja.odczytajZapytanie(location.search, ["rozwin"]).rozwin;
+  Nawigacja.wczytajFiltry(FILTRY_04);
+  if (rozwin) STAN_04.expanded[rozwin] = true;
   ["q", "fIS", "fPUP", "fNab", "fStatusWn"].forEach(function (id) {
     document.getElementById(id).addEventListener("input", render);
     document.getElementById(id).addEventListener("change", render);
@@ -176,4 +209,5 @@ function inicjuj04() {
   });
   window.addEventListener("db:changed", przebuduj04);
   przebuduj04();
+  if (rozwin) pokazRozwinietego(rozwin);
 }

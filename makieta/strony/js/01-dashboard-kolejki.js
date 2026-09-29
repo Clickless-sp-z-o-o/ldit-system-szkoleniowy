@@ -10,7 +10,8 @@ function najwczesniej(lista, pole) {
   return lista.map(function (x) { return x[pole]; }).sort()[0];
 }
 
-/* Wymaga dzialania: kazda pozycja liczona z danych, pozycje bez spraw sie nie pokazuja */
+/* Wymaga dzialania: kazda pozycja liczona z danych, pozycje bez spraw sie nie pokazuja.
+   Pozycja prowadzaca do modulu spoza roli tez sie nie pokazuje, bo link skonczylby sie odmowa. */
 function pozycjeDoDzialania() {
   var dzis = STAN_01.dzis;
   var koniecNaboru = dodajDni(dzis, DNI_NABORU), koniecSzkolen = dodajDni(dzis, DNI_SZKOLENIA);
@@ -25,10 +26,11 @@ function pozycjeDoDzialania() {
       termin: "do " + esc(najwczesniej(nabory, "do")), klasa: "neg", href: "05-nabory.html" },
     { co: "Szkolenia w ciągu " + DNI_SZKOLENIA + " dni, sprawdź dokumenty", ctx: "termin z kalendarza", n: terminy.length,
       termin: esc(najwczesniej(terminy, "od")), klasa: "warn", href: "13-terminy.html" },
-    { co: "Faktury po terminie płatności", ctx: "moduł Administracja", n: faktury.length, termin: "zaległe", klasa: "neg", href: "08-administracja.html" },
+    { co: "Faktury po terminie płatności", ctx: "moduł Administracja", n: faktury.length, termin: "zaległe", klasa: "neg",
+      href: "08-administracja.html" + Nawigacja.zbudujZapytanie({ zakladka: "faktury", status: "Po terminie" }) },
     { co: "Projekty z decyzją pozytywną, nierozliczone", ctx: "status rozliczenia: oczekuje", n: doRozliczenia.length,
       termin: "bieżące", klasa: "info", href: "02-zestawienia.html" }
-  ].filter(function (p) { return p.n > 0; });
+  ].filter(function (p) { return p.n > 0 && Auth.widziModul(Nawigacja.modulEkranu(p.href)); });
 }
 
 function renderWymagaDzialania() {

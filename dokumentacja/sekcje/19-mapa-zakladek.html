@@ -148,25 +148,26 @@
     <li><b>„Baza klientów”</b> w słowniku, <b>„Baza danych”</b> w <span class="ref">D-128</span> i makiecie.</li>
     <li><b>Zadania i powiadomienia:</b> <span class="ref">D-195</span> mówi o dwóch modułach, makieta ma jedną pozycję.</li>
     <li><b>Instytucja:</b> <span class="ref">D-76</span> mówi o jednej zakładce z nazwą spółki, makieta daje instytucji 4 pozycje menu (Dashboard, nazwa spółki, Terminy szkoleń, Nabory).</li>
-    <li><b>Nabory dla instytucji:</b> macierz uprawnień daje instytucji podgląd Naborów, a strona pisze, że moduł jest tylko dla ról LDIT (<span class="ref p">P-34</span>, <span class="ref">D-91</span>).</li>
+    <li><b>Nabory dla instytucji:</b> macierz uprawnień daje instytucji podgląd Naborów, a strona pisze, że moduł jest tylko dla ról LDIT (<span class="ref p">P-34</span>, <span class="ref">D-91</span>). Od 29.09.2026 ujednolicone: instytucja nie ma Naborów do decyzji klienta (usterka 5).</li>
     <li><b>Cele zespołu:</b> docs/05 zapisuje je na dashboardzie, makieta w Administracji (tylko admin).</li>
     <li><b>Karta klienta:</b> <span class="ref">D-52</span> i <span class="ref">D-54</span> zakładają kartę klienta, makieta jej nie ma.</li>
   </ol>
 
   <h3>Usterki nawigacji do poprawy niezależnie od odpowiedzi klienta</h3>
+  <p>Wszystkie dwanaście poprawiono 29.09.2026. Wspólna logika jest w <code>makieta/assets/nawigacja.js</code>, testy w <code>tools/test-nawigacja.mjs</code>.</p>
   <ol>
-    <li>Nabory, przycisk „Pokaż klientów”: link do Bazy z parametrem <code>pup</code>, którego Baza nie czyta, więc pokazuje wszystkich klientów.</li>
-    <li>Wyszukiwarka globalna: przekazuje <code>q</code> do Bazy, która go nie czyta (czyta go tylko lista Wnioski).</li>
-    <li>Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek w pasku górnym.</li>
-    <li>Pracownik LDIT ma na pasku Dofinansowań zakładkę „Terminy szkoleń”, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień.</li>
-    <li>Instytucja ma dostęp do Naborów mimo opisu strony (tylko role LDIT).</li>
-    <li>Dashboard: „Faktury po terminie” otwiera Prowizje, nie Faktury.</li>
-    <li>Karta wniosku: okruszek „Zestawienia” wraca do domyślnego roku bez filtrów i pozycji na liście.</li>
-    <li>Licznik „Wnioski (n)” w pasku zakładek liczy tylko rok bieżący i nie reaguje na filtry.</li>
-    <li>Kalkulator prowizji (prototyp) stoi w produkcyjnym pasku Administracji.</li>
-    <li>Administracja: przycisk „Nadpisz” przy projekcie, choć <span class="ref">D-138</span> przenosi nadpisanie na kartę wniosku.</li>
-    <li>Licznik wniosków do akceptacji („kółko w prawym górnym rogu” z <span class="ref">D-105</span> i <span class="ref">D-140</span>) nie istnieje w powłoce makiety.</li>
-    <li>Zgłoszenia: przycisk „Otwórz kartę podmiotu” nie ma celu.</li>
+    <li>Nabory, przycisk „Pokaż klientów”: link do Bazy z parametrem <code>pup</code>, którego Baza nie czyta, więc pokazuje wszystkich klientów. <b>Poprawione:</b> Baza danych czyta <code>pup</code> i otwiera się z filtrem urzędu.</li>
+    <li>Wyszukiwarka globalna: przekazuje <code>q</code> do Bazy, która go nie czyta (czyta go tylko lista Wnioski). <b>Poprawione:</b> Baza danych czyta <code>q</code> i otwiera się z wpisaną frazą.</li>
+    <li>Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek w pasku górnym. <b>Poprawione:</b> ekran w ramce zgłasza się powłoce, a ta zaznacza pozycję menu i buduje okruszek (np. Dofinansowania › Baza danych), także po przejściu linkiem.</li>
+    <li>Pracownik LDIT ma na pasku Dofinansowań zakładkę „Terminy szkoleń”, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień. <b>Poprawione:</b> pracownik LDIT dostał podgląd Terminów (wgląd LDIT w terminy <span class="ref">D-142</span>). Dodatkowo każdy pasek zakładek ukrywa zakładki modułów spoza roli.</li>
+    <li>Instytucja ma dostęp do Naborów mimo opisu strony (tylko role LDIT). <b>Poprawione:</b> instytucja nie ma już Naborów. Przyjęto mniejszy zakres do czasu decyzji klienta; <span class="ref p">P-34</span> dotyczy widoku Bazy danych, nie modułu Naborów.</li>
+    <li>Dashboard: „Faktury po terminie” otwiera Prowizje, nie Faktury. <b>Poprawione:</b> link otwiera zakładkę Faktury z filtrem „Po terminie”. Pozycje „Wymaga działania” prowadzące do modułu spoza roli nie są pokazywane.</li>
+    <li>Karta wniosku: okruszek „Zestawienia” wraca do domyślnego roku bez filtrów i pozycji na liście. <b>Poprawione:</b> karta pamięta listę, z której ją otwarto (Zestawienia albo Baza danych), razem z rokiem i filtrami. Po powrocie wiersz jest wyróżniony i przewinięty na ekran.</li>
+    <li>Licznik „Wnioski (n)” w pasku zakładek liczy tylko rok bieżący i nie reaguje na filtry. <b>Poprawione:</b> w Zestawieniach licznik to liczba wierszy widocznych przy bieżących filtrach. W Bazie danych to liczba wierszy, które pokaże zakładka Wnioski, bo link przenosi filtr instytucji i urzędu.</li>
+    <li>Kalkulator prowizji (prototyp) stoi w produkcyjnym pasku Administracji. <b>Poprawione:</b> kalkulator zniknął z paska Administracji. Wchodzi się do niego z Konfiguratora warunków, w menu leży pod Instytucjami.</li>
+    <li>Administracja: przycisk „Nadpisz” przy projekcie, choć <span class="ref">D-138</span> przenosi nadpisanie na kartę wniosku. <b>Poprawione:</b> zamiast „Nadpisz” i „Przywróć regułę” jest link „Karta wniosku”, gdzie jest nadpisanie.</li>
+    <li>Licznik wniosków do akceptacji („kółko w prawym górnym rogu” z <span class="ref">D-105</span> i <span class="ref">D-140</span>) nie istnieje w powłoce makiety. <b>Poprawione:</b> w pasku górnym jest licznik formularzy czekających na akceptację, dla ról z modułem Zadania. Klik otwiera Zadania i powiadomienia.</li>
+    <li>Zgłoszenia: przycisk „Otwórz kartę podmiotu” nie ma celu. <b>Poprawione:</b> instytucja otwiera swoją kartę w Instytucjach, klient otwiera Bazę danych przefiltrowaną po nazwie. Podmiot spoza bazy ma przycisk wyłączony.</li>
   </ol>
 
   <h2>Mapa agregacji i drill through</h2>

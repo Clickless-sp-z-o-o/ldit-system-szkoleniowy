@@ -128,7 +128,12 @@
       }
 
       gotowe = true;
+      /* Nawigacja (assets/nawigacja.js): pasek zakladek bez modulow spoza roli,
+         a powloka dowiaduje sie, jaki ekran jest w ramce, takze po zmianie danych */
+      global.Nawigacja.ukryjNiedostepneZakladki(Auth);
       uruchomSkryptyStrony();
+      global.Nawigacja.zglosEkran();
+      global.addEventListener("db:changed", global.Nawigacja.zglosEkran);
       czekajacy.forEach(function (fn) { fn(); });
       czekajacy.length = 0;
       document.documentElement.classList.add("kfs-gotowa");

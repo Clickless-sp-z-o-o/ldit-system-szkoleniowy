@@ -95,12 +95,21 @@ function usunTermin(id) {
   }
 }
 
+/* Licznik przy zakladce Projekty: tyle wierszy, ile pokaze domyslna zakladka roku w Zestawieniach.
+   Rola bez modulu Dofinansowan (instytucja) nie ma tej zakladki na pasku (Nawigacja). */
+function odswiezLicznikProjektow() {
+  var licznik = el("navProjekty");
+  if (!licznik) return;
+  var rok = Lata.domyslny();
+  licznik.textContent = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return String(w.rok) === rok; }).length;
+}
+
 function odswiez13() {
   STAN_13.T = DB.TERMINY;
   wczytajUczestnikow();
   wypelnijFiltryIS();
   el("btnNowy").style.display = moznaEdytowac() ? "" : "none";
-  el("navProjekty").textContent = DB.WNIOSKI_WSZYSTKIE.length;
+  odswiezLicznikProjektow();
   renderKalendarz();
   renderLista();
 }

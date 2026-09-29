@@ -52,6 +52,24 @@ function histHtml(z) {
     "</div>";
 }
 
+/* Karta podmiotu: instytucja otwiera swoja karte w Instytucjach, klient Baze danych
+   przefiltrowana po nazwie. Podmiotu spoza bazy (albo spoza zakresu konta) nie da sie otworzyc. */
+function adresPodmiotu(z) {
+  var zNazwa = function (x) { return x.nazwa === z.podmiot; };
+  if (z.typ === "Instytucja") {
+    var inst = DB.INSTYTUCJE.filter(zNazwa)[0];
+    return inst ? "06-instytucje.html" + Nawigacja.zbudujZapytanie({ id: inst.id }) : null;
+  }
+  return DB.KLIENCI.some(zNazwa) ? "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({ q: z.podmiot }) : null;
+}
+
+function przyciskPodmiotu(z) {
+  var adres = adresPodmiotu(z);
+  return adres
+    ? '<a class="btn sm" href="' + esc(adres) + '">Otwórz kartę podmiotu</a>'
+    : '<button class="btn sm" disabled data-tip="Podmiotu nie ma w bazie systemu albo jest poza zakresem konta.">Otwórz kartę podmiotu</button>';
+}
+
 /* ---------- Lista ---------- */
 function renderLista() {
   var q = document.getElementById("szukaj").value.toLowerCase().trim();
@@ -94,7 +112,7 @@ function renderLista() {
         '<div class="mt16">' + histHtml(z) + "</div>" +
         '<div class="btn-row mt16">' +
           '<button class="btn sm">Dopisz do zgłoszenia</button>' +
-          '<button class="btn sm">Otwórz kartę podmiotu</button>' +
+          przyciskPodmiotu(z) +
           '<button class="btn sm danger">Oznacz do zakończenia współpracy</button>' +
         "</div>" +
       "</div></div>";
