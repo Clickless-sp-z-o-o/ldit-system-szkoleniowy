@@ -436,7 +436,7 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 | Z-15 | Terminy | Jak przypisywać projekt do terminu | średnia | wariant A |
 | Z-16 | Nabory | Nabory: osobna pozycja menu czy zakładka w Dofinansowaniach | średnia | wariant A |
 | Z-17 | Nabory | Ekran Nabory: ile bloków naraz | niska | wariant B |
-| Z-18 | Nabory | Jaki zakres naborów widzi instytucja | średnia | wariant B |
+| Z-18 | Nabory | Jaki zakres naborów widzi instytucja | średnia | rozstrzygnięte: wariant C [D-214] |
 | Z-19 | Komunikacja | Wysyłka maili: pozycja w menu czy funkcja przy rekordach | wysoka | wariant B |
 | Z-20 | Zadania i powiadomienia | Zadania i powiadomienia: jedna pozycja, dwie czy dzwonek | średnia | wariant C |
 | Z-21 | Administracja i prowizje | Administracja: ile zakładek | średnia | wariant A |
@@ -871,21 +871,23 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 
 #### Z-18. Jaki zakres naborów widzi instytucja
 
+> **Rozstrzygnięte 30.09.2026: wariant C, pełna lista naborów [D-214].** Pytanie zdjęte z panelu decyzyjnego.
+
 **Waga:** średnia. **Blokuje:** zakres listy Naborów dla instytucji. **Powiązane decyzje:** D-91, D-111, D-213.
 
 **Stan dziś i kontekst.** Wykonawca rozstrzygnął 30.09.2026, że instytucja widzi Nabory w podglądzie [D-213], więc wariant A (Nabory tylko dla ról LDIT) odpada. Handlowiec instytucji nadal nie dostaje informacji o naborach [D-91]. Zostaje wybór zakresu listy. Makieta pokazuje dziś wariant C, a liczby klientów liczy wyłącznie z własnych klientów instytucji.
 
-**B. Instytucja widzi listę naborów urzędów, w których ma klientów, bez liczby klientów LDIT** (rekomendowany)
+**B. Instytucja widzi listę naborów urzędów, w których ma klientów, bez liczby klientów LDIT**
 
 - **zysk:** Instytucja planuje pracę handlowców
 - **ryzyko:** Zawęża kontakt LDIT z klientem wbrew [D-91], wymaga osobnej separacji per urząd
 
-**C. Instytucja widzi całą listę naborów (jak w makiecie dziś)**
+**C. Instytucja widzi całą listę naborów (jak w makiecie dziś)** (wybrany, D-214)
 
 - **zysk:** Najprościej
 - **ryzyko:** Ujawnia 340 urzędów i pośrednio wolumeny LDIT
 
-> **Rekomendacja wykonawcy:** Wariant B, bo pokazuje instytucji tylko to, co dotyczy jej klientów.
+> **Decyzja wykonawcy:** Wariant C [D-214]. Wcześniejsza rekomendacja była B.
 
 ### Komunikacja
 

@@ -158,7 +158,7 @@ Klient wątpi w użyteczność, wykonawca deklaruje potrzebę i współfinansowa
 ### P-34. Czy instytucja zobaczy widok "Niezłożone" z nadchodzącymi naborami - ZAMKNIĘTE (2026-09-30)
 Wykonawca stwierdził, że "instytucja szkoleniowa też powinna to widzieć" (2:49:01). Klient nie potwierdził i przekierował rozmowę.
 
-**Rozstrzygnięte 2026-09-30:** tak, instytucja widzi Nabory w podglądzie [D-213]. Handlowiec instytucji nie [D-91]. Zakres listy doprecyzowuje Z-18 w [19](19-mapa-zakladek.md).
+**Rozstrzygnięte 2026-09-30:** tak, instytucja widzi Nabory w podglądzie [D-213]. Handlowiec instytucji nie [D-91]. Instytucja widzi pełną listę naborów [D-214].
 
 ### P-35. Czy pracownik LDIT ma dostęp do danych finansowych
 > **Bartek (58:02):** "na razie tylko zostaje [dla] admina, no ale docelowo..."
