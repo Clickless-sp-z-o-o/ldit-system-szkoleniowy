@@ -244,7 +244,8 @@ function pokazSesje() {
 
 document.getElementById("wyloguj").addEventListener("click", function () {
   Auth.wyloguj();
-  location.replace("login.html");
+  /* Usuniecie sesji z bazy musi sie zapisac, zanim strona zniknie */
+  KFS.zapiszTeraz().finally(function () { location.replace("login.html"); });
 });
 
 document.getElementById("gsearch").addEventListener("keydown", function (e) {

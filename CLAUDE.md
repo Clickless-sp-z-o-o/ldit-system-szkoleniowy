@@ -154,6 +154,7 @@ node tools/test-model.mjs         # dane interaktywnego diagramu tabel zgodne ze
 node tools/test-walidacja.mjs        # walidacja danych na granicy zapisu
 node tools/test-serwer.mjs          # lokalny serwer bazy
 node tools/test-nawigacja.mjs       # linki między ekranami, filtry w adresie, powrót z karty
+node tools/test-zapis.mjs           # zapis natychmiastowy przed przejściem (logowanie, wylogowanie)
 ```
 
 Po zmianie schematu bazy przebuduj ją: `node tools/build-sqlite.mjs`.

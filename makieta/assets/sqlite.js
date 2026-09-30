@@ -18,6 +18,7 @@
    API:  KFS.gotowa            Promise, spelniona gdy baza jest zaladowana
          KFS.db                obiekt bazy sql.js (po spelnieniu gotowa)
          KFS.zapisz()          zapis stanu do localStorage (z opoznieniem)
+         KFS.zapiszTeraz()     zapis natychmiast, Promise; przed przejsciem na inna strone
          KFS.reset()           powrot do bazy startowej
          KFS.pobierzPlik()     pobranie pliku .sqlite na dysk
    ============================================================================ */
@@ -84,11 +85,13 @@
     }
   }
 
-  /* Jeden zapis naraz; kolejny czeka i wysyla najnowszy stan */
+  /* Jeden zapis naraz; kolejny czeka i wysyla najnowszy stan. Zwraca obietnice,
+     ktora konczy sie dopiero po ostatnim zapisie z kolejki (potrzebne zapiszTeraz). */
+  var kolejkaZapisu = Promise.resolve();
   function zapiszNaSerwerze() {
-    if (zapisWToku) { zapisCzeka = true; return; }
+    if (zapisWToku) { zapisCzeka = true; return kolejkaZapisu; }
     zapisWToku = true;
-    global.fetch(ADRES_API, {
+    kolejkaZapisu = global.fetch(ADRES_API, {
       method: "PUT", body: KFS.db.export(),
       headers: { "Content-Type": "application/x-sqlite3", "X-Kfs-Wersja": String(wersjaSerwera) }
     }).then(function (r) {
@@ -103,8 +106,9 @@
       zglos("kfs:blad-zapisu", "Serwer bazy nie odpowiada, zmiany nie zostaly zapisane na dysku.");
     }).then(function () {
       zapisWToku = false;
-      if (zapisCzeka) { zapisCzeka = false; zapiszNaSerwerze(); }
+      if (zapisCzeka) { zapisCzeka = false; return zapiszNaSerwerze(); }
     });
+    return kolejkaZapisu;
   }
 
   KFS.zapisz = function () {
@@ -115,6 +119,16 @@
       if (KFS.tryb === "serwer") zapiszNaSerwerze();
       else zapiszLokalnie();
     }, OPOZNIENIE_ZAPISU);
+  };
+
+  /* Zapis natychmiast, bez opoznienia. Wolane przed przejsciem na inna strone
+     (logowanie, wylogowanie): opozniony zapis ginie razem ze strona, a z nim sesja. */
+  KFS.zapiszTeraz = function () {
+    if (timerZapisu) { global.clearTimeout(timerZapisu); timerZapisu = null; }
+    if (!KFS.db) return Promise.resolve();
+    if (KFS.tryb === "serwer") return zapiszNaSerwerze();
+    zapiszLokalnie();
+    return Promise.resolve();
   };
 
   KFS.reset = function () {

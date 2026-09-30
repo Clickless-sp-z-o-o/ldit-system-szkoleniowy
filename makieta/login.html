@@ -128,7 +128,10 @@
       poleHaslo.select();
       return;
     }
-    location.replace("index.html");
+    /* Sesja musi byc zapisana w bazie, zanim otworzy sie index.html. Opozniony zapis
+       ginal razem ze strona i index wracal na logowanie. */
+    document.getElementById("przycisk").disabled = true;
+    KFS.zapiszTeraz().finally(function () { location.replace("index.html"); });
   });
 
   poleLogin.focus();
