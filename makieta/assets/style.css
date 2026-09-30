@@ -4,24 +4,26 @@
    ============================================================ */
 
 :root {
-  /* Marka */
-  --brand-900: #0b1220;
-  --brand-800: #101a2e;
-  --brand-700: #16233d;
-  --brand-600: #1e3a5f;
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
-  --accent-soft: #eff6ff;
-  --accent-border: #bfdbfe;
+  /* Marka LDIT (ldit.pl): granat #222344 i zloty akcent #cdad7d */
+  --brand-900: #222344;
+  --brand-800: #1c1d3a;
+  --brand-700: #2b2c55;
+  --brand-600: #34366a;
+  --accent: #222344;
+  --accent-dark: #15162e;
+  --accent-soft: #f6f0e6;
+  --accent-border: #e3d1b3;
+  --gold: #cdad7d;
+  --gold-dark: #a8864f;
 
   /* Powierzchnie */
-  --bg: #f1f5f9;
+  --bg: #f8f8f8;
   --surface: #ffffff;
   --surface-2: #f8fafc;
   --surface-3: #f1f5f9;
 
   /* Tekst */
-  --ink: #0f172a;
+  --ink: #0f0d17;
   --ink-2: #334155;
   --ink-3: #64748b;
   --ink-4: #94a3b8;
@@ -96,12 +98,8 @@ a:hover { text-decoration: underline; }
   border-bottom: 1px solid rgba(255,255,255,.07);
   flex: 0 0 auto;
 }
-.sidebar-brand .logo {
-  width: 30px; height: 30px; border-radius: 7px;
-  background: linear-gradient(135deg, var(--accent) 0%, #60a5fa 100%);
-  display: grid; place-items: center;
-  font-weight: 700; color: #fff; font-size: 13px; letter-spacing: .3px;
-}
+/* Logo LDIT jest czarna kreska na przezroczystym tle: w ciemnym menu odwracamy je na biale */
+.sidebar-brand .logo-ldit { height: 30px; width: auto; filter: brightness(0) invert(1); flex: 0 0 auto; }
 .sidebar-brand .name { color: #fff; font-weight: 600; font-size: 14px; line-height: 1.15; }
 .sidebar-brand .sub { color: #64748b; font-size: 11px; }
 
@@ -124,15 +122,15 @@ a:hover { text-decoration: underline; }
 }
 .nav-item:hover { background: rgba(255,255,255,.05); color: #fff; }
 .nav-item.active {
-  background: rgba(37, 99, 235, .16);
-  border-left-color: var(--accent);
+  background: rgba(205, 173, 125, .16);
+  border-left-color: var(--gold);
   color: #fff; font-weight: 600;
 }
 .nav-item .ico { width: 17px; text-align: center; opacity: .85; flex: 0 0 17px; }
 .nav-item .chev { margin-left: auto; font-size: 10px; color: #64748b; transition: transform .15s; }
 .nav-item.open .chev { transform: rotate(90deg); }
 .nav-item .badge {
-  margin-left: auto; background: var(--accent); color: #fff;
+  margin-left: auto; background: var(--gold); color: var(--brand-900);
   font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px;
 }
 .nav-item.admin-only .ico { color: #fbbf24; }
@@ -408,7 +406,7 @@ textarea.inp { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertic
   cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
 .tab:hover { color: var(--ink); }
-.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tab.on { color: var(--accent); border-bottom-color: var(--gold); }
 .tab-pane { display: none; }
 .tab-pane.on { display: block; }
 
@@ -465,7 +463,7 @@ textarea.inp { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertic
 .fn-row { display: flex; align-items: center; gap: 11px; }
 .fn-row .fl { width: 168px; font-size: 12.5px; color: var(--ink-2); flex: 0 0 168px; }
 .fn-row .ft { flex: 1 1 auto; height: 26px; background: var(--surface-3); border-radius: 5px; overflow: hidden; }
-.fn-row .ft i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent) 0%, #60a5fa 100%); border-radius: 5px; }
+.fn-row .ft i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--gold) 100%); border-radius: 5px; }
 .fn-row .fv { width: 92px; text-align: right; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; flex: 0 0 92px; }
 
 .progress { height: 7px; background: var(--surface-3); border-radius: 4px; overflow: hidden; }
@@ -543,7 +541,7 @@ table.matrix .lv { font-size: 11.5px; font-weight: 650; padding: 2px 8px; border
   display: inline-flex; align-items: center; gap: 7px;
 }
 .mod-tabs a:hover { color: var(--ink); text-decoration: none; background: var(--surface-2); }
-.mod-tabs a.on { color: var(--accent); border-bottom-color: var(--accent); }
+.mod-tabs a.on { color: var(--accent); border-bottom-color: var(--gold); }
 .mod-tabs a .n {
   background: var(--surface-3); color: var(--ink-3);
   font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 9px;

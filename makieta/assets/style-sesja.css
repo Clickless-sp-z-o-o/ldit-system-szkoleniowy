@@ -41,12 +41,7 @@ body.ekran-logowania {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--line, #e2e8f0);
 }
-.logowanie-marka .logo {
-  width: 36px; height: 36px; border-radius: var(--radius);
-  background: var(--brand-600); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 13px;
-}
+.logowanie-marka .logo-ldit { height: 44px; width: auto; flex: 0 0 auto; }
 .logowanie-marka .name { font-weight: 650; font-size: 14px; }
 .logowanie-marka .sub { font-size: 12px; color: var(--ink-3, #64748b); }
 
