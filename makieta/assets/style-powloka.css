@@ -41,3 +41,23 @@
 /* Wstecz: historia ekranow w ramce, prowadzona przez powloke */
 .wstecz { margin-right: 10px; }
 .wstecz[disabled] { opacity: .45; cursor: default; }
+
+/* Zwijanie lewego menu: zostaja same ikony (assets/powloka-zwijanie.js) */
+.zwin-menu {
+  margin-left: auto; flex: 0 0 26px; width: 26px; height: 26px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.14); background: transparent; color: #cbd5e1;
+  cursor: pointer; font-size: 14px; line-height: 1;
+}
+.zwin-menu:hover { background: rgba(255,255,255,.08); color: #fff; }
+.sidebar { transition: width .15s, flex-basis .15s; }
+.app.menu-zwiniete { --sidebar-w: 60px; }
+.app.menu-zwiniete .sidebar-brand { padding: 0; justify-content: center; }
+.app.menu-zwiniete .sidebar-brand .logo-ldit,
+.app.menu-zwiniete .sidebar-brand > div,
+.app.menu-zwiniete .nav-group-label,
+.app.menu-zwiniete .nav-sub,
+.app.menu-zwiniete .sidebar-foot,
+.app.menu-zwiniete .nav-item > :not(.ico) { display: none; }
+.app.menu-zwiniete .zwin-menu { margin-left: 0; }
+.app.menu-zwiniete .nav-item { justify-content: center; padding: 10px 0; }
+.app.menu-zwiniete .nav-item .ico { font-size: 16px; opacity: 1; }

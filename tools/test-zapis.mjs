@@ -50,4 +50,18 @@ w.localStorage.setItem = oryginal;
 t.ok(!odrzucone, "zapiszTeraz nie odrzuca obietnicy, wiec przejscie na strone i tak nastapi");
 t.rowne(KFS.zapisany, false, "flaga zapisany pokazuje, ze zapis sie nie udal");
 
+console.log("\nPowloka (tylko odczyt) nie zapisuje bazy (D-222)");
+await KFS.zapiszTeraz();
+const zapisanaPrzed = w.localStorage.getItem(KFS.KLUCZ);
+KFS.tylkoOdczyt = true;
+const drugi = Auth.zaloguj("bartek@ldit.pl", "demo");
+await KFS.zapiszTeraz();
+KFS.zapisz();
+await new Promise((r) => setTimeout(r, 400));
+t.ok(drugi.ok, "w trybie tylko odczytu logowanie w pamieci dziala");
+t.rowne(w.localStorage.getItem(KFS.KLUCZ), zapisanaPrzed, "zapisana baza jest bez zmian, zapis pominiety");
+KFS.tylkoOdczyt = false;
+await KFS.zapiszTeraz();
+t.ok((await sesjeWZapisanejBazie()).includes(w.localStorage.getItem(Auth.KLUCZ_SESJI)), "po wylaczeniu trybu zapis znow dziala");
+
 t.podsumuj();

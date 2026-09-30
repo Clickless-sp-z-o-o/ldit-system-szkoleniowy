@@ -21,6 +21,8 @@
          KFS.zapiszTeraz()     zapis natychmiast, Promise; przed przejsciem na inna strone
          KFS.reset()           powrot do bazy startowej
          KFS.pobierzPlik()     pobranie pliku .sqlite na dysk
+         KFS.tylkoOdczyt       true w powloce (index.html): zapis jest pomijany, bo jej
+                               kopia bazy jest z chwili logowania (D-222)
    ============================================================================ */
 
 (function (global) {
@@ -111,7 +113,10 @@
     return kolejkaZapisu;
   }
 
+  KFS.tylkoOdczyt = false;
+
   KFS.zapisz = function () {
+    if (KFS.tylkoOdczyt) return;
     if (timerZapisu) global.clearTimeout(timerZapisu);
     timerZapisu = global.setTimeout(function () {
       timerZapisu = null;
@@ -124,6 +129,7 @@
   /* Zapis natychmiast, bez opoznienia. Wolane przed przejsciem na inna strone
      (logowanie, wylogowanie): opozniony zapis ginie razem ze strona, a z nim sesja. */
   KFS.zapiszTeraz = function () {
+    if (KFS.tylkoOdczyt) return Promise.resolve();
     if (timerZapisu) { global.clearTimeout(timerZapisu); timerZapisu = null; }
     if (!KFS.db) return Promise.resolve();
     if (KFS.tryb === "serwer") return zapiszNaSerwerze();
