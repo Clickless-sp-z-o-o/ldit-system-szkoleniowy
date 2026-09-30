@@ -16,12 +16,16 @@ function pozycjeDoDzialania() {
   var dzis = STAN_01.dzis;
   var koniecNaboru = dodajDni(dzis, DNI_NABORU), koniecSzkolen = dodajDni(dzis, DNI_SZKOLENIA);
   var kolejka = DB.KOLEJKA.filter(function (k) { return k.status === "oczekuje"; });
+  var zmiany = DB.PROPOZYCJE.filter(function (p) { return p.status === "oczekuje"; });
   var nabory = DB.NABORY.filter(function (n) { return n.status === "Nabór ogłoszony" && n.do >= dzis && n.do <= koniecNaboru; });
   var terminy = DB.TERMINY.filter(function (t) { return t.status !== "Odbyty" && t.od >= dzis && t.od <= koniecSzkolen; });
   var faktury = DB.FAKTURY.filter(function (f) { return f.status === "Po terminie"; });
   var doRozliczenia = STAN_01.poz.filter(function (w) { return w.rozliczenie === "Oczekuje"; });
   return [
-    { co: "Zgłoszenia z formularza do akceptacji", ctx: "bramka anty-spam", n: kolejka.length, termin: "do akceptacji", klasa: "warn", href: "18-zadania.html" },
+    { co: "Zgłoszenia z formularza do akceptacji", ctx: "bramka anty-spam", n: kolejka.length, termin: "do akceptacji", klasa: "warn",
+      href: "20-akceptacje.html" },
+    { co: "Zmiany danych od instytucji do akceptacji", ctx: "dane instytucji i klientów", n: zmiany.length, termin: "do akceptacji", klasa: "warn",
+      href: "20-akceptacje.html" + Nawigacja.zbudujZapytanie({ widok: "zmiany" }) },
     { co: "Nabory kończące się w tym tygodniu", ctx: nabory.map(function (n) { return esc(n.pup); }).join(", "), n: nabory.length,
       termin: "do " + esc(najwczesniej(nabory, "do")), klasa: "neg", href: "05-nabory.html" },
     { co: "Szkolenia w ciągu " + DNI_SZKOLENIA + " dni, sprawdź dokumenty", ctx: "termin z kalendarza", n: terminy.length,

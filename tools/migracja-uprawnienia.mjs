@@ -42,6 +42,7 @@ export const MODULY = [
   { id: "dofin",   nazwa: "Dofinansowania",         plik: "02-zestawienia.html",          grupa: "Praca operacyjna", ikona: "&#9673;", kolejnosc: 20 },
   { id: "nabory",  nazwa: "Nabory",                 plik: "05-nabory.html",               grupa: "Praca operacyjna", ikona: "&#9200;", kolejnosc: 30 },
   { id: "zadania", nazwa: "Zadania i powiadomienia", plik: "18-zadania.html",             grupa: "Praca operacyjna", ikona: "&#9745;", kolejnosc: 40 },
+  { id: "akcept",  nazwa: "Do akceptacji",          plik: "20-akceptacje.html",           grupa: "Praca operacyjna", ikona: "&#10003;", kolejnosc: 45 },
   { id: "inst",    nazwa: "Instytucje szkoleniowe", plik: "06-instytucje.html",           grupa: "Konfiguracja",     ikona: "&#9638;", kolejnosc: 50 },
   { id: "komun",   nazwa: "Komunikacja",            plik: "09-wysylka-maili.html",        grupa: "Konfiguracja",     ikona: "&#9993;", kolejnosc: 60 },
   { id: "admin",   nazwa: "Administracja",          plik: "08-administracja.html",        grupa: "Zarzadzanie",      ikona: "&#9878;", kolejnosc: 70 },
@@ -58,9 +59,9 @@ export const MODULY = [
    Pracownik LDIT ma wglad w terminy przypisanych instytucji (D-142), terminy wystawia instytucja.
    Instytucja widzi Nabory w podgladzie (D-213, zamyka P-34), handlowiec instytucji nie (D-91). */
 const DOSTEP = {
-  admin:       { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", inst: "edycja",
+  admin:       { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", akcept: "edycja", inst: "edycja",
                  komun: "edycja", admin: "edycja", zglo: "edycja", ustaw: "edycja", terminy: "edycja" },
-  pracownik:   { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", inst: "podglad",
+  pracownik:   { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", akcept: "edycja", inst: "podglad",
                  komun: "edycja", zglo: "edycja", terminy: "podglad" },
   is:          { dash: "podglad", panelIS: "edycja", terminy: "edycja", nabory: "podglad" },
   pracownikIS: { panelIS: "podglad" },
@@ -84,6 +85,11 @@ const POLA = {
   "admin.progi_dofinansowania": { opis: "Edycja progów dofinansowania", role: ["admin"] },
   "zestawienia.dodawanie_lat":  { opis: "Dodawanie zakładek lat", role: ["admin", "pracownik"] },
   "zadania.wszystkie":          { opis: "Zadania wszystkich osób, nie tylko własne", role: ["admin"] },
+  /* Instytucja i jej handlowiec zglaszaja formularze klientow i zmiany danych, LDIT je
+     zatwierdza (D-223, D-224). Zatwierdzajacy moze wprowadzic zgloszone pola. */
+  "formularze.zglaszanie":      { opis: "Dodawanie formularzy zgłoszeniowych do akceptacji", role: ["is", "pracownikIS"] },
+  "zmiany.zglaszanie":          { opis: "Zgłaszanie zmian danych instytucji i klientów", role: ["is", "pracownikIS"] },
+  "zmiany.zatwierdzanie":       { opis: "Zatwierdzanie zgłoszonych zmian i formularzy", role: ["admin", "pracownik"] },
   /* Bez tej feature konto instytucji widzi tylko klientow i wnioski
      przypisane do siebie jako handlowca (D-210) */
   "zakres.cala_instytucja":     { opis: "Wszyscy klienci własnej instytucji, nie tylko przypisani", role: ["is"] }

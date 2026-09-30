@@ -65,7 +65,11 @@
     progi_dofinansowania: { procent_dofinansowania: ["procent"], obowiazuje_od: ["wymagane", "data"], obowiazuje_do: ["data"] },
     warunki_prowizyjne: { obowiazuje_od: ["wymagane", "data"], obowiazuje_do: ["data"], stawka_stala: ["procent"] },
     zadania: { tytul: ["wymagane", "tekst"], termin: ["data"] },
-    notatki: { tresc: ["wymagane"] }
+    notatki: { tresc: ["wymagane"] },
+    formularze_oczekujace: { firma: ["wymagane", "tekst"], nip: ["nip"], email: ["email"], telefon: ["telefon"],
+                             kontakt: ["tekst"], miasto: ["tekst"], osob: ["calkowita"], uwagi: ["tekst"] },
+    propozycje_zmian: { uzasadnienie: ["tekst"] },
+    pliki_szkolen: { nazwa: ["wymagane", "tekst"], rozmiar: ["calkowita"] }
   };
 
   function pusta(v) { return v === null || v === undefined || String(v).trim() === ""; }

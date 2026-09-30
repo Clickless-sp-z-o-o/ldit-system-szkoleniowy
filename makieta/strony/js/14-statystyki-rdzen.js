@@ -18,7 +18,7 @@ function kartaKpi(l, v, f, adm, link) {
    D-212). Rola bez Dofinansowan dostaje element bez linku. */
 function link14(filtry) {
   if (!Auth.widziModul("dofin")) return "";
-  var adres = Nawigacja.adresWnioskow(Object.assign({ rok: STAN_14.rok, inst: STAN_14.selIS.value }, filtry));
+  var adres = Nawigacja.adresWnioskow(Object.assign({ rok: STAN_14.rok, inst: Wielowybor.tekst(STAN_14.selIS) }, filtry));
   return ' data-href="' + esc(adres) + '" title="Pokaż wnioski"';
 }
 
@@ -27,7 +27,8 @@ function instytucjaPoId(id) {
 }
 
 function render14() {
-  var fis = STAN_14.selIS.value;
+  /* Wybrane instytucje (wybor wielokrotny); pusta tablica = wszystkie */
+  var fis = Wielowybor.wartosci(STAN_14.selIS);
   var widok = STAN_14.selOkres.value;
   var biezacy = widok === "biezacy";
   document.getElementById("widokBiezacy").style.display = biezacy ? "" : "none";

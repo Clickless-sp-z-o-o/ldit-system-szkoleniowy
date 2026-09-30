@@ -230,7 +230,17 @@
     DB.KOLEJKA = S.get("formularze_oczekujace").map(function (k) {
       return { id: k.id, data: k.data, firma: k.firma, nip: k.nip, osob: k.osob, szkolenie: k.szkolenie,
                kontakt: k.kontakt, is: (instById[k.instytucja_id] || {}).nazwa || "-",
-               isId: k.instytucja_id, status: k.status, wypelnil: k.wypelnil, handlowiec: k.handlowiec_id };
+               isId: k.instytucja_id, status: k.status, wypelnil: k.wypelnil, handlowiec: k.handlowiec_id,
+               miasto: k.miasto, pup: k.pup_id, wielkosc: k.wielkosc, email: k.email, telefon: k.telefon,
+               uwagi: k.uwagi, zglosil: k.zglosil_id, rozpatrzyl: k.rozpatrzyl_id, rozpatrzono: k.rozpatrzono,
+               powod: k.powod_odrzucenia, klientId: k.klient_id };
+    });
+    /* Zmiany danych zgloszone przez instytucje, czekajace na zatwierdzenie LDIT (D-224) */
+    DB.PROPOZYCJE = S.get("propozycje_zmian").map(function (p) {
+      return { id: p.id, isId: p.instytucja_id, is: (instById[p.instytucja_id] || {}).nazwa || "-",
+               tabela: p.tabela, rekord: p.rekord_id, zmiany: JSON.parse(p.zmiany || "{}"),
+               uzasadnienie: p.uzasadnienie, zglosil: p.zglosil_id, zgloszono: p.zgloszono, status: p.status,
+               rozpatrzyl: p.rozpatrzyl_id, rozpatrzono: p.rozpatrzono, powod: p.powod_odrzucenia };
     });
     DB.MAILE = S.get("korespondencja").map(function (k) {
       return { klient: k.klient_id, isId: k.instytucja_id,

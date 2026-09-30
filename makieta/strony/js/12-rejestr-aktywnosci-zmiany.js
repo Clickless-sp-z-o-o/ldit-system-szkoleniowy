@@ -32,11 +32,12 @@ function unikalne(lista, pole) {
   return out.sort();
 }
 function odswiezFiltryA() {
-  var kto = document.getElementById("fKto").value, typ = document.getElementById("fTyp").value;
-  document.getElementById("fKto").innerHTML = '<option value="">Wszyscy użytkownicy</option>' + opcje(unikalne(STAN_12.A, "kto"));
-  document.getElementById("fTyp").innerHTML = '<option value="">Wszystkie typy operacji</option>' + opcje(unikalne(STAN_12.A, "typ"));
-  document.getElementById("fKto").value = kto;
-  document.getElementById("fTyp").value = typ;
+  var fKto = document.getElementById("fKto"), fTyp = document.getElementById("fTyp");
+  var kto = Wielowybor.wartosci(fKto), typ = Wielowybor.wartosci(fTyp);
+  fKto.innerHTML = opcje(unikalne(STAN_12.A, "kto"));
+  fTyp.innerHTML = opcje(unikalne(STAN_12.A, "typ"));
+  Wielowybor.ustaw(fKto, kto);
+  Wielowybor.ustaw(fTyp, typ);
 }
 
 function kpi(label, val, foot, admin) {
@@ -92,14 +93,14 @@ function wierszA(w) {
 
 function filtrujA() {
   var q = document.getElementById("qA").value.toLowerCase().trim();
-  var fk = document.getElementById("fKto").value;
-  var ft = document.getElementById("fTyp").value;
+  var fk = Wielowybor.wartosci(document.getElementById("fKto"));
+  var ft = Wielowybor.wartosci(document.getElementById("fTyp"));
   var od = document.getElementById("dOd").value;
   var doo = document.getElementById("dDo").value;
   return STAN_12.A.filter(function (w) {
     var d = w.czas.slice(0, 10);
-    if (fk && w.kto !== fk) return false;
-    if (ft && w.typ !== ft) return false;
+    if (!Wielowybor.pasuje(fk, w.kto)) return false;
+    if (!Wielowybor.pasuje(ft, w.typ)) return false;
     if (od && d < od) return false;
     if (doo && d > doo) return false;
     if (STAN_12.tylkoFin && !jestFin(w)) return false;
@@ -138,10 +139,10 @@ function renderIstotne() {
   }).join("");
 }
 
-/* Filtr po typie: wybiera pierwszy pasujacy typ z rejestru i wraca do listy */
+/* Filtr po typie: zaznacza wszystkie typy z rejestru zaczynajace sie od podanego i wraca do listy */
 function pokazTyp(typ) {
-  var dokladny = unikalne(STAN_12.A, "typ").filter(function (t) { return t.indexOf(typ) === 0; })[0];
-  document.getElementById("fTyp").value = dokladny || "";
+  var pasujace = unikalne(STAN_12.A, "typ").filter(function (t) { return t.indexOf(typ) === 0; });
+  Wielowybor.ustaw(document.getElementById("fTyp"), pasujace);
   document.getElementById("dOd").value = "";
   przelaczZakladke("t1");
   renderA();

@@ -24,11 +24,11 @@ function wypelnijFiltryIS() {
   var instId = {};
   STAN_13.T.forEach(function (t) { instId[t.is] = nazwaIS(t.is); });
   ["fIS", "fIS2"].forEach(function (id) {
-    var sel = el(id), stara = sel.value;
-    sel.innerHTML = '<option value="">Wszystkie instytucje</option>' + Object.keys(instId).map(function (k) {
+    var sel = el(id), stare = Wielowybor.wartosci(sel);
+    sel.innerHTML = Object.keys(instId).map(function (k) {
       return '<option value="' + esc(k) + '">' + esc(instId[k]) + '</option>';
     }).join("");
-    sel.value = stara;
+    Wielowybor.ustaw(sel, stare);
   });
 }
 
@@ -38,9 +38,9 @@ function opisKafelka(t) {
     " miejsc. Kliknij termin, aby zobaczyć listę uczestników.";
 }
 function komorkaDnia(data, dzien, poza) {
-  var fis = el("fIS").value;
+  var fis = Wielowybor.wartosci(el("fIS"));
   var ev = STAN_13.T.filter(function (t) {
-    if (fis && t.is !== fis) return false;
+    if (!Wielowybor.pasuje(fis, t.is)) return false;
     return data >= t.od && data <= t.do;
   });
   return '<div class="day' + (poza ? " out" : "") + (data === STAN_13.DZIS ? " today" : "") + '">' +

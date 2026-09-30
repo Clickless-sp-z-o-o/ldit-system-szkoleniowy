@@ -40,11 +40,12 @@ function nazwaIS(id) {
    domyslny rok Zestawien i te same filtry instytucji i urzedu, ktore link przenosi dalej */
 function odswiezLicznikWnioskow() {
   var rok = Lata.domyslny();
-  var fis = document.getElementById("fIS").value, fpup = document.getElementById("fPUP").value;
+  var fis = Wielowybor.wartosci(document.getElementById("fIS")), fpup = Wielowybor.wartosci(document.getElementById("fPUP"));
   document.getElementById("licznikWnioskow").textContent = DB.WNIOSKI_WSZYSTKIE.filter(function (w) {
-    return String(w.rok) === rok && (!fis || w.is === fis) && (!fpup || w.pup === fpup);
+    return String(w.rok) === rok && Wielowybor.pasuje(fis, w.is) && Wielowybor.pasuje(fpup, w.pup);
   }).length;
-  document.getElementById("zakladkaWnioski").href = "02-zestawienia.html" + Nawigacja.zbudujZapytanie({ inst: fis, pup: fpup });
+  document.getElementById("zakladkaWnioski").href = "02-zestawienia.html" +
+    Nawigacja.zbudujZapytanie({ inst: Wielowybor.naTekst(fis), pup: Wielowybor.naTekst(fpup) });
 }
 
 function kluczSortowania(status, koniec) {
@@ -70,21 +71,24 @@ function budujK() {
 }
 
 /* ---------- Filtr statusu: klienci i ich rozwiniete wnioski ----------
-   Domyslnie "przed": klienci bez wniosku albo z wnioskiem Niezlozony / NW. */
+   Wybor wielokrotny, lacznie (lub). Domyslnie "przed": klienci bez wniosku albo
+   z wnioskiem Niezlozony / NW. Brak wyboru = wszyscy klienci i wszystkie wnioski. */
+function wybraneStatusy04() { return Wielowybor.wartosci(document.getElementById("fStatusWn")); }
+
+function wniosekPasuje(w, f) {
+  if (f === "przed") return Statusy.przedZlozeniem(w);
+  if (f === "aktywne") return w.rozliczenie !== "Rozliczone";
+  if (f === "Rozliczone") return w.rozliczenie === "Rozliczone";
+  return Statusy.wartosc(w) === f;
+}
 function wnioskiWFiltrze(list) {
-  var f = document.getElementById("fStatusWn").value;
-  return list.filter(function (w) {
-    if (f === "przed") return Statusy.przedZlozeniem(w);
-    if (f === "aktywne") return w.rozliczenie !== "Rozliczone";
-    if (f === "wszystkie") return true;
-    if (f === "Rozliczone") return w.rozliczenie === "Rozliczone";
-    return Statusy.wartosc(w) === f;
-  });
+  var wybrane = wybraneStatusy04();
+  return list.filter(function (w) { return !wybrane.length || wybrane.some(function (f) { return wniosekPasuje(w, f); }); });
 }
 function klientWFiltrzeStatusu(r) {
-  var f = document.getElementById("fStatusWn").value;
-  if (f === "wszystkie") return true;
-  if (f === "przed") return Statusy.klientPrzedZlozeniem(r.wnioski);
+  var wybrane = wybraneStatusy04();
+  if (!wybrane.length) return true;
+  if (wybrane.indexOf("przed") >= 0 && !r.wnioski.length) return true;
   return wnioskiWFiltrze(r.wnioski).length > 0;
 }
 

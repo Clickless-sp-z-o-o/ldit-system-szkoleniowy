@@ -2,6 +2,8 @@
 
 > **Aktualizacja po warsztacie 2026-09-04.** Widok rozdzielony na **Bazę danych** (klient = jeden wiersz, wnioski zagnieżdżone) i **Wnioski** (od etapu 3) [D-128]. Odwrócenie wyliczania: **koszt całkowity z dopłatą ręczny, koszt całkowity wyliczany** [D-134]. **"Przyznano" edytowalne** [D-135]. Wielkość przedsiębiorstwa i dane kontaktowe **edytowalne per wniosek** [D-132, D-133]. Brak migracji danych historycznych, roczne zakładki [D-129]. Jeden klient może być u wielu instytucji [D-144]. Pełny kontekst i konflikty: [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md).
 
+> **Aktualizacja 2026-09-30.** Nowe tabele `propozycje_zmian` [D-224] i `pliki_szkolen` [D-225]. `formularze_oczekujace` dostały dane kontaktowe, zgłaszającego, rozpatrującego, powód odrzucenia i `klient_id` po akceptacji [D-223]. `katalog_szkolen` dostał cel, grupę docelową, efekty uczenia się, wymagania i formę zaliczenia [D-225].
+
 > **Aktualizacja po rundzie decyzji i przeglądzie diagramu (2026-09-29).** Schemat ma 33 tabele. Nowe: `szkoleniowcy` [D-167], `sesje` (sesja logowania, [D-179]) i `podsumowania_historyczne` [D-175]. Zlikwidowana: `progi_prowizyjne`, progi są listą JSON w `warunki_prowizyjne` [D-168]. Nowe kolumny: dane instytucji [D-166], dane zmienne we wniosku [D-169], `faktury.klient_id`, `rodzaj` i `faktura_pierwotna_id` [D-170], `wnioski.prog_dofinansowania_id` [D-171], `doplata_na_fakturze_kfs` [D-174], `formularze_oczekujace.wypelnil` [D-181], skrót hasła z solą zamiast jawnego hasła. Nowe widoki: `v_faktura_szczegoly` i `v_podsumowanie_roku`. Opis encji niżej jest poprawiony wg `schema.sql`.
 
 > **Aktualizacja z budowy makiety na bazie danych (2026-09-23).** Model danych został zaimplementowany jako prawdziwa baza SQLite. **Schemat bazy jest teraz źródłem prawdy o strukturze danych** [D-151], reguły wyliczeń są zapisane jako widoki SQL, nie powielane w kodzie ekranów [D-152]. Ten rozdział opisuje ten sam model słowami, ale przy rozjeździe wygrywa `makieta/db/schema.sql`. Rozdział uwzględnia też decyzje wykonawcze D-148 - D-157 (separacja na poziomie danych, dwuwariantowe pola wyliczane, konta klientów).
@@ -297,9 +299,28 @@ erDiagram
         string instytucja_id FK
         int osob
         string szkolenie
-        string wypelnil "klient/handlowiec"
+        string wypelnil "klient/handlowiec/instytucja"
         string handlowiec_id FK
+        string zglosil_id FK
+        string klient_id FK
         string status "oczekuje/zaakceptowany/odrzucony"
+    }
+
+    propozycje_zmian {
+        string id PK
+        string instytucja_id FK
+        string tabela "instytucje/klienci"
+        string rekord_id
+        string zmiany "JSON przed/po"
+        string status "oczekuje/zatwierdzona/odrzucona"
+    }
+
+    pliki_szkolen {
+        string id PK
+        string szkolenie_id FK
+        string nazwa
+        string rodzaj "program/harmonogram/materialy/inny"
+        string tresc "base64"
     }
 
     szablony_maili {
@@ -402,6 +423,9 @@ erDiagram
     klienci |o--o{ korespondencja : "dotyczy klienta"
     instytucje |o--o{ korespondencja : "dotyczy instytucji"
     instytucje |o--o{ formularze_oczekujace : "zrodlo zgloszenia"
+    instytucje ||--o{ propozycje_zmian : "proponuje zmiane"
+    uzytkownicy |o--o{ propozycje_zmian : "zglosil"
+    katalog_szkolen ||--o{ pliki_szkolen : "pliki planu"
 ```
 
 Poza diagramem (tabele bez relacji z kluczem obcym): `szablony_maili`, `zgloszenia`, `rejestr_aktywnosci`, `logowania`, `cele`, `meta`. Tabela `zgloszenia` celowo przechowuje `podmiot` jako tekst, nie jako klucz obcy, bo dotyczy zarówno instytucji, jak i klienta i ma być czytelna nawet po ewentualnym usunięciu powiązanego rekordu.
@@ -885,6 +909,29 @@ Nazwa kolumny w schemacie to `skrzynka`, nie `skrzynka_zrodlowa` jak we wcześni
 | zrodlo | tekst, nullable | Skąd liczba |
 
 Unikalność `(rok, instytucja_id, miara)`. Źródło porównań rok do roku na dashboardzie dla lat nieprzeniesionych, same liczby bez wniosków [D-129, D-160, D-175].
+
+#### PROPOZYCJE_ZMIAN (`propozycje_zmian`) [NOWA TABELA, D-224]
+
+| Pole | Typ | Uwagi |
+|---|---|---|
+| instytucja_id | FK -> instytucje, `ON DELETE CASCADE` | Instytucja, która proponuje zmianę |
+| tabela, rekord_id | enum + tekst | `instytucje` albo `klienci` i identyfikator rekordu |
+| zmiany | JSON | `{kolumna: {przed, po}}`, tylko zmienione pola |
+| uzasadnienie | tekst | |
+| zglosil_id, rozpatrzyl_id | FK -> uzytkownicy | |
+| status | enum | `oczekuje` / `zatwierdzona` / `odrzucona`, odrzucenie z `powod_odrzucenia` |
+
+Zmiana nie trafia do danych przy zgłoszeniu. Strażnik zapisu pozwala zatwierdzającemu wprowadzić tylko wartości `po` oczekującej propozycji dla tego rekordu.
+
+#### PLIKI_SZKOLEŃ (`pliki_szkolen`) [NOWA TABELA, D-225]
+
+| Pole | Typ | Uwagi |
+|---|---|---|
+| szkolenie_id | FK -> katalog_szkolen, `ON DELETE CASCADE` | |
+| nazwa, typ, rozmiar | tekst, tekst, liczba | |
+| rodzaj | enum | `program` / `harmonogram` / `materialy` / `inny` |
+| dodano, dodal_id | data/czas, FK -> uzytkownicy | |
+| tresc | tekst (base64) | W makiecie w bazie, w aplikacji w magazynie plików |
 
 #### REJESTR_AKTYWNOŚCI, LOGOWANIA, SZABLONY_MAILI, CELE, META
 

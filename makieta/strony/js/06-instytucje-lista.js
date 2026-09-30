@@ -6,19 +6,21 @@ function unikalne(pole) {
   DB.INSTYTUCJE.forEach(function (i) { if (i[pole]) m[i[pole]] = 1; });
   return Object.keys(m).sort();
 }
+/* Filtr wielokrotnego wyboru (assets/wielowybor.js): opcje z danych, wybor zachowany po odswiezeniu */
 function wypelnijFiltr(id, etykieta, pole) {
-  var sel = el(id), stara = sel.value;
-  sel.innerHTML = '<option value="">' + etykieta + ": wszyscy</option>" + unikalne(pole).map(function (v) {
+  var sel = el(id), stare = Wielowybor.wartosci(sel);
+  sel.setAttribute("data-pusty", etykieta + ": wszyscy");
+  sel.innerHTML = unikalne(pole).map(function (v) {
     return '<option value="' + esc(v) + '">' + esc(v) + "</option>";
   }).join("");
-  sel.value = stara;
+  Wielowybor.ustaw(sel, stare);
 }
 function widoczne() {
   var q = el("fSzukaj").value.trim().toLowerCase();
-  var op = el("fOpiekun").value, mi = el("fMiasto").value;
+  var op = Wielowybor.wartosci(el("fOpiekun")), mi = Wielowybor.wartosci(el("fMiasto"));
   return DB.INSTYTUCJE.filter(function (i) {
-    if (op && i.opiekun !== op) return false;
-    if (mi && i.miasto !== mi) return false;
+    if (!Wielowybor.pasuje(op, i.opiekun)) return false;
+    if (!Wielowybor.pasuje(mi, i.miasto)) return false;
     if (!q) return true;
     return [i.nazwa, i.miasto, i.nip].join(" ").toLowerCase().indexOf(q) >= 0;
   });

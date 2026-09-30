@@ -51,7 +51,7 @@
         <button class="btn sm" id="prev">&#8592; Poprzedni</button>
         <b id="mLabel" style="min-width:170px;text-align:center"></b>
         <button class="btn sm" id="next">Następny &#8594;</button>
-        <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
+        <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
         <span class="sp"></span>
         <div class="legend">
           <span><i style="background:var(--accent-soft);border-color:var(--accent)"></i>zaplanowany, są zapisani</span>
@@ -83,8 +83,8 @@
     <div class="tab-pane" id="t2">
       <div class="toolbar">
         <input class="inp search" id="q" placeholder="Szukaj: szkolenie, miejsce, identyfikator...">
-        <select class="inp" id="fIS2"><option value="">Wszystkie instytucje</option></select>
-        <select class="inp" id="fSt">
+        <select class="inp" id="fIS2" data-wielo><option value="">Wszystkie instytucje</option></select>
+        <select class="inp" id="fSt" data-wielo>
           <option value="">Wszystkie statusy</option>
           <option>Zaplanowany</option>
           <option>Wolny</option>
@@ -218,6 +218,8 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="terminy"></script>

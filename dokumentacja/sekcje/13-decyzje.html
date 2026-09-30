@@ -472,6 +472,28 @@
       </tbody>
     </table>
   </div>
+
+  <h2>Decyzje wykonawcy (2026-09-30, część 2)</h2>
+  <div class="callout ok">
+    <span class="ct">9 decyzji: akceptacje zgłoszeń i zmian, plany szkoleń z plikami, filtry wielokrotne, marka</span>
+    Instytucja zgłasza klientów i zmiany danych, LDIT zatwierdza w module Do akceptacji. Plany szkoleń mają kartę z plikami, filtry pozwalają wybrać kilka wartości.
+  </div>
+  <div class="tbl-wrap">
+    <table class="t">
+      <thead><tr><th>ID</th><th>Decyzja</th><th>Siła</th><th>Kto</th><th>Dotyczy</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ref new">D-223</span></td><td><b>Instytucja i jej handlowiec zgłaszają klientów formularzem w Panelu IS.</b> Zgłoszenie trafia do tabeli <code>formularze_oczekujace</code> (wypełnił: instytucja albo handlowiec), do bazy klientów wchodzi dopiero po akceptacji pracownika LDIT albo administratora. Akceptacja dopisuje istniejącego klienta o tym samym NIP zamiast tworzyć drugi rekord <span class="ref new">D-144</span>. Jeśli ten klient jest już u innej instytucji, zatwierdzający musi jawnie potwierdzić połączenie, bo instytucja zobaczy dane klienta <span class="ref new">D-150</span>. Zatwierdzający może poprawić NIP przed akceptacją, odrzucenie wymaga powodu widocznego dla instytucji</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>uzupełnia <span class="ref">D-94</span>, <span class="ref new">D-144</span></td></tr>
+        <tr><td><span class="ref new">D-224</span></td><td><b>Instytucja proponuje zmiany swoich danych i danych swoich klientów, zmiana wchodzi po zatwierdzeniu.</b> Propozycja (<code>propozycje_zmian</code>) przechowuje wartości przed i po. Strażnik zapisu pozwala zatwierdzającemu wprowadzić wyłącznie zaproponowane wartości oczekującej propozycji, instytucja nie może zaproponować zmiany cudzego rekordu ani pól chronionych. Treści propozycji nie da się edytować, można ją tylko zatwierdzić albo odrzucić. Zgłoszenie jest zawsze podpisane kontem wysyłającym i czeka na decyzję. Handlowiec instytucji nie proponuje zmian danych instytucji</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>realizuje <span class="ref new">D-148</span>, <span class="ref new">D-149</span></td></tr>
+        <tr><td><span class="ref new">D-225</span></td><td><b>Plan szkolenia ma kartę ze szczegółami i plikami.</b> Pola: cel, grupa docelowa, efekty uczenia się, wymagania, forma zaliczenia, oprócz dotychczasowych. Pliki (program, harmonogram, materiały, inne, do 1 MB w makiecie) w tabeli <code>pliki_szkolen</code>, widoczne w zakresie instytucji</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>rozszerza katalog szkoleń z etapu I</td></tr>
+        <tr><td><span class="ref new">D-226</span></td><td><b>Nowy moduł "Do akceptacji"</b> (<code>20-akceptacje.html</code>) z dwiema zakładkami: formularze zgłoszeniowe i zmiany danych. Lista, panel szczegółów, decyzja. Wchodzi się z dashboardu, z licznika w pasku górnym i z Zadań. Moduł dla administratora i pracownika LDIT</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>realizuje <span class="ref new">D-223</span>, <span class="ref new">D-224</span></td></tr>
+        <tr><td><span class="ref new">D-227</span></td><td><b>Na liście wniosków nie ma usuwania.</b> Wiersz ma tylko przycisk "Szczegóły", który otwiera kartę wniosku. Edycja odbywa się na karcie</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>ochrona danych finansowych</td></tr>
+        <tr><td><span class="ref new">D-228</span></td><td><b>Wszystkie filtry list pozwalają wybrać kilka wartości naraz</b> (rozwijana lista z polami wyboru). Wybór zapisuje się w adresie po przecinku, więc Wstecz i linki drill through go odtwarzają. Wybrane wartości łączą się przez LUB</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>uzupełnia <span class="ref new">D-212</span>, <span class="ref new">D-220</span></td></tr>
+        <tr><td><span class="ref new">D-229</span></td><td><b>Kolory i logo marki LDIT</b> (granat #222344 i złoto #cdad7d z ldit.pl). Logo w lewym menu i na ekranie logowania. Statusy wniosków zachowują dotychczasowe kolory</td><td><span class="pill ws">WSTĘPNA</span></td><td>[W]</td><td>do akceptacji klienta</td></tr>
+        <tr><td><span class="ref new">D-230</span></td><td><b>Każda tabela bazy ma widok w aplikacji.</b> Doszły: rejestr urzędów pracy w Naborach, notatki na karcie klienta (notatki wewnętrzne LDIT tylko dla kont bez ograniczenia instytucji), aktywne sesje w Rejestrze aktywności (bez tokenu sesji)</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>uzupełnia <span class="ref new">D-150</span></td></tr>
+        <tr><td><span class="ref new">D-231</span></td><td><b>Uprawnienia nowych funkcji:</b> <code>formularze.zglaszanie</code> i <code>zmiany.zglaszanie</code> dla instytucji i handlowca instytucji, <code>zmiany.zatwierdzanie</code> dla administratora i pracownika LDIT. Moduł <code>akcept</code> w macierzy ról</td><td><span class="pill tw">TWARDA</span></td><td>[W]</td><td>patrz [02](02-role-i-uprawnienia.md)</td></tr>
+      </tbody>
+    </table>
+  </div>
   <!-- rejestr:do -->
 
   <h2>Decyzje unieważnione w trakcie warsztatu</h2>

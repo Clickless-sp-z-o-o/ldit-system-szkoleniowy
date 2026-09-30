@@ -19,7 +19,7 @@ function renderKPI() {
 }
 
 function ustawNabor(nabor) {
-  document.getElementById("fNab").value = nabor;
+  Wielowybor.ustaw(document.getElementById("fNab"), nabor ? [nabor] : []);
   render();
 }
 
@@ -36,12 +36,12 @@ function wypelnijFiltry() {
 
 function filtrujKlientow() {
   var q = document.getElementById("q").value.toLowerCase().trim();
-  var fis = document.getElementById("fIS").value, fpup = document.getElementById("fPUP").value;
-  var fnab = document.getElementById("fNab").value;
+  var wyb = function (id) { return Wielowybor.wartosci(document.getElementById(id)); };
+  var fis = wyb("fIS"), fpup = wyb("fPUP"), fnab = wyb("fNab");
   return STAN_04.K.filter(function (r) {
-    if (fis && r.kl.is !== fis) return false;
-    if (fpup && r.kl.pup !== fpup) return false;
-    if (fnab && r.status !== fnab) return false;
+    if (!Wielowybor.pasuje(fis, r.kl.is)) return false;
+    if (!Wielowybor.pasuje(fpup, r.kl.pup)) return false;
+    if (!Wielowybor.pasuje(fnab, r.status)) return false;
     if (!klientWFiltrzeStatusu(r)) return false;
     if (!q) return true;
     var h = [r.kl.nazwa, r.kl.nip, r.pupNazwa, r.isNazwa, r.kl.osoba].join(" ").toLowerCase();
@@ -71,7 +71,10 @@ function render() {
 /* Filtry Bazy danych w adresie: link z Naborow (pup), z wyszukiwarki globalnej (q)
    i powrot z karty wniosku otwieraja liste juz przefiltrowana */
 var FILTRY_04 = { q: "q", inst: "fIS", pup: "fPUP", nabor: "fNab", wnioski: "fStatusWn" };
+/* Domyslny filtr statusu ("przed") nie trafia do adresu. Pusty wybor (wszyscy klienci)
+   zapisuje sie jako "wszystkie", bo brak parametru oznacza powrot do domyslnego. */
 var WNIOSKI_DOMYSLNIE_04 = "przed";
+var WNIOSKI_WSZYSCY_04 = "wszystkie";
 
 /* Rozwinieci klienci tez sa w adresie (rozwin=KL-1,KL-2), wiec Wstecz odtwarza widok */
 function rozwinieci() {
@@ -80,10 +83,19 @@ function rozwinieci() {
 
 function wartosciFiltrow04() {
   var w = {};
-  Object.keys(FILTRY_04).forEach(function (p) { w[p] = document.getElementById(FILTRY_04[p]).value; });
+  Object.keys(FILTRY_04).forEach(function (p) { w[p] = Wielowybor.tekst(document.getElementById(FILTRY_04[p])); });
   if (w.wnioski === WNIOSKI_DOMYSLNIE_04) w.wnioski = "";
+  else if (!w.wnioski) w.wnioski = WNIOSKI_WSZYSCY_04;
   w.rozwin = rozwinieci().join(",");
   return w;
+}
+
+/* Parametr wnioski=wszystkie (link z Naborow, wyszukiwarki, karty klienta) zdejmuje domyslny filtr */
+function wczytajFiltry04() {
+  Nawigacja.wczytajFiltry(FILTRY_04);
+  if (Nawigacja.odczytajZapytanie(location.search, ["wnioski"]).wnioski === WNIOSKI_WSZYSCY_04) {
+    Wielowybor.ustaw(document.getElementById("fStatusWn"), []);
+  }
 }
 
 function otworzWniosek04(idWniosku, idKlienta) {
@@ -120,7 +132,7 @@ function inicjuj04() {
   STAN_04.NAB = budujNabory();
   wypelnijFiltry();
   var z = Nawigacja.odczytajZapytanie(location.search, ["rozwin", "pokaz", "edytuj"]);
-  Nawigacja.wczytajFiltry(FILTRY_04);
+  wczytajFiltry04();
   z.rozwin.split(",").filter(Boolean).forEach(function (id) { STAN_04.expanded[id] = true; });
   ["q", "fIS", "fPUP", "fNab", "fStatusWn"].forEach(function (id) {
     document.getElementById(id).addEventListener("input", render);

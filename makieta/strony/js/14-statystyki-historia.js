@@ -6,7 +6,7 @@ function miaraRoku(rok, isId, nazwa) {
 function liczbaLubMyslnik(v) { return v == null ? "-" : DB.fmtNum(v); }
 function idsInstytucjiZDanymi(rok, fis) {
   var ids = {};
-  DB.PODSUMOWANIA.filter(function (p) { return p.rok === rok && (!fis || p.isId === fis); })
+  DB.PODSUMOWANIA.filter(function (p) { return p.rok === rok && Wielowybor.pasuje(fis, p.isId); })
     .forEach(function (p) { ids[p.isId] = true; });
   return Object.keys(ids).filter(function (id) { return instytucjaPoId(id); });
 }

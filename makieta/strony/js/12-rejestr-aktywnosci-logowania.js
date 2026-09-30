@@ -38,10 +38,9 @@ function wierszL(r) {
 function renderL() {
   var L = STAN_12.L;
   var q = document.getElementById("qL").value.toLowerCase().trim();
-  var fw = document.getElementById("fWynik").value;
+  var fw = Wielowybor.wartosci(document.getElementById("fWynik"));
   var lista = L.filter(function (r) {
-    if (fw === "udane" && !udane(r)) return false;
-    if (fw === "nieudane" && udane(r)) return false;
+    if (!Wielowybor.pasuje(fw, udane(r) ? "udane" : "nieudane")) return false;
     if (q && (r.kto + " " + r.ip + " " + r.urzadzenie).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
@@ -90,7 +89,7 @@ function odswiez() {
   STAN_12.L = DB.LOGOWANIA.slice().sort(najnowszeNaGorze);
   DB.UZYTKOWNICY.forEach(function (u) { STAN_12.UMAP[u.login] = u; });
   odswiezFiltryA(); renderKpiA(); renderA(); renderIstotne();
-  renderKpiL(); renderL(); renderSygnaly();
+  renderKpiL(); renderL(); renderSygnaly(); renderSesje12();
 }
 
 function inicjuj12() {

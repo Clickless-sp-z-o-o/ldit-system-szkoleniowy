@@ -41,8 +41,8 @@ function widokFaktury() {
     <div class="card">
       <div class="toolbar">
         <input class="inp search" id="qF" placeholder="Szukaj: numer faktury, instytucja...">
-        <select class="inp" id="fFIS"><option value="">Wszystkie instytucje</option></select>
-        <select class="inp" id="fFSt">
+        <select class="inp" id="fFIS" data-wielo><option value="">Wszystkie instytucje</option></select>
+        <select class="inp" id="fFSt" data-wielo>
           <option value="">Wszystkie statusy</option>
           <option>Opłacona</option><option>Oczekuje</option><option>Po terminie</option>
         </select>
@@ -87,12 +87,12 @@ function numerFakturyHtml(f) {
 
 function renderFaktury() {
   var q = document.getElementById("qF").value.toLowerCase().trim();
-  var fis = STAN_08.selFIS.value;
-  var fst = document.getElementById("fFSt").value;
+  var fis = Wielowybor.wartosci(STAN_08.selFIS);
+  var fst = Wielowybor.wartosci(document.getElementById("fFSt"));
 
   var lista = DB.FAKTURY.filter(function (f) {
-    if (fis && f.isId !== fis) return false;
-    if (fst && f.status !== fst) return false;
+    if (!Wielowybor.pasuje(fis, f.isId)) return false;
+    if (!Wielowybor.pasuje(fst, f.status)) return false;
     return !q || (f.nr + " " + f.is).toLowerCase().indexOf(q) >= 0;
   });
   var suma = function (a) { return a.reduce(function (s, f) { return s + f.kwota; }, 0); };

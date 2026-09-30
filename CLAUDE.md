@@ -148,6 +148,7 @@ node tools/smoke-crud.mjs         # CRUD, ograniczenia schematu, pola wyliczane
 node tools/test-uprawnienia.mjs   # role, uprawnienia, separacja danych
 node tools/test-zgodnosc-pol.mjs  # formularze zapisują do istniejących kolumn
 node tools/test-prowizja.mjs      # 17 przypadków testowych z docs/07 plus korekty
+node tools/test-akceptacje.mjs    # zgłoszenia i zmiany danych od IS, zatwierdzanie, pliki planów
 node tools/test-bezpieczenstwo.mjs   # hasła, sesja, strażnik zapisów, XSS
 node tools/test-lata.mjs          # zakładki roczne, dodawanie roku, brak wniosków z 2025
 node tools/test-model.mjs         # dane interaktywnego diagramu tabel zgodne ze schematem

@@ -72,10 +72,10 @@ function wierszNaboru(n) {
 function renderTabela05() {
   var N = STAN_05.N;
   var q = el05("q").value.toLowerCase().trim();
-  var fs = el05("fStat").value, fr = el05("fRodz").value;
+  var fs = Wielowybor.wartosci(el05("fStat")), fr = Wielowybor.wartosci(el05("fRodz"));
   var lista = N.filter(function (n) {
-    if (fs && n.status !== fs) return false;
-    if (fr && n.rodzaj !== fr) return false;
+    if (!Wielowybor.pasuje(fs, n.status)) return false;
+    if (!Wielowybor.pasuje(fr, n.rodzaj)) return false;
     return !q || (n.pup + " " + n.woj).toLowerCase().indexOf(q) >= 0;
   });
   el05("licz").innerHTML = "<b>" + lista.length + "</b> z " + N.length + " urzędów &middot; klientów: <b>" +

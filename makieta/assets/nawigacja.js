@@ -39,7 +39,8 @@
     "16-panel-is.html": "panelIS",
     "17-panel-klienta.html": "panelKL",
     "18-zadania.html": "zadania",
-    "19-klient.html": "dofin"
+    "19-klient.html": "dofin",
+    "20-akceptacje.html": "akcept"
   };
 
   /* Ekrany, ktore w menu leza pod inna pozycja niz modul dostepu */
@@ -156,7 +157,11 @@
   function wczytajFiltry(pola) {
     var wartosci = odczytajZapytanie(global.location.search, Object.keys(pola));
     Object.keys(pola).forEach(function (param) {
-      if (wartosci[param]) document.getElementById(pola[param]).value = wartosci[param];
+      if (!wartosci[param]) return;
+      var el = document.getElementById(pola[param]);
+      /* Filtr wielokrotnego wyboru: wartosci po przecinku (assets/wielowybor.js) */
+      if (el.multiple) global.Wielowybor.ustaw(el, wartosci[param]);
+      else el.value = wartosci[param];
     });
     return wartosci;
   }
@@ -166,8 +171,9 @@
     zglosEkran();
   }
 
+  /* Licznik w pasku gornym: formularze i zmiany danych czekajace na decyzje LDIT (D-223, D-224) */
   function licznikDlaPowloki(auth, db) {
-    return auth.widziModul("zadania") ? liczbaDoAkceptacji(db.KOLEJKA) : null;
+    return auth.widziModul("akcept") ? liczbaDoAkceptacji(db.KOLEJKA) + liczbaDoAkceptacji(db.PROPOZYCJE) : null;
   }
 
   /* Na file:// origin to "null" i nie da sie go wskazac, wtedy zostaje "*".

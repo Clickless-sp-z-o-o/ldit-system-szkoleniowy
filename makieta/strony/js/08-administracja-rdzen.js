@@ -53,7 +53,7 @@ function otworzZakladkeZAdresu() {
   var p = Nawigacja.odczytajZapytanie(location.search, ["zakladka", "status"]);
   var tab = document.querySelector('.tab[data-t="t-' + CSS.escape(p.zakladka) + '"]');
   if (tab) tab.click();
-  if (p.status) document.getElementById("fFSt").value = p.status;
+  if (p.status) Wielowybor.ustaw(document.getElementById("fFSt"), p.status);
 }
 
 function wypelnijSelektorOkresu() {
@@ -92,6 +92,8 @@ function przygotujDane08() {
 function inicjuj08() {
   przygotujDane08();
   widokFaktury();
+  /* Zakladka Faktury powstaje w skrypcie, po zamianie filtrow przez boot.js */
+  Wielowybor.zamienWszystkie(document.getElementById("t-faktury"));
   widokStatystyki();
   widokWewnetrzne();
 

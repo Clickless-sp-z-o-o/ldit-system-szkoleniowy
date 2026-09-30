@@ -398,6 +398,24 @@ Wykonawca zapisał: "instytucja ma widzieć nabory", a potem wybrał wariant "c.
 
 **Sprzeczność do zgłoszenia.** Polecenie wykonawcy opisuje D-187 i D-189 jako WSTĘPNE, a rejestr od 29.09 trzyma je jako TWARDA. Siłę zostawiono TWARDA i dopisano potwierdzenie. Odwrócenie wymagań klienta z D-147 i D-122 nie jest jednak potwierdzone przez klienta.
 
+## Decyzje wykonawcy z 30.09.2026, część 2: D-223 - D-231
+
+Wykonawca zapisał: "zmień kolory główne na takie bardziej związane z tą marką, dodaj też gdzieś logo LDIT", "nie może być przycisku do usuwania wniosku na wnioskach, tylko do edycji lub szczegółów", "zrób na wszystkich filtrach zaznaczanie z wyborem wielokrotnym", "plany szkoleń wymagają wgrywania plików oraz bardziej szczegółowej edycji", "zrób panel szczegółów do akceptacji wniosków z natywnego formularza", "pracownik instytucji i instytucja muszą też sami dodawać formularze do akceptacji", "dane o sobie też może edytować IS, też o klientach, ale wszystko wymaga zatwierdzenia pracownika lub administratora LDIT".
+
+| ID | Decyzja | Siła | Kto | Dotyczy |
+|---|---|---|---|---|
+| **D-223** | **Instytucja i jej handlowiec zgłaszają klientów formularzem w Panelu IS.** Zgłoszenie trafia do tabeli `formularze_oczekujace` (wypełnił: instytucja albo handlowiec), do bazy klientów wchodzi dopiero po akceptacji pracownika LDIT albo administratora. Akceptacja dopisuje istniejącego klienta o tym samym NIP zamiast tworzyć drugi rekord [D-144]. Jeśli ten klient jest już u innej instytucji, zatwierdzający musi jawnie potwierdzić połączenie, bo instytucja zobaczy dane klienta [D-150]. Zatwierdzający może poprawić NIP przed akceptacją, odrzucenie wymaga powodu widocznego dla instytucji | TWARDA | [W] | uzupełnia D-94, D-144 |
+| **D-224** | **Instytucja proponuje zmiany swoich danych i danych swoich klientów, zmiana wchodzi po zatwierdzeniu.** Propozycja (`propozycje_zmian`) przechowuje wartości przed i po. Strażnik zapisu pozwala zatwierdzającemu wprowadzić wyłącznie zaproponowane wartości oczekującej propozycji, instytucja nie może zaproponować zmiany cudzego rekordu ani pól chronionych. Treści propozycji nie da się edytować, można ją tylko zatwierdzić albo odrzucić. Zgłoszenie jest zawsze podpisane kontem wysyłającym i czeka na decyzję. Handlowiec instytucji nie proponuje zmian danych instytucji | TWARDA | [W] | realizuje D-148, D-149 |
+| **D-225** | **Plan szkolenia ma kartę ze szczegółami i plikami.** Pola: cel, grupa docelowa, efekty uczenia się, wymagania, forma zaliczenia, oprócz dotychczasowych. Pliki (program, harmonogram, materiały, inne, do 1 MB w makiecie) w tabeli `pliki_szkolen`, widoczne w zakresie instytucji | TWARDA | [W] | rozszerza katalog szkoleń z etapu I |
+| **D-226** | **Nowy moduł "Do akceptacji"** (`20-akceptacje.html`) z dwiema zakładkami: formularze zgłoszeniowe i zmiany danych. Lista, panel szczegółów, decyzja. Wchodzi się z dashboardu, z licznika w pasku górnym i z Zadań. Moduł dla administratora i pracownika LDIT | TWARDA | [W] | realizuje D-223, D-224 |
+| **D-227** | **Na liście wniosków nie ma usuwania.** Wiersz ma tylko przycisk "Szczegóły", który otwiera kartę wniosku. Edycja odbywa się na karcie | TWARDA | [W] | ochrona danych finansowych |
+| **D-228** | **Wszystkie filtry list pozwalają wybrać kilka wartości naraz** (rozwijana lista z polami wyboru). Wybór zapisuje się w adresie po przecinku, więc Wstecz i linki drill through go odtwarzają. Wybrane wartości łączą się przez LUB | TWARDA | [W] | uzupełnia D-212, D-220 |
+| **D-229** | **Kolory i logo marki LDIT** (granat #222344 i złoto #cdad7d z ldit.pl). Logo w lewym menu i na ekranie logowania. Statusy wniosków zachowują dotychczasowe kolory | WSTĘPNA | [W] | do akceptacji klienta |
+| **D-230** | **Każda tabela bazy ma widok w aplikacji.** Doszły: rejestr urzędów pracy w Naborach, notatki na karcie klienta (notatki wewnętrzne LDIT tylko dla kont bez ograniczenia instytucji), aktywne sesje w Rejestrze aktywności (bez tokenu sesji) | TWARDA | [W] | uzupełnia D-150 |
+| **D-231** | **Uprawnienia nowych funkcji:** `formularze.zglaszanie` i `zmiany.zglaszanie` dla instytucji i handlowca instytucji, `zmiany.zatwierdzanie` dla administratora i pracownika LDIT. Moduł `akcept` w macierzy ról | TWARDA | [W] | patrz [02](02-role-i-uprawnienia.md) |
+
+Uwaga do danych demonstracyjnych: 213 z 240 klientów w bazie startowej ma NIP z błędną sumą kontrolną (dane przykładowe sprzed walidacji). Walidacja sprawdza tylko pola zmieniane, więc edycja innych pól działa, a zatwierdzający poprawia NIP z formularza przed akceptacją.
+
 ---
 
 ## Decyzje unieważnione w trakcie warsztatu
@@ -426,13 +444,13 @@ Wykonawca zapisał: "instytucja ma widzieć nabory", a potem wybrał wariant "c.
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 162 |
-| WSTĘPNA | 51 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 170 |
+| WSTĘPNA | 52 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **222** |
+| **Razem** | **231** |
 
-Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**. Liczby dotyczą D-01 - D-160. Wszystkie 46 decyzji D-161 - D-206 to rozstrzygnięcia wykonawcy: 19 TWARDYCH i 27 WSTĘPNYCH czekających na potwierdzenie klienta (po D-209 wiersz D-193 jest skorygowany, więc czeka 26). Sześć decyzji D-207 - D-212 to także ustalenia wykonawcy: 5 TWARDYCH i 1 WSTĘPNA (D-212). Razem czeka na klienta 27 pozycji.
+Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**. Liczby dotyczą D-01 - D-160. Wszystkie 46 decyzji D-161 - D-206 to rozstrzygnięcia wykonawcy: 19 TWARDYCH i 27 WSTĘPNYCH czekających na potwierdzenie klienta (po D-209 wiersz D-193 jest skorygowany, więc czeka 26). Sześć decyzji D-207 - D-212 to także ustalenia wykonawcy: 5 TWARDYCH i 1 WSTĘPNA (D-212). Z D-213 - D-231 jedna jest WSTĘPNA (D-229, kolory marki). Razem czeka na klienta 28 pozycji.
 
 Skąd te liczby:
 
@@ -446,6 +464,7 @@ Skąd te liczby:
 | Panel decyzyjny i przegląd modelu 29.09.2026 | D-161 - D-206 | 46 |
 | Decyzje wykonawcy po przeglądzie makiety 29.09.2026 | D-207 - D-212 | 6 |
 | Decyzje wykonawcy 30.09.2026 (Nabory, menu lat, Baza danych, karta klienta, statusy, drill through) | D-213 - D-222 | 10 |
+| Decyzje wykonawcy 30.09.2026, część 2 (akceptacje, plany szkoleń, filtry wielokrotne, marka) | D-223 - D-231 | 9 |
 
 Warsztat 04.09 przyniósł 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md). Runda budowy makiety nie odwróciła żadnej decyzji klienta, tylko rozstrzygnęła, gdzie ustalenia mają być egzekwowane.
 

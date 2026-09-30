@@ -2121,11 +2121,12 @@ INSERT INTO role (id, nazwa, opis, zakres, systemowa) VALUES ('is', 'Instytucja 
 INSERT INTO role (id, nazwa, opis, zakres, systemowa) VALUES ('pracownikIS', 'Pracownik IS', 'Handlowiec instytucji, rola konczy sie na wypelnieniu formularza (D-72, D-75)', 'instytucja', 1);
 INSERT INTO role (id, nazwa, opis, zakres, systemowa) VALUES ('klient', 'Klient koncowy', 'Odczyt wlasnego wniosku, status modulu otwarty (P-33)', 'klient', 1);
 
--- moduly (12)
+-- moduly (13)
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('dash', 'Dashboard', '01-dashboard.html', '&#9632;', 'Praca operacyjna', 10);
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('dofin', 'Dofinansowania', '02-zestawienia.html', '&#9673;', 'Praca operacyjna', 20);
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('nabory', 'Nabory', '05-nabory.html', '&#9200;', 'Praca operacyjna', 30);
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('zadania', 'Zadania i powiadomienia', '18-zadania.html', '&#9745;', 'Praca operacyjna', 40);
+INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('akcept', 'Do akceptacji', '20-akceptacje.html', '&#10003;', 'Praca operacyjna', 45);
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('inst', 'Instytucje szkoleniowe', '06-instytucje.html', '&#9638;', 'Konfiguracja', 50);
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('komun', 'Komunikacja', '09-wysylka-maili.html', '&#9993;', 'Konfiguracja', 60);
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('admin', 'Administracja', '08-administracja.html', '&#9878;', 'Zarzadzanie', 70);
@@ -2135,7 +2136,7 @@ INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('panelIS',
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('terminy', 'Terminy szkolen', '13-terminy.html', '&#9635;', 'Panel zewnetrzny', 110);
 INSERT INTO moduly (id, nazwa, plik, ikona, grupa, kolejnosc) VALUES ('panelKL', 'Moj wniosek', '17-panel-klienta.html', '&#9708;', 'Panel zewnetrzny', 120);
 
--- funkcje (39)
+-- funkcje (44)
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('dash.view', 'dash', 'modul', 'Podgląd: Dashboard', NULL);
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('dash.manage', 'dash', 'modul', 'Edycja: Dashboard', 'dash.view');
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('dofin.view', 'dofin', 'modul', 'Podgląd: Dofinansowania', NULL);
@@ -2144,6 +2145,8 @@ INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('nabory.view
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('nabory.manage', 'nabory', 'modul', 'Edycja: Nabory', 'nabory.view');
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zadania.view', 'zadania', 'modul', 'Podgląd: Zadania i powiadomienia', NULL);
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zadania.manage', 'zadania', 'modul', 'Edycja: Zadania i powiadomienia', 'zadania.view');
+INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('akcept.view', 'akcept', 'modul', 'Podgląd: Do akceptacji', NULL);
+INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('akcept.manage', 'akcept', 'modul', 'Edycja: Do akceptacji', 'akcept.view');
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('inst.view', 'inst', 'modul', 'Podgląd: Instytucje szkoleniowe', NULL);
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('inst.manage', 'inst', 'modul', 'Edycja: Instytucje szkoleniowe', 'inst.view');
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('komun.view', 'komun', 'modul', 'Podgląd: Komunikacja', NULL);
@@ -2174,13 +2177,17 @@ INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('admin.rejes
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('admin.progi_dofinansowania', NULL, 'pole', 'Edycja progów dofinansowania', NULL);
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zestawienia.dodawanie_lat', NULL, 'pole', 'Dodawanie zakładek lat', NULL);
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zadania.wszystkie', NULL, 'pole', 'Zadania wszystkich osób, nie tylko własne', NULL);
+INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('formularze.zglaszanie', NULL, 'pole', 'Dodawanie formularzy zgłoszeniowych do akceptacji', NULL);
+INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zmiany.zglaszanie', NULL, 'pole', 'Zgłaszanie zmian danych instytucji i klientów', NULL);
+INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zmiany.zatwierdzanie', NULL, 'pole', 'Zatwierdzanie zgłoszonych zmian i formularzy', NULL);
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zakres.cala_instytucja', NULL, 'pole', 'Wszyscy klienci własnej instytucji, nie tylko przypisani', NULL);
 
--- role_funkcje (51)
+-- role_funkcje (59)
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'dash.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'dofin.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'nabory.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'zadania.*');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'akcept.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'inst.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'komun.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'admin.*');
@@ -2191,6 +2198,7 @@ INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'dash.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'dofin.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'nabory.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'zadania.*');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'akcept.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'inst.view');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'komun.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'zglo.*');
@@ -2227,6 +2235,12 @@ INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'admin.progi_dofina
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'zestawienia.dodawanie_lat');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'zestawienia.dodawanie_lat');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'zadania.wszystkie');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('is', 'formularze.zglaszanie');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownikIS', 'formularze.zglaszanie');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('is', 'zmiany.zglaszanie');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownikIS', 'zmiany.zglaszanie');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'zmiany.zatwierdzanie');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'zmiany.zatwierdzanie');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('is', 'zakres.cala_instytucja');
 
 -- uzytkownicy (11)
@@ -2264,6 +2278,12 @@ INSERT INTO uzytkownik_instytucja (uzytkownik_id, instytucja_id) VALUES ('biuro@
 
 -- notatki: brak danych startowych
 
+-- pliki_szkolen: brak danych startowych
+
+-- propozycje_zmian (2)
+INSERT INTO propozycje_zmian (id, instytucja_id, tabela, rekord_id, zmiany, uzasadnienie, zglosil_id, zgloszono, status) VALUES ('PZ-0001', 'IS-01', 'instytucje', 'IS-01', '{"telefon":{"przed":"601 002 118","po":"58 555 20 20"}}', 'Nowy numer recepcji.', 'biuro@odczarujpowerbi.pl', '2026-09-29 14:10', 'oczekuje');
+INSERT INTO propozycje_zmian (id, instytucja_id, tabela, rekord_id, zmiany, uzasadnienie, zglosil_id, zgloszono, status) VALUES ('PZ-0002', 'IS-01', 'klienci', 'KL-0002', '{"osoba_kontaktowa":{"przed":"Rafał Pawlak","po":"Anna Zielińska"}}', 'Zmiana osoby po stronie klienta.', 'biuro@odczarujpowerbi.pl', '2026-09-29 14:10', 'oczekuje');
+
 -- korespondencja (6)
 INSERT INTO korespondencja (id, klient_id, instytucja_id, data, kierunek, od_kogo, temat, skrzynka, zalaczniki) VALUES ('KOR-0001', NULL, NULL, '2026-08-28 14:22', 'przychodzacy', 'kontakt@stalmet.pl', 'Stalmet - komplet dokumentów', 'lucja@ldit.pl', 2);
 INSERT INTO korespondencja (id, klient_id, instytucja_id, data, kierunek, od_kogo, temat, skrzynka, zalaczniki) VALUES ('KOR-0002', NULL, NULL, '2026-08-27 09:14', 'wychodzacy', 'lucja@ldit.pl', 'Stalmet - instrukcja praca.gov.pl', 'lucja@ldit.pl', 1);
@@ -2273,11 +2293,11 @@ INSERT INTO korespondencja (id, klient_id, instytucja_id, data, kierunek, od_kog
 INSERT INTO korespondencja (id, klient_id, instytucja_id, data, kierunek, od_kogo, temat, skrzynka, zalaczniki) VALUES ('KOR-0006', NULL, NULL, '2026-08-12 13:19', 'wychodzacy', 'lucja@ldit.pl', 'Stalmet - formularz zgłoszeniowy', 'lucja@ldit.pl', 1);
 
 -- formularze_oczekujace (5)
-INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status) VALUES ('FO-001', '2026-08-29 09:12', 'Kalmar sp. z o.o.', '7811234567', 'IS-01', 4, 'Power BI podstawowy', 'Adam Baran', 'handlowiec', 'terminy@odczarujpowerbi.pl', 'oczekuje');
-INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status) VALUES ('FO-002', '2026-08-29 08:40', 'Renoma S.A.', '6342877110', 'IS-02', 7, 'Spawanie MAG 135', 'Grzegorz Kubiak', 'klient', NULL, 'oczekuje');
-INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status) VALUES ('FO-003', '2026-08-28 17:55', 'Orion Tech sp.j.', '5252099441', 'IS-03', 2, 'Operator BSP VLOS', 'Paulina Witkowska', 'klient', NULL, 'oczekuje');
-INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status) VALUES ('FO-004', '2026-08-28 14:03', 'Gastro Mix sp. z o.o.', '8992001188', 'IS-05', 5, 'Excel zaawansowany', 'Michał Górski', 'klient', NULL, 'oczekuje');
-INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status) VALUES ('FO-005', '2026-08-28 11:47', 'Vitalis sp. z o.o.', '5842110098', 'IS-04', 3, 'Trener personalny', 'Joanna Nowicka', 'klient', NULL, 'oczekuje');
+INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status, email, telefon, uwagi) VALUES ('FO-001', '2026-08-29 09:12', 'Kalmar sp. z o.o.', '7811234567', 'IS-01', 4, 'Power BI podstawowy', 'Adam Baran', 'handlowiec', 'terminy@odczarujpowerbi.pl', 'oczekuje', 'biuro@kalmarspzoo.pl', '600 100 200', 'Prośba o kontakt po 15:00.');
+INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status, email, telefon, uwagi) VALUES ('FO-002', '2026-08-29 08:40', 'Renoma S.A.', '6342877110', 'IS-02', 7, 'Spawanie MAG 135', 'Grzegorz Kubiak', 'klient', NULL, 'oczekuje', 'biuro@renomasa.pl', '600 137 253', NULL);
+INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status, email, telefon, uwagi) VALUES ('FO-003', '2026-08-28 17:55', 'Orion Tech sp.j.', '5252099441', 'IS-03', 2, 'Operator BSP VLOS', 'Paulina Witkowska', 'klient', NULL, 'oczekuje', 'biuro@oriontechspj.pl', '600 174 306', 'Prośba o kontakt po 15:00.');
+INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status, email, telefon, uwagi) VALUES ('FO-004', '2026-08-28 14:03', 'Gastro Mix sp. z o.o.', '8992001188', 'IS-05', 5, 'Excel zaawansowany', 'Michał Górski', 'klient', NULL, 'oczekuje', 'biuro@gastromixspzoo.pl', '600 211 359', NULL);
+INSERT INTO formularze_oczekujace (id, data, firma, nip, instytucja_id, osob, szkolenie, kontakt, wypelnil, handlowiec_id, status, email, telefon, uwagi) VALUES ('FO-005', '2026-08-28 11:47', 'Vitalis sp. z o.o.', '5842110098', 'IS-04', 3, 'Trener personalny', 'Joanna Nowicka', 'klient', NULL, 'oczekuje', 'biuro@vitalisspzoo.pl', '600 248 412', 'Prośba o kontakt po 15:00.');
 
 -- szablony_maili (9)
 INSERT INTO szablony_maili (id, nazwa, odbiorca, autor, uzyc, tresc) VALUES ('SZB-01', 'Instrukcja zakładania konta na praca.gov.pl', 'Klient końcowy', 'LDIT', 412, NULL);

@@ -51,8 +51,8 @@
   <div class="card">
     <div class="toolbar">
       <input class="inp search" id="fSzukaj" placeholder="Szukaj po nazwie, mieście lub NIP...">
-      <select class="inp" id="fOpiekun"></select>
-      <select class="inp" id="fMiasto"></select>
+      <select class="inp" id="fOpiekun" data-wielo></select>
+      <select class="inp" id="fMiasto" data-wielo></select>
       <span class="chip on">Aktywne <span class="n" id="chipAkt">0</span></span>
       <span class="chip">Nieaktywne <span class="n" id="chipNieakt">0</span></span>
       <span class="sp"></span>
@@ -126,12 +126,14 @@
               <th>Tryb<span class="tip-mark" data-tip="Forma prowadzenia: Online, Stacjonarne lub Mieszane.">i</span></th>
               <th class="num">Cena aktualna<span class="tip-mark" data-tip="Cena obowiazujaca dzis. Uwaga: do projektu wchodzi cena z daty wnioskowania, nie biezaca. Wniosek zapisuje wlasny koszt, zmiana ceny w katalogu nie przelicza wczesniejszych wnioskow.">i</span></th>
               <th class="num">Realizacje 2026<span class="tip-mark" data-tip="Liczba wnioskow lub projektow w 2026 roku, ktore dotycza tego szkolenia. Pokazuje popularnosc pozycji.">i</span></th>
+              <th class="c">Pliki<span class="tip-mark" data-tip="Pliki planu: program, harmonogram, materialy. Wgrywa sie je na karcie planu (D-225).">i</span></th>
               <th></th>
             </tr>
           </thead>
           <tbody id="katalog"></tbody>
         </table>
       </div>
+      <div class="card mb0" id="planKarta" style="display:none;margin:0 12px 12px"></div>
       <div class="card-body">
         <div class="note mb0">
           <b>Cena w katalogu jest ceną bieżącą.</b> Do projektu wchodzi cena obowiązująca <b>w dacie wnioskowania</b>, zapisana we wniosku. Schemat nie przechowuje historii cen katalogu, więc zmiana ceny nie przelicza wniosków złożonych wcześniej.
@@ -242,6 +244,8 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="inst"></script>
@@ -249,6 +253,7 @@
 <script src="js/06-instytucje-lista.js"></script>
 <script src="js/06-instytucje-szczegol.js"></script>
 <script src="js/06-instytucje-katalog.js"></script>
+<script src="js/06-instytucje-plan.js"></script>
 <script src="js/06-instytucje-szkoleniowcy.js"></script>
 <script src="js/06-instytucje-karta.js"></script>
 <script type="text/kfs-strona">

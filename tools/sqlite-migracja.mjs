@@ -9,6 +9,7 @@
    ============================================================================ */
 
 import { czyMigrowany, lataZestawienRows, podsumowaniaRows, progiDofinansowaniaRows, szkoleniowcyRows } from "./migracja-slowniki.mjs";
+import { propozycjeZmianRows, szczegolyFormularza } from "./migracja-akceptacje.mjs";
 import { funkcjeRows, HASLO_DEMO, MODULY, roleFunkcjeRows, ROLE, skrotHasla, solDla } from "./migracja-uprawnienia.mjs";
 
 export { czyMigrowany };
@@ -190,6 +191,8 @@ export function migruj(src) {
     przebieg_wniosku: [],
     zadania: [],
     notatki: [],
+    pliki_szkolen: [],
+    propozycje_zmian: propozycjeZmianRows(instytucje, klienci, uzytkownicy),
     korespondencja: src.korespondencja.map((k) => ({
       id: idKor(), klient_id: null, instytucja_id: null, data: k.data,
       kierunek: k.kier === "in" ? "przychodzacy" : "wychodzacy",
@@ -198,7 +201,7 @@ export function migruj(src) {
     formularze_oczekujace: src.kolejka_zgloszen.map((k, i) => ({
       id: "FO-" + String(i + 1).padStart(3, "0"), data: k.data, firma: k.firma, nip: k.nip,
       instytucja_id: instByNazwa[k.is] || null, osob: k.osob, szkolenie: k.szkolenie,
-      kontakt: k.kontakt, status: "oczekuje",
+      kontakt: k.kontakt, status: "oczekuje", ...szczegolyFormularza(k, i),
       /* co trzeci formularz instytucji z handlowcem wypelnil handlowiec (D-181, D-210) */
       ...(() => {
         const h = handlowcy.find((x) => x.instytucja_id === instByNazwa[k.is]);

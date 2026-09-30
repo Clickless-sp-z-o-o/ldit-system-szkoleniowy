@@ -1,19 +1,9 @@
-/* Ekran 02, czesc 4: usuwanie wniosku i formularz nowego projektu z wygenerowanymi uczestnikami.
-   Korzysta ze STAN_02 z 02-zestawienia-dane.js. Same deklaracje. */
+/* Ekran 02, czesc 4: formularz nowego projektu z wygenerowanymi uczestnikami.
+   Wnioskow nie usuwa sie z listy: rezygnacje oznacza sie statusem, a szczegoly
+   i edycja sa na karcie wniosku. Korzysta ze STAN_02. Same deklaracje. */
 
 var IMIONA_NOWE = ["Jan Kowalski", "Anna Nowak", "Piotr Wiśniewski", "Maria Wójcik",
   "Tomasz Kaczmarek", "Ewa Mazur", "Adam Lewandowski", "Zofia Kwiatkowska"];
-
-function usunWniosek(id) {
-  var w = znajdzWniosek(id);
-  if (!window.confirm("Usunąć projekt " + (w ? w.klNazwa : id) + " (" + id + ")? Usunie też jego uczestników.")) return;
-  STAN_02.batch = true;
-  Store.get("uczestnicy").filter(function (u) { return u.wniosek_id === id; })
-    .map(function (u) { return u.id; })
-    .forEach(function (uid) { Store.remove("uczestnicy", uid); });
-  STAN_02.batch = false;
-  Store.remove("wnioski", id);
-}
 
 function pokazProjForm() {
   var el = document.getElementById("projForm");

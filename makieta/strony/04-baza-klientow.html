@@ -44,18 +44,18 @@
   <div class="card" style="padding:0">
     <div class="toolbar">
       <input class="inp search" id="q" placeholder="Szukaj: NIP, klient, urząd...">
-      <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
-      <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
-      <select class="inp" id="fNab">
+      <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
+      <select class="inp" id="fPUP" data-wielo><option value="">Wszystkie urzędy</option></select>
+      <select class="inp" id="fNab" data-wielo>
         <option value="">Nabór: dowolny</option>
         <option>Nabór ogłoszony</option>
         <option>W trakcie kontaktu</option>
         <option>Brak naboru</option>
         <option>Po naborze</option>
       </select>
-      <select class="inp" id="fStatusWn" data-tip="Filtr po statusie wniosków klienta. Domyślnie klienci przed złożeniem wniosku: bez wniosku albo z wnioskiem Niezłożony lub NW. Zmień na Wszyscy klienci, żeby zdjąć filtr.">
-        <option value="przed">Przed złożeniem wniosku</option>
-        <option value="wszystkie">Wszyscy klienci</option>
+      <select class="inp" id="fStatusWn" data-wielo data-tip="Filtr po statusie wniosków klienta, można zaznaczyć kilka. Domyślnie klienci przed złożeniem wniosku: bez wniosku albo z wnioskiem Niezłożony lub NW. Wyczyść wybór, żeby zobaczyć wszystkich klientów.">
+        <option value="">Wszyscy klienci</option>
+        <option value="przed" selected>Przed złożeniem wniosku</option>
         <option value="aktywne">Z wnioskiem aktywnym (bez rozliczonych)</option>
         <option value="Czekamy">Wniosek: czekamy na decyzję</option>
         <option value="Pozytywna">Wniosek: pozytywna</option>
@@ -115,6 +115,8 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dofin"></script>

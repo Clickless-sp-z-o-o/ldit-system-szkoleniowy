@@ -312,9 +312,28 @@ erDiagram
         string instytucja_id FK
         int osob
         string szkolenie
-        string wypelnil "klient/handlowiec"
+        string wypelnil "klient/handlowiec/instytucja"
         string handlowiec_id FK
+        string zglosil_id FK
+        string klient_id FK
         string status "oczekuje/zaakceptowany/odrzucony"
+    }
+
+    propozycje_zmian {
+        string id PK
+        string instytucja_id FK
+        string tabela "instytucje/klienci"
+        string rekord_id
+        string zmiany "JSON przed/po"
+        string status "oczekuje/zatwierdzona/odrzucona"
+    }
+
+    pliki_szkolen {
+        string id PK
+        string szkolenie_id FK
+        string nazwa
+        string rodzaj "program/harmonogram/materialy/inny"
+        string tresc "base64"
     }
 
     szablony_maili {
@@ -417,8 +436,12 @@ erDiagram
     klienci |o--o{ korespondencja : "dotyczy klienta"
     instytucje |o--o{ korespondencja : "dotyczy instytucji"
     instytucje |o--o{ formularze_oczekujace : "zrodlo zgloszenia"
+    instytucje ||--o{ propozycje_zmian : "proponuje zmiane"
+    uzytkownicy |o--o{ propozycje_zmian : "zglosil"
+    katalog_szkolen ||--o{ pliki_szkolen : "pliki planu"
 </pre>
 <!-- diagram:do -->
+
 
 
   <h2>Kluczowe decyzje modelowe</h2>
@@ -593,6 +616,7 @@ erDiagram
     gdzie reguła miała się wyłączać po edycji. Bartek nie zaprotestował, ale też nie potwierdził wprost.
   </div>
   <p>W makiecie przyjęto konwencję: <b>pola ręczne oznaczone na żółto</b> <span class="ref">D-81</span>.</p>
+
   <!-- diagram:od -->
 <pre class="mermaid">
 flowchart LR

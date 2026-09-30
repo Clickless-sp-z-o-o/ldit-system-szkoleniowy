@@ -55,6 +55,7 @@
       DB.WNIOSKI = DB.WNIOSKI_2026;
       DB.SZKOLENIOWCY = filtruj(DB.SZKOLENIOWCY, instytucje, "is");
       DB.KOLEJKA = filtruj(DB.KOLEJKA, instytucje, "isId");
+      DB.PROPOZYCJE = filtruj(DB.PROPOZYCJE, instytucje, "isId");
       /* Korespondencja bez przypisanej instytucji nie trafia do konta z ograniczonym
          zakresem: brak przypisania oznacza brak dostepu, nie dostep dla wszystkich */
       DB.MAILE = filtruj(DB.MAILE, instytucje, "isId");
@@ -162,7 +163,7 @@
       });
       DB.INSTYTUCJE.forEach(function (i) { i.opiekun = null; });
 
-      ["FAKTURY", "KOLEJKA", "MAILE", "UZYTKOWNICY", "ZGLOSZENIA", "PODSUMOWANIA", "SZABLONY", "ROLE",
+      ["FAKTURY", "KOLEJKA", "PROPOZYCJE", "MAILE", "UZYTKOWNICY", "ZGLOSZENIA", "PODSUMOWANIA", "SZABLONY", "ROLE",
        "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA"].forEach(function (k) { DB[k] = []; });
       return DB;
     },
@@ -176,6 +177,7 @@
       ["WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "WNIOSKI_BEZ_ROKU"].forEach(function (k) { DB[k] = DB[k].filter(moje); });
       DB.WNIOSKI = DB.WNIOSKI_2026;
       DB.KOLEJKA = DB.KOLEJKA.filter(function (k) { return k.handlowiec === handlowiec; });
+      DB.PROPOZYCJE = DB.PROPOZYCJE.filter(function (p) { return p.zglosil === handlowiec; });
       var klienci = {};
       DB.KLIENCI.forEach(function (k) { klienci[k.id] = true; });
       DB.MAILE = DB.MAILE.filter(function (m) { return m.klient && klienci[m.klient]; });
@@ -234,7 +236,7 @@
     /* Brak sesji: zero danych. Strona i tak pokaze komunikat o wygasnieciu. */
     wyczysc: function (DB) {
       ["INSTYTUCJE", "KLIENCI", "SZKOLENIA", "TERMINY", "FAKTURY", "WNIOSKI",
-       "WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "WNIOSKI_BEZ_ROKU", "KOLEJKA", "MAILE",
+       "WNIOSKI_WSZYSTKIE", "WNIOSKI_2026", "WNIOSKI_2025", "WNIOSKI_BEZ_ROKU", "KOLEJKA", "PROPOZYCJE", "MAILE",
        "SZKOLENIOWCY", "PODSUMOWANIA",
        "UZYTKOWNICY", "ZGLOSZENIA", "AKTYWNOSC", "LOGOWANIA", "CELE", "ZADANIA", "LATA"
       ].forEach(function (k) { DB[k] = []; });

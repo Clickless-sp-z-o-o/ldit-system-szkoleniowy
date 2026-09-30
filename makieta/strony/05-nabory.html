@@ -5,6 +5,7 @@
 <title>Nabory</title>
 <link rel="stylesheet" href="../assets/style.css">
 <link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
 <style>
   /* Drobny wyjatek: nabory zakonczone wygaszone, brak gotowej klasy */
   tr.past td { color: var(--ink-4); }
@@ -48,14 +49,14 @@
 
     <div class="toolbar">
       <input class="inp search" id="q" placeholder="Szukaj: urząd, województwo...">
-      <select class="inp" id="fStat">
+      <select class="inp" id="fStat" data-wielo>
         <option value="">Wszystkie stany</option>
         <option>Nabór ogłoszony</option>
         <option>W trakcie kontaktu</option>
         <option>Brak naboru</option>
         <option>Po naborze</option>
       </select>
-      <select class="inp" id="fRodz">
+      <select class="inp" id="fRodz" data-wielo>
         <option value="">Wszystkie rodzaje</option>
         <option>KFS</option>
         <option>Powiatowy</option>
@@ -129,6 +130,24 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-head">
+      <h3>Rejestr urzędów pracy</h3>
+      <span class="tip-mark" data-tip="Wszystkie urzędy z bazy (tabela urzedy_pracy), także bez naboru i prognozy. Klik w urząd z klientami otwiera tych klientów w Bazie danych.">i</span>
+      <span class="sub" id="liczUrzedy"></span>
+    </div>
+    <div class="toolbar">
+      <input class="inp search" id="qUrzad" placeholder="Szukaj: urząd, powiat...">
+      <select class="inp" id="fWoj" data-wielo data-pusty="Wszystkie województwa"></select>
+    </div>
+    <div class="card-body tight" style="max-height:360px;overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>Urząd</th><th>Powiat</th><th>Województwo</th><th>Stan naboru</th><th class="num">Klientów</th></tr></thead>
+        <tbody id="urzedy"></tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="note">
     <b>Skąd biorą się te dane.</b> Nabory nie są wprowadzane ręcznie. LDIT ma już własną aplikację do
     przewidywania naborów i została ona wciągnięta do systemu jako moduł, żeby nabory były w jednym miejscu,
@@ -162,12 +181,15 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="nabory"></script>
 <script src="js/05-nabory-dane.js"></script>
 <script src="js/05-nabory-tabela.js"></script>
 <script src="js/05-nabory-prognozy.js"></script>
+<script src="js/05-nabory-urzedy.js"></script>
 <script type="text/kfs-strona">
 wczytajDane05();
 renderKpi05();
@@ -175,6 +197,7 @@ podepnijFiltry05();
 renderTabela05();
 renderPrognozy05();
 renderOsCzasu05();
+podepnijUrzedy05();
 </script>
 </body>
 </html>

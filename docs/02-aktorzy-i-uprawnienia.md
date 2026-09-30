@@ -158,8 +158,9 @@ Wersja robocza do potwierdzenia. Pola oznaczone `?` wymagają rozstrzygnięcia.
 | Nabory | Pełny | Odczyt | Odczyt, pełna lista, liczby z własnych klientów [D-213, D-214] | Brak [D-91] | Odczyt (`?`) |
 | Konta i uprawnienia | Pełny | Brak | Użytkownicy własnej IS | Brak | Brak |
 | Rejestr aktywności | Pełny | Brak | Brak | Brak | Brak |
+| Do akceptacji (formularze i zmiany danych) | Pełny, decyzja | Pełny, decyzja [D-226] | Brak, zgłasza w Panelu IS: klientów i zmiany danych swoich i klientów [D-223, D-224] | Brak, zgłasza klientów i zmiany danych swoich klientów, bez danych instytucji [D-224] | Brak |
 
-Macierz jest projekcją features `modul.view` i `modul.manage` na role [D-211], a wiersze filtruje D-210. Ma 14 modułów i 5 ról, więc zostaje jako tabela, tego zestawienia nie da się czytelnie zamienić na diagram. Sam mechanizm sprawdzania dostępu do pojedynczego rekordu daje się jednak pokazać jako przepływ decyzji, patrz diagram niżej.
+Macierz jest projekcją features `modul.view` i `modul.manage` na role [D-211], uzupełnioną o funkcje `formularze.zglaszanie`, `zmiany.zglaszanie` i `zmiany.zatwierdzanie` [D-231], a wiersze filtruje D-210. Ma 15 modułów i 5 ról, więc zostaje jako tabela, tego zestawienia nie da się czytelnie zamienić na diagram. Sam mechanizm sprawdzania dostępu do pojedynczego rekordu daje się jednak pokazać jako przepływ decyzji, patrz diagram niżej.
 
 ### Diagram: czy ten użytkownik zobaczy ten rekord
 

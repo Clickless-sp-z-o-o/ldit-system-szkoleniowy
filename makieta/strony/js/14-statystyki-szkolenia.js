@@ -21,7 +21,7 @@ function renderSzkolenia(W) {
 
 /* Widok instytucji: podglad dla wybranej instytucji, a bez wyboru dla pierwszej z listy */
 function renderWidokInstytucji(WSZYSTKIE, fis) {
-  var inst = instytucjaPoId(fis) || DB.INSTYTUCJE[0];
+  var inst = instytucjaPoId(fis[0]) || DB.INSTYTUCJE[0];
   document.getElementById("mojaInstytucja").textContent = inst.nazwa;
   var wIS = WSZYSTKIE.filter(function (w) { return w.is === inst.id; });
   var pozIS = wIS.filter(function (w) { return w.statusDec === "Pozytywna"; });
@@ -40,7 +40,7 @@ function renderWidokInstytucji(WSZYSTKIE, fis) {
 
 function renderBiezacy(fis) {
   var WSZYSTKIE = DB.WNIOSKI_WSZYSTKIE.filter(function (w) { return w.rok === STAN_14.rok; });
-  var W = WSZYSTKIE.filter(function (w) { return !fis || w.is === fis; });
+  var W = WSZYSTKIE.filter(function (w) { return Wielowybor.pasuje(fis, w.is); });
   var zloz = W.filter(function (w) { return w.statusSkl === "Złożony"; });
   var poz = W.filter(function (w) { return w.statusDec === "Pozytywna"; });
   var neg = W.filter(function (w) { return w.statusDec === "Negatywna"; });

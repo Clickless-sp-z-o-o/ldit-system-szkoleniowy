@@ -40,7 +40,7 @@
 
       <div class="topbar-right">
         <button class="akceptacje" id="akceptacje" hidden
-                data-tip="Formularze zgloszeniowe czekajace na akceptacje (bramka anty-spam). Klik otwiera Zadania i powiadomienia. D-105, D-140.">&#9993;<span class="n" id="akceptacjeN"></span></button>
+                data-tip="Formularze zgloszeniowe i zmiany danych od instytucji czekajace na akceptacje LDIT. Klik otwiera ekran Do akceptacji. D-105, D-140, D-223, D-224.">&#9993;<span class="n" id="akceptacjeN"></span></button>
         <div class="uzytkownik">
           <div class="uzytkownik-dane">
             <div class="uzytkownik-imie" id="imie">&nbsp;</div>
@@ -80,6 +80,7 @@
 <script src="assets/db.js"></script>
 <script src="assets/lata.js"></script>
 <script src="assets/html.js"></script>
+<script src="assets/wielowybor.js"></script>
 <script src="assets/nawigacja.js"></script>
 <script src="assets/tips.js"></script>
 <script src="assets/boot.js"></script>
@@ -101,6 +102,7 @@ var TIPY_MODULOW = {
   dofin: "Glowne miejsce pracy. Rozwija lata, a kazdy rok liste instytucji. W srodku dwie tabele: Baza danych (wszyscy klienci, klient = jeden wiersz) i Wnioski (projekty od etapu 3), z podzialem na lata. D-127, D-128, D-129.",
   nabory: "Nabory PUP: aktualne, prognozowane i zakonczone (340 urzedow). System jest odbiorca prognoz, nie liczy ich sam. D-109.",
   zadania: "Plan dnia: zadania reczne i automatyczne (przypiete do wniosku i statusu), alerty na date, licznik wnioskow do akceptacji. Modul wrocil do zakresu po warsztacie 04.09. D-140.",
+  akcept: "Formularze zgloszeniowe klientow i zmiany danych zgloszone przez instytucje. Nic nie wchodzi do bazy bez decyzji pracownika LDIT albo administratora. D-105, D-223, D-224.",
   inst: "Karty instytucji, katalog szkolen, dane do faktur, siedziba (zrodlo miejscowosci na certyfikacie). Jeden klient moze byc u wielu instytucji. D-42, D-99, D-144.",
   komun: "Wysylka maili z biblioteki szablonow, z potwierdzeniem przed wyslaniem (ochrona przed przypadkowym kliknieciem). D-106.",
   admin: "Prowizje szczegolowe (podstawa fakturowania), dashboard prowizji miesieczny i narastajaco, lista i import faktur, statystyki per instytucja i zbiorczo. Tylko administrator. D-138, D-139, D-141.",
@@ -195,7 +197,7 @@ function render() {
 }
 
 document.getElementById("akceptacje").addEventListener("click", function () {
-  document.getElementById("view").src = "strony/18-zadania.html";
+  document.getElementById("view").src = "strony/20-akceptacje.html";
 });
 
 /* Wstecz: z paska gornego albo z przycisku na karcie (komunikat kfs:wstecz z adresem zapasowym) */

@@ -111,6 +111,7 @@ const feedback2909 = decyzje("13-rejestr-decyzji.md", 158, 160);
 const panel2909 = decyzje("13-rejestr-decyzji.md", 161, 206);
 const potwierdzenia2909 = decyzje("13-rejestr-decyzji.md", 207, 212);
 const decyzje3009 = decyzje("13-rejestr-decyzji.md", 213, 222);
+const decyzje3009b = decyzje("13-rejestr-decyzji.md", 223, 231);
 
 const blokDecyzji =
   "  <h2>Warsztat doprecyzowujący (2026-09-04)</h2>\n" +
@@ -158,7 +159,13 @@ const blokDecyzji =
   '    <span class="ct">' + decyzje3009.length + " decyzji: Nabory, menu lat, Baza danych, karta klienta, statusy i drill through</span>\n" +
   "    Instytucja widzi pełną listę naborów, lata są w lewym menu, Baza danych domyślnie przed złożeniem, klient ma kartę, wykresy prowadzą do wniosków. Zamyka P-34, Z-04, Z-09, Z-18.\n" +
   "  </div>\n" +
-  tabelaDecyzji(decyzje3009, "Dotyczy");
+  tabelaDecyzji(decyzje3009, "Dotyczy") + "\n\n" +
+  "  <h2>Decyzje wykonawcy (2026-09-30, część 2)</h2>\n" +
+  '  <div class="callout ok">\n' +
+  '    <span class="ct">' + decyzje3009b.length + " decyzji: akceptacje zgłoszeń i zmian, plany szkoleń z plikami, filtry wielokrotne, marka</span>\n" +
+  "    Instytucja zgłasza klientów i zmiany danych, LDIT zatwierdza w module Do akceptacji. Plany szkoleń mają kartę z plikami, filtry pozwalają wybrać kilka wartości.\n" +
+  "  </div>\n" +
+  tabelaDecyzji(decyzje3009b, "Dotyczy");
 
 wstaw(join(SEKCJE, "13-decyzje.html"),
       "<h2>Decyzje unieważnione w trakcie warsztatu</h2>", blokDecyzji);
@@ -188,5 +195,5 @@ const blokPytan =
 wstaw(join(SEKCJE, "12-pytania-ryzyka.html"), "<h3>Podsumowanie pytań</h3>", blokPytan);
 
 console.log("Decyzje: D-125 - D-147 (" + warsztat0409.length + "), D-148 - D-157 (" + makieta.length +
-            "), D-158 - D-160 (" + feedback2909.length + "), D-161 - D-206 (" + panel2909.length + "), D-207 - D-212 (" + potwierdzenia2909.length + "), D-213 - D-222 (" + decyzje3009.length + ")");
+            "), D-158 - D-160 (" + feedback2909.length + "), D-161 - D-206 (" + panel2909.length + "), D-207 - D-212 (" + potwierdzenia2909.length + "), D-213 - D-222 (" + decyzje3009.length + "), D-223 - D-231 (" + decyzje3009b.length + ")");
 console.log("Pytania: P-55 - P-58 (" + pytania0409.length + "), P-59 - P-63 (" + pytaniaMakiety.length + ")");

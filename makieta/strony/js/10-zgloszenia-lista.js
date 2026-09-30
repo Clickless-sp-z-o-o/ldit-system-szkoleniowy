@@ -74,11 +74,11 @@ function przyciskPodmiotu(z) {
 /* ---------- Lista ---------- */
 function renderLista() {
   var q = document.getElementById("szukaj").value.toLowerCase().trim();
-  var waga = document.getElementById("fWaga").value;
+  var waga = Wielowybor.wartosci(document.getElementById("fWaga"));
 
   var lista = STAN_10.lokalne.filter(function (z) {
     if (STAN_10.filtrTyp && z.typ !== STAN_10.filtrTyp) return false;
-    if (waga && z.waga !== waga) return false;
+    if (!Wielowybor.pasuje(waga, z.waga)) return false;
     if (q && (z.podmiot + " " + z.powod + " " + z.opis + " " + z.autor).toLowerCase().indexOf(q) === -1) return false;
     return true;
   }).sort(function (a, b) { return a.data < b.data ? 1 : -1; });

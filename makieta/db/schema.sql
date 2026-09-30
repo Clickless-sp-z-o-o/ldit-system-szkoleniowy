@@ -108,9 +108,33 @@ CREATE TABLE katalog_szkolen (
   liczba_dni     INTEGER,
   tryb           TEXT CHECK (tryb IN ('Online','Stacjonarne','Mieszane')),
   cena           REAL,
-  plan_szkolenia TEXT
+  plan_szkolenia TEXT,             -- program szkolenia: tresc planu
+  -- Szczegoly planu do edycji na karcie planu (D-225)
+  cel_szkolenia    TEXT,
+  grupa_docelowa   TEXT,
+  efekty_uczenia   TEXT,
+  wymagania        TEXT,
+  forma_zaliczenia TEXT,
+  zaktualizowano   TEXT
 );
 CREATE INDEX idx_szkolenia_inst ON katalog_szkolen (instytucja_id);
+
+-- Pliki planu szkolenia: program, harmonogram, materialy (D-225). W makiecie tresc
+-- lezy w bazie jako base64; w aplikacji docelowej plik trafia do magazynu plikow,
+-- a tu zostaje tylko odnosnik.
+CREATE TABLE pliki_szkolen (
+  id           TEXT PRIMARY KEY,
+  szkolenie_id TEXT NOT NULL REFERENCES katalog_szkolen (id) ON DELETE CASCADE,
+  nazwa        TEXT NOT NULL,
+  typ          TEXT,
+  rozmiar      INTEGER NOT NULL,
+  rodzaj       TEXT NOT NULL DEFAULT 'program'
+               CHECK (rodzaj IN ('program','harmonogram','materialy','inny')),
+  dodano       TEXT NOT NULL,
+  dodal_id     TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
+  tresc        TEXT NOT NULL
+);
+CREATE INDEX idx_pliki_szkolenia ON pliki_szkolen (szkolenie_id);
 
 -- Termin = realizacja szablonu. Kalendarz per instytucja (D-142).
 CREATE TABLE terminy (
@@ -416,7 +440,8 @@ CREATE TABLE korespondencja (
 
 -- Formularze zgloszeniowe czekajace na akceptacje. Bramka anty-spam (D-105),
 -- zrodlo licznika "wnioski oczekujace na akceptacje" (D-140). Po akceptacji
--- rekord staje sie klientem i wnioskiem.
+-- rekord staje sie klientem (klient_id). Formularz wypelnia klient, handlowiec
+-- albo sama instytucja (D-181, D-223); rozpatruje pracownik LDIT albo administrator.
 CREATE TABLE formularze_oczekujace (
   id            TEXT PRIMARY KEY,
   data          TEXT NOT NULL,
@@ -426,12 +451,45 @@ CREATE TABLE formularze_oczekujace (
   osob          INTEGER NOT NULL DEFAULT 0,
   szkolenie     TEXT,
   kontakt       TEXT,
-  wypelnil      TEXT NOT NULL DEFAULT 'klient' CHECK (wypelnil IN ('klient','handlowiec')),  -- D-181
+  wypelnil      TEXT NOT NULL DEFAULT 'klient'
+                CHECK (wypelnil IN ('klient','handlowiec','instytucja')),  -- D-181, D-223
   handlowiec_id TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,  -- D-210
   status        TEXT NOT NULL DEFAULT 'oczekuje'
-                CHECK (status IN ('oczekuje','zaakceptowany','odrzucony'))
+                CHECK (status IN ('oczekuje','zaakceptowany','odrzucony')),
+  -- Szczegoly do panelu akceptacji (D-223)
+  miasto        TEXT,
+  pup_id        TEXT REFERENCES urzedy_pracy (id),
+  wielkosc      TEXT CHECK (wielkosc IN ('mikro','mały','średni','duży','inny')),
+  email         TEXT,
+  telefon       TEXT,
+  uwagi         TEXT,
+  zglosil_id    TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
+  rozpatrzyl_id TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
+  rozpatrzono   TEXT,
+  powod_odrzucenia TEXT,
+  klient_id     TEXT REFERENCES klienci (id) ON DELETE SET NULL      -- klient utworzony albo dopasowany po akceptacji
 );
 CREATE INDEX idx_formularze_inst ON formularze_oczekujace (instytucja_id, status);
+
+-- Zmiany danych zgloszone przez instytucje: dane o sobie i o swoich klientach.
+-- Nic nie zmienia sie od razu, zmiane zatwierdza pracownik LDIT albo administrator (D-224).
+-- zmiany: JSON {kolumna: {"przed": ..., "po": ...}}.
+CREATE TABLE propozycje_zmian (
+  id               TEXT PRIMARY KEY,
+  instytucja_id    TEXT NOT NULL REFERENCES instytucje (id) ON DELETE CASCADE,
+  tabela           TEXT NOT NULL CHECK (tabela IN ('instytucje','klienci')),
+  rekord_id        TEXT NOT NULL,
+  zmiany           TEXT NOT NULL,
+  uzasadnienie     TEXT,
+  zglosil_id       TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
+  zgloszono        TEXT NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'oczekuje'
+                   CHECK (status IN ('oczekuje','zatwierdzona','odrzucona')),
+  rozpatrzyl_id    TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
+  rozpatrzono      TEXT,
+  powod_odrzucenia TEXT
+);
+CREATE INDEX idx_propozycje_inst ON propozycje_zmian (instytucja_id, status);
 
 CREATE TABLE szablony_maili (
   id       TEXT PRIMARY KEY,

@@ -131,6 +131,9 @@
       /* Nawigacja (assets/nawigacja.js): pasek zakladek bez modulow spoza roli,
          a powloka dowiaduje sie, jaki ekran jest w ramce, takze po zmianie danych */
       global.Nawigacja.ukryjNiedostepneZakladki(Auth);
+      /* Filtry z wyborem wielokrotnym (assets/wielowybor.js) przed skryptem strony,
+         zeby ekran dopisywal opcje i wczytywal filtry z adresu juz do nich */
+      global.Wielowybor.zamienWszystkie(document);
       uruchomSkryptyStrony();
       global.Nawigacja.zglosEkran();
       global.addEventListener("db:changed", global.Nawigacja.zglosEkran);

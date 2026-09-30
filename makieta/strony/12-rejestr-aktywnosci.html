@@ -47,6 +47,7 @@
       <div class="tab on" data-t="t1">Rejestr zmian danych</div>
       <div class="tab" data-t="t3">Istotne zdarzenia</div>
       <div class="tab" data-t="t2">Log logowań</div>
+      <div class="tab" data-t="t4">Aktywne sesje</div>
     </div>
 
     <!-- ============ ZAKLADKA 1: ZMIANY DANYCH ============ -->
@@ -71,8 +72,8 @@
 
       <div class="toolbar">
         <input class="inp search" id="qA" placeholder="Szukaj po obiekcie: PR-26-0141, KL-0238, IS-02...">
-        <select class="inp" id="fKto"><option value="">Wszyscy użytkownicy</option></select>
-        <select class="inp" id="fTyp"><option value="">Wszystkie typy operacji</option></select>
+        <select class="inp" id="fKto" data-wielo><option value="">Wszyscy użytkownicy</option></select>
+        <select class="inp" id="fTyp" data-wielo><option value="">Wszystkie typy operacji</option></select>
         <input class="inp" type="date" id="dOd" title="Data od">
         <input class="inp" type="date" id="dDo" title="Data do">
         <button class="chip" id="chipFin">Tylko wartości finansowe</button>
@@ -132,7 +133,7 @@
 
       <div class="toolbar">
         <input class="inp search" id="qL" placeholder="Szukaj: konto, adres IP, urządzenie...">
-        <select class="inp" id="fWynik">
+        <select class="inp" id="fWynik" data-wielo>
           <option value="">Wszystkie próby</option>
           <option value="udane">Udane</option>
           <option value="nieudane">Nieudane</option>
@@ -192,6 +193,8 @@
         </div>
       </div>
     </div>
+
+    <div class="tab-pane" id="t4"></div>
 
     <!-- ============ ZAKLADKA 3: ISTOTNE ZDARZENIA (D-189) ============ -->
     <div class="tab-pane" id="t3">
@@ -270,12 +273,15 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="ustaw"></script>
 <script src="js/12-rejestr-aktywnosci-zmiany.js"></script>
 <script src="js/12-rejestr-aktywnosci-logowania.js"></script>
 <script src="js/12-rejestr-aktywnosci-retencja.js"></script>
+<script src="js/12-rejestr-aktywnosci-sesje.js"></script>
 <script type="text/kfs-strona">
 renderRetencja();
 inicjuj12();

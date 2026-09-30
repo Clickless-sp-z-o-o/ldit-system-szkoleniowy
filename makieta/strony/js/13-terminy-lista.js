@@ -49,10 +49,10 @@ function wierszTerminu(t, idx) {
 }
 function renderLista() {
   var q = el("q").value.toLowerCase().trim();
-  var fis = el("fIS2").value, fst = el("fSt").value;
+  var fis = Wielowybor.wartosci(el("fIS2")), fst = Wielowybor.wartosci(el("fSt"));
   var lista = STAN_13.T.filter(function (t) {
-    if (fis && t.is !== fis) return false;
-    if (fst && t.status !== fst) return false;
+    if (!Wielowybor.pasuje(fis, t.is)) return false;
+    if (!Wielowybor.pasuje(fst, t.status)) return false;
     if (q && (t.nazwa + " " + t.miejsce + " " + t.id).toLowerCase().indexOf(q) < 0) return false;
     return true;
   }).sort(function (a, b) { return (a.od || "") < (b.od || "") ? -1 : 1; });

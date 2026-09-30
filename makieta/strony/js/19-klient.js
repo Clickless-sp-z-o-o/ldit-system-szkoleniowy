@@ -82,6 +82,31 @@ function renderMaile19() {
   }).join("") : '<tr><td colspan="5" class="muted">Brak korespondencji tego klienta.</td></tr>';
 }
 
+/* Notatki klienta (tabela notatki). Czytane wprost z bazy, wiec zawezamy je sami: notatka
+   bez instytucji (wewnetrzna LDIT) albo instytucji z zakresu konta. */
+function renderNotatki19() {
+  var notatki = Store.query("SELECT * FROM notatki WHERE klient_id = ? ORDER BY czas DESC", [STAN_19.kl.id])
+    .filter(function (n) { return !n.instytucja_id ? Auth.instytucje() === null : Auth.wZakresie(n.instytucja_id); });
+  el19("notatkaForm").style.display = Auth.edytujeModul("dofin") ? "flex" : "none";
+  el19("notatki").innerHTML = notatki.length ? notatki.map(function (n) {
+    return '<div style="border-bottom:1px solid var(--line);padding:8px 0"><div class="small muted">' + esc(n.czas) + " · " +
+      esc(imieKonta19(n.autor_id)) + '</div><div style="white-space:pre-line">' + esc(n.tresc) + '</div></div>';
+  }).join("") : '<div class="small muted">Brak notatek.</div>';
+}
+function imieKonta19(id) {
+  var u = DB.UZYTKOWNICY.filter(function (x) { return x.login === id; })[0];
+  return u ? u.imie : (id || "-");
+}
+function dodajNotatke19() {
+  var tresc = el19("nowaNotatka").value.trim();
+  if (!tresc) { el19("nowaNotatka").focus(); return; }
+  var kto = Akceptacje.ktoTeraz();
+  /* Notatka nalezy do instytucji klienta w zakresie konta (kl.is po separacji danych) */
+  Store.insert("notatki", { klient_id: STAN_19.kl.id, instytucja_id: STAN_19.kl.is || null, czas: kto.czas,
+                            autor_id: kto.uzytkownik, tresc: tresc }, "NOT-");
+  el19("nowaNotatka").value = "";
+}
+
 /* Klik w wniosek: karta wniosku, a jej okruszek wraca na te karte klienta */
 function klikWniosku19(e) {
   var tr = e.target.closest("tr[data-id]");
@@ -102,9 +127,11 @@ function inicjuj19() {
   el19("wnioski").addEventListener("click", klikWniosku19);
   window.addEventListener("db:changed", function () {
     STAN_19.kl = DB.KLIENCI.filter(function (k) { return k.id === id; })[0] || STAN_19.kl;
-    renderDane19(); renderWnioski19(); renderMaile19();
+    renderDane19(); renderWnioski19(); renderMaile19(); renderNotatki19();
   });
+  el19("btnNotatka").addEventListener("click", dodajNotatke19);
   renderDane19();
   renderWnioski19();
   renderMaile19();
+  renderNotatki19();
 }

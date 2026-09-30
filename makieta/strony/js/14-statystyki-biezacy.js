@@ -55,7 +55,8 @@ function renderMiesiace(W) {
 
 /* Lejek osob z danych wnioskow: zgloszeni, zakwalifikowani, w projektach z decyzja pozytywna, w rozliczonych */
 function renderLejek(W, poz, fis) {
-  document.getElementById("lejekOpis").textContent = fis ? instytucjaPoId(fis).nazwa : "wszystkie instytucje";
+  document.getElementById("lejekOpis").textContent = fis.length
+    ? fis.map(function (id) { return instytucjaPoId(id).nazwa; }).join(", ") : "wszystkie instytucje";
   /* [etykieta, liczba osob, filtr listy wnioskow z tymi osobami] */
   var lej = [
     ["Uczestnicy zgłoszeni do projektów", sumaPola(W, "osob"), {}],

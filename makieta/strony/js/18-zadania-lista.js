@@ -79,16 +79,15 @@ function renderZadania() {
     'Zadania ręczne dopisujesz przyciskiem „Nowe zadanie”, zadania automatyczne pojawią się po wdrożeniu reguł statusów (P-57).</div>';
 }
 
+/* Decyzje zapadaja na ekranie Do akceptacji (20-akceptacje.html): tu tylko skrot z linkiem */
 function wierszAkceptacji(a) {
   return '<div class="zad-row">' +
     '<div style="flex:1 1 auto;min-width:0">' +
       '<div class="zt">' + esc(a.firma) + '</div>' +
       '<div class="zm"><span class="mono">' + esc(a.nip) + '</span> · ' + esc(a.is) + ' · formularz z ' + esc(a.data) + '</div>' +
     '</div>' +
-    '<div class="zmeta btn-row" style="flex-wrap:nowrap">' +
-      '<button class="btn xs primary" onclick="alert(\'Akceptacja: rekord wchodzi do bazy klientow (D-105).\')">Akceptuj</button>' +
-      '<button class="btn xs danger" onclick="alert(\'Odrzucenie: rekord nie wchodzi do bazy (np. randomowe dane w formularzu).\')">Odrzuć</button>' +
-    '</div></div>';
+    '<div class="zmeta"><a class="btn xs primary" href="20-akceptacje.html' + esc(Nawigacja.zbudujZapytanie({ id: a.id })) +
+      '">Szczegóły i decyzja</a></div></div>';
 }
 
 function renderAkceptacje() {

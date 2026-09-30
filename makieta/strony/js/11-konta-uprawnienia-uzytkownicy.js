@@ -1,11 +1,11 @@
 /* Konta i uprawnienia, zakladka 1: lista uzytkownikow, filtry, alert 2FA */
 function odswiezFiltrRoli() {
   var sel = document.getElementById("fRola");
-  var wybrana = sel.value;
-  sel.innerHTML = '<option value="">Wszystkie role</option>' + DB.ROLE.map(function (r) {
+  var wybrane = Wielowybor.wartosci(sel);
+  sel.innerHTML = DB.ROLE.map(function (r) {
     return '<option value="' + esc(r.nazwa) + '">' + esc(r.nazwa) + '</option>';
   }).join("");
-  sel.value = wybrana;
+  Wielowybor.ustaw(sel, wybrane);
 }
 
 /* Kolor tagu wynika z features roli (zarzadzanie ustawieniami), nie z nazwy roli */
@@ -36,9 +36,9 @@ function wierszUsera(u) {
 function renderU() {
   var uzytkownicy = DB.UZYTKOWNICY;
   var q = document.getElementById("qU").value.toLowerCase().trim();
-  var fr = document.getElementById("fRola").value;
+  var fr = Wielowybor.wartosci(document.getElementById("fRola"));
   var lista = uzytkownicy.filter(function (u) {
-    if (fr && u.rola !== fr) return false;
+    if (!Wielowybor.pasuje(fr, u.rola)) return false;
     if (STAN_11.tylkoBez2fa && u["2fa"]) return false;
     if (q && (u.imie + " " + u.login + " " + u.inst).toLowerCase().indexOf(q) < 0) return false;
     return true;

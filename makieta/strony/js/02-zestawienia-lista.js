@@ -14,7 +14,7 @@ function wypelnijFiltry02() {
     selIS.innerHTML += '<option value="' + esc(i.id) + '">' + esc(i.nazwa) + '</option>';
   });
   /* Instytucja wybrana w menu (?is=): lista rozwijana bylaby duplikatem, wiec jest ukryta */
-  if (STAN_02.forcedInst) { selIS.value = STAN_02.forcedInst.id; selIS.style.display = "none"; }
+  if (STAN_02.forcedInst) { Wielowybor.ustaw(selIS, [STAN_02.forcedInst.id]); Wielowybor.ukryj(selIS); }
   var selPUP = document.getElementById("fPUP");
   DB.PUPY.forEach(function (p) {
     selPUP.innerHTML += '<option value="' + esc(p.id) + '">' + esc(p.nazwa) + '</option>';
@@ -25,14 +25,16 @@ function wypelnijFiltry02() {
   });
 }
 
+/* Wybrane wartosci filtra wielokrotnego wyboru (assets/wielowybor.js) */
+function wybrane02(id) { return Wielowybor.wartosci(document.getElementById(id)); }
+
 function filtrujWnioski() {
   var q = document.getElementById("q").value.toLowerCase().trim();
-  var fis = document.getElementById("fIS").value, fpup = document.getElementById("fPUP").value;
-  var fst = document.getElementById("fStatus").value;
+  var fis = wybrane02("fIS"), fpup = wybrane02("fPUP"), fst = wybrane02("fStatus");
   return STAN_02.W.filter(function (w) {
-    if (fis && w.is !== fis) return false;
-    if (fpup && w.pup !== fpup) return false;
-    if (fst && Statusy.wartosc(w) !== fst) return false;
+    if (!Wielowybor.pasuje(fis, w.is)) return false;
+    if (!Wielowybor.pasuje(fpup, w.pup)) return false;
+    if (!Wielowybor.pasuje(fst, Statusy.wartosc(w))) return false;
     if (!pasujeDoWykresu(w)) return false;
     if (!q) return true;
     var h = [w.klNazwa, w.nip, w.pupNazwa, w.szkolenie, w.isNazwa].join(" ").toLowerCase();
@@ -59,7 +61,7 @@ function wierszWniosku(w) {
     '<td class="num">' + (w.kosztCalkowity != null ? DB.fmtPLN(w.kosztCalkowity) : brak) + '</td>' +
     '<td>' + selectStatus(w) + '</td>' +
     '<td>' + Statusy.znacznikRozliczenia(w) + '</td>' +
-    '<td class="right"><button class="btn xs" title="Usuń wniosek" onclick="usunWniosek(\'' + escJs(w.id) + '\')">&times;</button></td>' +
+    '<td class="right"><a class="btn xs" title="Szczegóły i edycja wniosku" href="' + esc(adresKarty02(w.id)) + '">&#9998; Szczegóły</a></td>' +
     '</tr>';
 }
 
@@ -100,7 +102,7 @@ function filtryZAdresu02() {
 function wartosciFiltrow02() {
   var w = { is: STAN_02.forcedInst ? STAN_02.forcedInst.nazwa : "", rok: STAN_02.rokAktywny };
   var pola = filtryZAdresu02();
-  Object.keys(pola).forEach(function (p) { w[p] = document.getElementById(pola[p]).value; });
+  Object.keys(pola).forEach(function (p) { w[p] = Wielowybor.tekst(document.getElementById(pola[p])); });
   return Object.assign(w, STAN_02.wykres);
 }
 
@@ -108,12 +110,13 @@ function wartosciFiltrow02() {
    filtry instytucji i urzedu, a jej licznik to klienci, ktorych Baza pokaze domyslnie:
    przed zlozeniem wniosku (Statusy.klientPrzedZlozeniem). */
 function odswiezZakladki02(widocznych) {
-  var fis = document.getElementById("fIS").value, fpup = document.getElementById("fPUP").value;
+  var fis = wybrane02("fIS"), fpup = wybrane02("fPUP");
   document.getElementById("licznikWnioskow").textContent = widocznych;
-  document.getElementById("zakladkaBaza").href = "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({ inst: fis, pup: fpup });
+  document.getElementById("zakladkaBaza").href = "04-baza-klientow.html" +
+    Nawigacja.zbudujZapytanie({ inst: Wielowybor.naTekst(fis), pup: Wielowybor.naTekst(fpup) });
   var poKliencie = Statusy.wnioskiPoKlientach(DB.WNIOSKI_WSZYSTKIE);
   document.getElementById("licznikBazy").textContent = DB.KLIENCI.filter(function (k) {
-    return (!fis || k.is === fis) && (!fpup || k.pup === fpup) && Statusy.klientPrzedZlozeniem(poKliencie[k.id] || []);
+    return Wielowybor.pasuje(fis, k.is) && Wielowybor.pasuje(fpup, k.pup) && Statusy.klientPrzedZlozeniem(poKliencie[k.id] || []);
   }).length;
 }
 
@@ -162,10 +165,12 @@ function klikWiersza(e) {
   if (tr) otworz(tr.dataset.id);
 }
 
-function otworz(id) {
+function adresKarty02(id) {
   var powrot = "02-zestawienia.html" + Nawigacja.zbudujZapytanie(Object.assign(wartosciFiltrow02(), { wn: id }));
-  location.href = Nawigacja.adresKarty(id, powrot);
+  return Nawigacja.adresKarty(id, powrot);
 }
+
+function otworz(id) { location.href = adresKarty02(id); }
 
 function inicjuj02() {
   STAN_02.forcedInst = znajdzWymuszonaInstytucje();
