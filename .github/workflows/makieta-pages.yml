@@ -1,0 +1,42 @@
+# Publikacja makiety na GitHub Pages.
+# Na strone trafia wylacznie folder makieta/ (bez screenow). Dokumentacja, transkrypcje
+# warsztatow i pliki klienta zostaja tylko w prywatnym repozytorium.
+# Na Pages nie ma serwera bazy, wiec makieta zapisuje zmiany w przegladarce (localStorage),
+# osobno u kazdego odwiedzajacego.
+name: Makieta na GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["makieta/**", ".github/workflows/makieta-pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publikacja:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Przygotowanie strony
+        run: |
+          mkdir -p _site
+          cp -r makieta/. _site/
+          rm -rf _site/Screeny
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
