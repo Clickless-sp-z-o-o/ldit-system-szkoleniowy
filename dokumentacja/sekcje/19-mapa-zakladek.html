@@ -156,8 +156,8 @@
   <h3>Usterki nawigacji do poprawy niezależnie od odpowiedzi klienta</h3>
   <p>Wszystkie dwanaście poprawiono 29.09.2026. Wspólna logika jest w <code>makieta/assets/nawigacja.js</code>, testy w <code>tools/test-nawigacja.mjs</code>.</p>
   <ol>
-    <li>Nabory, przycisk „Pokaż klientów”: link do Bazy z parametrem <code>pup</code>, którego Baza nie czyta, więc pokazuje wszystkich klientów. <b>Poprawione:</b> Baza danych czyta <code>pup</code> i otwiera się z filtrem urzędu.</li>
-    <li>Wyszukiwarka globalna: przekazuje <code>q</code> do Bazy, która go nie czyta (czyta go tylko lista Wnioski). <b>Poprawione:</b> Baza danych czyta <code>q</code> i otwiera się z wpisaną frazą.</li>
+    <li>Nabory, przycisk „Pokaż klientów”: link do Bazy z parametrem <code>pup</code>, którego Baza nie czyta, więc pokazuje wszystkich klientów. <b>Poprawione:</b> Baza danych czyta <code>pup</code> i otwiera się z filtrem urzędu, bez domyślnego filtra przed złożeniem (<span class="ref new">D-216</span>), więc pokazuje tylu klientów, ilu liczy kolumna.</li>
+    <li>Wyszukiwarka globalna: przekazuje <code>q</code> do Bazy, która go nie czyta (czyta go tylko lista Wnioski). <b>Poprawione:</b> Baza danych czyta <code>q</code> i szuka wśród wszystkich klientów (<span class="ref new">D-216</span>).</li>
     <li>Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek w pasku górnym. <b>Poprawione:</b> ekran w ramce zgłasza się powłoce, a ta zaznacza pozycję menu i buduje okruszek (np. Dofinansowania › Baza danych), także po przejściu linkiem.</li>
     <li>Pracownik LDIT ma na pasku Dofinansowań zakładkę „Terminy szkoleń”, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień. <b>Poprawione:</b> pracownik LDIT dostał podgląd Terminów (wgląd LDIT w terminy <span class="ref">D-142</span>). Dodatkowo każdy pasek zakładek ukrywa zakładki modułów spoza roli.</li>
     <li>Instytucja ma dostęp do Naborów mimo opisu strony (tylko role LDIT). <b>Rozstrzygnięte inaczej:</b> wykonawca zdecydował, że instytucja widzi Nabory w podglądzie (<span class="ref new">D-213</span>), więc poprawiono opis strony, a uprawnienie zostało.</li>
@@ -167,7 +167,7 @@
     <li>Kalkulator prowizji (prototyp) stoi w produkcyjnym pasku Administracji. <b>Poprawione:</b> kalkulator zniknął z paska Administracji. Wchodzi się do niego z Konfiguratora warunków, w menu leży pod Instytucjami.</li>
     <li>Administracja: przycisk „Nadpisz” przy projekcie, choć <span class="ref">D-138</span> przenosi nadpisanie na kartę wniosku. <b>Poprawione:</b> zamiast „Nadpisz” i „Przywróć regułę” jest link „Karta wniosku”, gdzie jest nadpisanie.</li>
     <li>Licznik wniosków do akceptacji („kółko w prawym górnym rogu” z <span class="ref">D-105</span> i <span class="ref">D-140</span>) nie istnieje w powłoce makiety. <b>Poprawione:</b> w pasku górnym jest licznik formularzy czekających na akceptację, dla ról z modułem Zadania. Klik otwiera Zadania i powiadomienia.</li>
-    <li>Zgłoszenia: przycisk „Otwórz kartę podmiotu” nie ma celu. <b>Poprawione:</b> instytucja otwiera swoją kartę w Instytucjach, klient otwiera Bazę danych przefiltrowaną po nazwie. Podmiot spoza bazy ma przycisk wyłączony.</li>
+    <li>Zgłoszenia: przycisk „Otwórz kartę podmiotu” nie ma celu. <b>Poprawione:</b> instytucja otwiera swoją kartę w Instytucjach, klient swoją kartę klienta (<span class="ref new">D-217</span>). Podmiot spoza bazy ma przycisk wyłączony.</li>
   </ol>
 
   <h2>Mapa agregacji i drill through</h2>
@@ -480,12 +480,12 @@ flowchart LR
         <tr><td><a href="#z-01">Z-01</a></td><td>Dashboard</td><td>Co zostaje z sekcji „Wymaga działania” na dashboardzie</td><td>średnia</td><td>wariant B</td></tr>
         <tr><td><a href="#z-02">Z-02</a></td><td>Dashboard</td><td>Statystyki są w czterech miejscach. Jaki podział przyjmujemy</td><td>średnia</td><td>wariant A</td></tr>
         <tr><td><a href="#z-03">Z-03</a></td><td>Dashboard</td><td>Gdzie są Cele i premie i kto je widzi</td><td>średnia</td><td>wariant A</td></tr>
-        <tr><td><a href="#z-04">Z-04</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-04">Z-04</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień</td><td>wysoka</td><td>rozstrzygnięte <span class="ref new">D-215</span></td></tr>
         <tr><td><a href="#z-05">Z-05</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Lista instytucji w menu przy ok. 20 instytucjach</td><td>niska</td><td>wariant B</td></tr>
         <tr><td><a href="#z-06">Z-06</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Co oznacza nazwa „Nabory”</td><td>wysoka</td><td>wariant A</td></tr>
         <tr><td><a href="#z-07">Z-07</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Nazwa zakładki z klientami: „Baza klientów” czy „Baza danych”</td><td>średnia</td><td>wariant A</td></tr>
         <tr><td><a href="#z-08">Z-08</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Lata jako zakładki: czy potrzebny jest też widok „Wszystkie lata”</td><td>średnia</td><td>wariant A</td></tr>
-        <tr><td><a href="#z-09">Z-09</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Czy klient ma własną kartę (osobny ekran)</td><td>wysoka</td><td>wariant A</td></tr>
+        <tr><td><a href="#z-09">Z-09</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Czy klient ma własną kartę (osobny ekran)</td><td>wysoka</td><td>rozstrzygnięte <span class="ref new">D-217</span></td></tr>
         <tr><td><a href="#z-10">Z-10</a></td><td>Dofinansowania, Zestawienia, Baza klientów, Wnioski</td><td>Jakie filtry musi mieć lista Wnioski</td><td>średnia</td><td>wariant A</td></tr>
         <tr><td><a href="#z-11">Z-11</a></td><td>Karta wniosku</td><td>Karta wniosku: jedna długa strona czy zakładki</td><td>wysoka</td><td>wariant B</td></tr>
         <tr><td><a href="#z-12">Z-12</a></td><td>Instytucje i katalog</td><td>Struktura modułu Instytucje szkoleniowe</td><td>wysoka</td><td>wariant B</td></tr>
@@ -600,6 +600,7 @@ flowchart LR
 
   <details class="acc" open id="z-04"><summary>Z-04. Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień</summary>
   <div class="acc-body">
+  <div class="callout ok"><b>Rozstrzygnięte 30.09.2026</b> <span class="ref new">D-215</span>: Dofinansowania rozwijają lata, pod każdym rokiem są instytucje, zakładki lat nad tabelą zniknęły. Pytanie zdjęte z panelu decyzyjnego.</div>
   <p><b>Waga:</b> wysoka. <b>Blokuje:</b> mapa menu, screeny Dofinansowań. <b>Powiązane decyzje:</b> <span class="ref">D-55</span>, <span class="ref">D-112</span>, <span class="ref">D-127</span>, <span class="ref">D-129</span>, <span class="ref">D-159</span>.</p>
   <p><b>Stan dziś i kontekst.</b> Dokumentacja (docs/11) ma dwie pozycje menu: Dofinansowania (rozwija instytucje) i Zestawienia (drzewo lat). Makieta scala je w jedną pozycję „Dofinansowania”, a lata są paskami nad tabelą. Ten sam ekran nazywa się w makiecie czterema sposobami: „Dofinansowania” w menu, „Zestawienie 2026” w tytule, „Wnioski” na zakładce i „Projekty” na pasku ekranu Terminów. Klient żąda zachowania nazw z Excela <span class="ref">D-55</span>.</p>
   <p><b>A. Jedna pozycja „Dofinansowania” (rozwija: Wszystkie instytucje i lista instytucji), w środku zakładki Wnioski, Baza klientów, Terminy szkoleń; lata jako arkusze nad tabelą; tytuł „Zestawienie 2026”</b> (rekomendowany)</p>
@@ -717,6 +718,7 @@ flowchart LR
 
   <details class="acc" open id="z-09"><summary>Z-09. Czy klient ma własną kartę (osobny ekran)</summary>
   <div class="acc-body">
+  <div class="callout ok"><b>Rozstrzygnięte 30.09.2026</b> <span class="ref new">D-217</span>: tak, karta klienta z danymi, wszystkimi wnioskami i korespondencją. Pytanie zdjęte z panelu decyzyjnego.</div>
   <p><b>Waga:</b> wysoka. <b>Blokuje:</b> screeny Bazy klientów, karty klienta, mapa linków. <b>Powiązane decyzje:</b> <span class="ref">D-52</span>, <span class="ref">D-54</span>, <span class="ref">D-133</span>, <span class="ref">D-178</span>.</p>
   <p><b>Stan dziś i kontekst.</b> Dokumentacja mówi o „karcie klienta” z korespondencją <span class="ref">D-52</span> i danymi stałymi <span class="ref">D-54</span>, ale makieta jej nie ma: przycisk Edytuj w Bazie otwiera formularz, a korespondencja jest tylko na karcie wniosku. Przy ok. 400 mailach na klienta i wielu wnioskach potrzeba miejsca, do którego prowadzą nazwa klienta na każdej liście i wynik wyszukiwania.</p>
   <p><b>A. Tak, ekran „Klient” z trzema zakładkami: Dane i kontakty, Projekty, Korespondencja i notatki</b> (rekomendowany)</p>

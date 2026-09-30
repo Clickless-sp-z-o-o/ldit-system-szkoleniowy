@@ -21,9 +21,12 @@ function przygotujStan01() {
   s.oczek = s.wnioski.filter(function (w) { return w.statusSkl === "Złożony" && !w.statusDec; });
 }
 
-function kpi(label, val, foot, admin, tip) {
+/* href: kafelek prowadzi do rekordow, z ktorych sie sklada (drill through, D-212) */
+function kpi(label, val, foot, admin, tip, href) {
   var mark = tip ? '<span class="tip-mark" data-tip="' + esc(tip) + '">i</span>' : "";
-  return '<div class="kpi' + (admin ? " admin" : "") + '">' +
+  var klasy = "kpi" + (admin ? " admin" : "");
+  var link = href ? ' data-href="' + esc(href) + '" title="Pokaż szczegóły"' : "";
+  return '<div class="' + klasy + '"' + link + '>' +
     '<div class="k-label">' + label + mark + '</div>' +
     '<div class="k-value">' + val + '</div>' +
     (foot ? '<div class="k-foot">' + foot + '</div>' : "") + '</div>';
@@ -61,6 +64,11 @@ function liczDoObdzwonienia(pupZNaborem) {
   }).length;
 }
 
+/* Link do wnioskow biezacego roku; rola bez Dofinansowan (instytucja) dostaje kafelek bez linku */
+function linkWnioskow01(filtry) {
+  return Auth.widziModul("dofin") ? Nawigacja.adresWnioskow(Object.assign({ rok: STAN_01.rok }, filtry)) : null;
+}
+
 function renderKpiOperacyjne() {
   var s = STAN_01;
   var pupZNaborem = liczPupZNaborem();
@@ -70,14 +78,18 @@ function renderKpiOperacyjne() {
   document.getElementById("kpi").innerHTML =
     kpi("Klienci do obdzwonienia", DB.fmtNum(liczDoObdzwonienia(pupZNaborem)),
         '<span class="tag neg dot">nabór trwa</span> ' + pupZNaborem.length + " urzędy", false,
-        "Liczba klientow z bazy, ktorych urzad pracy (PUP) ma wlasnie ogloszony nabor. To lista do kontaktu, dzis w Excelu prowadzona recznie w arkuszu Niezlozone.") +
+        "Liczba klientow z bazy, ktorych urzad pracy (PUP) ma wlasnie ogloszony nabor. To lista do kontaktu, dzis w Excelu prowadzona recznie w arkuszu Niezlozone.",
+        Auth.widziModul("dofin") ? "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({ nabor: "Nabór ogłoszony", wnioski: "wszystkie" }) : null) +
     kpi("Wnioski złożone", DB.fmtNum(s.zlozone.length), porownanieRokDoRoku("wnioski_zlozone"), false,
-        "Liczba wnioskow o status Zlozony w roku biezacym. Porownanie z rokiem poprzednim liczy sie z podsumowan lat nieprzeniesionych, tylko dla instytucji, ktore je maja (D-175).") +
+        "Liczba wnioskow o status Zlozony w roku biezacym. Porownanie z rokiem poprzednim liczy sie z podsumowan lat nieprzeniesionych, tylko dla instytucji, ktore je maja (D-175).",
+        linkWnioskow01({ zlozone: "1" })) +
     kpi("Decyzje pozytywne", DB.fmtNum(s.poz.length),
         '<span class="tag pos dot">' + (rozstrzygniete ? Math.round(s.poz.length / rozstrzygniete * 100) : 0) + '% skuteczności</span>', false,
-        "Liczba wnioskow z decyzja pozytywna. Skutecznosc to udzial decyzji pozytywnych wsrod wszystkich rozpatrzonych (pozytywne plus negatywne).") +
+        "Liczba wnioskow z decyzja pozytywna. Skutecznosc to udzial decyzji pozytywnych wsrod wszystkich rozpatrzonych (pozytywne plus negatywne).",
+        linkWnioskow01({ status: "Pozytywna" })) +
     kpi("Oczekuje na rozpatrzenie", DB.fmtNum(s.oczek.length), "na kwotę " + DB.fmtPLN(sumaOczek), false,
-        "Wnioski zlozone, dla ktorych urzad nie wydal jeszcze decyzji. Kwota to suma wartosci tych wnioskow.");
+        "Wnioski zlozone, dla ktorych urzad nie wydal jeszcze decyzji. Kwota to suma wartosci tych wnioskow.",
+        linkWnioskow01({ status: "Czekamy" }));
 }
 
 /* Drugie sito uprawnien. Dane finansowe i tak nie dojechaly do strony,

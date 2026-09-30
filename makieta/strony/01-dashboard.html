@@ -5,6 +5,7 @@
 <title>Dashboard</title>
 <link rel="stylesheet" href="../assets/style.css">
 <link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
 </head>
 <body>
 <div class="page">
@@ -88,6 +89,7 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dash"></script>
@@ -100,6 +102,7 @@ renderKpiOperacyjne();
 renderKpiFinansowe();
 renderWymagaDzialania();
 renderStatusy();
+Nawigacja.podlaczLinki(document.body);
 </script>
 </body>
 </html>

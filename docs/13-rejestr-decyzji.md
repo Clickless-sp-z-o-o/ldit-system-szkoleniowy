@@ -379,14 +379,22 @@ Wykonawca zapisał tego dnia: "decyzje: formularz natywny, log tylko istotne, st
 | **D-211** | **Standardy Open Mercato wprowadzone w makiecie:** uprawnienia jako features `modul.akcja` (tabele `funkcje` i `role_funkcje` zamiast `uprawnienia` i `uprawnienia_pol`, wzór `acl.ts` i `role_acls`, obsługa wildcard `modul.*`), walidacja danych na granicy zapisu (`assets/walidacja.js`, odpowiednik `data/validators.ts` z Zod), format błędów `{ data, error: { code, message } }`, blokada wersji przy zapisie (optimistic locking) w trybie serwera, ogólny komunikat logowania, rejestr tylko do dopisywania | TWARDA | [W] | rozszerza D-176, zastępuje mechanizm z D-149, patrz [02](02-aktorzy-i-uprawnienia.md), [10](10-bezpieczenstwo-i-rodo.md) |
 | **D-212** | **Każda agregacja (liczba, wykres, kafelek, licznik) prowadzi do szczegółów (drill through).** Mapa zakładek ustalana z klientem pytaniami Z-01 i dalszymi w `docs/19-mapa-zakladek.md`, liczba zakładek ograniczona | WSTĘPNA | [W] | do potwierdzenia mapy przez klienta, patrz [11](11-ux-i-nawigacja.md) |
 
-## Decyzje wykonawcy z 30.09.2026: D-213 - D-214
+## Decyzje wykonawcy z 30.09.2026: D-213 - D-222
 
-Wykonawca zapisał: "instytucja ma widzieć nabory", a potem wybrał wariant "c. pełna lista naborów".
+Wykonawca zapisał: "instytucja ma widzieć nabory", a potem wybrał wariant "c. pełna lista naborów". Tego samego dnia, po przeglądzie list i wykresów: "te zakładki [lat] przenieś jednak tak jak było, rozwijane po lewej", "z wykresów chcę przechodzić do konkretnych wniosków", "baza danych domyślnie zafiltrowana tylko na te statusy przed złożeniem wniosku", "można też tam wejść na szczegóły klienta", "tabele wniosków i baza danych powinny być widoczne bez scrollowania", "dodaj przyciski cofania". Układ menu wybrał spośród wariantów (lata, pod nimi instytucje).
 
 | ID | Decyzja | Siła | Kto | Dotyczy |
 |---|---|---|---|---|
 | **D-213** | **Instytucja szkoleniowa widzi moduł Nabory w podglądzie.** Liczby klientów liczą się wyłącznie z jej własnych klientów (separacja w `zakres.js`). Handlowiec instytucji nadal nie widzi naborów [D-91]. Zakres listy doprecyzowuje D-214 | TWARDA | [W] | zamyka P-34, odrzuca wariant A pytania Z-18, cofa usterkę 5 z [19](19-mapa-zakladek.md) |
 | **D-214** | **Instytucja widzi pełną listę naborów wszystkich urzędów** (wariant C pytania Z-18). Liczby klientów przy naborach nadal liczą się wyłącznie z jej własnych klientów, więc lista nie ujawnia klientów LDIT innych instytucji. Świadomie przyjęte ryzyko: instytucja widzi, które urzędy mają nabory (340 urzędów) | TWARDA | [W] | doprecyzowuje D-213, rozstrzyga Z-18 |
+| **D-215** | **Lata Dofinansowań w lewym menu, pod każdym rokiem instytucje.** Dofinansowania rozwijają lata (jak arkusze Excela, z liczbą wniosków), rok rozwija "Wszystkie instytucje" i instytucje z przydziału konta. Zakładki lat nad tabelą znikają, "+ Dodaj rok" jest w menu | TWARDA | [W] | rozstrzyga Z-04, zmienia formę D-159 (reguła dodawania lat bez zmian), zachowuje D-112 |
+| **D-216** | **Baza danych domyślnie pokazuje klientów przed złożeniem wniosku** (bez wniosku albo z wnioskiem Niezłożony lub NW), filtr można zdjąć. Zakładka ma licznik klientów. Linki, które mają pokazać konkretnych klientów (Nabory "Pokaż klientów", wyszukiwarka, kafelek "do obdzwonienia"), otwierają Bazę bez tego filtra | TWARDA | [W] | uzupełnia D-128, D-130 |
+| **D-217** | **Klient ma własną kartę** (`19-klient.html`): dane firmy, instytucje, nabór urzędu, wszystkie wnioski ze wszystkich lat i korespondencja. Wchodzi się z nazwy klienta w Bazie, w Zestawieniach, na karcie wniosku i ze Zgłoszeń. Edycja danych zostaje w formularzu Bazy | TWARDA | [W] | rozstrzyga Z-09, realizuje D-52, D-54 |
+| **D-218** | **Status wniosku zmienia się akcją, a status składania, decyzja, rozliczenie i etap zmieniają się razem** (`assets/statusy.js`): niezłożony i NW etap 3, złożony 5, negatywna 6, pozytywna 7, zafakturowany 9, rozliczony 10. Każda zmiana etapu trafia do przebiegu wniosku, zmiana statusu do rejestru. Karta wniosku dostała sekcję "Status i etap" z przyciskami akcji | TWARDA | [W] | realizuje D-115, D-116, D-146 |
+| **D-219** | **Wykresy i kafelki prowadzą do konkretnych wniosków** (drill through): statusy i kafelki dashboardu, słupki miesięcy (osobno każda decyzja), lejek, wielkości firm, urzędy, kompletność danych i szkolenia w statystykach, tabela statystyk w Administracji. Filtr z wykresu widać na liście jako usuwalny znacznik | TWARDA | [W] | realizuje D-212 |
+| **D-220** | **Przycisk Wstecz** w pasku górnym i na kartach wniosku, klienta i instytucji. Powłoka pamięta historię ekranów razem z filtrami, rokiem i rozwiniętymi wierszami | TWARDA | [W] | realizuje D-212 |
+| **D-221** | **Listy robocze mieszczą się na ekranie bez przewijania strony:** opisy i notatki w podpowiedziach "i", nagłówek w jednej linii, mniej kolumn (NIP pod nazwą klienta, bez kolumny Wartość w Zestawieniach, koniec naboru i liczba dni w jednej kolumnie w Bazie), klik w wiersz otwiera kartę. Tabela przewija się tylko w swoim obszarze | TWARDA | [W] | uzupełnia D-01, D-115 |
+| **D-222** | **Powłoka (index.html) nie zapisuje bazy.** Jej kopia jest z chwili logowania, więc zapis nadpisałby zmiany zrobione w ekranach. Wylogowanie kasuje sesję na ekranie logowania, dodanie roku odbywa się w Zestawieniach | TWARDA | [W] | techniczna, ochrona danych, patrz [18](18-od-makiety-do-aplikacji.md) |
 
 **Sprzeczność do zgłoszenia.** Polecenie wykonawcy opisuje D-187 i D-189 jako WSTĘPNE, a rejestr od 29.09 trzyma je jako TWARDA. Siłę zostawiono TWARDA i dopisano potwierdzenie. Odwrócenie wymagań klienta z D-147 i D-122 nie jest jednak potwierdzone przez klienta.
 
@@ -418,11 +426,11 @@ Wykonawca zapisał: "instytucja ma widzieć nabory", a potem wybrał wariant "c.
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 154 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 162 |
 | WSTĘPNA | 51 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **214** |
+| **Razem** | **222** |
 
 Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**. Liczby dotyczą D-01 - D-160. Wszystkie 46 decyzji D-161 - D-206 to rozstrzygnięcia wykonawcy: 19 TWARDYCH i 27 WSTĘPNYCH czekających na potwierdzenie klienta (po D-209 wiersz D-193 jest skorygowany, więc czeka 26). Sześć decyzji D-207 - D-212 to także ustalenia wykonawcy: 5 TWARDYCH i 1 WSTĘPNA (D-212). Razem czeka na klienta 27 pozycji.
 
@@ -437,7 +445,7 @@ Skąd te liczby:
 | Feedback klienta 29.09.2026 | D-158 - D-160 | 3 |
 | Panel decyzyjny i przegląd modelu 29.09.2026 | D-161 - D-206 | 46 |
 | Decyzje wykonawcy po przeglądzie makiety 29.09.2026 | D-207 - D-212 | 6 |
-| Decyzje wykonawcy 30.09.2026 (Nabory dla instytucji) | D-213 - D-214 | 2 |
+| Decyzje wykonawcy 30.09.2026 (Nabory, menu lat, Baza danych, karta klienta, statusy, drill through) | D-213 - D-222 | 10 |
 
 Warsztat 04.09 przyniósł 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md). Runda budowy makiety nie odwróciła żadnej decyzji klienta, tylko rozstrzygnęła, gdzie ustalenia mają być egzekwowane.
 

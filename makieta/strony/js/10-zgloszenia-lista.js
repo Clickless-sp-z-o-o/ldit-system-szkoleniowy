@@ -52,15 +52,16 @@ function histHtml(z) {
     "</div>";
 }
 
-/* Karta podmiotu: instytucja otwiera swoja karte w Instytucjach, klient Baze danych
-   przefiltrowana po nazwie. Podmiotu spoza bazy (albo spoza zakresu konta) nie da sie otworzyc. */
+/* Karta podmiotu: instytucja otwiera swoja karte w Instytucjach, klient swoja karte klienta.
+   Podmiotu spoza bazy (albo spoza zakresu konta) nie da sie otworzyc. */
 function adresPodmiotu(z) {
   var zNazwa = function (x) { return x.nazwa === z.podmiot; };
   if (z.typ === "Instytucja") {
     var inst = DB.INSTYTUCJE.filter(zNazwa)[0];
     return inst ? "06-instytucje.html" + Nawigacja.zbudujZapytanie({ id: inst.id }) : null;
   }
-  return DB.KLIENCI.some(zNazwa) ? "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({ q: z.podmiot }) : null;
+  var klient = DB.KLIENCI.filter(zNazwa)[0];
+  return klient ? Nawigacja.adresKlienta(klient.id) : null;
 }
 
 function przyciskPodmiotu(z) {

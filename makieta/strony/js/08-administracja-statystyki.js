@@ -95,14 +95,20 @@ function statystykiWg() {
   }).filter(function (r) { return r.wnioski > 0; });
 }
 
+/* Liczby w wierszu instytucji prowadza do jej wnioskow w danym statusie (drill through, D-212) */
+function linkStat(inst, filtry) {
+  var adres = Nawigacja.adresWnioskow(Object.assign({ rok: STAN_08.rok, inst: inst.id }, filtry));
+  return ' data-href="' + esc(adres) + '" title="Pokaż wnioski"';
+}
+
 function wierszStatystykHtml(r, lider) {
   var skut = r.rozstrzygniete ? Math.round(r.poz / r.rozstrzygniete * 100) : 0;
-  return '<tr class="' + (r === lider ? "sel" : "") + '">' +
+  return '<tr class="' + (r === lider ? "sel" : "") + '"' + linkStat(r.inst, {}) + '>' +
     '<td class="strong nowrap">' + esc(r.inst.nazwa) + '<div class="small muted">' + esc(r.inst.miasto) + '</div></td>' +
-    '<td class="num">' + r.zlozone + '</td>' +
-    '<td class="num"><span class="tag pos">' + r.poz + '</span></td>' +
-    '<td class="num">' + (r.odrz ? '<span class="tag neg">' + r.odrz + '</span>' : '<span class="muted">0</span>') + '</td>' +
-    '<td class="num">' + (r.rez ? '<span class="tag warn">' + r.rez + '</span>' : '<span class="muted">0</span>') + '</td>' +
+    '<td class="num"' + linkStat(r.inst, { zlozone: "1" }) + '>' + r.zlozone + '</td>' +
+    '<td class="num"' + linkStat(r.inst, { status: "Pozytywna" }) + '><span class="tag pos">' + r.poz + '</span></td>' +
+    '<td class="num"' + linkStat(r.inst, { status: "Negatywna" }) + '>' + (r.odrz ? '<span class="tag neg">' + r.odrz + '</span>' : '<span class="muted">0</span>') + '</td>' +
+    '<td class="num"' + linkStat(r.inst, { status: "Rezygnacja" }) + '>' + (r.rez ? '<span class="tag warn">' + r.rez + '</span>' : '<span class="muted">0</span>') + '</td>' +
     '<td class="num">' + skut + '%</td>' +
     '<td class="num">' + DB.fmtPLN(r.obrot) + '</td>' +
     '<td class="num strong">' + (r.blad ? '<span class="tag neg">' + esc(r.blad) + '</span>' : DB.fmtPLN(r.przychod)) + '</td>' +

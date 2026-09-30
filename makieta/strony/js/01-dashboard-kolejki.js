@@ -29,7 +29,7 @@ function pozycjeDoDzialania() {
     { co: "Faktury po terminie płatności", ctx: "moduł Administracja", n: faktury.length, termin: "zaległe", klasa: "neg",
       href: "08-administracja.html" + Nawigacja.zbudujZapytanie({ zakladka: "faktury", status: "Po terminie" }) },
     { co: "Projekty z decyzją pozytywną, nierozliczone", ctx: "status rozliczenia: oczekuje", n: doRozliczenia.length,
-      termin: "bieżące", klasa: "info", href: "02-zestawienia.html" }
+      termin: "bieżące", klasa: "info", href: Nawigacja.adresWnioskow({ rok: dzis.slice(0, 4), status: "Pozytywna", rozl: "Oczekuje" }) }
   ].filter(function (p) { return p.n > 0 && Auth.widziModul(Nawigacja.modulEkranu(p.href)); });
 }
 
@@ -47,16 +47,21 @@ function renderWymagaDzialania() {
 function renderStatusy() {
   var s = STAN_01;
   var liczSkl = function (nazwa) { return s.wnioski.filter(function (w) { return w.statusSkl === nazwa; }).length; };
+  /* [etykieta, liczba, klasa znacznika, status na liscie wnioskow] */
   var st = [
-    ["Decyzja pozytywna", s.poz.length, "pos"],
-    ["Decyzja negatywna", s.neg.length, "neg"],
-    ["Oczekuje na decyzję", s.oczek.length, "info"],
-    ["Niezłożone", liczSkl("Niezłożony"), "mute"],
-    ["NW (do zmiany nazwy)", liczSkl("NW"), "warn"],
-    ["Rezygnacja", liczSkl("Rezygnacja"), "mute"]
+    ["Decyzja pozytywna", s.poz.length, "pos", "Pozytywna"],
+    ["Decyzja negatywna", s.neg.length, "neg", "Negatywna"],
+    ["Oczekuje na decyzję", s.oczek.length, "info", "Czekamy"],
+    ["Niezłożone", liczSkl("Niezłożony"), "mute", "Niezłożony"],
+    ["NW (do zmiany nazwy)", liczSkl("NW"), "warn", "NW"],
+    ["Rezygnacja", liczSkl("Rezygnacja"), "mute", "Rezygnacja"]
   ];
+  /* Klik w status otwiera wnioski tego roku w tym statusie (drill through, D-212) */
+  var zLinkiem = Auth.widziModul("dofin");
   document.getElementById("statusy").innerHTML = st.map(function (r) {
-    return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)">' +
+    var link = zLinkiem ? ' data-href="' + esc(Nawigacja.adresWnioskow({ rok: s.rok, status: r[3] })) + '"' +
+      ' title="Pokaż wnioski: ' + esc(r[0]) + '"' : "";
+    return '<div' + link + ' style="display:flex;align-items:center;gap:10px;padding:6px 4px;border-bottom:1px solid var(--line)">' +
       '<span class="tag ' + r[2] + ' dot">' + r[0] + '</span>' +
       '<b style="margin-left:auto;font-variant-numeric:tabular-nums">' + r[1] + '</b></div>';
   }).join("");

@@ -38,7 +38,8 @@
     "15-konfigurator-prowizji.html": "admin",
     "16-panel-is.html": "panelIS",
     "17-panel-klienta.html": "panelKL",
-    "18-zadania.html": "zadania"
+    "18-zadania.html": "zadania",
+    "19-klient.html": "dofin"
   };
 
   /* Ekrany, ktore w menu leza pod inna pozycja niz modul dostepu */
@@ -47,9 +48,9 @@
     "15-konfigurator-prowizji.html": "inst"
   };
 
-  /* Powrot z karty rekordu prowadzi wylacznie na listy Zestawien i Bazy danych.
-     Adres z parametru nie moze wskazac innej strony ani innego serwera. */
-  var WZOR_POWROTU = /^0[24]-(zestawienia|baza-klientow)\.html(\?[^#<>"']*)?$/;
+  /* Powrot z karty wniosku prowadzi wylacznie na listy Zestawien i Bazy danych albo na
+     karte klienta. Adres z parametru nie moze wskazac innej strony ani innego serwera. */
+  var WZOR_POWROTU = /^(02-zestawienia|04-baza-klientow|19-klient)\.html(\?[^#<>"']*)?$/;
 
   function plikZAdresu(adres) {
     return String(adres || "").split(/[?#]/)[0].split("/").pop();
@@ -84,7 +85,8 @@
     return WZOR_POWROTU.test(String(adres || "")) ? adres : null;
   }
 
-  var ETYKIETA_POWROTU = { "02-zestawienia.html": "Zestawienia", "04-baza-klientow.html": "Baza danych" };
+  var ETYKIETA_POWROTU = { "02-zestawienia.html": "Zestawienia", "04-baza-klientow.html": "Baza danych",
+                           "19-klient.html": "Karta klienta" };
   var POWROT_DOMYSLNY = "02-zestawienia.html";
 
   /* Karta wniosku otwierana z listy pamieta, dokad wrocic: rok, filtry i wiersz */
@@ -92,10 +94,47 @@
     return "03-wniosek.html" + zbudujZapytanie({ id: idWniosku, powrot: bezpiecznyPowrot(powrot) });
   }
 
+  /* Lista wnioskow z filtrem z wykresu (drill through, D-212): rok, status, miesiac itd.,
+     parametry czyta js/02-zestawienia-wykres.js */
+  function adresWnioskow(filtry) {
+    return "02-zestawienia.html" + zbudujZapytanie(filtry);
+  }
+
+  /* Element wykresu z atrybutem data-href prowadzi do listy. Jedno podlaczenie na ekran,
+     adres sprawdzany tym samym wzorcem co adresy powrotu. */
+  function podlaczLinki(korzen) {
+    korzen.addEventListener("click", function (e) {
+      var el = e.target.closest("[data-href]");
+      var cel = el && bezpiecznyEkran(el.getAttribute("data-href"));
+      if (cel) global.location.href = cel;
+    });
+  }
+
+  function adresKlienta(idKlienta) {
+    return "19-klient.html" + zbudujZapytanie({ id: idKlienta });
+  }
+
   /* {adres, etykieta} linku powrotu z karty. Niepoprawny adres daje powrot domyslny. */
   function linkPowrotu(zapytanie) {
     var adres = bezpiecznyPowrot(odczytajZapytanie(zapytanie, ["powrot"]).powrot) || POWROT_DOMYSLNY;
     return { adres: adres, etykieta: ETYKIETA_POWROTU[plikZAdresu(adres)] };
+  }
+
+  /* Adres ekranu makiety z tego samego katalogu (np. "03-wniosek.html?id=X") albo null */
+  var WZOR_EKRANU = /^\d\d-[a-z-]+\.html(\?[^#<>"']*)?$/;
+  function bezpiecznyEkran(adres) {
+    var tekst = String(adres || "");
+    return WZOR_EKRANU.test(tekst) && MODUL_EKRANU[plikZAdresu(tekst)] ? tekst : null;
+  }
+
+  /* Wstecz z karty rekordu: w powloce wraca po historii ekranow (powloka-ekran.js),
+     a otwarty bez powloki ekran przechodzi pod adres zapasowy. */
+  function wstecz(zapasowy) {
+    if (global.top !== global.self) {
+      global.parent.postMessage({ typ: "kfs:wstecz", zapasowy: bezpiecznyEkran(zapasowy) }, celKomunikatu());
+      return;
+    }
+    global.location.href = bezpiecznyEkran(zapasowy) || POWROT_DOMYSLNY;
   }
 
   function liczbaDoAkceptacji(kolejka) {
@@ -146,7 +185,9 @@
       plik: plikZAdresu(global.location.pathname),
       zapytanie: global.location.search,
       tytul: document.title,
-      doAkceptacji: licznikDlaPowloki(global.Auth, global.DB)
+      doAkceptacji: licznikDlaPowloki(global.Auth, global.DB),
+      /* Menu Dofinansowan (lata z licznikami) odswieza sie z danych ekranu, nie z kopii powloki */
+      lata: global.Auth.widziModul("dofin") ? global.Lata.zLiczbami(global.DB) : null
     }, celKomunikatu());
   }
 
@@ -159,7 +200,12 @@
     odczytajZapytanie: odczytajZapytanie,
     bezpiecznyPowrot: bezpiecznyPowrot,
     adresKarty: adresKarty,
+    adresKlienta: adresKlienta,
+    adresWnioskow: adresWnioskow,
+    podlaczLinki: podlaczLinki,
     linkPowrotu: linkPowrotu,
+    bezpiecznyEkran: bezpiecznyEkran,
+    wstecz: wstecz,
     liczbaDoAkceptacji: liczbaDoAkceptacji,
     ukryjNiedostepneZakladki: ukryjNiedostepneZakladki,
     wczytajFiltry: wczytajFiltry,

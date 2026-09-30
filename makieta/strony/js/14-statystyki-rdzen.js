@@ -10,10 +10,18 @@ function dzisIso() {
 
 function klasaSkutecznosci(s) { return s >= PROG_DOBRY ? "pos" : s >= PROG_SREDNI ? "warn" : "neg"; }
 function sumaPola(lista, pole) { return lista.reduce(function (s, x) { return s + (x[pole] || 0); }, 0); }
-function kartaKpi(l, v, f, adm) {
-  return '<div class="kpi' + (adm ? " admin" : "") + '"><div class="k-label">' + l + '</div>' +
+function kartaKpi(l, v, f, adm, link) {
+  return '<div class="kpi' + (adm ? " admin" : "") + '"' + (link || "") + '><div class="k-label">' + l + '</div>' +
     '<div class="k-value">' + v + '</div>' + (f ? '<div class="k-foot">' + f + '</div>' : "") + '</div>';
 }
+/* Atrybut data-href do listy wnioskow tego roku i tej instytucji, co statystyki (drill through,
+   D-212). Rola bez Dofinansowan dostaje element bez linku. */
+function link14(filtry) {
+  if (!Auth.widziModul("dofin")) return "";
+  var adres = Nawigacja.adresWnioskow(Object.assign({ rok: STAN_14.rok, inst: STAN_14.selIS.value }, filtry));
+  return ' data-href="' + esc(adres) + '" title="Pokaż wnioski"';
+}
+
 function instytucjaPoId(id) {
   return DB.INSTYTUCJE.filter(function (i) { return i.id === id; })[0];
 }
@@ -48,5 +56,6 @@ function inicjuj14() {
 
   STAN_14.selIS.addEventListener("change", render14);
   STAN_14.selOkres.addEventListener("change", render14);
+  Nawigacja.podlaczLinki(document.body);
   render14();
 }

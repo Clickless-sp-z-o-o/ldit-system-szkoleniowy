@@ -84,8 +84,9 @@ function renderTabela05() {
     '<tr><td colspan="10"><div class="empty"><div class="et">Brak naborów</div>Żaden nabór nie spełnia filtrów.</div></td></tr>';
 }
 
+/* Lista ma pokazac tylu klientow, ilu liczy kolumna, wiec bez domyslnego filtra Bazy */
 function pokazKlientow(id) {
-  location.href = "04-baza-klientow.html?pup=" + encodeURIComponent(id);
+  location.href = "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({ pup: id, wnioski: "wszystkie" });
 }
 
 function podepnijFiltry05() {

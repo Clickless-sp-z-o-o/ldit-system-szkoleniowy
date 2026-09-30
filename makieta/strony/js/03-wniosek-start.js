@@ -1,6 +1,7 @@
 /* Ekran Wniosek: rysowanie calosci i start ekranu.
    Tylko deklaracje, bez kodu wykonywanego od razu. */
 function renderWszystko() {
+  renderStatus();
   renderDane();
   renderFinanse();
   renderUcz();
@@ -26,6 +27,7 @@ function ustawPowrot() {
 
 function start03() {
   var powrot = ustawPowrot();
+  el("btnWstecz").addEventListener("click", function () { Nawigacja.wstecz(powrot.adres); });
   if (!wczytaj()) {
     el("stronaWniosku").innerHTML =
       '<div class="note warn" style="margin:24px 0"><b>Nie znaleziono wniosku</b> ' + esc(STAN_03.wnId) +

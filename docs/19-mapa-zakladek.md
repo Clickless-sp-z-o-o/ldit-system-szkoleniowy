@@ -114,8 +114,8 @@ Ekrany bez własnej pozycji w menu: karta projektu (03), Baza danych (04), Konfi
 
 Wszystkie dwanaście poprawiono 29.09.2026. Wspólna logika jest w `makieta/assets/nawigacja.js`, testy w `tools/test-nawigacja.mjs`.
 
-1. Nabory, przycisk „Pokaż klientów”: link do Bazy z parametrem `pup`, którego Baza nie czyta, więc pokazuje wszystkich klientów. **Poprawione:** Baza danych czyta `pup` i otwiera się z filtrem urzędu.
-2. Wyszukiwarka globalna: przekazuje `q` do Bazy, która go nie czyta (czyta go tylko lista Wnioski). **Poprawione:** Baza danych czyta `q` i otwiera się z wpisaną frazą.
+1. Nabory, przycisk „Pokaż klientów”: link do Bazy z parametrem `pup`, którego Baza nie czyta, więc pokazuje wszystkich klientów. **Poprawione:** Baza danych czyta `pup` i otwiera się z filtrem urzędu, bez domyślnego filtra przed złożeniem [D-216], więc pokazuje tylu klientów, ilu liczy kolumna.
+2. Wyszukiwarka globalna: przekazuje `q` do Bazy, która go nie czyta (czyta go tylko lista Wnioski). **Poprawione:** Baza danych czyta `q` i szuka wśród wszystkich klientów [D-216].
 3. Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek w pasku górnym. **Poprawione:** ekran w ramce zgłasza się powłoce, a ta zaznacza pozycję menu i buduje okruszek (np. Dofinansowania › Baza danych), także po przejściu linkiem.
 4. Pracownik LDIT ma na pasku Dofinansowań zakładkę „Terminy szkoleń”, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień. **Poprawione:** pracownik LDIT dostał podgląd Terminów (wgląd LDIT w terminy [D-142]). Dodatkowo każdy pasek zakładek ukrywa zakładki modułów spoza roli.
 5. Instytucja ma dostęp do Naborów mimo opisu strony (tylko role LDIT). **Rozstrzygnięte inaczej:** wykonawca zdecydował, że instytucja widzi Nabory w podglądzie [D-213], więc poprawiono opis strony, a uprawnienie zostało.
@@ -125,7 +125,7 @@ Wszystkie dwanaście poprawiono 29.09.2026. Wspólna logika jest w `makieta/asse
 9. Kalkulator prowizji (prototyp) stoi w produkcyjnym pasku Administracji. **Poprawione:** kalkulator zniknął z paska Administracji. Wchodzi się do niego z Konfiguratora warunków, w menu leży pod Instytucjami.
 10. Administracja: przycisk „Nadpisz” przy projekcie, choć [D-138] przenosi nadpisanie na kartę wniosku. **Poprawione:** zamiast „Nadpisz” i „Przywróć regułę” jest link „Karta wniosku”, gdzie jest nadpisanie.
 11. Licznik wniosków do akceptacji („kółko w prawym górnym rogu” z [D-105] i [D-140]) nie istnieje w powłoce makiety. **Poprawione:** w pasku górnym jest licznik formularzy czekających na akceptację, dla ról z modułem Zadania. Klik otwiera Zadania i powiadomienia.
-12. Zgłoszenia: przycisk „Otwórz kartę podmiotu” nie ma celu. **Poprawione:** instytucja otwiera swoją kartę w Instytucjach, klient otwiera Bazę danych przefiltrowaną po nazwie. Podmiot spoza bazy ma przycisk wyłączony.
+12. Zgłoszenia: przycisk „Otwórz kartę podmiotu” nie ma celu. **Poprawione:** instytucja otwiera swoją kartę w Instytucjach, klient swoją kartę klienta [D-217]. Podmiot spoza bazy ma przycisk wyłączony.
 
 ## Mapa agregacji i drill through
 
@@ -422,12 +422,12 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 | Z-01 | Dashboard | Co zostaje z sekcji "Wymaga działania" na dashboardzie | średnia | wariant B |
 | Z-02 | Dashboard | Statystyki są w czterech miejscach. Jaki podział przyjmujemy | średnia | wariant A |
 | Z-03 | Dashboard | Gdzie są Cele i premie i kto je widzi | średnia | wariant A |
-| Z-04 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień | wysoka | wariant A |
+| Z-04 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień | wysoka | rozstrzygnięte [D-215] |
 | Z-05 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Lista instytucji w menu przy ok. 20 instytucjach | niska | wariant B |
 | Z-06 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Co oznacza nazwa "Nabory" | wysoka | wariant A |
 | Z-07 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Nazwa zakładki z klientami: "Baza klientów" czy "Baza danych" | średnia | wariant A |
 | Z-08 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Lata jako zakładki: czy potrzebny jest też widok "Wszystkie lata" | średnia | wariant A |
-| Z-09 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Czy klient ma własną kartę (osobny ekran) | wysoka | wariant A |
+| Z-09 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Czy klient ma własną kartę (osobny ekran) | wysoka | rozstrzygnięte [D-217] |
 | Z-10 | Dofinansowania, Zestawienia, Baza klientów, Wnioski | Jakie filtry musi mieć lista Wnioski | średnia | wariant A |
 | Z-11 | Karta wniosku | Karta wniosku: jedna długa strona czy zakładki | wysoka | wariant B |
 | Z-12 | Instytucje i katalog | Struktura modułu Instytucje szkoleniowe | wysoka | wariant B |
@@ -538,6 +538,8 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 ### Dofinansowania, Zestawienia, Baza klientów, Wnioski
 
 #### Z-04. Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień
+
+> **Rozstrzygnięte 30.09.2026 [D-215]:** Dofinansowania rozwijają lata, pod każdym rokiem są instytucje, zakładki lat nad tabelą zniknęły. Pytanie zdjęte z panelu decyzyjnego.
 
 **Waga:** wysoka. **Blokuje:** mapa menu, screeny Dofinansowań. **Powiązane decyzje:** D-55, D-112, D-127, D-129, D-159.
 
@@ -655,6 +657,8 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 > **Rekomendacja wykonawcy:** Wariant A, a globalna wyszukiwarka przeszukuje wszystkie lata.
 
 #### Z-09. Czy klient ma własną kartę (osobny ekran)
+
+> **Rozstrzygnięte 30.09.2026 [D-217]:** tak, karta klienta `19-klient.html` z danymi, wszystkimi wnioskami i korespondencją. Pytanie zdjęte z panelu decyzyjnego.
 
 **Waga:** wysoka. **Blokuje:** screeny Bazy klientów, karty klienta, mapa linków. **Powiązane decyzje:** D-52, D-54, D-133, D-178.
 

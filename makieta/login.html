@@ -78,6 +78,13 @@
 (function () {
   "use strict";
 
+  /* Wylogowanie z powloki: sesja znika z bazy wczytanej przed chwila, a nie z kopii powloki */
+  if (new URLSearchParams(location.search).get("wyloguj")) {
+    Auth.wyloguj();
+    KFS.zapiszTeraz().finally(function () { location.replace("login.html"); });
+    return;
+  }
+
   /* Konto juz zalogowane nie ma po co ogladac ekranu logowania */
   if (Auth.zalogowany()) {
     location.replace("index.html");

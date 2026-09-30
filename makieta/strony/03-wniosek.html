@@ -5,6 +5,7 @@
 <title>Karta projektu</title>
 <link rel="stylesheet" href="../assets/style.css">
 <link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
 </head>
 <body>
 <div class="page" id="stronaWniosku">
@@ -14,14 +15,11 @@
       <div class="small muted" style="margin-bottom:4px">
         <a href="02-zestawienia.html" id="linkPowrotu">Zestawienia</a> &rsaquo; Projekt
       </div>
-      <h1 class="page-title" id="tytul">Projekt</h1>
-      <p class="page-desc">
-        Jeden projekt = jeden wniosek <span class="ref">D-53</span>.
-        Dane klienta wspólne dla projektów <span class="ref">D-54</span>, ale kontakt, wielkość i liczba zatrudnionych edytowalne per wniosek
-        <span class="ref">D-132</span> <span class="ref">D-133</span> <span class="ref">D-169</span>. Koszt z dopłatą ręczny,
-        koszt całkowity wyliczany <span class="ref">D-134</span>; „Przyznano" i wkład własny edytowalne z przywróceniem reguły
-        <span class="ref">D-135</span> <span class="ref">D-172</span>.
-      </p>
+      <div class="naglowek-karty">
+        <button class="btn sm" id="btnWstecz" data-tip="Wraca do poprzedniego ekranu z tym samym filtrem i rokiem.">&larr; Wstecz</button>
+        <h1 class="page-title" id="tytul">Projekt</h1>
+        <span class="tip-mark" data-tip="Jeden projekt = jeden wniosek (D-53). Dane klienta wspólne dla projektów (D-54), ale kontakt, wielkość i liczba zatrudnionych edytowalne per wniosek (D-132, D-133, D-169). Koszt z dopłatą ręczny, koszt całkowity wyliczany (D-134); Przyznano i wkład własny edytowalne z przywróceniem reguły (D-135, D-172).">i</span>
+      </div>
     </div>
     <div class="ph-actions">
       <span class="small muted" id="stanZapisu" role="status"></span>
@@ -167,6 +165,13 @@
     <!-- PRAWA KOLUMNA -->
     <div>
       <div class="card">
+        <div class="card-head"><h3>Status i etap</h3>
+          <span class="tip-mark" data-tip="Status zmieniasz akcją. Etap procesu (D-146), status składania, decyzja i rozliczenie przestawiają się razem, kolor wiersza w tabelach też. Każda zmiana etapu trafia do przebiegu, a zmiana statusu do rejestru aktywności (D-116).">i</span>
+        </div>
+        <div class="card-body" id="statusWniosku"></div>
+      </div>
+
+      <div class="card">
         <div class="card-head"><h3>Dane projektu</h3>
           <span class="tip-mark" data-tip="Dane firmy (nazwa, NIP, numer klienta) sa stale i wspolne dla wszystkich wnioskow klienta. Numer klienta trafia na fakture. D-53, D-54.">i</span>
         </div>
@@ -239,6 +244,7 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dofin"></script>
@@ -247,6 +253,7 @@
 <script src="js/03-wniosek-uczestnicy.js"></script>
 <script src="js/03-wniosek-przeglad.js"></script>
 <script src="js/03-wniosek-prowizja.js"></script>
+<script src="js/03-wniosek-status.js"></script>
 <script src="js/03-wniosek-start.js"></script>
 <script type="text/kfs-strona">
 inicjujStan03();

@@ -70,6 +70,22 @@ flowchart TD
     </div>
   </div>
 
+  <h3>Status, rozliczenie i etap zmieniają się razem <span class="ref new">D-218</span></h3>
+  <p>Każda akcja na wniosku (zmiana statusu w komórce Zestawień, operacja masowa, przycisk na karcie wniosku) zapisuje pełny zestaw kolumn: status składania, decyzję, rozliczenie i etap procesu <span class="ref new">D-146</span>. Regułę trzyma <code>makieta/assets/statusy.js</code>, zgodnie z danymi z Excela klienta.</p>
+  <table class="t">
+    <thead><tr><th>Akcja</th><th>Status składania</th><th>Decyzja</th><th>Rozliczenie</th><th>Etap</th></tr></thead>
+    <tbody>
+      <tr><td>Niezłożony</td><td>Niezłożony</td><td>brak</td><td>Brak</td><td>3</td></tr>
+      <tr><td>NW</td><td>NW</td><td>brak</td><td>Brak</td><td>3</td></tr>
+      <tr><td>Złożony w urzędzie</td><td>Złożony</td><td>brak</td><td>Brak</td><td>5</td></tr>
+      <tr><td>Decyzja negatywna</td><td>Złożony</td><td>Negatywna</td><td>Brak</td><td>6</td></tr>
+      <tr><td>Decyzja pozytywna</td><td>Złożony</td><td>Pozytywna</td><td>Oczekuje</td><td>7</td></tr>
+      <tr><td>Zafakturowany (tylko po pozytywnej)</td><td>bez zmian</td><td>bez zmian</td><td>Zafakturowany</td><td>9</td></tr>
+      <tr><td>Rozliczony (tylko po pozytywnej)</td><td>bez zmian</td><td>bez zmian</td><td>Rozliczone</td><td>10</td></tr>
+    </tbody>
+  </table>
+  <p>Złożenie i decyzja wpisują datę wniosku, gdy jej brak. Ponowna decyzja pozytywna nie cofa rozliczenia ani etapu. Zmiana etapu trafia do przebiegu wniosku, zmiana statusu do rejestru aktywności <span class="ref">D-116</span>.</p>
+
   <h2>Kolorowanie wierszy <span class="ref">D-01</span> <span class="ref">D-123</span> <span class="ref new">D-158</span></h2>
   <p>
     Kolor obejmuje <b>cały wiersz</b> i zmienia się <b>automatycznie</b> przy zmianie statusu.

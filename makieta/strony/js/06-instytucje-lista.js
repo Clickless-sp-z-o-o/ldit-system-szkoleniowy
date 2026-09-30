@@ -59,6 +59,8 @@ function renderLista() {
   Array.prototype.forEach.call(document.querySelectorAll(".is-card"), function (k) {
     k.addEventListener("click", function () {
       STAN_06.wybrana = k.getAttribute("data-id");
+      /* Wybrana instytucja w adresie: Wstecz z innego ekranu wraca na te sama karte */
+      Nawigacja.zapiszWAdresie({ id: STAN_06.wybrana });
       renderLista();
       renderSzczegol();
       el("detNazwa").scrollIntoView({ behavior: "smooth", block: "center" });

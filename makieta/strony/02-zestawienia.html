@@ -5,47 +5,39 @@
 <title>Zestawienia</title>
 <link rel="stylesheet" href="../assets/style.css">
 <link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
 </head>
 <body>
-<div class="page">
+<div class="page lista">
 
   <div class="page-head">
-    <div class="ph-text">
-      <h1 class="page-title">Zestawienie 2026 &middot; wszystkie instytucje</h1>
-      <p class="page-desc">
-        Główne miejsce pracy. Układ z Excela, każdy rok to osobna zakładka jak arkusz
-        <span class="ref">D-159</span>, kolory statusów identyczne z Excelem
-        <span class="ref">D-01</span> <span class="ref">D-158</span>,
-        numeracja klientów ciągła w ramach roku, trafia na fakturę <span class="ref">D-112</span>.
-        Edycja bezpośrednio w komórce <span class="ref">D-115</span>.
-      </p>
-    </div>
+    <h1 class="page-title">Dofinansowania</h1>
+    <span class="tip-mark" data-tip="Główne miejsce pracy. Układ z Excela, rok wybierasz w lewym menu jak arkusz (D-159), kolory statusów identyczne z Excelem (D-01, D-158), numeracja klientów ciągła w ramach roku, trafia na fakturę (D-112). Status zmieniasz w komórce (D-115), klik w wiersz otwiera kartę wniosku. Otwarte P-08: zbiorcza tabela jest widokiem operacyjnym, dashboard czysto statystyczny.">i</span>
     <div class="ph-actions">
-      <button class="btn">Eksport</button>
-      <button class="btn primary" id="btnNowyProjekt">+ Nowy projekt</button>
+      <button class="btn sm">Eksport</button>
+      <button class="btn primary sm" id="btnNowyProjekt">+ Nowy projekt</button>
     </div>
   </div>
 
   <nav class="mod-tabs">
-    <a href="04-baza-klientow.html" id="zakladkaBaza" data-tip="Baza danych: wszyscy klienci, jeden klient = jeden wiersz, rozwijany plusikiem do wnioskow. Nigdy nie usuwamy. Priorytet po ostatnim dniu naboru. D-128, D-130. Link przenosi filtr instytucji i urzedu.">Baza danych</a>
-    <a href="02-zestawienia.html" class="on" data-tip="Wnioski (projekty): wnioski od etapu 3 (przygotowanie dokumentow). Jeden klient moze miec wiele wierszy w roku, numer klienta zachowany. D-128. Licznik to liczba wierszy widocznych teraz: wybrany rok i biezace filtry.">Wnioski <span class="n" id="licznikWnioskow"></span></a>
-    <a href="13-terminy.html" data-tip="Kalendarz terminow szkolen per instytucja. D-142.">Terminy szkoleń</a>
-    <span class="adm" data-tip="Dofinansowania dziela sie na dwie tabele (Baza danych + Wnioski) oraz osobne lata jako zakladki. Kolejny rok administrator dodaje sam. W tescie przenosimy z Excela tylko 2026. D-128, D-129, D-159, D-160.">rozdział widoku &middot; D-128</span>
+    <a href="04-baza-klientow.html" id="zakladkaBaza" data-tip="Baza danych: klienci, jeden klient = jeden wiersz, rozwijany plusem do wniosków. Domyślnie klienci przed złożeniem wniosku. Licznik to tyle klientów, ile pokaże Baza po kliknięciu (filtr instytucji i urzędu przechodzi dalej). D-128, D-130.">Baza danych <span class="n" id="licznikBazy"></span></a>
+    <a href="02-zestawienia.html" class="on" data-tip="Wnioski od etapu 3. Licznik to liczba wierszy widocznych teraz: wybrany rok i bieżące filtry. D-128.">Wnioski <span class="n" id="licznikWnioskow"></span></a>
+    <a href="13-terminy.html" data-tip="Kalendarz terminów szkoleń per instytucja. D-142.">Terminy szkoleń</a>
   </nav>
 
-
   <div class="card">
-    <div class="lata-tabs" id="lataTabs" data-tip="Osobne lata jak arkusze w Excelu (D-129, D-159). Nowy rok dodaje administrator przyciskiem +."></div>
+    <div id="dodajRok" style="display:none;padding:8px 12px 0"></div>
     <div class="toolbar">
-      <input class="inp search" id="q" placeholder="Szukaj: NIP, nazwa klienta, urząd...">
+      <input class="inp search" id="q" placeholder="Szukaj: NIP, klient, urząd...">
       <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
       <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
       <select class="inp" id="fStatus"><option value="">Wszystkie statusy</option></select>
+      <div class="chipy" id="chipyWykresu"></div>
       <span class="sp"></span>
       <span class="small muted" id="licz"></span>
     </div>
 
-    <div class="toolbar" style="background:#fff;border-bottom:1px solid var(--line)">
+    <div class="toolbar" style="background:#fff;border-bottom:1px solid var(--line);padding-top:4px;padding-bottom:4px">
       <span class="small muted"><b>Zaznaczone:</b> <span id="zazn">0</span></span>
       <button class="btn xs" onclick="masowo('Pozytywna')">Oznacz pozytywne</button>
       <button class="btn xs" onclick="masowo('Negatywna')">Oznacz negatywne</button>
@@ -61,40 +53,31 @@
 
     <div id="projForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
 
-    <div class="card-body" id="notaRok" style="display:none;border-bottom:1px solid var(--line)">
+    <div class="card-body" id="notaRok" style="display:none;border-bottom:1px solid var(--line);padding:8px 12px">
       <div class="note mb0" id="notaRokTresc"></div>
     </div>
 
-    <div class="tbl-wrap" style="max-height:calc(100vh - 330px);overflow-y:auto">
+    <div class="lista-tabela">
       <table class="tbl" id="tab">
         <thead>
           <tr>
-            <th style="width:32px"><input type="checkbox" id="all"></th>
-            <th style="width:44px">Nr<span class="tip-mark" data-tip="Numer klienta jest ciągły w ramach roku i trafia na fakturę (D-112).">i</span></th>
+            <th style="width:28px"><input type="checkbox" id="all"></th>
+            <th style="width:36px">Nr<span class="tip-mark" data-tip="Numer klienta jest ciągły w ramach roku i trafia na fakturę (D-112).">i</span></th>
             <th>Klient</th>
-            <th>NIP</th>
-            <th>Instytucja</th>
+            <th class="kol-is">Instytucja</th>
             <th>Szkolenie</th>
             <th>Urząd</th>
-            <th class="c">Osób<span class="tip-mark" data-tip="Liczba uczestników zakwalifikowanych; po ukośniku łączna liczba zgłoszonych. Do wyliczeń wchodzą tylko zakwalifikowani (D-79).">i</span></th>
-            <th class="num">Wartość<span class="tip-mark" data-tip="Suma kwot uczestników zakwalifikowanych. Podstawa modelu finansowego wniosku.">i</span></th>
-            <th class="num">Przyznano<span class="tip-mark" data-tip="Kwota dofinansowania z urzędu: koszt całkowity × procent progu dofinansowania wybranego we wniosku (D-131).">i</span></th>
-            <th class="num">Koszt całk.<span class="tip-mark" data-tip="Wartość szkolenia uznana przez urząd. Po dodaniu dopłaty staje się podstawą naliczania prowizji (D-64).">i</span></th>
+            <th class="c">Osób<span class="tip-mark" data-tip="Zakwalifikowani; po ukośniku wszyscy zgłoszeni. Do wyliczeń wchodzą tylko zakwalifikowani (D-79).">i</span></th>
+            <th class="num">Przyznano<span class="tip-mark" data-tip="Dofinansowanie z urzędu: koszt całkowity × procent progu (D-131).">i</span></th>
+            <th class="num">Koszt całk.<span class="tip-mark" data-tip="Wartość uznana przez urząd, z dopłatą staje się podstawą prowizji (D-64).">i</span></th>
             <th>Status</th>
-            <th>Rozliczenie<span class="tip-mark" data-tip="Etap finansowy projektu: Oczekuje → Zafakturowany → Rozliczone.">i</span></th>
+            <th>Rozl.<span class="tip-mark" data-tip="Etap finansowy: Oczekuje, Zafakturowany, Rozliczone.">i</span></th>
             <th></th>
           </tr>
         </thead>
         <tbody id="body"></tbody>
       </table>
     </div>
-  </div>
-
-  <div class="note open">
-    <b>Do rozstrzygnięcia <span class="ref p">P-08</span>:</b> klient powiedział, że zbiorczy widok wszystkich
-    instytucji ma być tylko na dashboardzie, ale opisywał go też jako widok operacyjny do masowej zmiany
-    statusów po filtrze PUP. Te wymagania się wykluczają. Tutaj przyjęto, że zbiorcza tabela jest widokiem
-    operacyjnym, a dashboard pozostaje czysto statystyczny.
   </div>
 
 </div>
@@ -115,11 +98,13 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dofin"></script>
 <script src="js/02-zestawienia-dane.js"></script>
 <script src="js/02-zestawienia-lista.js"></script>
+<script src="js/02-zestawienia-wykres.js"></script>
 <script src="js/02-zestawienia-lata.js"></script>
 <script src="js/02-zestawienia-projekt.js"></script>
 <script type="text/kfs-strona">

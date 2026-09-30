@@ -6,29 +6,7 @@
 <title>System KFS - LDIT - makieta v2</title>
 <link rel="stylesheet" href="assets/style.css">
 <link rel="stylesheet" href="assets/style-sesja.css">
-<style>
-  .role-hint {
-    position: fixed; right: 18px; bottom: 18px; z-index: 50;
-    background: var(--brand-900); color: #cbd5e1;
-    border-radius: var(--radius); padding: 10px 13px;
-    font-size: 12px; max-width: 320px; box-shadow: var(--shadow-lg);
-    line-height: 1.5; display: none;
-  }
-  .role-hint.show { display: block; }
-  .role-hint b { color: #fff; }
-  .role-hint .x { float: right; cursor: pointer; color: #64748b; margin-left: 10px; }
-  .crumb .sep { margin: 0 6px; }
-  .akceptacje {
-    position: relative; display: inline-flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line);
-    background: #fff; cursor: pointer; font-size: 15px; color: var(--ink-2);
-  }
-  .akceptacje .n {
-    position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px;
-    border-radius: 9px; background: var(--neg-ink); color: #fff; font-size: 11px; font-weight: 700;
-    line-height: 18px; text-align: center;
-  }
-</style>
+<link rel="stylesheet" href="assets/style-powloka.css">
 </head>
 <body>
 
@@ -52,6 +30,7 @@
 
   <div class="main">
     <div class="topbar">
+      <button class="btn sm wstecz" id="wstecz" disabled data-tip="Poprzedni ekran, z tym samym filtrem i rokiem.">&larr; Wstecz</button>
       <div class="crumb" id="crumb"><b>Dashboard</b></div>
 
       <div class="global-search">
@@ -99,25 +78,27 @@
 <script src="assets/zakres.js"></script>
 <script src="assets/prowizja.js"></script>
 <script src="assets/db.js"></script>
+<script src="assets/lata.js"></script>
 <script src="assets/html.js"></script>
 <script src="assets/nawigacja.js"></script>
 <script src="assets/tips.js"></script>
 <script src="assets/boot.js"></script>
 <script src="assets/powloka-ekran.js"></script>
+<script src="assets/powloka-menu.js"></script>
 
 <script type="text/kfs-strona">
 /* ================================================================
    Powloka makiety.
 
    Menu nie jest lista zaszyta w kodzie. Buduje sie z tabel role, moduly
-   i uprawnienia (D-36), a lista instytucji pod "Dofinansowaniami" z przydzialu
-   konta (D-112, D-113). Zmiana uprawnien w module Ustawienia zmienia menu,
+   i uprawnienia (D-36). Pod "Dofinansowaniami" sa lata, a pod kazdym rokiem instytucje
+   z przydzialu konta (D-112, D-113, D-129), patrz assets/powloka-menu.js. Zmiana uprawnien w module Ustawienia zmienia menu,
    bo oba czytaja to samo zrodlo.
    ================================================================ */
 
 var TIPY_MODULOW = {
   dash: "Statystyki i wskazniki, bez rozpiski klientow. Dwa warianty: administratora (z zyskami i prowizjami) oraz pracownika (bez finansow firmy). D-114, D-30.",
-  dofin: "Glowne miejsce pracy. Rozwija liste instytucji. W srodku dwie tabele: Baza danych (wszyscy klienci, klient = jeden wiersz) i Wnioski (projekty od etapu 3), z podzialem na lata. D-127, D-128, D-129.",
+  dofin: "Glowne miejsce pracy. Rozwija lata, a kazdy rok liste instytucji. W srodku dwie tabele: Baza danych (wszyscy klienci, klient = jeden wiersz) i Wnioski (projekty od etapu 3), z podzialem na lata. D-127, D-128, D-129.",
   nabory: "Nabory PUP: aktualne, prognozowane i zakonczone (340 urzedow). System jest odbiorca prognoz, nie liczy ich sam. D-109.",
   zadania: "Plan dnia: zadania reczne i automatyczne (przypiete do wniosku i statusu), alerty na date, licznik wnioskow do akceptacji. Modul wrocil do zakresu po warsztacie 04.09. D-140.",
   inst: "Karty instytucji, katalog szkolen, dane do faktur, siedziba (zrodlo miejscowosci na certyfikacie). Jeden klient moze byc u wielu instytucji. D-42, D-99, D-144.",
@@ -139,7 +120,9 @@ var OPIS_ROLI = {
 };
 
 var sesja = Auth.sesja();
-var stan = { aktywny: null };
+var stan = { aktywny: null, lata: Lata.zLiczbami(DB), otwarteLata: {}, dofinOtwarte: false,
+             historia: [], poCofnieciu: false };
+stan.otwarteLata[Lata.domyslny()] = true;
 
 function instytucjeKonta() {
   return DB.INSTYTUCJE.map(function (i) { return i.nazwa; });
@@ -170,22 +153,17 @@ function render() {
             (rozwijane ? '<span class="chev">&#9654;</span>' : '') + '</div>';
 
     if (rozwijane) {
-      html += '<div class="nav-sub" id="sub-dofin">';
-      html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html" data-label="Wszystkie instytucje"' +
-              ' data-tip="Zbiorczy widok wszystkich instytucji w zasiegu konta. Osobna, jawna pozycja, zeby nie trzeba bylo sie domyslac. D-127.">' +
-              '<span>Wszystkie instytucje</span></div>';
-      instytucjeKonta().forEach(function (nazwa) {
-        html += '<div class="nav-item sub-is" data-plik="02-zestawienia.html?is=' + encodeURIComponent(nazwa) + '"' +
-                ' data-label="' + esc(nazwa) + '"' +
-                ' data-tip="Tylko klienci i wnioski instytucji ' + esc(nazwa) + ' (separacja danych, D-35).">' +
-                '<span>' + esc(nazwa) + '</span></div>';
-      });
-      html += '</div>';
+      html += htmlPodmenuDofin(stan.lata, instytucjeKonta(), stan.otwarteLata, Auth.moze("zestawienia.dodawanie_lat"));
     }
   });
 
   var nav = document.getElementById("nav");
   nav.innerHTML = html;
+  var subDofin = document.getElementById("sub-dofin");
+  if (subDofin && stan.dofinOtwarte) {
+    subDofin.classList.add("open");
+    nav.querySelector('.nav-item[data-id="dofin"]').classList.add("open");
+  }
 
   nav.querySelectorAll(".nav-item").forEach(function (el) {
     el.addEventListener("click", function (e) {
@@ -195,11 +173,13 @@ function render() {
       if (id === "dofin") {
         var sub = document.getElementById("sub-dofin");
         if (sub) {
-          var otwarte = sub.classList.toggle("open");
-          el.classList.toggle("open", otwarte);
-          if (otwarte) return;
+          stan.dofinOtwarte = sub.classList.toggle("open");
+          el.classList.toggle("open", stan.dofinOtwarte);
+          if (stan.dofinOtwarte) return;
         }
       }
+      /* Rok rozwija swoje instytucje i otwiera widok wszystkich; strzalka tylko zwija */
+      if (el.classList.contains("sub-rok") && !kliknietoRok(el, e.target, stan.otwarteLata)) return;
 
       var plik = el.getAttribute("data-plik");
       if (!plik) return;
@@ -218,12 +198,30 @@ document.getElementById("akceptacje").addEventListener("click", function () {
   document.getElementById("view").src = "strony/18-zadania.html";
 });
 
+/* Wstecz: z paska gornego albo z przycisku na karcie (komunikat kfs:wstecz z adresem zapasowym) */
+function wstecz(zapasowy) {
+  var cel = cofnijEkran(stan.historia) || zapasowy;
+  if (!cel) return;
+  stan.poCofnieciu = true;
+  document.getElementById("view").src = "strony/" + cel;
+}
+document.getElementById("wstecz").addEventListener("click", function () { wstecz(null); });
+
+function odbierzEkran(ekran) {
+  if (ekran.lata && inneLata(ekran.lata, stan.lata)) { stan.lata = ekran.lata; render(); }
+  zapamietajEkran(stan.historia, ekran, stan.poCofnieciu);
+  stan.poCofnieciu = false;
+  document.getElementById("wstecz").disabled = stan.historia.length < 2;
+  var zaznaczone = zaznaczEkran(ekran);
+  if (zaznaczone) stan.aktywny = zaznaczone.idMenu;
+  if (zaznaczone && zaznaczone.rok) { stan.dofinOtwarte = true; stan.otwarteLata[zaznaczone.rok] = true; }
+  pokazLicznik(ekran.doAkceptacji);
+}
+
 window.addEventListener("message", function (ev) {
-  if (ev.source !== document.getElementById("view").contentWindow) return;
-  if (!ev.data || ev.data.typ !== "kfs:ekran") return;
-  var idMenu = zaznaczEkran(ev.data);
-  if (idMenu) stan.aktywny = idMenu;
-  pokazLicznik(ev.data.doAkceptacji);
+  if (ev.source !== document.getElementById("view").contentWindow || !ev.data) return;
+  if (ev.data.typ === "kfs:ekran") odbierzEkran(ev.data);
+  if (ev.data.typ === "kfs:wstecz") wstecz(Nawigacja.bezpiecznyEkran(ev.data.zapasowy));
 });
 
 function pokazSesje() {
@@ -243,14 +241,16 @@ function pokazSesje() {
 }
 
 document.getElementById("wyloguj").addEventListener("click", function () {
-  Auth.wyloguj();
-  /* Usuniecie sesji z bazy musi sie zapisac, zanim strona zniknie */
-  KFS.zapiszTeraz().finally(function () { location.replace("login.html"); });
+  /* Powloka nie zapisuje bazy: jej kopia jest z chwili logowania i nadpisalaby zmiany
+     zrobione od tego czasu w ekranach. Sesje usuwa ekran logowania na swiezej bazie. */
+  location.replace("login.html?wyloguj=1");
 });
 
 document.getElementById("gsearch").addEventListener("keydown", function (e) {
   if (e.key === "Enter" && this.value.trim()) {
-    document.getElementById("view").src = "strony/04-baza-klientow.html?q=" + encodeURIComponent(this.value.trim());
+    /* Wyszukiwarka szuka wsrod wszystkich klientow, nie tylko przed zlozeniem wniosku */
+    document.getElementById("view").src = "strony/04-baza-klientow.html" +
+      Nawigacja.zbudujZapytanie({ q: this.value.trim(), wnioski: "wszystkie" });
     ustawOkruszek(["Wyniki wyszukiwania"]);
   }
 });

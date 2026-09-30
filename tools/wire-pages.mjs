@@ -49,6 +49,7 @@ function lancuch(prefix, modul) {
     `<script src="${prefix}assets/db.js"></script>`,
     `<script src="${prefix}assets/lata.js"></script>`,
     `<script src="${prefix}assets/html.js"></script>`,
+    `<script src="${prefix}assets/statusy.js"></script>`,
     `<script src="${prefix}assets/nawigacja.js"></script>`,
     `<script src="${prefix}assets/tips.js"></script>`,
     `<script src="${prefix}assets/boot.js"${modul ? ` data-modul="${modul}"` : ""}></script>`

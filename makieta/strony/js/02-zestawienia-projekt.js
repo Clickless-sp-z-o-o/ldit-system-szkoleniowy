@@ -22,7 +22,7 @@ function pokazProjForm() {
     var i = DB.INSTYTUCJE.filter(function (x) { return x.id === s.is; })[0];
     return '<option value="' + esc(s.id) + '">' + esc((i ? i.nazwa : "") + " - " + s.nazwa + " (" + DB.fmtPLN(s.cena) + ")") + "</option>";
   }).join("");
-  var stOpts = STATUSY.map(function (o) { return "<option>" + esc(o) + "</option>"; }).join("");
+  var stOpts = Statusy.LISTA.map(function (o) { return "<option>" + esc(o) + "</option>"; }).join("");
   el.innerHTML =
     '<div class="small strong" style="margin-bottom:8px">Nowy projekt (wniosek)</div>' +
     '<div class="toolbar" style="flex-wrap:wrap;gap:8px;padding:0">' +
@@ -57,10 +57,10 @@ function wstawWniosek(id, numer, kl, szk, koszt, doplata, st) {
     id: id, numer: numer, rok: STAN_02.rokAktywny,
     klient_id: kl.id, instytucja_id: kl.is, pup_id: kl.pup, szkolenie_glowne_id: szk.id,
     /* Recznie wpisujemy koszt Z DOPLATA, koszt calkowity jest roznica (D-134).
-       Nowy projekt wchodzi do tabeli Wnioski od etapu 3 (D-146). */
-    koszt_calkowity_z_doplata: koszt + doplata, kwota_doplaty_dodatkowej: doplata, etap: 3,
+       Etap i statusy daje ta sama regula co zmiana statusu w tabeli (assets/statusy.js). */
+    koszt_calkowity_z_doplata: koszt + doplata, kwota_doplaty_dodatkowej: doplata, etap: st.etap,
     status_skladania: st.status_skladania, status_decyzji: st.status_decyzji,
-    status_finansowy: st.status_decyzji === "Pozytywna" ? "Oczekuje" : "Brak",
+    status_finansowy: st.status_finansowy,
     data_wplyniecia_formularza: dzis, data_wniosku: dzis   /* data faktury dopiero po wystawieniu faktury */
   });
 }
@@ -85,7 +85,7 @@ function zapiszNowyProjekt() {
   var kosztRaw = document.getElementById("pfKoszt").value;
   var koszt = kosztRaw === "" ? osob * szk.cena : parseInt(kosztRaw, 10) || 0;
   var doplata = parseInt(document.getElementById("pfDoplata").value, 10) || 0;
-  var st = mapStatus(document.getElementById("pfStatus").value);
+  var st = patchStatusu({}, document.getElementById("pfStatus").value);
   var numer = nastepnyNumerWRoku();
   var id = "PR-" + STAN_02.rokAktywny.slice(2) + "-" + String(numer).padStart(4, "0");
 

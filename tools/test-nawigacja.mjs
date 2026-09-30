@@ -114,8 +114,10 @@ console.log("\nKazdy wysylany parametr jest odczytywany");
 const lista04 = czytaj(join(JS, "04-baza-klientow-lista.js"));
 t.ok(/FILTRY_04 = \{[^}]*pup: "fPUP"/.test(lista04), "Baza danych czyta pup (usterka 1)");
 t.ok(/FILTRY_04 = \{[^}]*q: "q"/.test(lista04), "Baza danych czyta q (usterka 2)");
-t.ok(czytaj(join(JS, "05-nabory-tabela.js")).includes('"04-baza-klientow.html?pup="'), "Nabory wysylaja pup");
-t.ok(czytaj(join(ROOT, "makieta", "index.html")).includes('"strony/04-baza-klientow.html?q="'), "wyszukiwarka wysyla q");
+t.ok(czytaj(join(JS, "05-nabory-tabela.js")).includes('{ pup: id, wnioski: "wszystkie" }'),
+  "Nabory wysylaja pup i zdejmuja domyslny filtr Bazy (lista = liczba w kolumnie)");
+t.ok(czytaj(join(ROOT, "makieta", "index.html")).includes('{ q: this.value.trim(), wnioski: "wszystkie" }'),
+  "wyszukiwarka wysyla q i szuka wsrod wszystkich klientow");
 
 const dash = czytaj(join(JS, "01-dashboard-kolejki.js"));
 t.ok(dash.includes('zakladka: "faktury", status: "Po terminie"'), "dashboard otwiera Faktury po terminie (usterka 6)");
@@ -128,6 +130,37 @@ t.ok(!czytaj(join(JS, "08-administracja-prowizje.js")).includes('"Nadpisz"'), "A
 const zglo = czytaj(join(JS, "10-zgloszenia-lista.js"));
 t.ok(zglo.includes('"06-instytucje.html"') && czytaj(join(JS, "06-instytucje-lista.js")).includes('["id"]'),
   "karta podmiotu instytucji: Zgloszenia wysylaja id, Instytucje je czytaja (usterka 12)");
-t.ok(zglo.includes('"04-baza-klientow.html"'), "karta podmiotu klienta prowadzi do Bazy danych");
+t.ok(zglo.includes("Nawigacja.adresKlienta(klient.id)"), "karta podmiotu klienta prowadzi do karty klienta");
+
+/* --------------------- menu lat, karta klienta, Wstecz --------------------- */
+console.log("\nMenu lat, karta klienta i Wstecz");
+zaloguj("bartek@ldit.pl");
+const lataMenu = Lata.zLiczbami(DB);
+t.ok(lataMenu.length >= 3 && lataMenu.every((l) => typeof l.n === "number"), "lata do menu maja liczby wnioskow");
+t.rowne(lataMenu.filter((l) => l.rok !== Lata.NIEPRZYPISANE).reduce((s, l) => s + l.n, 0),
+  DB.WNIOSKI_WSZYSTKIE.filter((x) => x.rok).length, "suma licznikow lat = wnioski z rokiem");
+zaloguj("martyna@ldit.pl");
+t.rowne(Lata.zLiczbami(DB).filter((l) => l.rok !== Lata.NIEPRZYPISANE).reduce((s, l) => s + l.n, 0),
+  DB.WNIOSKI_WSZYSTKIE.filter((x) => x.rok).length, "pracownik widzi w menu liczby tylko ze swojego zakresu");
+t.rowne(N.adresKlienta("KL-1"), "19-klient.html?id=KL-1", "adres karty klienta");
+t.rowne(N.linkPowrotu("?powrot=" + encodeURIComponent("19-klient.html?id=KL-1")).etykieta, "Karta klienta",
+  "karta wniosku otwarta z karty klienta wraca na karte klienta");
+t.rowne(N.menuEkranu("19-klient.html"), "dofin", "karta klienta lezy pod Dofinansowaniami");
+t.rowne(N.bezpiecznyEkran("03-wniosek.html?id=X"), "03-wniosek.html?id=X", "Wstecz przyjmuje adres ekranu makiety");
+for (const zly of ["https://example.com/", "javascript:alert(1)", "99-nieznany.html", "../login.html", "03-wniosek.html?x=\"><b>"]) {
+  t.rowne(N.bezpiecznyEkran(zly), null, "Wstecz odrzuca adres: " + zly);
+}
+t.rowne(N.adresWnioskow({ rok: "2026", status: "Pozytywna", miesiac: "03" }), "02-zestawienia.html?rok=2026&status=Pozytywna&miesiac=03",
+  "adres listy wnioskow z filtrem z wykresu");
+
+console.log("\nKazdy filtr wysylany z wykresow jest czytany przez liste wnioskow");
+const wykres02 = czytaj(join(JS, "02-zestawienia-wykres.js"));
+const zrodlaWykresow = ["01-dashboard-kafelki.js", "01-dashboard-kolejki.js", "14-statystyki-biezacy.js",
+  "14-statystyki-szkolenia.js", "08-administracja-statystyki.js"].map((f) => czytaj(join(JS, f))).join("\n");
+const wysylane = new Set([...zrodlaWykresow.matchAll(/(?:link14|linkWnioskow01|linkStat\([^,]+,|adresWnioskow)\(?\s*\{([^}]*)\}/g)]
+  .flatMap((m) => [...m[1].matchAll(/(\w+):/g)].map((x) => x[1])));
+const czytane = ["rok", "inst", "pup", "status", "q", "is", "wn", ...[...wykres02.matchAll(/^  (\w+): \{/gm)].map((m) => m[1])];
+t.ok(wysylane.size >= 8, "znaleziono filtry wysylane z wykresow (" + [...wysylane].join(", ") + ")");
+t.ok([...wysylane].every((k) => czytane.includes(k)), "lista wnioskow czyta kazdy z nich");
 
 t.podsumuj();

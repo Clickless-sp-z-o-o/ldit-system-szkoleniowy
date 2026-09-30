@@ -5,111 +5,88 @@
 <title>Baza danych</title>
 <link rel="stylesheet" href="../assets/style.css">
 <link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
 <style>
   /* Wiersze klientow bez naboru wygaszone */
   tr.dim td { color: var(--ink-3); }
   /* Rozwiniete wnioski klienta */
   td.exp-cell { text-align:center; }
   .exp-btn { width:22px; height:22px; padding:0; font-weight:700; line-height:1; }
-  tr.wn-detail > td { background: var(--surface-2); padding: 0 0 0 40px; }
-  tr.wn-detail table.tbl { margin: 10px 40px 14px 0; background:#fff; border:1px solid var(--line); border-radius:var(--radius); }
-  tr.wn-detail table.tbl th { background: var(--surface-3); }
+  tr.wn-detail > td { background: var(--surface-2); padding: 0 0 0 36px; }
+  tr.wn-detail table.tbl { margin: 6px 24px 8px 0; background:#fff; border:1px solid var(--line); border-radius:var(--radius); }
+  tr.wn-detail table.tbl th { background: var(--surface-3); position: static; }
+  /* Podsumowanie naborow w jednej linii, kazda liczba ustawia filtr */
+  .podsum { display:flex; gap:14px; align-items:center; font-size:12.5px; color:var(--ink-2); }
+  .podsum a { color:inherit; text-decoration:none; }
+  .podsum a b { font-size:14px; }
+  .podsum a:hover b { color: var(--accent); }
 </style>
 </head>
 <body>
-<div class="page">
+<div class="page lista">
 
   <div class="page-head">
-    <div class="ph-text">
-      <h1 class="page-title">Baza danych
-        <span class="tip-mark" data-tip="Wszyscy klienci koncowi, jeden klient to jeden wiersz. Rozwin klienta plusem, zeby zobaczyc jego konkretne wnioski. Widok powiazany z naborami, priorytet po ostatnim dniu naboru (D-130).">i</span>
-      </h1>
-      <p class="page-desc">
-        Wszyscy klienci niezależnie od tego, czy wniosek już poszedł. Rozwiń klienta plusem, żeby zobaczyć
-        jego wnioski <span class="ref">D-128</span>. Sortowanie po dacie zakończenia naboru rosnąco, najpilniejsi
-        na górze <span class="ref">D-130</span>. Data wpłynięcia formularza rejestrowana automatycznie
-        <span class="ref">D-94</span>.
-      </p>
-    </div>
+    <h1 class="page-title">Baza danych</h1>
+    <span class="tip-mark" data-tip="Wszyscy klienci końcowi, jeden klient to jeden wiersz, klienta nigdy nie usuwamy (D-128). Domyślnie widać klientów przed złożeniem wniosku (Niezłożony, NW albo bez wniosku), filtr można zdjąć. Rozwiń klienta plusem, żeby zobaczyć jego wnioski, klik w wniosek otwiera kartę wniosku, klik w nazwę kartę klienta. Priorytet kontaktu: ostatni dzień naboru, sortowanie rosnąco (D-130). Data wpłynięcia formularza rejestrowana automatycznie (D-94). W Excelu zakładka nazywała się Niezłożone. Handlowiec IS tego widoku nie widzi (D-91).">i</span>
+    <div class="podsum" id="kpi"></div>
     <div class="ph-actions">
-      <button class="btn">Eksport</button>
-      <button class="btn primary" id="btnNowyKlient">+ Nowy klient</button>
+      <button class="btn sm">Eksport</button>
+      <button class="btn primary sm" id="btnNowyKlient">+ Nowy klient</button>
     </div>
   </div>
 
   <nav class="mod-tabs">
-    <a href="04-baza-klientow.html" class="on" data-tip="Baza danych: wszyscy klienci, klient = jeden wiersz, rozwijany plusem do wnioskow. Wszystkie wnioski, domyslnie bez rozliczonych. D-128.">Baza danych</a>
-    <a href="02-zestawienia.html" id="zakladkaWnioski" data-tip="Wnioski (projekty): tylko wnioski od etapu 3, kolorowane statusem. D-128. Licznik to liczba wierszy, ktore zobaczysz po kliknieciu: biezacy rok i te same filtry instytucji i urzedu.">Wnioski <span class="n" id="licznikWnioskow"></span></a>
-    <a href="13-terminy.html" data-tip="Kalendarz terminow szkolen per instytucja. D-142.">Terminy szkoleń</a>
+    <a href="04-baza-klientow.html" class="on" data-tip="Baza danych: klienci, klient = jeden wiersz, rozwijany plusem do wniosków. Licznik to klienci widoczni teraz, przy bieżących filtrach. D-128.">Baza danych <span class="n" id="licznikBazy"></span></a>
+    <a href="02-zestawienia.html" id="zakladkaWnioski" data-tip="Wnioski od etapu 3, kolorowane statusem. D-128. Licznik to liczba wierszy, które zobaczysz po kliknięciu: bieżący rok i te same filtry instytucji i urzędu.">Wnioski <span class="n" id="licznikWnioskow"></span></a>
+    <a href="13-terminy.html" data-tip="Kalendarz terminów szkoleń per instytucja. D-142.">Terminy szkoleń</a>
   </nav>
 
   <div class="card" style="padding:0">
-
-    <div class="card-body" style="padding-bottom:0">
-      <div class="note">
-        <b>Baza danych, jeden klient to jeden wiersz.</b> Zakładka pokazuje wszystkich klientów niezależnie
-        od tego, czy wniosek już poszedł. Klienta nigdy nie usuwamy, zostaje historia współpracy
-        <span class="ref">D-128</span>. Priorytet kontaktu wyznacza <b>ostatni dzień naboru</b>, dlatego lista
-        jest posortowana po kolumnie „Koniec naboru" rosnąco <span class="ref">D-130</span>. Rozwiń klienta
-        <b>plusem</b>, żeby zobaczyć jego wnioski. W bazie danych są <b>wszystkie</b> wnioski klienta, także te
-        sprzed etapu 3, których nie ma jeszcze w zakładce Wnioski. Domyślnie ukryte są już rozliczone, jest też
-        filtr po statusie wniosku.
-      </div>
-      <div class="grid g4" id="kpi"></div>
-    </div>
-
-    <div class="toolbar" style="margin-top:16px">
-      <input class="inp search" id="q" placeholder="Szukaj: NIP, nazwa klienta, urząd pracy...">
+    <div class="toolbar">
+      <input class="inp search" id="q" placeholder="Szukaj: NIP, klient, urząd...">
       <select class="inp" id="fIS"><option value="">Wszystkie instytucje</option></select>
       <select class="inp" id="fPUP"><option value="">Wszystkie urzędy</option></select>
       <select class="inp" id="fNab">
-        <option value="">Nabór: dowolny stan</option>
+        <option value="">Nabór: dowolny</option>
         <option>Nabór ogłoszony</option>
         <option>W trakcie kontaktu</option>
         <option>Brak naboru</option>
         <option>Po naborze</option>
       </select>
-      <select class="inp" id="fStatusWn" data-tip="Filtr po statusie WNIOSKU klienta (widoczny po rozwinieciu plusem). Domyslnie ukryte sa wnioski juz rozliczone. W bazie danych sa wszystkie wnioski, takze przed etapem 3.">
-        <option value="aktywne">Wnioski: aktywne (bez rozliczonych)</option>
-        <option value="wszystkie">Wnioski: wszystkie</option>
-        <option value="Czekamy">Wnioski: czekamy na decyzję</option>
-        <option value="Pozytywna">Wnioski: pozytywna</option>
-        <option value="Negatywna">Wnioski: negatywna</option>
-        <option value="Rezygnacja">Wnioski: rezygnacja</option>
-        <option value="Rozliczone">Wnioski: rozliczone</option>
+      <select class="inp" id="fStatusWn" data-tip="Filtr po statusie wniosków klienta. Domyślnie klienci przed złożeniem wniosku: bez wniosku albo z wnioskiem Niezłożony lub NW. Zmień na Wszyscy klienci, żeby zdjąć filtr.">
+        <option value="przed">Przed złożeniem wniosku</option>
+        <option value="wszystkie">Wszyscy klienci</option>
+        <option value="aktywne">Z wnioskiem aktywnym (bez rozliczonych)</option>
+        <option value="Czekamy">Wniosek: czekamy na decyzję</option>
+        <option value="Pozytywna">Wniosek: pozytywna</option>
+        <option value="Negatywna">Wniosek: negatywna</option>
+        <option value="Rezygnacja">Wniosek: rezygnacja</option>
+        <option value="Rozliczone">Wniosek: rozliczony</option>
       </select>
       <span class="sp"></span>
-      <span class="small muted" id="licz"></span>
-    </div>
-
-    <div class="toolbar" style="background:#fff;border-bottom:1px solid var(--line)">
       <div class="legend">
-        <span><i style="background:var(--pos-bg);border-color:#86efac"></i>nabór trwa, kontakt priorytetowy</span>
-        <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>nabór prognozowany</span>
-        <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>brak naboru w tym urzędzie</span>
+        <span><i style="background:var(--pos-bg);border-color:#86efac"></i>nabór trwa</span>
+        <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>prognoza</span>
       </div>
-      <span class="sp"></span>
-      <span class="small muted">Kolejność wierszy wynika z daty zakończenia naboru, nie z numeru klienta.</span>
+      <span class="small muted" id="licz"></span>
     </div>
 
     <div id="klientForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
 
-    <div class="tbl-wrap" style="max-height:calc(100vh - 420px);overflow-y:auto">
+    <div class="lista-tabela">
       <table class="tbl">
         <thead>
           <tr>
-            <th style="width:30px"></th>
-            <th style="width:44px">Nr<span class="tip-mark" data-tip="Numer klienta nadawany kolejno. To identyfikator porzadkowy, a nie kolejnosc na liscie: kolejnosc wyznacza koniec naboru, nie numer klienta.">i</span></th>
-            <th>Klient<span class="tip-mark" data-tip="Nazwa firmy klienta koncowego. Jeden klient to jeden wiersz. Rozwin plusem, zeby zobaczyc wnioski.">i</span></th>
-            <th>NIP</th>
-            <th>Wielkość<span class="tip-mark" data-tip="Wielkosc przedsiebiorstwa decyduje o progu dofinansowania KFS (tabela progow, D-131). Mikro to do 9 osob na umowie o prace.">i</span></th>
-            <th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa obslugujaca klienta. Instytucje sa wobec siebie konkurencyjne, kazda widzi tylko swoich klientow.">i</span></th>
-            <th>Urząd pracy<span class="tip-mark" data-tip="Powiatowy urzad pracy wlasciwy dla klienta. To urzad oglasza nabor KFS, wiec od niego zaleza daty i priorytet kontaktu.">i</span></th>
-            <th>Status naboru<span class="tip-mark" data-tip="Stan naboru w urzedzie klienta: naeor ogloszony, w trakcie kontaktu, brak naboru z prognoza daty albo po naborze. Widok powiazany z naborami prognozowanymi (D-90).">i</span></th>
-            <th class="nowrap"><b>Koniec naboru</b><span class="tip-mark" data-tip="Ostatni dzien naboru w urzedzie klienta. Ta data wyznacza priorytet: lista sortowana po niej rosnaco (D-130). Edycja inline w komorce, jak w Excelu.">i</span></th>
-            <th class="c">Kolejny nabór<span class="tip-mark" data-tip="Flaga tak/nie: czy klient jest zainteresowany kolejnym naborem (D-130). Odznaczenie na bialo wypisuje klienta z biezacego filtra naboru.">i</span></th>
-            <th class="c">Zostało<span class="tip-mark" data-tip="Ile dni do konca naboru liczac od dzisiaj. Do 3 dni na czerwono, do 10 dni na zolto. Wartosc ujemna oznacza nabor juz zakonczony.">i</span></th>
-            <th class="c">Wnioski<span class="tip-mark" data-tip="Liczba wnioskow klienta (rok biezacy i poprzedni). Rozwin plusem, zeby zobaczyc je kolorowane statusem. Klient moze wnioskowac kilka razy w roku.">i</span></th>
+            <th style="width:28px"></th>
+            <th style="width:36px">Nr<span class="tip-mark" data-tip="Numer klienta nadawany kolejno. Kolejność listy wyznacza koniec naboru, nie numer.">i</span></th>
+            <th>Klient</th>
+            <th>Wielk.<span class="tip-mark" data-tip="Wielkość przedsiębiorstwa decyduje o progu dofinansowania (D-131). Mikro to do 9 osób na umowie o pracę.">i</span></th>
+            <th>Instytucja</th>
+            <th>Urząd</th>
+            <th>Nabór<span class="tip-mark" data-tip="Stan naboru w urzędzie klienta (D-90).">i</span></th>
+            <th class="nowrap">Koniec naboru<span class="tip-mark" data-tip="Ostatni dzień naboru i ile dni zostało. Wyznacza priorytet, lista sortowana rosnąco (D-130). Do 3 dni czerwony, do 10 żółty.">i</span></th>
+            <th class="c">Kolejny<span class="tip-mark" data-tip="Czy klient jest zainteresowany kolejnym naborem (D-130).">i</span></th>
+            <th class="c">Wnioski</th>
             <th>Kontakt</th>
             <th></th>
           </tr>
@@ -117,13 +94,6 @@
         <tbody id="body"></tbody>
       </table>
     </div>
-  </div>
-
-  <div class="note open">
-    <b>Do rozstrzygnięcia:</b> w Excelu ta zakładka nazywa się „Niezłożone" i nazwa jest myląca,
-    bo zawiera także klientów ze złożonymi wnioskami. Klient sam zaproponował nazwę „Baza danych"
-    (<code>docs/16-slownik.md</code>). Nierozstrzygnięte jest też, czy ten widok zobaczy instytucja szkoleniowa
-    <span class="ref p">P-34</span>. Handlowiec IS na pewno nie <span class="ref">D-91</span>.
   </div>
 
 </div>
@@ -144,10 +114,12 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="dofin"></script>
 <script src="js/04-baza-klientow-dane.js"></script>
+<script src="js/04-baza-klientow-wiersze.js"></script>
 <script src="js/04-baza-klientow-lista.js"></script>
 <script src="js/04-baza-klientow-formularz.js"></script>
 <script type="text/kfs-strona">

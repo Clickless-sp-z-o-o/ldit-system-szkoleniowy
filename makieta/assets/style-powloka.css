@@ -1,0 +1,43 @@
+/* ============================================================================
+   Style powloki makiety (index.html): podpowiedz roli, okruszek, licznik
+   akceptacji, przycisk Wstecz i podmenu Dofinansowan (lata, pod nimi instytucje).
+   ============================================================================ */
+
+.role-hint {
+  position: fixed; right: 18px; bottom: 18px; z-index: 50;
+  background: var(--brand-900); color: #cbd5e1;
+  border-radius: var(--radius); padding: 10px 13px;
+  font-size: 12px; max-width: 320px; box-shadow: var(--shadow-lg);
+  line-height: 1.5; display: none;
+}
+.role-hint.show { display: block; }
+.role-hint b { color: #fff; }
+.role-hint .x { float: right; cursor: pointer; color: #64748b; margin-left: 10px; }
+.crumb .sep { margin: 0 6px; }
+.akceptacje {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line);
+  background: #fff; cursor: pointer; font-size: 15px; color: var(--ink-2);
+}
+.akceptacje .n {
+  position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: var(--neg-ink); color: #fff; font-size: 11px; font-weight: 700;
+  line-height: 18px; text-align: center;
+}
+
+/* Podmenu Dofinansowan: lata (poziom 2) i instytucje roku (poziom 3) */
+.nav-sub .nav-item.sub-rok { padding-left: 34px; gap: 6px; color: #cbd5e1; }
+.nav-sub .nav-item.sub-rok .chev,
+.nav-sub .nav-item.sub-rok .chev-miejsce { margin-left: 0; width: 10px; flex: 0 0 10px; }
+.nav-sub .nav-item.sub-rok .n {
+  margin-left: auto; font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums;
+}
+.nav-sub2 { display: none; }
+.nav-sub2.open { display: block; }
+.nav-sub .nav-sub2 .nav-item { padding-left: 56px; font-size: 12.5px; }
+.nav-sub .nav-item.dodaj-rok { padding-left: 50px; font-size: 12.5px; color: #64748b; }
+.nav-sub .nav-item.dodaj-rok:hover { color: #fff; }
+
+/* Wstecz: historia ekranow w ramce, prowadzona przez powloke */
+.wstecz { margin-right: 10px; }
+.wstecz[disabled] { opacity: .45; cursor: default; }

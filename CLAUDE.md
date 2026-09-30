@@ -155,6 +155,7 @@ node tools/test-walidacja.mjs        # walidacja danych na granicy zapisu
 node tools/test-serwer.mjs          # lokalny serwer bazy
 node tools/test-nawigacja.mjs       # linki między ekranami, filtry w adresie, powrót z karty
 node tools/test-zapis.mjs           # zapis natychmiastowy przed przejściem (logowanie, wylogowanie)
+node tools/test-statusy.mjs         # status, rozliczenie i etap wniosku zmieniają się razem
 ```
 
 Po zmianie schematu bazy przebuduj ją: `node tools/build-sqlite.mjs`.

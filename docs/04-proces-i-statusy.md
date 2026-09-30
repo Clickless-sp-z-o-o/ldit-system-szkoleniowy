@@ -112,6 +112,22 @@ stateDiagram-v2
 | `Zafakturowany` | brak |
 | `Rozliczone` | **granatowy** (z delikatnym fioletem) |
 
+### Status, rozliczenie i etap zmieniają się razem [D-218]
+
+Każda akcja na wniosku (zmiana statusu w komórce Zestawień, operacja masowa, przycisk na karcie wniosku) zapisuje pełny zestaw kolumn: status składania, decyzję, rozliczenie i etap procesu [D-146]. Regułę trzyma `makieta/assets/statusy.js`, zgodnie z danymi z Excela klienta:
+
+| Akcja | Status składania | Decyzja | Rozliczenie | Etap |
+|---|---|---|---|---|
+| Niezłożony | Niezłożony | brak | Brak | 3 |
+| NW | NW | brak | Brak | 3 |
+| Złożony w urzędzie | Złożony | brak | Brak | 5 |
+| Decyzja negatywna | Złożony | Negatywna | Brak | 6 |
+| Decyzja pozytywna | Złożony | Pozytywna | Oczekuje | 7 |
+| Zafakturowany (tylko po pozytywnej) | bez zmian | bez zmian | Zafakturowany | 9 |
+| Rozliczony (tylko po pozytywnej) | bez zmian | bez zmian | Rozliczone | 10 |
+
+Złożenie i decyzja wpisują datę wniosku, gdy jej brak. Ponowna decyzja pozytywna nie cofa rozliczenia ani etapu. Zmiana etapu trafia do przebiegu wniosku, zmiana statusu do rejestru aktywności [D-116].
+
 ### Diagram stanów: trzy wymiary statusu razem
 
 Poniższy diagram łączy wszystkie trzy statusy w jednym widoku, jako trzy równoległe regiony jednego stanu "Wniosek". Nie zakłada to, że w systemie będzie to jeden łańcuch, to wciąż zależy od rozstrzygnięcia [P-42]. Diagram pokazuje tylko przejścia potwierdzone w dokumentacji, bez łączenia strzałkami statusu składania ze statusem decyzji, bo ta zależność nie została jednoznacznie opisana na warsztacie.

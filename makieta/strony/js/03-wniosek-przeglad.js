@@ -4,16 +4,16 @@
 function renderDane() {
   var wiersze = [
     ["Numer klienta", "<b>" + esc(STAN_03.w.nr) + "</b> <span class='small muted'>(trafia na fakturę)</span>"],
-    ["Klient", esc(STAN_03.w.klNazwa)],
+    ["Klient", '<a class="link-rekordu" href="' + esc(Nawigacja.adresKlienta(STAN_03.w.klient)) + '">' + esc(STAN_03.w.klNazwa) + '</a>'],
     ["NIP", '<span class="mono">' + esc(STAN_03.w.nip) + '</span>'],
-    ["Instytucja", esc(STAN_03.w.isNazwa)],
+    ["Instytucja", Auth.widziModul("inst")
+      ? '<a class="link-rekordu" href="06-instytucje.html' + esc(Nawigacja.zbudujZapytanie({ id: STAN_03.w.is })) + '">' + esc(STAN_03.w.isNazwa) + '</a>'
+      : esc(STAN_03.w.isNazwa)],
     ["Urząd pracy", esc(STAN_03.w.pupNazwa)],
     ["Opiekun", esc(STAN_03.w.opiekun)],
     ["Data formularza", esc(STAN_03.w.dataFormularza) + ' <span class="tag mute">auto</span>'],
     ["Data wniosku", esc(STAN_03.w.dataWniosku) || "brak"],
-    ["Data faktury", (esc(STAN_03.w.dataFaktury) || "brak") + ' <span class="small muted">wyznacza okres prowizji</span>'],
-    ["Status składania", esc(STAN_03.w.statusSkl)],
-    ["Status decyzji", esc(STAN_03.w.statusDec) || "brak"]
+    ["Data faktury", (esc(STAN_03.w.dataFaktury) || "brak") + ' <span class="small muted">wyznacza okres prowizji</span>']
   ];
   el("dane").innerHTML = wiersze.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
   document.getElementById("tytul").textContent = STAN_03.w.id + " · " + STAN_03.w.klNazwa;

@@ -3,15 +3,9 @@
 
 var LIMIT_WIERSZY_02 = 140;
 
+/* Widok jednej instytucji z menu: kolumna Instytucja bylaby taka sama w kazdym wierszu */
 function podpiszWymuszonaInstytucje() {
-  var inst = STAN_02.forcedInst;
-  document.querySelector(".page-title").textContent = "Zestawienie " + STAN_02.rokAktywny + " · " + inst.nazwa;
-  var pd = document.querySelector(".page-desc");
-  if (pd) pd.innerHTML = "Widok ograniczony do jednej instytucji. Wyszukiwarka, filtry i eksport zwracają " +
-    "wyłącznie wiersze tej instytucji. Filtr jest zakładany w warstwie danych makiety, nie tylko w tabeli " +
-    "<span class=\"ref\">D-35</span>.";
-  var notaZbiorcza = document.querySelector(".note.open");
-  if (notaZbiorcza) notaZbiorcza.style.display = "none";
+  document.querySelectorAll("th.kol-is").forEach(function (th) { th.style.display = "none"; });
 }
 
 function wypelnijFiltry02() {
@@ -26,7 +20,7 @@ function wypelnijFiltry02() {
     selPUP.innerHTML += '<option value="' + esc(p.id) + '">' + esc(p.nazwa) + '</option>';
   });
   var selStatus = document.getElementById("fStatus");
-  STATUSY.forEach(function (s) {
+  Statusy.LISTA.forEach(function (s) {
     selStatus.innerHTML += '<option>' + esc(s) + '</option>';
   });
 }
@@ -38,40 +32,44 @@ function filtrujWnioski() {
   return STAN_02.W.filter(function (w) {
     if (fis && w.is !== fis) return false;
     if (fpup && w.pup !== fpup) return false;
-    if (fst && statusValue(w) !== fst) return false;
+    if (fst && Statusy.wartosc(w) !== fst) return false;
+    if (!pasujeDoWykresu(w)) return false;
     if (!q) return true;
     var h = [w.klNazwa, w.nip, w.pupNazwa, w.szkolenie, w.isNazwa].join(" ").toLowerCase();
     return h.indexOf(q) >= 0;
   });
 }
 
+/* Klik w wiersz otwiera karte wniosku, klik w nazwe klienta jego karte. Pola edycji
+   w wierszu (status, zaznaczenie, usuniecie) nie otwieraja karty. */
 function wierszWniosku(w) {
   var brak = '<span class="muted">&mdash;</span>';
-  return '<tr class="' + klasaWiersza(w) + '" data-id="' + esc(w.id) + '">' +
+  var ukryjIS = STAN_02.forcedInst ? ' style="display:none"' : "";
+  return '<tr class="' + Statusy.klasaWiersza(w) + '" data-id="' + esc(w.id) + '">' +
     '<td><input type="checkbox" class="ck"></td>' +
     '<td class="strong">' + esc(w.nr) + '</td>' +
-    '<td class="strong nowrap">' + esc(w.klNazwa) + '<div class="small muted">' + esc(w.id) + '</div></td>' +
-    '<td class="mono muted">' + esc(w.nip) + '</td>' +
-    '<td class="nowrap">' + esc(w.isNazwa) + '</td>' +
-    '<td class="nowrap">' + esc(w.szkolenie) + '</td>' +
-    '<td class="nowrap muted">' + esc(w.pupNazwa) + '</td>' +
+    '<td class="strong"><div class="tnij" title="' + esc(w.klNazwa) + '"><a class="link-rekordu" href="' +
+      esc(Nawigacja.adresKlienta(w.klient)) + '">' + esc(w.klNazwa) + '</a></div>' +
+      '<span class="pod mono">' + esc(w.nip) + '</span></td>' +
+    '<td class="kol-is"' + ukryjIS + '><div class="tnij" title="' + esc(w.isNazwa) + '">' + esc(w.isNazwa) + '</div></td>' +
+    '<td><div class="tnij w" title="' + esc(w.szkolenie) + '">' + esc(w.szkolenie) + '</div></td>' +
+    '<td class="nowrap muted">' + esc(skrocUrzad(w.pupNazwa)) + '</td>' +
     '<td class="c">' + w.osobZakw + (w.osob !== w.osobZakw ? '<span class="muted">/' + w.osob + '</span>' : "") + '</td>' +
-    '<td class="num">' + DB.fmtPLN(w.wartosc) + '</td>' +
     '<td class="num strong">' + (w.przyznano != null ? DB.fmtPLN(w.przyznano) : brak) + '</td>' +
     '<td class="num">' + (w.kosztCalkowity != null ? DB.fmtPLN(w.kosztCalkowity) : brak) + '</td>' +
     '<td>' + selectStatus(w) + '</td>' +
-    '<td>' + tagRozl(w) + '</td>' +
-    '<td class="right"><div class="btn-row" style="justify-content:flex-end">' +
-      '<button class="btn xs" onclick="otworz(\'' + escJs(w.id) + '\')">Otwórz</button>' +
-      '<button class="btn xs" onclick="usunWniosek(\'' + escJs(w.id) + '\')">Usuń</button>' +
-    '</div></td>' +
+    '<td>' + Statusy.znacznikRozliczenia(w) + '</td>' +
+    '<td class="right"><button class="btn xs" title="Usuń wniosek" onclick="usunWniosek(\'' + escJs(w.id) + '\')">&times;</button></td>' +
     '</tr>';
 }
+
+/* "PUP Poznań" -> "Poznań": w kolumnie Urzad prefiks jest zawsze ten sam */
+function skrocUrzad(nazwa) { return String(nazwa || "").replace(/^PUP\s+/, ""); }
 
 function render() {
   var lista = filtrujWnioski();
   document.getElementById("licz").innerHTML =
-    "<b>" + lista.length + "</b> z " + STAN_02.W.length + " projektów &middot; wartość " +
+    "<b>" + lista.length + "</b> z " + STAN_02.W.length + " &middot; wartość " +
     DB.fmtPLN(lista.reduce(function (s, w) { return s + w.wartosc; }, 0));
 
   document.getElementById("body").innerHTML = lista.slice(0, LIMIT_WIERSZY_02).map(wierszWniosku).join("");
@@ -103,16 +101,20 @@ function wartosciFiltrow02() {
   var w = { is: STAN_02.forcedInst ? STAN_02.forcedInst.nazwa : "", rok: STAN_02.rokAktywny };
   var pola = filtryZAdresu02();
   Object.keys(pola).forEach(function (p) { w[p] = document.getElementById(pola[p]).value; });
-  return w;
+  return Object.assign(w, STAN_02.wykres);
 }
 
-/* Licznik "Wnioski (n)" = wiersze widoczne teraz. Zakladka Baza danych dostaje
-   te same filtry instytucji i urzedu. */
+/* Licznik "Wnioski (n)" = wiersze widoczne teraz. Zakladka Baza danych dostaje te same
+   filtry instytucji i urzedu, a jej licznik to klienci, ktorych Baza pokaze domyslnie:
+   przed zlozeniem wniosku (Statusy.klientPrzedZlozeniem). */
 function odswiezZakladki02(widocznych) {
+  var fis = document.getElementById("fIS").value, fpup = document.getElementById("fPUP").value;
   document.getElementById("licznikWnioskow").textContent = widocznych;
-  document.getElementById("zakladkaBaza").href = "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({
-    inst: document.getElementById("fIS").value, pup: document.getElementById("fPUP").value
-  });
+  document.getElementById("zakladkaBaza").href = "04-baza-klientow.html" + Nawigacja.zbudujZapytanie({ inst: fis, pup: fpup });
+  var poKliencie = Statusy.wnioskiPoKlientach(DB.WNIOSKI_WSZYSTKIE);
+  document.getElementById("licznikBazy").textContent = DB.KLIENCI.filter(function (k) {
+    return (!fis || k.is === fis) && (!fpup || k.pup === fpup) && Statusy.klientPrzedZlozeniem(poKliencie[k.id] || []);
+  }).length;
 }
 
 /* Po powrocie z karty wiersz wniosku jest wyrozniony i widoczny na ekranie */
@@ -140,15 +142,24 @@ function masowo(status) {
     if (tr && tr.dataset.id) ids.push(tr.dataset.id);
   });
   if (!ids.length) { alert("Zaznacz wiersze, którym chcesz nadać status."); return; }
-  var patch = mapStatus(status);
   STAN_02.batch = true;
-  ids.forEach(function (id) {
-    var w = znajdzWniosek(id);
-    Store.update("wnioski", id, patch);
-    logZmiana(id, "Status decyzji", w ? statusValue(w) : "", status);
-  });
-  STAN_02.batch = false;
-  STAN_02.W = budujW(); render();
+  /* Odmowa straznika w polowie listy nie moze zostawic ekranu w trybie operacji masowej */
+  try {
+    ids.forEach(function (id) {
+      var w = znajdzWniosek(id);
+      Statusy.zmien(w, Statusy.akcjaDlaStatusu(status), ktoZmienia());
+      logZmiana(id, "Status decyzji", Statusy.wartosc(w), status);
+    });
+  } finally {
+    STAN_02.batch = false;
+    STAN_02.W = budujW(); render();
+  }
+}
+
+function klikWiersza(e) {
+  if (e.target.closest("input, select, button, a")) return;
+  var tr = e.target.closest("tr[data-id]");
+  if (tr) otworz(tr.dataset.id);
 }
 
 function otworz(id) {
@@ -173,14 +184,19 @@ function inicjuj02() {
     document.getElementById(id).addEventListener("change", render);
   });
   document.getElementById("btnNowyProjekt").addEventListener("click", pokazProjForm);
+  document.getElementById("body").addEventListener("click", klikWiersza);
   /* Odswiezanie po zmianie danych (poza operacjami masowymi) */
   window.addEventListener("db:changed", function () {
     if (STAN_02.batch) return;
-    STAN_02.W = budujW(); rysujLata(); render();
+    STAN_02.W = budujW(); render();
   });
-  var wn = Nawigacja.odczytajZapytanie(location.search, ["wn"]).wn;
+  /* Parametry jednorazowe czytamy, zanim render() zapisze filtry w adresie i je usunie */
+  var jednorazowe = Nawigacja.odczytajZapytanie(location.search, ["wn", "dodajRok"]);
   Nawigacja.wczytajFiltry(filtryZAdresu02());
+  wczytajFiltryWykresu();
+  rysujChipyWykresu();
 
   odswiezRok();
-  if (wn) pokazWierszPowrotu(wn);
+  if (jednorazowe.wn) pokazWierszPowrotu(jednorazowe.wn);
+  if (jednorazowe.dodajRok && Auth.moze("zestawienia.dodawanie_lat")) pokazDodajRok();
 }

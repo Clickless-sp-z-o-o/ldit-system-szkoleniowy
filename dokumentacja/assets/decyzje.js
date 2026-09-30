@@ -155,44 +155,6 @@ window.DECYZJE = [
   /* ============ MAPA ZAKLADEK: DOFINANSOWANIA, BAZA KLIENTOW, WNIOSKI ============ */
 
   {
-    id: "Z-04",
-    obszar: "Mapa zakładek",
-    waga: "wysoka",
-    kto: "klient",
-    blokuje: "mapa menu, screeny Dofinansowań",
-    pytanie: "Jak nazywa się i jak jest ułożone menu dla Dofinansowań i Zestawień",
-    kontekst: "Dokumentacja (docs/11) ma dwie pozycje menu: Dofinansowania (rozwija instytucje) i Zestawienia (drzewo lat). Makieta scala je w jedną pozycję „Dofinansowania”, a lata są paskami nad tabelą. Ten sam ekran nazywa się w makiecie czterema sposobami: „Dofinansowania” w menu, „Zestawienie 2026” w tytule, „Wnioski” na zakładce i „Projekty” na pasku ekranu Terminów. Klient żąda zachowania nazw z Excela [D-55]. Rekomendacja wykonawcy: wariant A, z jednoznaczną nazwą „Wnioski” na zakładce i „Zestawienie [rok]” w tytule wszędzie.",
-    opcje: [
-      {
-        id: "a",
-        label: "Jedna pozycja „Dofinansowania” (rozwija: Wszystkie instytucje i lista instytucji), w środku zakładki Wnioski, Baza klientów, Terminy szkoleń; lata jako arkusze nad tabelą; tytuł „Zestawienie 2026”",
-        rekomendowana: true,
-        skutki: [
-          { typ: "zysk", t: "Najmniej pozycji w menu, całe miejsce pracy operacyjnej w jednym" },
-          { typ: "koszt", t: "Nazwa „Zestawienia” znika z menu i zostaje w tytule i na paskach lat" }
-        ]
-      },
-      {
-        id: "b",
-        label: "Dwie pozycje jak w docs/11: Dofinansowania (lista instytucji) i Zestawienia (2025 / 2026 / 2027)",
-        skutki: [
-          { typ: "zysk", t: "Dokładnie jak w słowach klienta i w Excelu" },
-          { typ: "koszt", t: "Pozycji o jedną więcej, a instytucja i rok to dwa niezależne wybory do połączenia" },
-          { typ: "ryzyko", t: "Niejasne, czym różni się „Zestawienia” od „Dofinansowań”, skoro to ta sama tabela z innym filtrem" }
-        ]
-      },
-      {
-        id: "c",
-        label: "Jedna pozycja „Zestawienia” (lata), instytucja tylko jako filtr w tabeli, bez listy w menu",
-        skutki: [
-          { typ: "zysk", t: "Bardzo proste menu" },
-          { typ: "ryzyko", t: "Odwraca [D-112] i [D-127], klient chciał listy instytucji w menu" }
-        ]
-      }
-    ]
-  },
-
-  {
     id: "Z-05",
     obszar: "Mapa zakładek",
     waga: "niska",
@@ -336,44 +298,6 @@ window.DECYZJE = [
         skutki: [
           { typ: "zysk", t: "Skalowalne na kolejne lata" },
           { typ: "ryzyko", t: "Odstępstwo od „arkuszy” Excela [D-129], zespół widzi rok jako zakładkę" }
-        ]
-      }
-    ]
-  },
-
-  {
-    id: "Z-09",
-    obszar: "Mapa zakładek",
-    waga: "wysoka",
-    kto: "klient",
-    blokuje: "screeny Bazy klientów, karty klienta, mapa linków",
-    pytanie: "Czy klient ma własną kartę (osobny ekran)",
-    kontekst: "Dokumentacja mówi o „karcie klienta” z korespondencją [D-52] i danymi stałymi [D-54], ale makieta jej nie ma: przycisk Edytuj w Bazie otwiera formularz, a korespondencja jest tylko na karcie wniosku. Przy ok. 400 mailach na klienta i wielu wnioskach potrzeba miejsca, do którego prowadzą nazwa klienta na każdej liście i wynik wyszukiwania. Rekomendacja wykonawcy: wariant A.",
-    opcje: [
-      {
-        id: "a",
-        label: "Tak, ekran „Klient” z trzema zakładkami: Dane i kontakty, Projekty, Korespondencja i notatki",
-        rekomendowana: true,
-        skutki: [
-          { typ: "zysk", t: "Jedno miejsce na historię klienta i cel każdego linku z nazwy klienta" },
-          { typ: "koszt", t: "Nowy ekran do zaprojektowania i utrzymania" },
-          { typ: "wymusza", t: "Korespondencja przypisana do klienta po adresie e-mail [D-178]" }
-        ]
-      },
-      {
-        id: "b",
-        label: "Nie, klient to rozwinięty wiersz w Bazie, korespondencja tylko na karcie wniosku",
-        skutki: [
-          { typ: "zysk", t: "Zero nowych ekranów" },
-          { typ: "ryzyko", t: "Mail niedopasowany do wniosku nie ma gdzie leżeć, a 400 maili nie zmieści się w rozwinięciu wiersza" }
-        ]
-      },
-      {
-        id: "c",
-        label: "Panel boczny wysuwany z listy z danymi klienta, skrótem projektów i maili",
-        skutki: [
-          { typ: "zysk", t: "Nie opuszcza się listy, dobre przy pracy seryjnej" },
-          { typ: "koszt", t: "Trzeci sposób pokazywania rekordu obok listy i karty" }
         ]
       }
     ]

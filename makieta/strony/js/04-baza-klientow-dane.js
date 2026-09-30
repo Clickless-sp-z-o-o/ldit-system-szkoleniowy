@@ -36,13 +36,6 @@ function nazwaIS(id) {
   return i ? i.nazwa : "-";
 }
 
-/* Wszystkie wnioski klienta ze wszystkich lat (D-128), pogrupowane po kliencie */
-function wnioskiPoKlientach() {
-  var mapa = {};
-  DB.WNIOSKI_WSZYSTKIE.forEach(function (w) { (mapa[w.klient] = mapa[w.klient] || []).push(w); });
-  return mapa;
-}
-
 /* Licznik przy zakladce Wnioski pokazuje dokladnie tyle wierszy, ile zobaczysz po kliknieciu:
    domyslny rok Zestawien i te same filtry instytucji i urzedu, ktore link przenosi dalej */
 function odswiezLicznikWnioskow() {
@@ -76,48 +69,28 @@ function budujK() {
   }).sort(function (a, b) { return a.klucz - b.klucz || a.kl.nr - b.kl.nr; });
 }
 
-/* ---------- Status wniosku (spojnie z 02-zestawienia, paleta 5 stanow) ---------- */
-function statusValue(w) {
-  if (w.statusDec === "Pozytywna") return "Pozytywna";
-  if (w.statusDec === "Negatywna") return "Negatywna";
-  if (w.statusSkl === "Złożony") return "Czekamy";
-  if (w.statusSkl === "NW") return "NW";
-  if (w.statusSkl === "Rezygnacja") return "Rezygnacja";
-  return "Niezłożony";
-}
-function klasaWiersza(w) {
-  if (w.rozliczenie === "Rozliczone") return "row-set";
-  if (w.statusDec === "Pozytywna") return "row-pos";
-  if (w.statusDec === "Negatywna") return "row-neg";
-  if (w.statusSkl === "Rezygnacja") return "row-rez";
-  if (w.statusSkl === "Złożony") return "row-czekamy";
-  return "";
-}
-function tagStatusWn(w) {
-  var v = statusValue(w);
-  var map = { Pozytywna: "st-poz", Negatywna: "st-neg", Czekamy: "st-czekamy", NW: "warn", Rezygnacja: "st-rez", Niezłożony: "mute" };
-  return '<span class="tag ' + map[v] + ' dot">' + esc(v) + '</span>';
-}
-function tagRozl(w) {
-  if (w.rozliczenie === "Rozliczone") return '<span class="tag st-set">Rozliczone</span>';
-  if (w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
-  if (w.rozliczenie === "Oczekuje") return '<span class="tag mute">Oczekuje</span>';
-  return '<span class="muted small">&mdash;</span>';
-}
-/* Filtr statusu wniosku, domyslnie ukrywa rozliczone */
-function filtrujWnioski(list) {
+/* ---------- Filtr statusu: klienci i ich rozwiniete wnioski ----------
+   Domyslnie "przed": klienci bez wniosku albo z wnioskiem Niezlozony / NW. */
+function wnioskiWFiltrze(list) {
   var f = document.getElementById("fStatusWn").value;
   return list.filter(function (w) {
+    if (f === "przed") return Statusy.przedZlozeniem(w);
     if (f === "aktywne") return w.rozliczenie !== "Rozliczone";
     if (f === "wszystkie") return true;
     if (f === "Rozliczone") return w.rozliczenie === "Rozliczone";
-    return statusValue(w) === f;
+    return Statusy.wartosc(w) === f;
   });
+}
+function klientWFiltrzeStatusu(r) {
+  var f = document.getElementById("fStatusWn").value;
+  if (f === "wszystkie") return true;
+  if (f === "przed") return Statusy.klientPrzedZlozeniem(r.wnioski);
+  return wnioskiWFiltrze(r.wnioski).length > 0;
 }
 
 /* Przebudowa danych po starcie i po kazdej zmianie bazy */
 function przebuduj04() {
-  STAN_04.WN_BY_KL = wnioskiPoKlientach();
+  STAN_04.WN_BY_KL = Statusy.wnioskiPoKlientach(DB.WNIOSKI_WSZYSTKIE);
   STAN_04.K = budujK();
   renderKPI(); render();
 }

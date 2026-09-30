@@ -13,7 +13,7 @@ function renderSzkolenia(W) {
   var listaS = grupujSzkolenia(W);
   var maxW = listaS.length ? listaS[0].wart : 1;
   document.getElementById("szkolenia").innerHTML = listaS.slice(0, 10).map(function (r) {
-    return '<tr><td class="strong">' + esc(r.nazwa) + '</td><td class="muted">' + esc(r.is) + '</td>' +
+    return '<tr' + link14({ szkolenie: r.nazwa }) + '><td class="strong">' + esc(r.nazwa) + '</td><td class="muted">' + esc(r.is) + '</td>' +
       '<td class="num">' + r.n + '</td><td class="num">' + r.ucz + '</td><td class="num">' + DB.fmtPLN(r.wart) + '</td>' +
       '<td style="width:130px"><div class="progress"><i style="width:' + Math.round(r.wart / maxW * 100) + '%"></i></div></td></tr>';
   }).join("");
@@ -28,11 +28,12 @@ function renderWidokInstytucji(WSZYSTKIE, fis) {
   var odbyte = DB.TERMINY.filter(function (t) { return t.is === inst.id && t.status === "Odbyty" && t.od.slice(0, 4) === STAN_14.rok; }).length;
   document.getElementById("kpiIS").innerHTML =
     kartaKpi("Szkolenia zrealizowane", odbyte, "terminy ze statusem Odbyty w roku " + STAN_14.rok) +
-    kartaKpi("Łączna wartość", DB.fmtPLN(sumaPola(pozIS, "wartosc")), "projektów z decyzją pozytywną") +
+    kartaKpi("Łączna wartość", DB.fmtPLN(sumaPola(pozIS, "wartosc")), "projektów z decyzją pozytywną", false,
+        link14({ inst: inst.id, status: "Pozytywna" })) +
     kartaKpi("Skuteczność moich klientów", (wIS.length ? Math.round(pozIS.length / wIS.length * 100) : 0) + "%",
-        pozIS.length + " z " + wIS.length + " projektów");
+        pozIS.length + " z " + wIS.length + " projektów", false, link14({ inst: inst.id }));
   document.getElementById("mojeSzkolenia").innerHTML = grupujSzkolenia(wIS).map(function (d) {
-    return '<tr><td class="strong">' + esc(d.nazwa) + '</td><td class="num">' + d.n + '</td>' +
+    return '<tr' + link14({ szkolenie: d.nazwa, inst: inst.id }) + '><td class="strong">' + esc(d.nazwa) + '</td><td class="num">' + d.n + '</td>' +
       '<td class="num">' + d.ucz + '</td><td class="num">' + DB.fmtPLN(d.wart) + '</td></tr>';
   }).join("");
 }
