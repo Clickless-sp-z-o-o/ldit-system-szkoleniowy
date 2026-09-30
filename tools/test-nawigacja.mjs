@@ -83,7 +83,11 @@ t.ok(DB.TERMINY.length > 0 && DB.TERMINY.every((x) => przydzial.includes(x.is)),
   "pracownik widzi terminy wylacznie przypisanych instytucji (" + DB.TERMINY.length + ")");
 t.ok(DB.KOLEJKA.every((k) => przydzial.includes(k.isId)), "licznik akceptacji liczy tylko formularze z przydzialu");
 zaloguj("biuro@odczarujpowerbi.pl");
-t.rowne(Auth.poziom("nabory"), "brak", "instytucja nie ma Naborow (D-91)");
+t.rowne(Auth.poziom("nabory"), "podglad", "instytucja widzi Nabory w podgladzie (D-213)");
+t.ok(DB.KLIENCI.every((k) => k.is === Auth.sesja().instytucja_id), "liczby klientow w Naborach licza sie tylko z wlasnych klientow");
+zaloguj("mirka@dronfortech.pl");
+t.rowne(Auth.poziom("nabory"), "brak", "handlowiec instytucji nie widzi Naborow (D-91)");
+zaloguj("biuro@odczarujpowerbi.pl");
 t.ok(!Auth.widziModul(N.modulEkranu("02-zestawienia.html")),
   "instytucja nie ma Dofinansowan, wiec zakladki Projekty i Oczekujace znikna z paska Terminow");
 t.rowne(Auth.poziom("terminy"), "edycja", "instytucja nadal wystawia terminy");

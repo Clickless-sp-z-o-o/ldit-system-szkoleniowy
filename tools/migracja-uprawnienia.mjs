@@ -56,13 +56,13 @@ export const MODULY = [
    "podglad" to feature <modul>.view, a "edycja" to wildcard <modul>.*
    (view i manage). Brak wpisu = modulu nie ma w menu tej roli.
    Pracownik LDIT ma wglad w terminy przypisanych instytucji (D-142), terminy wystawia instytucja.
-   Nabory sa modulem rol LDIT, instytucja ich nie widzi (D-91, P-34 dotyczy Bazy danych). */
+   Instytucja widzi Nabory w podgladzie (D-213, zamyka P-34), handlowiec instytucji nie (D-91). */
 const DOSTEP = {
   admin:       { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", inst: "edycja",
                  komun: "edycja", admin: "edycja", zglo: "edycja", ustaw: "edycja", terminy: "edycja" },
   pracownik:   { dash: "edycja", dofin: "edycja", nabory: "edycja", zadania: "edycja", inst: "podglad",
                  komun: "edycja", zglo: "edycja", terminy: "podglad" },
-  is:          { dash: "podglad", panelIS: "edycja", terminy: "edycja" },
+  is:          { dash: "podglad", panelIS: "edycja", terminy: "edycja", nabory: "podglad" },
   pracownikIS: { panelIS: "podglad" },
   klient:      { panelKL: "podglad" }
 };

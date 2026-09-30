@@ -79,7 +79,7 @@ Z 46 decyzji D-161 - D-206 wykonawca rozstrzygnął w panelu 27 punktów, w któ
 
 Twardy deadline biznesowy: gotowe przed styczniem, bo wtedy startują nabory i klient jest niedostępny. Wykonawca szacuje 6 tygodni pracy. Klient zapowiada ciągłe konsultacje i zmiany "z metra".
 
-Do tego, po rundzie 29.09, 20 pytań otwartych i 27 decyzji wstępnych czekających na klienta (R-28). Wszystkie 4 blokady mają rozstrzygnięcie wykonawcy [D-162, D-163, D-164, D-177].
+Do tego, po rundzie 29.09, 20 pytań otwartych (po D-213 z 30.09: 19) i 27 decyzji wstępnych czekających na klienta (R-28). Wszystkie 4 blokady mają rozstrzygnięcie wykonawcy [D-162, D-163, D-164, D-177].
 
 **Mitygacja:**
 - Zamrozić zakres wersji I po makiecie v2

@@ -2176,7 +2176,7 @@ INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zestawienia
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zadania.wszystkie', NULL, 'pole', 'Zadania wszystkich osób, nie tylko własne', NULL);
 INSERT INTO funkcje (id, modul_id, rodzaj, opis, zalezy_od) VALUES ('zakres.cala_instytucja', NULL, 'pole', 'Wszyscy klienci własnej instytucji, nie tylko przypisani', NULL);
 
--- role_funkcje (50)
+-- role_funkcje (51)
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'dash.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'dofin.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'nabory.*');
@@ -2198,6 +2198,7 @@ INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownik', 'terminy.view')
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('is', 'dash.view');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('is', 'panelIS.*');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('is', 'terminy.*');
+INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('is', 'nabory.view');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('pracownikIS', 'panelIS.view');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('klient', 'panelKL.view');
 INSERT INTO role_funkcje (rola_id, funkcja) VALUES ('admin', 'finanse.kwoty_wniosku');

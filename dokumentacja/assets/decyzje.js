@@ -683,22 +683,14 @@ window.DECYZJE = [
     obszar: "Mapa zakładek",
     waga: "srednia",
     kto: "klient",
-    blokuje: "uprawnienia instytucji do Naborów",
-    pytanie: "Czy instytucja widzi nabory",
-    kontekst: "Macierz uprawnień makiety daje roli instytucji podgląd Naborów, a strona sama pisze, że moduł jest wyłącznie dla ról LDIT. Klient nie potwierdził widoczności naborów dla instytucji [P-34] i wykluczył informowanie handlowca instytucji o naborach [D-91]. Rekomendacja wykonawcy: wariant A.",
+    blokuje: "zakres listy Naborów dla instytucji",
+    pytanie: "Jaki zakres naborów widzi instytucja",
+    kontekst: "Wykonawca rozstrzygnął 30.09.2026, że instytucja widzi Nabory w podglądzie [D-213], więc wariant „tylko role LDIT” odpada. Handlowiec instytucji nadal nie dostaje informacji o naborach [D-91]. Zostaje wybór zakresu listy. Makieta pokazuje dziś pełną listę, a liczby klientów liczy wyłącznie z własnych klientów instytucji.",
     opcje: [
-      {
-        id: "a",
-        label: "Nie, Nabory tylko dla ról LDIT; instytucja dostaje informacje o swoich terminach",
-        rekomendowana: true,
-        skutki: [
-          { typ: "zysk", t: "Zgodne z tym, co ustalono ([D-91]) i z opisem strony" },
-          { typ: "koszt", t: "Instytucja nie widzi, kiedy urzędy otwierają nabory" }
-        ]
-      },
       {
         id: "b",
         label: "Instytucja widzi listę naborów urzędów, w których ma klientów, bez liczby klientów LDIT",
+        rekomendowana: true,
         skutki: [
           { typ: "zysk", t: "Instytucja planuje pracę handlowców" },
           { typ: "ryzyko", t: "Zawęża kontakt LDIT z klientem wbrew [D-91], wymaga osobnej separacji per urząd" }

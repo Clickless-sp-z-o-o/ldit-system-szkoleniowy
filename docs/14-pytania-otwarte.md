@@ -155,8 +155,10 @@ To jest **konflikt interesów klienta i wykonawcy**, opisany w [15. Ryzyka](15-r
 > **Rozstrzygnięte 2026-09-29: D-192** (wstępnie, wybór wykonawcy w panelu, do potwierdzenia przez klienta).
 Klient wątpi w użyteczność, wykonawca deklaruje potrzebę i współfinansowanie. Nic nie zostało zapisane jako decyzja.
 
-### P-34. Czy instytucja zobaczy widok "Niezłożone" z nadchodzącymi naborami
+### P-34. Czy instytucja zobaczy widok "Niezłożone" z nadchodzącymi naborami - ZAMKNIĘTE (2026-09-30)
 Wykonawca stwierdził, że "instytucja szkoleniowa też powinna to widzieć" (2:49:01). Klient nie potwierdził i przekierował rozmowę.
+
+**Rozstrzygnięte 2026-09-30:** tak, instytucja widzi Nabory w podglądzie [D-213]. Handlowiec instytucji nie [D-91]. Zakres listy doprecyzowuje Z-18 w [19](19-mapa-zakladek.md).
 
 ### P-35. Czy pracownik LDIT ma dostęp do danych finansowych
 > **Bartek (58:02):** "na razie tylko zostaje [dla] admina, no ale docelowo..."
@@ -428,7 +430,7 @@ z Excelem klienta na uzgodnionym zestawie przypadków plus przejście testów z 
 
 ## Podsumowanie
 
-**Stan po rundzie 2026-09-29: 37 pytań rozstrzygniętych w panelu decyzyjnym plus P-56 (przez D-177), zostaje 20 otwartych, zero blokad.** Każde rozstrzygnięte pytanie ma odnośnik do decyzji D-161 - D-212 w [13. Rejestrze decyzji](13-rejestr-decyzji.md). Tam, gdzie w panelu odpowiadał klient, rozstrzygnięcie jest **wstępne i czeka na jego potwierdzenie**.
+**Stan po rundzie 2026-09-29: 37 pytań rozstrzygniętych w panelu decyzyjnym plus P-56 (przez D-177), zostaje 20 otwartych, zero blokad.** Po 30.09 P-34 zamknięte przez D-213, otwartych jest 19. Każde rozstrzygnięte pytanie ma odnośnik do decyzji D-161 - D-212 w [13. Rejestrze decyzji](13-rejestr-decyzji.md). Tam, gdzie w panelu odpowiadał klient, rozstrzygnięcie jest **wstępne i czeka na jego potwierdzenie**.
 
 | Blokada | Status | Decyzja |
 |---|---|---|
@@ -437,7 +439,7 @@ z Excelem klienta na uzgodnionym zestawie przypadków plus przejście testów z 
 | P-09 eksport CSV z systemu księgowego | rozstrzygnięta wstępnie, wymaga potwierdzenia u księgowej | D-163 |
 | P-25 architektura danych | rozstrzygnięta (jedna baza, separacja wierszy) | D-177 |
 
-Pytania nadal otwarte (20): P-07, P-15, P-16, P-22, P-28, P-29, P-31, P-34, P-35, P-36, P-37, P-38, P-44, P-47, P-48, P-49, P-50, P-58, P-60, P-62. Nie były w panelu. P-37 (Projectly) jest faktycznie przesądzone przez D-140 i wymaga tylko formalnego zamknięcia, a P-44 częściowo przez D-206.
+Pytania nadal otwarte (19): P-07, P-15, P-16, P-22, P-28, P-29, P-31, P-35, P-36, P-37, P-38, P-44, P-47, P-48, P-49, P-50, P-58, P-60, P-62. Nie były w panelu. P-37 (Projectly) jest faktycznie przesądzone przez D-140 i wymaga tylko formalnego zamknięcia, a P-44 częściowo przez D-206.
 
 | Kategoria (wszystkie kiedykolwiek) | Liczba pytań |
 |---|---|

@@ -106,7 +106,7 @@ Ekrany bez własnej pozycji w menu: karta projektu (03), Baza danych (04), Konfi
 5. **"Baza klientów"** w słowniku, **"Baza danych"** w [D-128] i makiecie.
 6. **Zadania i powiadomienia:** [D-195] mówi o dwóch modułach, makieta ma jedną pozycję.
 7. **Instytucja:** [D-76] mówi o jednej zakładce z nazwą spółki, makieta daje instytucji 4 pozycje menu (Dashboard, nazwa spółki, Terminy szkoleń, Nabory).
-8. **Nabory dla instytucji:** macierz uprawnień daje instytucji podgląd Naborów, a strona pisze, że moduł jest tylko dla ról LDIT (P-34, [D-91]). Od 29.09.2026 ujednolicone: instytucja nie ma Naborów do decyzji klienta (usterka 5).
+8. **Nabory dla instytucji:** macierz uprawnień daje instytucji podgląd Naborów, a strona pisze, że moduł jest tylko dla ról LDIT (P-34, [D-91]). Rozstrzygnięte 30.09.2026: instytucja widzi Nabory w podglądzie [D-213].
 9. **Cele zespołu:** docs/05 zapisuje je na dashboardzie, makieta w Administracji (tylko admin).
 10. **Karta klienta:** [D-52] i [D-54] zakładają kartę klienta, makieta jej nie ma.
 
@@ -118,7 +118,7 @@ Wszystkie dwanaście poprawiono 29.09.2026. Wspólna logika jest w `makieta/asse
 2. Wyszukiwarka globalna: przekazuje `q` do Bazy, która go nie czyta (czyta go tylko lista Wnioski). **Poprawione:** Baza danych czyta `q` i otwiera się z wpisaną frazą.
 3. Linki wewnątrz ekranów zmieniają zawartość ramki, ale nie zaznaczenie w menu ani okruszek w pasku górnym. **Poprawione:** ekran w ramce zgłasza się powłoce, a ta zaznacza pozycję menu i buduje okruszek (np. Dofinansowania › Baza danych), także po przejściu linkiem.
 4. Pracownik LDIT ma na pasku Dofinansowań zakładkę „Terminy szkoleń”, ale moduł Terminy nie jest mu przypisany w macierzy uprawnień. **Poprawione:** pracownik LDIT dostał podgląd Terminów (wgląd LDIT w terminy [D-142]). Dodatkowo każdy pasek zakładek ukrywa zakładki modułów spoza roli.
-5. Instytucja ma dostęp do Naborów mimo opisu strony (tylko role LDIT). **Poprawione:** instytucja nie ma już Naborów. Przyjęto mniejszy zakres do czasu decyzji klienta; P-34 dotyczy widoku Bazy danych, nie modułu Naborów.
+5. Instytucja ma dostęp do Naborów mimo opisu strony (tylko role LDIT). **Rozstrzygnięte inaczej:** wykonawca zdecydował, że instytucja widzi Nabory w podglądzie [D-213], więc poprawiono opis strony, a uprawnienie zostało.
 6. Dashboard: „Faktury po terminie” otwiera Prowizje, nie Faktury. **Poprawione:** link otwiera zakładkę Faktury z filtrem „Po terminie”. Pozycje „Wymaga działania” prowadzące do modułu spoza roli nie są pokazywane.
 7. Karta wniosku: okruszek „Zestawienia” wraca do domyślnego roku bez filtrów i pozycji na liście. **Poprawione:** karta pamięta listę, z której ją otwarto (Zestawienia albo Baza danych), razem z rokiem i filtrami. Po powrocie wiersz jest wyróżniony i przewinięty na ekran.
 8. Licznik „Wnioski (n)” w pasku zakładek liczy tylko rok bieżący i nie reaguje na filtry. **Poprawione:** w Zestawieniach licznik to liczba wierszy widocznych przy bieżących filtrach. W Bazie danych to liczba wierszy, które pokaże zakładka Wnioski, bo link przenosi filtr instytucji i urzędu.
@@ -436,7 +436,7 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 | Z-15 | Terminy | Jak przypisywać projekt do terminu | średnia | wariant A |
 | Z-16 | Nabory | Nabory: osobna pozycja menu czy zakładka w Dofinansowaniach | średnia | wariant A |
 | Z-17 | Nabory | Ekran Nabory: ile bloków naraz | niska | wariant B |
-| Z-18 | Nabory | Czy instytucja widzi nabory | średnia | wariant A |
+| Z-18 | Nabory | Jaki zakres naborów widzi instytucja | średnia | wariant B |
 | Z-19 | Komunikacja | Wysyłka maili: pozycja w menu czy funkcja przy rekordach | wysoka | wariant B |
 | Z-20 | Zadania i powiadomienia | Zadania i powiadomienia: jedna pozycja, dwie czy dzwonek | średnia | wariant C |
 | Z-21 | Administracja i prowizje | Administracja: ile zakładek | średnia | wariant A |
@@ -869,18 +869,13 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 
 > **Rekomendacja wykonawcy:** Wariant B.
 
-#### Z-18. Czy instytucja widzi nabory
+#### Z-18. Jaki zakres naborów widzi instytucja
 
-**Waga:** średnia. **Blokuje:** uprawnienia instytucji do Naborów. **Powiązane decyzje:** D-91, D-111.
+**Waga:** średnia. **Blokuje:** zakres listy Naborów dla instytucji. **Powiązane decyzje:** D-91, D-111, D-213.
 
-**Stan dziś i kontekst.** Macierz uprawnień makiety daje roli instytucji podgląd Naborów, a strona sama pisze, że moduł jest wyłącznie dla ról LDIT. Klient nie potwierdził widoczności naborów dla instytucji [P-34] i wykluczył informowanie handlowca instytucji o naborach [D-91].
+**Stan dziś i kontekst.** Wykonawca rozstrzygnął 30.09.2026, że instytucja widzi Nabory w podglądzie [D-213], więc wariant A (Nabory tylko dla ról LDIT) odpada. Handlowiec instytucji nadal nie dostaje informacji o naborach [D-91]. Zostaje wybór zakresu listy. Makieta pokazuje dziś wariant C, a liczby klientów liczy wyłącznie z własnych klientów instytucji.
 
-**A. Nie, Nabory tylko dla ról LDIT; instytucja dostaje informacje o swoich terminach** (rekomendowany)
-
-- **zysk:** Zgodne z tym, co ustalono ([D-91]) i z opisem strony
-- **koszt:** Instytucja nie widzi, kiedy urzędy otwierają nabory
-
-**B. Instytucja widzi listę naborów urzędów, w których ma klientów, bez liczby klientów LDIT**
+**B. Instytucja widzi listę naborów urzędów, w których ma klientów, bez liczby klientów LDIT** (rekomendowany)
 
 - **zysk:** Instytucja planuje pracę handlowców
 - **ryzyko:** Zawęża kontakt LDIT z klientem wbrew [D-91], wymaga osobnej separacji per urząd
@@ -890,7 +885,7 @@ Pytania mają ustalić mapę zakładek. Każde ma numer Z-xx, treść, 2 do 4 wa
 - **zysk:** Najprościej
 - **ryzyko:** Ujawnia 340 urzędów i pośrednio wolumeny LDIT
 
-> **Rekomendacja wykonawcy:** Wariant A.
+> **Rekomendacja wykonawcy:** Wariant B, bo pokazuje instytucji tylko to, co dotyczy jej klientów.
 
 ### Komunikacja
 

@@ -72,7 +72,7 @@ flowchart TD
 | Plik | Zawartość |
 |---|---|
 | [13. Rejestr decyzji](13-rejestr-decyzji.md) | 206 decyzji (D-01 - D-206) z siłą i uzasadnieniem, w tym 46 z rundy 29.09.2026 |
-| [14. Pytania otwarte](14-pytania-otwarte.md) | 20 pytań nadal otwartych, 38 rozstrzygniętych 29.09.2026 (z odnośnikiem do D-xxx), zero blokad |
+| [14. Pytania otwarte](14-pytania-otwarte.md) | 19 pytań nadal otwartych, 38 rozstrzygniętych 29.09.2026 (z odnośnikiem do D-xxx), zero blokad |
 | [15. Ryzyka](15-ryzyka.md) | Rejestr ryzyk z oceną i mitygacją |
 | [16. Słownik](16-slownik.md) | Pojęcia domenowe KFS i terminologia projektu |
 

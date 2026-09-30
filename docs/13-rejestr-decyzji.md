@@ -379,6 +379,14 @@ Wykonawca zapisał tego dnia: "decyzje: formularz natywny, log tylko istotne, st
 | **D-211** | **Standardy Open Mercato wprowadzone w makiecie:** uprawnienia jako features `modul.akcja` (tabele `funkcje` i `role_funkcje` zamiast `uprawnienia` i `uprawnienia_pol`, wzór `acl.ts` i `role_acls`, obsługa wildcard `modul.*`), walidacja danych na granicy zapisu (`assets/walidacja.js`, odpowiednik `data/validators.ts` z Zod), format błędów `{ data, error: { code, message } }`, blokada wersji przy zapisie (optimistic locking) w trybie serwera, ogólny komunikat logowania, rejestr tylko do dopisywania | TWARDA | [W] | rozszerza D-176, zastępuje mechanizm z D-149, patrz [02](02-aktorzy-i-uprawnienia.md), [10](10-bezpieczenstwo-i-rodo.md) |
 | **D-212** | **Każda agregacja (liczba, wykres, kafelek, licznik) prowadzi do szczegółów (drill through).** Mapa zakładek ustalana z klientem pytaniami Z-01 i dalszymi w `docs/19-mapa-zakladek.md`, liczba zakładek ograniczona | WSTĘPNA | [W] | do potwierdzenia mapy przez klienta, patrz [11](11-ux-i-nawigacja.md) |
 
+## Decyzja wykonawcy z 30.09.2026: D-213
+
+Wykonawca zapisał: "instytucja ma widzieć nabory".
+
+| ID | Decyzja | Siła | Kto | Dotyczy |
+|---|---|---|---|---|
+| **D-213** | **Instytucja szkoleniowa widzi moduł Nabory w podglądzie.** Liczby klientów liczą się wyłącznie z jej własnych klientów (separacja w `zakres.js`). Handlowiec instytucji nadal nie widzi naborów [D-91]. Zakres listy (wszystkie urzędy czy tylko urzędy własnych klientów) do doprecyzowania w Z-18 | TWARDA | [W] | zamyka P-34, odrzuca wariant A pytania Z-18, cofa usterkę 5 z [19](19-mapa-zakladek.md) |
+
 **Sprzeczność do zgłoszenia.** Polecenie wykonawcy opisuje D-187 i D-189 jako WSTĘPNE, a rejestr od 29.09 trzyma je jako TWARDA. Siłę zostawiono TWARDA i dopisano potwierdzenie. Odwrócenie wymagań klienta z D-147 i D-122 nie jest jednak potwierdzone przez klienta.
 
 ---
@@ -409,11 +417,11 @@ Wykonawca zapisał tego dnia: "decyzje: formularz natywny, log tylko istotne, st
 
 | Kategoria | Liczba |
 |---|---|
-| TWARDA (w tym warianty typu "TWARDA co do zasady") | 152 |
+| TWARDA (w tym warianty typu "TWARDA co do zasady") | 153 |
 | WSTĘPNA | 51 |
 | ODRZUCONA / wykluczenie | 7 |
 | ODROCZONA bez decyzji | 2 |
-| **Razem** | **212** |
+| **Razem** | **213** |
 
 Potrzebę zgłosił klient: **ok. 100** decyzji. Rozwiązanie zaproponował wykonawca: **ok. 57**. Liczby dotyczą D-01 - D-160. Wszystkie 46 decyzji D-161 - D-206 to rozstrzygnięcia wykonawcy: 19 TWARDYCH i 27 WSTĘPNYCH czekających na potwierdzenie klienta (po D-209 wiersz D-193 jest skorygowany, więc czeka 26). Sześć decyzji D-207 - D-212 to także ustalenia wykonawcy: 5 TWARDYCH i 1 WSTĘPNA (D-212). Razem czeka na klienta 27 pozycji.
 
@@ -428,7 +436,8 @@ Skąd te liczby:
 | Feedback klienta 29.09.2026 | D-158 - D-160 | 3 |
 | Panel decyzyjny i przegląd modelu 29.09.2026 | D-161 - D-206 | 46 |
 | Decyzje wykonawcy po przeglądzie makiety 29.09.2026 | D-207 - D-212 | 6 |
+| Decyzja wykonawcy 30.09.2026 (Nabory dla instytucji) | D-213 | 1 |
 
 Warsztat 04.09 przyniósł 6 odwróceń wcześniejszych ustaleń, patrz [17. Warsztat doprecyzowujący](17-warsztat-2026-09-04.md). Runda budowy makiety nie odwróciła żadnej decyzji klienta, tylko rozstrzygnęła, gdzie ustalenia mają być egzekwowane.
 
-> **Uwaga o interpretacji.** Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde ustalenia w wąskim zakresie, obok których stoi 20 pytań otwartych (spoza panelu, patrz 14) i 27 wyborów wykonawcy czekających na potwierdzenie klienta (blokady P-01, P-02, P-09 rozstrzygnięte wstępnie). Decyzje z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu stron i wymagają potwierdzenia.
+> **Uwaga o interpretacji.** Wysoki udział decyzji TWARDYCH nie oznacza, że projekt jest domknięty. Część z nich to twarde ustalenia w wąskim zakresie, obok których stoi 19 pytań otwartych (spoza panelu, patrz 14) i 27 wyborów wykonawcy czekających na potwierdzenie klienta (blokady P-01, P-02, P-09 rozstrzygnięte wstępnie). Decyzje z ostatniej godziny warsztatu (D-86 i dalsze) były podejmowane przy wyraźnym zmęczeniu obu stron i wymagają potwierdzenia.

@@ -155,7 +155,7 @@ Wersja robocza do potwierdzenia. Pola oznaczone `?` wymagają rozstrzygnięcia.
 | Faktury | Pełny | Brak | Brak | Brak | Brak |
 | Powiadomienia i szablony | Pełny | Wysyłka | Szablony do Outlooka | Brak | Brak |
 | Zgłoszenia (incydenty) | Pełny | Pełny | **Brak** | Brak | Brak |
-| Nabory | Pełny | Odczyt | Brak do decyzji klienta (`?`) | Brak | Odczyt (`?`) |
+| Nabory | Pełny | Odczyt | Odczyt, liczby z własnych klientów [D-213] | Brak [D-91] | Odczyt (`?`) |
 | Konta i uprawnienia | Pełny | Brak | Użytkownicy własnej IS | Brak | Brak |
 | Rejestr aktywności | Pełny | Brak | Brak | Brak | Brak |
 
